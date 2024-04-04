@@ -40,8 +40,6 @@
     nodejs_21
     ruby
     unzip
-    llvmPackages_16.bintools
-    rustup
   ];
 
   home.sessionVariables = {
