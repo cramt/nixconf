@@ -40,7 +40,7 @@
     nodejs_21
     ruby
     unzip
-    llvmPackages.bintools
+    llvmPackages_16.bintools
     rustup
   ];
 
