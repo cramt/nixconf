@@ -36,6 +36,7 @@
     neofetch
     lazygit
     wget
+    libgcc
   ];
 
   home.sessionVariables = {
