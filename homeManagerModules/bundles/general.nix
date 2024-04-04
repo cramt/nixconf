@@ -36,7 +36,6 @@
     neofetch
     lazygit
     wget
-    gcc
     clang
     nodejs_21
     ruby
