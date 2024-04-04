@@ -1,4 +1,7 @@
 {
+  pkgs,
+  system,
+  inputs,
   config,
   lib,
   myLib,
@@ -16,7 +19,7 @@
 
       configExtension = config: (lib.mkIf cfg.${name}.enable config);
     })
-    (myLib.filesIn ./features);
+    ( myLib.filesIn ./features);
 
   # Taking all module bundles in ./bundles and adding bundle.enables to them
   bundles =

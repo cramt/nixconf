@@ -18,6 +18,7 @@
 
   myHomeManager = {
     bundles.general.enable = true;
+    #neovim.enable = true;
     firefox.enable = true;
     hyprland.enable = true;
   };

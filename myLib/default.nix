@@ -37,7 +37,7 @@ in rec {
 
   # =========================== Helpers ============================ #
 
-  filesIn = dir: (map (fname: dir + "/${fname}")
+  filesIn = dir: (map (fname: builtins.trace fname (dir + "/${fname}"))
     (builtins.attrNames (builtins.readDir dir)));
 
   dirsIn = dir:
