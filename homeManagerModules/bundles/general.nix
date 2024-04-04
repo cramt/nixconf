@@ -37,6 +37,9 @@
     lazygit
     wget
     gcc
+    nodejs_21
+    ruby
+    rust
   ];
 
   home.sessionVariables = {
