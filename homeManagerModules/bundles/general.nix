@@ -37,9 +37,12 @@
     lazygit
     wget
     gcc
+    clang
     nodejs_21
     ruby
-    rust
+    unzip
+    llvmPackages.bintools
+    rustup
   ];
 
   home.sessionVariables = {
