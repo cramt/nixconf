@@ -22,6 +22,7 @@
     firefox.enable = true;
     hyprland.enable = true;
     zsh.enable = true;
+    ssh.enable = true;
   };
 
   home.stateVersion = "23.11";
