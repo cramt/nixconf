@@ -1,1 +1,3 @@
-{ ... }: { }
+{ ... }: {
+  programs.zsh.enable = true;
+}
