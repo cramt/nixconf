@@ -1,7 +1,7 @@
 { input, outputs, config, pkgs, ... }:
 {
 
-  imports = [outputs.homeManagerModules.default];
+  imports = [ outputs.homeManagerModules.default ];
 
   programs.git = {
     enable = true;
@@ -21,9 +21,10 @@
     neovim.enable = true;
     firefox.enable = true;
     hyprland.enable = true;
+    zsh.enable = true;
   };
 
-  home.stateVersion = "23.11"; 
+  home.stateVersion = "23.11";
 
   home.sessionVariables = {
     EDITOR = "lvim";

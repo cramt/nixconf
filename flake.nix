@@ -1,7 +1,7 @@
 {
   description = "Nixos config flake";
 
-    inputs = {
+  inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     xremap-flake.url = "github:xremap/nix-flake";
@@ -55,14 +55,14 @@
     };
 
     persist-retro.url = "github:Geometer1729/persist-retro";
-
   };
 
-  outputs = {...} @ inputs: let
-    # super simple boilerplate-reducing
-    # lib with a bunch of functions
-    myLib = import ./myLib/default.nix {inherit inputs;};
-  in
+  outputs = { ... } @ inputs:
+    let
+      # super simple boilerplate-reducing
+      # lib with a bunch of functions
+      myLib = import ./myLib/default.nix { inherit inputs; };
+    in
     with myLib; {
       nixosConfigurations = {
         terra = mkSystem ./hosts/terra/configuration.nix;

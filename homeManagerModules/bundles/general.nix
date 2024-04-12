@@ -1,8 +1,7 @@
-{
-  pkgs,
-  config,
-  inputs,
-  ...
+{ pkgs
+, config
+, inputs
+, ...
 }: {
   imports = [
     inputs.nix-colors.homeManagerModules.default
@@ -21,7 +20,6 @@
     firefox
     (nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
     git
-    neovim
     lunarvim
     nushell
     alacritty
@@ -32,17 +30,24 @@
     eza
     zoxide
     bat
+    gnumake
+    (hiPrio gcc)
+    clang
     ripgrep
     neofetch
     lazygit
     wget
-    clang
     nodejs_21
     ruby
     unzip
+    cargo
+    rustc
   ];
 
   home.sessionVariables = {
     FLAKE = "${config.home.homeDirectory}/nixconf";
   };
+  home.sessionPath = [
+    "/home/cramt/.local/share/gem/ruby/3.1.0/bin"
+  ];
 }
