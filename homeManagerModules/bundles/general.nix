@@ -23,6 +23,7 @@
     gnupg
     lunarvim
     nushell
+    pinentry-curses # needed for gnupg for some reason
     alacritty
     kitty
     zellij

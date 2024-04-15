@@ -3,12 +3,6 @@
 
   imports = [ outputs.homeManagerModules.default ];
 
-  programs.git = {
-    enable = true;
-    userName = "cramt";
-    userEmail = "alex.cramt@gmail.com";
-  };
-
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
 
@@ -20,11 +14,12 @@
     zsh.enable = true;
     ssh.enable = true;
     git.enable = true;
+    git.signingKey = "TEST";
   };
 
   home.stateVersion = "23.11";
 
   home.sessionVariables = {
-    EDITOR = "lvim";
+    EDITOR = "nvim";
   };
 }
