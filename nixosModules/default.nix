@@ -38,7 +38,7 @@ in
     [
       inputs.home-manager.nixosModules.home-manager
     ]
-    #++ features
+    ++ features
     ++ bundles;
 
   options.myNixOS = {
