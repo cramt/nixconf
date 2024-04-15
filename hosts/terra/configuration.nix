@@ -33,7 +33,7 @@
     };
   };
 
-  networking.hostName = "nixos"; # Define your hostname.
+  networking.hostName = "terra";
 
   networking.networkmanager.enable = true;
 
