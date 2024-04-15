@@ -1,11 +1,15 @@
+{ inputs
+, pkgs
+, ...
+}:
 {
-  inputs,
-  ...
-}: {
+  nixpkgs.overlays = [
+    inputs.nur.overlay
+  ];
   programs.firefox = {
     enable = true;
     profiles.cramt = {
-      extensions = with inputs.firefox-addons.packages."x86_64-linux"; [
+      extensions = with pkgs.nur.repos.rycee.firefox-addons; [
         ublock-origin
         sponsorblock
         vimium

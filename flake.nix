@@ -55,6 +55,8 @@
     };
 
     persist-retro.url = "github:Geometer1729/persist-retro";
+
+    nur.url = "github:nix-community/NUR";
   };
 
   outputs = { ... } @ inputs:
