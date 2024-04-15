@@ -17,6 +17,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   myNixOS = {
+    gnupg.enable = true;
     bundles.general.enable = true;
     bundles.users.enable = true;
 

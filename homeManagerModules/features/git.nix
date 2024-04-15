@@ -12,7 +12,6 @@ in
     };
   };
   config = {
-    myHomeManager.gnupg.enable = lib.mkDefault true;
     programs.git = {
       enable = true;
       userName = "Alexandra Østermark";
