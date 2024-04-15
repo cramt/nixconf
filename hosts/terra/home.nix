@@ -19,6 +19,7 @@
     hyprland.enable = true;
     zsh.enable = true;
     ssh.enable = true;
+    git.enable = true;
   };
 
   home.stateVersion = "23.11";
