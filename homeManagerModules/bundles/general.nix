@@ -20,6 +20,7 @@
     firefox
     (nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
     git
+    gnupg
     lunarvim
     nushell
     alacritty
