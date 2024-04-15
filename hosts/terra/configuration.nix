@@ -6,7 +6,8 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
       inputs.disko.nixosModules.default
     ];
@@ -25,7 +26,7 @@
       "cramt" = {
         userConfig = ./home.nix;
         userSettings = {
-          extraGroups = ["networkmanager" "wheel" "libvirtd" "docker" "adbusers" "openrazer"];
+          extraGroups = [ "networkmanager" "wheel" "libvirtd" "docker" "adbusers" "openrazer" ];
         };
       };
     };
@@ -35,7 +36,12 @@
 
   networking.networkmanager.enable = true;
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs = {
+    overlays = [ inputs.nur.overlay ];
+    config = {
+      allowUnfree = true;
+    };
+  };
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;

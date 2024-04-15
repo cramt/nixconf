@@ -3,17 +3,17 @@
 , ...
 }:
 {
-  #nixpkgs.overlays = [
-  #  inputs.nur.overlay
-  #];
   programs.firefox = {
     enable = true;
     profiles.cramt = {
-      #extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-      #  ublock-origin
-      #  sponsorblock
-      #  vimium
-      #];
+      extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+        ublock-origin
+        sponsorblock
+        vimium
+        dashlane
+        dracula-dark-colorscheme
+        widegithub
+      ];
 
       search.force = true;
 

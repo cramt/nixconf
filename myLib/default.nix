@@ -22,7 +22,6 @@ rec {
       modules = [
         config
         outputs.nixosModules.default
-        inputs.nur.nixosModules.nur
       ];
     };
 

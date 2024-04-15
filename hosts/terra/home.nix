@@ -1,4 +1,4 @@
-{ input, outputs, config, pkgs, ... }:
+{ input, inputs, outputs, config, pkgs, ... }:
 {
 
   imports = [ outputs.homeManagerModules.default ];
@@ -11,10 +11,6 @@
 
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
-
-  nixpkgs.config = {
-    allowUnfree = true;
-  };
 
   myHomeManager = {
     bundles.general.enable = true;
