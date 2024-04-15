@@ -20,7 +20,6 @@
     firefox
     (nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
     git
-    pinentry-curses # needed for gnupg for some reason
     gnupg
     lunarvim
     nushell
