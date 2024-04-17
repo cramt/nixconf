@@ -11,9 +11,16 @@ in
         modifier = mod;
         terminal = "alacritty";
         menu = "wofi --show drun";
-        keybindings = {
-          "print" = "print exec grimshot --notify copy area";
+        input = {
+          "*" = {
+            xkb_layout = "dk";
+            xkb_variant = "nodeadkeys";
+          };
         };
+        keybindings = lib.mkOptionDefault
+          {
+            "print" = "print exec grimshot --notify copy area";
+          };
         gaps = {
           inner = 0;
           outer = 0;
