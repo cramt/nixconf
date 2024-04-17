@@ -1,14 +1,15 @@
-{
-  lib,
-  config,
-  inputs,
-  outputs,
-  myLib,
-  pkgs,
-  ...
-}: let
+{ lib
+, config
+, inputs
+, outputs
+, myLib
+, pkgs
+, ...
+}:
+let
   cfg = config.myNixOS;
-in {
+in
+{
   options.myNixOS = {
     userName = lib.mkOption {
       default = "cramt";
@@ -25,7 +26,7 @@ in {
     };
 
     userNixosSettings = lib.mkOption {
-      default = {};
+      default = { };
       description = ''
         NixOS user settings
       '';
@@ -34,12 +35,11 @@ in {
 
   config = {
     programs.zsh.enable = true;
+    programs.sway.enable = true;
 
-    programs.hyprland.enable = cfg.sharedSettings.hyprland.enable;
-
-    services.xserver = lib.mkIf cfg.sharedSettings.hyprland.enable {
+    services.xserver = {
       displayManager = {
-        defaultSession = "hyprland";
+        defaultSession = "sway";
       };
     };
 
@@ -53,7 +53,7 @@ in {
         outputs = inputs.self.outputs;
       };
       users = {
-        ${cfg.userName} = {...}: {
+        ${cfg.userName} = { ... }: {
           imports = [
             (import cfg.userConfig)
             outputs.homeManagerModules.default
@@ -68,7 +68,7 @@ in {
         initialPassword = "12345";
         description = cfg.userName;
         shell = pkgs.zsh;
-        extraGroups = ["libvirtd" "networkmanager" "wheel"];
+        extraGroups = [ "libvirtd" "networkmanager" "wheel" ];
       }
       // cfg.userNixosSettings;
   };

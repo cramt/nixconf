@@ -21,8 +21,6 @@
     bundles.general.enable = true;
     bundles.users.enable = true;
 
-    sharedSettings.hyprland.enable = true;
-
     home-users = {
       "cramt" = {
         userConfig = ./home.nix;
