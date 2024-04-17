@@ -11,8 +11,8 @@ in
       config = {
         modifier = mod;
         terminal = "alacritty";
+        menu = "wofi --show drun";
         keybindings = {
-          "${mod}+d" = "exec wofi --show drun";
           "print" = "print exec grimshot --notify copy area";
         };
         gaps = {
