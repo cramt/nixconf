@@ -41,12 +41,6 @@ in
     ++ features
     ++ bundles;
 
-  options.myNixOS = {
-    sharedSettings = {
-      hyprland.enable = lib.mkEnableOption "enable hyprland";
-    };
-  };
-
   config = {
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
     programs.nix-ld.enable = true;

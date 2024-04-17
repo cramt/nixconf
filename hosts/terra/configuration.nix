@@ -16,12 +16,12 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  security.polkit.enable = true;
+
   myNixOS = {
     gnupg.enable = true;
     bundles.general.enable = true;
     bundles.users.enable = true;
-
-    sharedSettings.hyprland.enable = true;
 
     home-users = {
       "cramt" = {

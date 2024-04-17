@@ -10,7 +10,7 @@
     bundles.general.enable = true;
     neovim.enable = true;
     firefox.enable = true;
-    hyprland.enable = true;
+    sway.enable = true;
     zsh.enable = true;
     ssh.enable = true;
     git.enable = true;
