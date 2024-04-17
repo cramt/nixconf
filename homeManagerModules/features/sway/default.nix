@@ -1,11 +1,10 @@
-{ ... }:
+{ lib, pkgs, ... }:
 
 let
   mod = "Mod4";
 in
 {
   config = {
-    security.polkit.enable = true;
     wayland.windowManager.sway = {
       enable = true;
       config = {
@@ -29,7 +28,7 @@ in
       slurp
       wl-clipboard
 
-      eww-wayland
+      eww
       swww
 
       networkmanagerapplet
