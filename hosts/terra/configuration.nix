@@ -16,6 +16,8 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  security.polkit.enable = true;
+
   myNixOS = {
     gnupg.enable = true;
     bundles.general.enable = true;
