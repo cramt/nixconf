@@ -1,29 +1,30 @@
+{ pkgs
+, config
+, lib
+, inputs
+, osConfig
+, ...
+}:
+let
+  #  startScript = pkgs.writeShellScriptBin "start" ''
+  #     ${pkgs.swww}/bin/swww init &
+  #
+  #     ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator &
+  #
+  #     hyprctl setcursor Bibata-Modern-Ice 16 &
+  #
+  #     systemctl --user import-environment PATH &
+  #     systemctl --user restart xdg-desktop-portal.service &
+  #
+  #     # wait a tiny bit for wallpaper
+  #     sleep 2
+  #
+  #    ${pkgs.swww}/bin/swww img ${./../prism/wallpapers/gruvbox-mountain-village.png} &
+  #
+  #    ${config.myHomeManager.startupScript}
+  #  '';
+in
 {
-  pkgs,
-  config,
-  lib,
-  inputs,
-  osConfig,
-  ...
-}: let
-#  startScript = pkgs.writeShellScriptBin "start" ''
-#     ${pkgs.swww}/bin/swww init &
-#
-#     ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator &
-#
-#     hyprctl setcursor Bibata-Modern-Ice 16 &
-#
-#     systemctl --user import-environment PATH &
-#     systemctl --user restart xdg-desktop-portal.service &
-#
-#     # wait a tiny bit for wallpaper
-#     sleep 2
-#
-#    ${pkgs.swww}/bin/swww img ${./../prism/wallpapers/gruvbox-mountain-village.png} &
-#
-#    ${config.myHomeManager.startupScript}
-#  '';
-in {
   options = {
     hyprlandExtra = lib.mkOption {
       default = "";
@@ -53,26 +54,26 @@ in {
           layout = "master";
         };
 
-#        monitor =
-#          map
-#          (
-#            m: let
-#              resolution = "${toString m.width}x${toString m.height}@${toString m.refreshRate}";
-#              position = "${toString m.x}x${toString m.y}";
-#            in "${m.name},${
-#              if m.enabled
-#              then "${resolution},${position},1"
-#              else "disable"
-#            }"
-#          )
-#          (config.myHomeManager.monitors);
-#
-#        workspace =
-#          map
-#          (
-#            m: "${m.name},${m.workspace}"
-#          )
-#          (lib.filter (m: m.enabled && m.workspace != null) config.myHomeManager.monitors);
+        #        monitor =
+        #          map
+        #          (
+        #            m: let
+        #              resolution = "${toString m.width}x${toString m.height}@${toString m.refreshRate}";
+        #              position = "${toString m.x}x${toString m.y}";
+        #            in "${m.name},${
+        #              if m.enabled
+        #              then "${resolution},${position},1"
+        #              else "disable"
+        #            }"
+        #          )
+        #          (config.myHomeManager.monitors);
+        #
+        #        workspace =
+        #          map
+        #          (
+        #            m: "${m.name},${m.workspace}"
+        #          )
+        #          (lib.filter (m: m.enabled && m.workspace != null) config.myHomeManager.monitors);
 
         env = [
           "XCURSOR_SIZE,24"
@@ -219,16 +220,18 @@ in {
             "bind = $mainMod, mouse_down, workspace, e+1"
             "bind = $mainMod, mouse_up, workspace, e-1"
           ]
-          ++ map (n: "$mainMod SHIFT, ${toString n}, movetoworkspace, ${toString (
+          ++ map
+            (n: "$mainMod SHIFT, ${toString n}, movetoworkspace, ${toString (
             if n == 0
             then 10
             else n
-          )}") [1 2 3 4 5 6 7 8 9 0]
-          ++ map (n: "$mainMod, ${toString n}, workspace, ${toString (
+          )}") [ 1 2 3 4 5 6 7 8 9 0 ]
+          ++ map
+            (n: "$mainMod, ${toString n}, workspace, ${toString (
             if n == 0
             then 10
             else n
-          )}") [1 2 3 4 5 6 7 8 9 0];
+          )}") [ 1 2 3 4 5 6 7 8 9 0 ];
 
         binde = [
           "$mainMod SHIFT, h, moveactive, -20 0"
@@ -283,7 +286,7 @@ in {
       wofi
 
       (pkgs.waybar.overrideAttrs (oldAttrs: {
-        mesonFlags = oldAttrs.mesonFlags ++ ["-Dexperimental=true"];
+        mesonFlags = oldAttrs.mesonFlags ++ [ "-Dexperimental=true" ];
       }))
     ];
   };
