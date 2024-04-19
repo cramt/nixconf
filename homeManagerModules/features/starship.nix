@@ -37,7 +37,7 @@
       };
       battery = {
         charging_symbol = "";
-        disabled = false;
+        disabled = true;
         discharging_symbol = "";
         full_symbol = "";
 

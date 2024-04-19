@@ -16,6 +16,8 @@
     git.enable = true;
     git.signingKey = "EE5C69A3E36D0A2B";
     starship.enable = true;
+    zellij.enable = true;
+    alacritty.enable = true;
   };
 
   home.stateVersion = "23.11";
