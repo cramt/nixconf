@@ -43,6 +43,10 @@
     unzip
     cargo
     rustc
+    nh
+    brightnessctl
+    nwg-launchers
+    adwaita-qt
   ];
 
   home.sessionVariables = {

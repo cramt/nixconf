@@ -21,6 +21,11 @@ in
           {
             "print" = "print exec grimshot --notify copy area";
           };
+        bars = [
+          {
+            command = "${pkgs.waybar}/bin/waybar";
+          }
+        ];
         gaps = {
           inner = 0;
           outer = 0;
@@ -29,7 +34,10 @@ in
       };
     };
 
-    myHomeManager.wofi.enable = lib.mkDefault true;
+    myHomeManager.wofi.enable = lib.mkDefault
+      true;
+    myHomeManager.waybar.enable = lib.mkDefault
+      true;
     home.packages = with pkgs; [
       grim
       slurp
