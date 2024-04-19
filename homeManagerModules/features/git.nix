@@ -1,6 +1,11 @@
-{ lib, config, ... }:
+{ lib, config, pkgs, ... }:
 let
   cfg = config.myHomeManager.git;
+  cmpScript = pkgs.writeShellScriptBin "git_cmp" ''
+    git add -A
+    git commit -m "$@"
+    git push
+  '';
 in
 {
   options.myHomeManager.git = {
@@ -16,6 +21,9 @@ in
       enable = true;
       userName = "Alexandra Østermark";
       userEmail = "alex.cramt@gmail.com";
+      aliases = {
+        cmp = "!${cmpScript}/bin/git_cmp";
+      };
       extraConfig = {
         user = {
           signingKey = cfg.signingKey;

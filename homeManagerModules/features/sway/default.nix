@@ -31,6 +31,44 @@ in
           outer = 0;
           smartBorders = "on";
         };
+        colors = {
+          background = "#f8f8f2";
+          focused = {
+            background = "#4d0426";
+            border = "#4d0426";
+            childBorder = "#4d0426";
+            indicator = "#ff92df";
+            text = "#f8f8f2";
+          };
+          focusedInactive = {
+            background = "#44475A";
+            border = "#44475A";
+            childBorder = "#44475A";
+            indicator = "#44475A";
+            text = "#f8f8f2";
+          };
+          unfocused = {
+            background = "#1d212a";
+            border = "#44475A";
+            childBorder = "#1d212a";
+            indicator = "#1d212a";
+            text = "#f8f8f2";
+          };
+          urgent = {
+            background = "#f05c8e";
+            border = "#44475A";
+            childBorder = "#f05c8e";
+            indicator = "#f05c8e";
+            text = "#f8f8f2";
+          };
+          placeholder = {
+            background = "#1d212a";
+            border = "#1d212a";
+            childBorder = "#1d212a";
+            indicator = "#1d212a";
+            text = "#f8f8f2";
+          };
+        };
       };
     };
 
