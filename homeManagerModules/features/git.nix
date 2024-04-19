@@ -17,6 +17,7 @@ in
     };
   };
   config = {
+    programs.gitui.enable = true;
     programs.git = {
       enable = true;
       userName = "Alexandra Østermark";
