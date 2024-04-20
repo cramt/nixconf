@@ -31,27 +31,34 @@
   };
   hardware.pulseaudio.enable = false;
 
-  fonts.packages = with pkgs; [
-    (pkgs.nerdfonts.override { fonts = [ "JetBrainsMono" "Iosevka" "FiraCode" ]; })
-    cm_unicode
-    corefonts
-    noto-fonts
-    noto-fonts-cjk
-    noto-fonts-emoji
-    font-awesome
-    source-han-sans
-    source-han-sans-japanese
-    source-han-serif-japanese
-  ];
+  fonts = {
+    packages = with pkgs; [
+      nerdfonts
+      cm_unicode
+      corefonts
+      noto-fonts
+      noto-fonts-cjk
+      noto-fonts-emoji
+      font-awesome
+      source-han-sans
+      source-han-sans-japanese
+      source-han-serif-japanese
+      ubuntu_font_family
+      powerline-fonts
+      powerline-symbols
 
-  fonts.enableDefaultPackages = true;
-  fonts.fontconfig = {
-    defaultFonts = {
-      monospace = [ "JetBrainsMono Nerd Font Mono" ];
-      sansSerif = [ "JetBrainsMono Nerd Font" ];
-      serif = [ "JetBrainsMono Nerd Font" ];
+    ];
+    fontconfig = {
+      defaultFonts = {
+        sansSerif = [ "Nerd Font" ];
+        serif = [ "Nerd Font" ];
+        monospace = [ "Nerd Font Mono" ];
+      };
     };
+
+    enableDefaultPackages = true;
   };
+
 
   # battery
   services.upower.enable = true;

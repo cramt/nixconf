@@ -8,6 +8,9 @@ in
     wayland.windowManager.sway = {
       enable = true;
       xwayland = true;
+      extraConfig = ''
+        workspace 1
+      '';
       config = {
         modifier = mod;
         terminal = "alacritty";
@@ -84,7 +87,7 @@ in
     myHomeManager.waybar.enable = lib.mkDefault
       true;
     home.packages = with pkgs; [
-      grim
+      sway-contrib.grimshot
       slurp
       wl-clipboard
 

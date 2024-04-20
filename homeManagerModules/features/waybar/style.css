@@ -45,16 +45,12 @@ nord15 #b48ead
     border: 0;
     border-radius: 0;
     padding: 0 0;
-    font-family:UbuntuMono;
+    font-family: Ubuntu Mono;
     font-size: 15px;
     margin-right: 5px;
     margin-left: 5px;
     padding-bottom:3px;
    }
-
-window#waybar {
-    background:#2e3440;
-}
 
 #workspaces button {
     padding: 2px 0px;
@@ -85,7 +81,7 @@ window#waybar {
 
  
 #clock {
- color:#a3be8c;
+  color:#a3be8c;
 }
 
 #backlight {
@@ -175,4 +171,8 @@ window#waybar {
 
 #custom-keyboard-layout{
    color:#d08770;
+}
+
+window#waybar {
+    background:#2e3440;
 }

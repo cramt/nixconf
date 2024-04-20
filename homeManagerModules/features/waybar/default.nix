@@ -36,7 +36,7 @@ let
     };
 
     idle_inhibitor = {
-      format = "{}";
+      format = "{icon}";
       format-icons = {
         activated = "";
         deactivated = "";
