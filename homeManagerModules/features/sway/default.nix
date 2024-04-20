@@ -7,10 +7,16 @@ in
   config = {
     wayland.windowManager.sway = {
       enable = true;
+      xwayland = true;
       config = {
         modifier = mod;
         terminal = "alacritty";
         menu = "wofi --show drun";
+        defaultWorkspace = "1";
+        window = {
+          border = 2;
+          titlebar = false;
+        };
         input = {
           "*" = {
             xkb_layout = "dk";
@@ -19,7 +25,8 @@ in
         };
         keybindings = lib.mkOptionDefault
           {
-            "print" = "print exec grimshot --notify copy area";
+            "print" = "exec grimshot --notify copy area";
+            "${mod}+q" = "kill";
           };
         bars = [
           {
