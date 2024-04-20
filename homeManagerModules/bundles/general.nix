@@ -25,7 +25,7 @@
     alacritty
     kitty
     zellij
-    discord
+    vesktop
     htop
     eza
     zoxide
