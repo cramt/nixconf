@@ -17,13 +17,9 @@
   programs.home-manager.enable = true;
 
   home.packages = with pkgs; [
-    firefox
     git
     gnupg
-    lunarvim
     nushell
-    alacritty
-    kitty
     zellij
     vesktop
     htop
@@ -43,9 +39,6 @@
     cargo
     rustc
     nh
-    brightnessctl
-    nwg-launchers
-    adwaita-qt
   ];
 
   home.sessionVariables = {

@@ -8,6 +8,7 @@
 
   myHomeManager = {
     bundles.general.enable = true;
+    bundles.graphical.enable = true;
     neovim.enable = true;
     firefox.enable = true;
     sway.enable = true;
