@@ -3,13 +3,19 @@
 let
   mod = "Mod4";
   lockCommand = "${pkgs.swaylock}/bin/swaylock";
+  lockImage = ./../../../media/Abstract.jpg;
+  backgroundImage = ./../../../media/pattern.jpg;
+  setBackground = pkgs.writeShellScriptBin "set_background" ''
+    pkill swaybg
+    swaybg -i ${backgroundImage} -m fit &
+  '';
 in
 {
   config = {
     programs.swaylock = {
       enable = true;
       settings = {
-        image = "${./../../../media/Abstract.jpg}";
+        image = "${lockImage}";
         indicator-caps-lock = true;
         scaling = "fill";
         font = "Ubuntu Mono";
@@ -68,6 +74,12 @@ in
             xkb_variant = "nodeadkeys";
           };
         };
+        startup = [
+          {
+            command = "${setBackground}/bin/set_background";
+            always = true;
+          }
+        ];
         keybindings = lib.mkOptionDefault
           {
             "print" = "exec grimshot --notify copy area";
@@ -141,6 +153,7 @@ in
 
       wofi
       waybar
+      swaybg
     ];
   };
 }
