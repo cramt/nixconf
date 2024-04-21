@@ -143,14 +143,9 @@ in
       true;
     home.packages = with pkgs; [
       sway-contrib.grimshot
-      slurp
       wl-clipboard
-
       eww
-      swww
-
       networkmanagerapplet
-
       wofi
       waybar
       swaybg
