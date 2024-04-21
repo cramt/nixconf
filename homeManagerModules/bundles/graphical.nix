@@ -11,4 +11,11 @@
     nwg-launchers
     adwaita-qt
   ];
+
+  myHomeManager = {
+    firefox.enable = true;
+    sway.enable = true;
+    zellij.enable = true;
+    alacritty.enable = true;
+  };
 }

@@ -16,6 +16,14 @@
 
   programs.home-manager.enable = true;
 
+  myHomeManager = {
+    neovim.enable = true;
+    zsh.enable = true;
+    ssh.enable = true;
+    git.enable = true;
+    starship.enable = true;
+  };
+
   home.packages = with pkgs; [
     git
     gnupg

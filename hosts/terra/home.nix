@@ -9,16 +9,7 @@
   myHomeManager = {
     bundles.general.enable = true;
     bundles.graphical.enable = true;
-    neovim.enable = true;
-    firefox.enable = true;
-    sway.enable = true;
-    zsh.enable = true;
-    ssh.enable = true;
-    git.enable = true;
     git.signingKey = "EE5C69A3E36D0A2B";
-    starship.enable = true;
-    zellij.enable = true;
-    alacritty.enable = true;
   };
 
   home.stateVersion = "23.11";
