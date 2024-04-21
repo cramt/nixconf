@@ -2,9 +2,51 @@
 
 let
   mod = "Mod4";
+  lockCommand = "${pkgs.swaylock}/bin/swaylock";
 in
 {
   config = {
+    programs.swaylock = {
+      enable = true;
+      settings = {
+        image = "${./../../../media/Abstract.jpg}";
+        indicator-caps-lock = true;
+        scaling = "fill";
+        font = "Ubuntu Mono";
+        font-size = 20;
+        indicator-radius = 360;
+        line-color = "#3b4252";
+        text-color = "#d8dee9";
+        inside-color = "#2e344098";
+        inside-ver-color = "#5e81ac";
+        line-ver-color = "#5e81ac";
+        ring-ver-color = "#5e81ac98";
+        ring-color = "#4c566a";
+        key-hl-color = "#5e81ac";
+        separator-color = "#4c566a";
+        layout-text-color = "#eceff4";
+        line-wrong-color = "#d08770";
+      };
+    };
+    services.swayidle = {
+      enable = true;
+      timeouts = [
+        {
+          timeout = 60 * 10;
+          command = lockCommand;
+        }
+      ];
+      events = [
+        {
+          event = "before-sleep";
+          command = lockCommand;
+        }
+        {
+          event = "lock";
+          command = lockCommand;
+        }
+      ];
+    };
     wayland.windowManager.sway = {
       enable = true;
       xwayland = true;
@@ -30,6 +72,7 @@ in
           {
             "print" = "exec grimshot --notify copy area";
             "${mod}+q" = "kill";
+            "${mod}+f1" = "exec ${lockCommand}";
           };
         bars = [
           {
