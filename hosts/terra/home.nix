@@ -9,8 +9,8 @@
   myHomeManager = {
     bundles.general.enable = true;
     bundles.graphical.enable = true;
+    bundles.gaming.enable = true;
     git.signingKey = "EE5C69A3E36D0A2B";
-    steam.enable = true;
   };
 
   home.stateVersion = "23.11";

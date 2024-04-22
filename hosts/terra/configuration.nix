@@ -16,6 +16,11 @@
 
   myNixOS = {
     gnupg.enable = true;
+    nvidia.enable = false;
+    nvidia.prime = {
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
+    };
     bundles.general.enable = true;
     bundles.users.enable = true;
 
