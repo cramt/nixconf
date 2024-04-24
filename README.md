@@ -1,4 +1,5 @@
 # My nix config
 
 ## Todo
-snooze timer
+- notifications
+- maybe some nerdy eww stuff
