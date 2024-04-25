@@ -59,6 +59,7 @@ in
       extraConfig = ''
         workspace 1
       '';
+      wrapperFeatures.gtk = true;
       config = {
         modifier = mod;
         terminal = "alacritty";

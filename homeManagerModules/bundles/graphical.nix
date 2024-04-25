@@ -18,5 +18,6 @@
     zellij.enable = true;
     alacritty.enable = true;
     gtk.enable = true;
+    mako.enable = true;
   };
 }
