@@ -17,5 +17,6 @@
     sway.enable = true;
     zellij.enable = true;
     alacritty.enable = true;
+    gtk.enable = true;
   };
 }
