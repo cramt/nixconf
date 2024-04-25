@@ -1,12 +1,7 @@
 { pkgs, ... }: {
-  home.sessionVariables = {
-    STEAM_EXTRA_COMPAT_TOOLS_PATHS = "\${HOME}/.steam/root/compatibilitytools.d";
-  };
-
   home.packages = with pkgs; [
+    xorg.libxcb
     lutris
-    steam
-    steam-run
     protonup-ng
     gamemode
     dxvk
@@ -16,7 +11,5 @@
 
     # heroic
     mangohud
-
-    steamPackages.steam-runtime
   ];
 }

@@ -33,18 +33,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    prism = {
-      url = "github:IogaMaster/prism";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
-
-    nixpkgs-nvidia-535 = {
-      url = "github:nixos/nixpkgs/b604023e0a5549b65da3040a07d2beb29ac9fc63";
-    };
-
-    hyprland.url = "github:hyprwm/Hyprland";
-
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";

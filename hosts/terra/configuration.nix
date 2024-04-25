@@ -22,6 +22,7 @@
       nvidiaBusId = "PCI:1:0:0";
     };
     bundles.general.enable = true;
+    steam.enable = true;
     bundles.users.enable = true;
 
     home-users = {
