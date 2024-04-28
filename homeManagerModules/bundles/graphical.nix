@@ -20,5 +20,6 @@
     alacritty.enable = true;
     gtk.enable = true;
     mako.enable = true;
+    network-manager-applet.enable = true;
   };
 }
