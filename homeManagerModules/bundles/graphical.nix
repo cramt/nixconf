@@ -10,6 +10,7 @@
     brightnessctl
     nwg-launchers
     adwaita-qt
+    gimp
   ];
 
   myHomeManager = {
