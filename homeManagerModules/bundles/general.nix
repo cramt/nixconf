@@ -41,7 +41,7 @@
     neofetch
     lazygit
     wget
-    nodejs_21
+    nodejs_20
     ruby
     unzip
     cargo
