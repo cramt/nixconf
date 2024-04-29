@@ -9,5 +9,6 @@
     mangohud
     wineWowPackages.staging
     winetricks
+    melonDS
   ];
 }

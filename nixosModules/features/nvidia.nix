@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, pkgs, lib, ... }:
 let
   cfg = config.myNixOS.nvidia;
 in
@@ -27,6 +27,9 @@ in
       enable = true;
       driSupport = true;
       driSupport32Bit = true;
+      extraPackages = with pkgs; [
+        vulkan-validation-layers
+      ];
     };
 
     nixpkgs.config.nvidia.acceptLicense = true;
