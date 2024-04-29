@@ -21,6 +21,12 @@ in
     };
   };
   config = {
+
+    home.sessionVariables = {
+      WLR_RENDERER = "vulkan";
+      WLR_NO_HARDWARE_CURSORS = "1";
+      XWAYLAND_NO_GLAMOR = "1";
+    };
     programs.swaylock = {
       enable = true;
       settings = {

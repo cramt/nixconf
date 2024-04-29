@@ -5,11 +5,9 @@
     protonup-ng
     gamemode
     dxvk
-    # parsec-bin
-
     gamescope
-
-    # heroic
     mangohud
+    wineWowPackages.staging
+    winetricks
   ];
 }
