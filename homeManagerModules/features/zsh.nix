@@ -38,6 +38,10 @@
         bios_reboot() {
           systemctl reboot --firmware-setup
         }
+
+        windows_reboot() {
+          systemctl reboot --boot-loader-entry=auto-windows
+        }
       '';
     };
   };
