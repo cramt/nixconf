@@ -56,6 +56,7 @@
     with myLib; {
       nixosConfigurations = {
         terra = mkSystem ./hosts/terra/configuration.nix;
+        io = mkSystem ./hosts/io/configuration.nix;
       };
 
       homeConfigurations = {
