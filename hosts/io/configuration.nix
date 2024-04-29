@@ -37,7 +37,10 @@
   networking.networkmanager.enable = true;
 
   nixpkgs = {
-    overlays = [ inputs.nur.overlay ];
+    overlays = [
+      inputs.nur.overlay
+      (import ./../../patches/wlroots-nvidia.nix)
+    ];
     config = {
       allowUnfree = true;
     };
