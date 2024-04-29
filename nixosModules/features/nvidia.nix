@@ -10,8 +10,19 @@ in
         the gpg signing key
       '';
     };
+    package_version = lib.mkOption {
+      default = "stable";
+      description = ''
+        the package version to use
+      '';
+    };
   };
   config = {
+    environment.sessionVariables = {
+      WLR_RENDERER = "vulkan";
+      WLR_NO_HARDWARE_CURSORS = "1";
+      XWAYLAND_NO_GLAMOR = "1";
+    };
     hardware.opengl = {
       enable = true;
       driSupport = true;
@@ -52,7 +63,7 @@ in
       nvidiaSettings = true;
 
       # Optionally, you may need to select the appropriate driver version for your specific GPU.
-      package = config.boot.kernelPackages.nvidiaPackages.legacy_390;
+      package = config.boot.kernelPackages.nvidiaPackages.${cfg.package_version};
 
       prime = cfg.prime;
     };

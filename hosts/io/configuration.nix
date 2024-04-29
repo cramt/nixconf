@@ -16,7 +16,7 @@
 
   myNixOS = {
     gnupg.enable = true;
-    nvidia.enable = false;
+    nvidia.enable = true;
     qemu.enable = true;
     bundles.general.enable = true;
     steam.enable = true;

@@ -22,6 +22,7 @@
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:1:0:0";
     };
+    nvidia.package_version = "legacy_390";
     bundles.general.enable = true;
     steam.enable = true;
     bundles.users.enable = true;

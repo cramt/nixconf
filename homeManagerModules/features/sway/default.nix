@@ -60,6 +60,7 @@ in
         workspace 1
       '';
       wrapperFeatures.gtk = true;
+      extraOptions = [ "--unsupported-gpu" ];
       config = {
         modifier = mod;
         terminal = "alacritty";
