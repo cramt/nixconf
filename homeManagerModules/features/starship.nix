@@ -57,7 +57,7 @@
         ];
       };
       time = {
-        disabled = false;
+        disabled = true;
         format = " 🕙 $time($style)\n";
         style = "bright-white";
         time_format = "%T";

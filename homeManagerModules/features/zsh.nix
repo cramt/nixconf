@@ -34,6 +34,10 @@
 
         [ -f "$HOME/.local/share/zsh/nix-zsh-completions/nix.plugin.zsh" ] && \
         source "$HOME/.local/share/zsh/nix-zsh-completions/nix.plugin.zsh"
+
+        bios_reboot() {
+          systemctl reboot --firmware-setup
+        }
       '';
     };
   };
