@@ -1,6 +1,7 @@
-{ lib, pkgs, ... }:
+{ lib, config, pkgs, ... }:
 
 let
+  cfg = config.myHomeManager.sway;
   mod = "Mod4";
   lockCommand = "${pkgs.swaylock}/bin/swaylock";
   lockImage = ./../../../media/Abstract.jpg;
@@ -11,6 +12,14 @@ let
   '';
 in
 {
+  options.myHomeManager.sway = {
+    monitors = lib.mkOption {
+      default = { };
+      description = ''
+        sway monitor setup
+      '';
+    };
+  };
   config = {
     programs.swaylock = {
       enable = true;
@@ -62,6 +71,22 @@ in
       wrapperFeatures.gtk = true;
       extraOptions = [ "--unsupported-gpu" ];
       config = {
+        output = builtins.mapAttrs
+          (
+            name: value: builtins.removeAttrs value [ "workspace" ]
+          )
+          cfg.monitors;
+        workspaceOutputAssign = builtins.attrValues
+          (
+            builtins.mapAttrs
+              (
+                name: value: {
+                  output = name;
+                  workspace = value.workspace;
+                }
+              )
+              cfg.monitors
+          );
         modifier = mod;
         terminal = "alacritty";
         menu = "wofi --show drun";
