@@ -13,5 +13,6 @@
     })
     winetricks
     melonDS
+    prismlauncher
   ];
 }

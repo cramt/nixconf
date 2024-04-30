@@ -51,7 +51,6 @@
 
   home.sessionVariables = {
     FLAKE = "${config.home.homeDirectory}/nixconf";
-    NIXOS_OZONE_WL = "1";
   };
   home.sessionPath = [
     "/home/cramt/.local/share/gem/ruby/3.1.0/bin"

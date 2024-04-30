@@ -11,7 +11,6 @@
   boot = {
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
-    kernelParams = [ "nvidia_drm.fbdev=1" "nvidia_drm.modeset=1" ];
   };
 
   security.polkit.enable = true;

@@ -59,9 +59,7 @@
     enableDefaultPackages = true;
   };
 
-  environment.sessionVariables = {
-    NIXOS_OZONE_WL = "1";
-  };
+  environment.sessionVariables = { };
   # battery
   services.upower.enable = true;
 }

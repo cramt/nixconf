@@ -18,6 +18,9 @@ in
     };
   };
   config = {
+    boot = {
+      kernelParams = [ "nvidia_drm.fbdev=1" "nvidia_drm.modeset=1" ];
+    };
     environment.sessionVariables = {
       WLR_RENDERER = "vulkan";
       WLR_NO_HARDWARE_CURSORS = "1";
