@@ -19,12 +19,16 @@ in
   };
   config = {
     boot = {
+      initrd.kernelModules = [ "nvidia" ];
       kernelParams = [ "nvidia_drm.fbdev=1" "nvidia_drm.modeset=1" ];
+      blacklistedKernelModules = [ "nouveau" ];
     };
     environment.sessionVariables = {
       WLR_RENDERER = "vulkan";
       WLR_NO_HARDWARE_CURSORS = "1";
       XWAYLAND_NO_GLAMOR = "1";
+      __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+      LIBVA_DRIVER_NAME = "nvidia";
     };
     hardware.opengl = {
       enable = true;
@@ -32,6 +36,8 @@ in
       driSupport32Bit = true;
       extraPackages = with pkgs; [
         vulkan-validation-layers
+        rocm-opencl-icd
+        rocm-opencl-runtime
       ];
     };
 
