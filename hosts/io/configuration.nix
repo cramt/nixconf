@@ -8,9 +8,11 @@
       inputs.disko.nixosModules.default
     ];
 
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot = {
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
+    kernelParams = [ "nvidia_drm.fbdev=1" "nvidia_drm.modeset=1" ];
+  };
 
   security.polkit.enable = true;
 
