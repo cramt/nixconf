@@ -7,7 +7,10 @@
     dxvk
     gamescope
     mangohud
-    wineWowPackages.staging
+    (wineWowPackages.full.override {
+      wineRelease = "staging";
+      mingwSupport = true;
+    })
     winetricks
     melonDS
   ];

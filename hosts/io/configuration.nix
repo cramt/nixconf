@@ -17,6 +17,7 @@
   myNixOS = {
     gnupg.enable = true;
     nvidia.enable = true;
+    nvidia.package_version = "patch";
     qemu.enable = true;
     bundles.general.enable = true;
     steam.enable = true;
