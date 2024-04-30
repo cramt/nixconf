@@ -29,6 +29,8 @@ in
       XWAYLAND_NO_GLAMOR = "1";
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";
       LIBVA_DRIVER_NAME = "nvidia";
+      __NV_PRIME_RENDER_OFFLOAD = "1";
+      __VK_LAYER_NV_optimus = "NVIDIA_only";
     };
     hardware.opengl = {
       enable = true;
@@ -38,6 +40,7 @@ in
         vulkan-validation-layers
         rocm-opencl-icd
         rocm-opencl-runtime
+        vaapiVdpau
       ];
     };
 
