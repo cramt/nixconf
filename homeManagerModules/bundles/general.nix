@@ -47,6 +47,7 @@
     cargo
     rustc
     nh
+    just
   ];
 
   home.sessionVariables = {

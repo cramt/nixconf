@@ -32,6 +32,9 @@ in
         commit = {
           gpgsign = true;
         };
+        push = {
+          autoSetupRemote = true;
+        };
       };
     };
   };
