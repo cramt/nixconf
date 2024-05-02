@@ -32,6 +32,7 @@ in
       __NV_PRIME_RENDER_OFFLOAD = "1";
       __NV_PRIME_RENDER_OFFLOAD_PROVIDER = "NVIDIA-G0";
       __VK_LAYER_NV_optimus = "NVIDIA_only";
+      DRI_PRIME = "1";
     };
     hardware.opengl = {
       enable = true;
