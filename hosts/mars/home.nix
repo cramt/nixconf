@@ -87,8 +87,8 @@
         workspace = "2";
       };
       DP-6 = {
-        pos = "-5600 -2600";
-        res = "3840x2160";
+        pos = "-4880 -2600";
+        res = "2560x1440";
         transform = "270";
         workspace = "3";
       };
