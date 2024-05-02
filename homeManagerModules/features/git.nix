@@ -22,9 +22,39 @@ in
       enable = true;
       userName = "Alexandra Østermark";
       userEmail = "alex.cramt@gmail.com";
-      aliases = {
-        cmp = "!${cmpScript}/bin/git_cmp";
-      };
+      aliases = lib.mkMerge
+        (
+          [
+            {
+              cmp = "!${cmpScript}/bin/git_cmp";
+            }
+          ] ++ (
+            builtins.map
+              (v: { ${v} = "town ${v}"; })
+              [
+                "hack"
+                "sync"
+                "switch"
+                "propose"
+                "continue"
+                "skip"
+                "status"
+                "undo"
+                "append"
+                "prepend"
+                "set-parent"
+                "diff-parent"
+                "contribute"
+                "observe"
+                "park"
+                "compress"
+                "kill"
+                "rename-branch"
+                "repo"
+                "ship"
+              ]
+          )
+        );
       extraConfig = {
         user = {
           signingKey = cfg.signingKey;
@@ -37,5 +67,8 @@ in
         };
       };
     };
+    home.packages = with pkgs; [
+      git-town
+    ];
   };
 }
