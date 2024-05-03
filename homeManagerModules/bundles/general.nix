@@ -50,6 +50,7 @@
     nh
     just
     luajit
+    luajitPackages.luarocks
   ];
 
   home.sessionVariables = {
