@@ -46,7 +46,7 @@
       ubuntu_font_family
       powerline-fonts
       powerline-symbols
-
+      corefonts
     ];
     fontconfig = {
       defaultFonts = {
