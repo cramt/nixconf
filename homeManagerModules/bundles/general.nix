@@ -21,6 +21,7 @@
     zsh.enable = true;
     ssh.enable = true;
     git.enable = true;
+    nix-index.enable = true;
     starship.enable = true;
   };
 
@@ -48,6 +49,7 @@
     rustc
     nh
     just
+    luajit
   ];
 
   home.sessionVariables = {
