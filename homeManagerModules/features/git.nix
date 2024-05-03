@@ -27,6 +27,7 @@ in
           [
             {
               cmp = "!${cmpScript}/bin/git_cmp";
+              tswitch = "town switch";
             }
           ] ++ (
             builtins.map
@@ -34,7 +35,6 @@ in
               [
                 "hack"
                 "sync"
-                "switch"
                 "propose"
                 "continue"
                 "skip"
