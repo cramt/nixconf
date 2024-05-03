@@ -82,12 +82,12 @@
         workspace = "1";
       };
       HDMI-A-1 = {
-        pos = "-3440 -800";
+        pos = "-3440 -900";
         res = "3440x1440";
         workspace = "2";
       };
       DP-6 = {
-        pos = "-4880 -2600";
+        pos = "-4880 -1500";
         res = "2560x1440";
         transform = "270";
         workspace = "3";
