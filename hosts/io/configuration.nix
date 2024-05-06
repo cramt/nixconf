@@ -38,6 +38,8 @@
 
   networking.networkmanager.enable = true;
 
+  programs.nix-ld.enable = true;
+
   nixpkgs = {
     overlays = [
       inputs.nur.overlay

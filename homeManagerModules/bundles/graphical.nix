@@ -11,6 +11,7 @@
     nwg-launchers
     adwaita-qt
     gimp
+    libsForQt5.okular
   ];
 
   myHomeManager = {

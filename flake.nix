@@ -45,6 +45,10 @@
     persist-retro.url = "github:Geometer1729/persist-retro";
 
     nur.url = "github:nix-community/NUR";
+
+
+    nix-ld.url = "github:Mic92/nix-ld";
+    nix-ld.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { ... } @ inputs:

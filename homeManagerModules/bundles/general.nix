@@ -23,6 +23,7 @@
     git.enable = true;
     nix-index.enable = true;
     starship.enable = true;
+    java.enable = true;
   };
 
   home.packages = with pkgs; [
