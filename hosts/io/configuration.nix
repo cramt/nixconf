@@ -17,11 +17,10 @@
 
   myNixOS = {
     gnupg.enable = true;
-    nvidia.enable = true;
-    nvidia.package_version = "patch";
     qemu.enable = true;
     bundles.general.enable = true;
     steam.enable = true;
+    amd.enable = true;
     bundles.users.enable = true;
 
     home-users = {
@@ -43,7 +42,6 @@
   nixpkgs = {
     overlays = [
       inputs.nur.overlay
-      (import ./../../patches/wlroots-nvidia.nix)
     ];
     config = {
       allowUnfree = true;
