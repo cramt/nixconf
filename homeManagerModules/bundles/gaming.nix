@@ -15,4 +15,8 @@
     melonDS
     prismlauncher
   ];
+
+  myHomeManager = {
+    wowup.enable = true;
+  };
 }
