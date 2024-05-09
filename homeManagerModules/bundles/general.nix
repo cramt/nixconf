@@ -50,12 +50,14 @@
     rustc
     nh
     just
+    stdenv.cc.cc.lib
     luajit
     luajitPackages.luarocks
   ];
 
   home.sessionVariables = {
     FLAKE = "${config.home.homeDirectory}/nixconf";
+    LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
   };
   home.sessionPath = [
     "/home/cramt/.local/share/gem/ruby/3.1.0/bin"
