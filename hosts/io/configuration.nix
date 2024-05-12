@@ -14,6 +14,8 @@
   };
 
   security.polkit.enable = true;
+  
+  boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
   myNixOS = {
     gnupg.enable = true;
