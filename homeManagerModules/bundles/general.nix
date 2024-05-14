@@ -1,6 +1,7 @@
 { pkgs
 , config
 , inputs
+, lib
 , ...
 }: {
   imports = [
@@ -58,7 +59,7 @@
 
   home.sessionVariables = {
     FLAKE = "${config.home.homeDirectory}/nixconf";
-    LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
+    LD_LIBRARY_PATH = "${lib.makeLibraryPath (with pkgs; [ libyaml stdenv.cc.cc.lib ])}";
   };
   home.sessionPath = [
     "/home/cramt/.local/share/gem/ruby/3.1.0/bin"
