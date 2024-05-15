@@ -45,6 +45,8 @@
     lazygit
     wget
     nodejs_20
+    yarn
+    nodePackages.pnpm
     (inputs.nixpkgs-stable.legacyPackages.${"x86_64-linux"}.ruby) #TODO: do better
     unzip
     cargo
