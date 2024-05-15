@@ -25,6 +25,7 @@
     nix-index.enable = true;
     starship.enable = true;
     java.enable = true;
+    nushell.enable = true;
   };
 
   home.packages = with pkgs; [
