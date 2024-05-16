@@ -14,6 +14,7 @@
     winetricks
     melonDS
     prismlauncher
+    heroic
   ];
 
   myHomeManager = {
