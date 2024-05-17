@@ -53,8 +53,12 @@ in
       enable = true;
       timeouts = [
         {
-          timeout = 60 * 10;
+          timeout = 60 * 5;
           command = lockCommand;
+        }
+        {
+          timeout = 60 * 10;
+          command = "systemctl suspend";
         }
       ];
       events = [
