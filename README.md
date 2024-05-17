@@ -1,4 +1,5 @@
 # My nix config
 
 ## Todo
-Additional firefox profiles
+- Additional firefox profiles
+- swaylock hibernate
