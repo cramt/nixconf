@@ -3,7 +3,14 @@
 , inputs
 , lib
 , ...
-}: {
+}:
+let
+  ld_packages = with pkgs; [
+    libyaml
+    stdenv.cc.cc.lib
+  ];
+in
+{
   imports = [
     inputs.nix-colors.homeManagerModules.default
   ];
@@ -40,7 +47,6 @@
     bat
     gnumake
     (hiPrio gcc)
-    clang
     ripgrep
     neofetch
     lazygit
@@ -54,14 +60,14 @@
     rustc
     nh
     just
-    stdenv.cc.cc.lib
     luajit
     luajitPackages.luarocks
-  ];
+    clang
+  ] ++ ld_packages;
 
   home.sessionVariables = {
     FLAKE = "${config.home.homeDirectory}/nixconf";
-    LD_LIBRARY_PATH = "${lib.makeLibraryPath (with pkgs; [ libyaml stdenv.cc.cc.lib ])}";
+    LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
   };
   home.sessionPath = [
     "/home/cramt/.local/share/gem/ruby/3.1.0/bin"
