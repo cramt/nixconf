@@ -14,27 +14,33 @@
         tree = "${pkgs.eza}/bin/eza --color=auto --tree";
         ssh_jump = "ssh ao@161.35.219.109 -A";
       };
+      plugins = [
+        {
+          name = "zsh-syntax-highlighting";
+          src = pkgs.zsh-syntax-highlighting;
+        }
+        {
+          name = "zsh-completions";
+          src = pkgs.zsh-completions;
+        }
+        {
+          name = "zsh-vi-mode";
+          src = pkgs.zsh-vi-mode;
+        }
+        {
+          name = "zsh-autosuggestions";
+          src = pkgs.zsh-autosuggestions;
+        }
+      ];
+      oh-my-zsh.enable = true;
+      syntaxHighlighting.enable = true;
       initExtra = ''
         if [[ -z "''${SSH_AGENT_PID}" ]]
         then
           eval `ssh-agent -s` > /dev/null
         fi
 
-        # PLUGINS (whatever)
-        [ -f "$HOME/.local/share/zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh" ] && \
-        source "$HOME/.local/share/zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh"
-
-        [ -f "$HOME/.local/share/zsh/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ] && \
-        source "$HOME/.local/share/zsh/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-
         ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#${config.colorScheme.colors.base03}"
-        bindkey '^ ' autosuggest-accept
-
-        [ -f "$HOME/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh" ] && \
-        source "$HOME/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-        [ -f "$HOME/.local/share/zsh/nix-zsh-completions/nix.plugin.zsh" ] && \
-        source "$HOME/.local/share/zsh/nix-zsh-completions/nix.plugin.zsh"
 
         bios_reboot() {
           systemctl reboot --firmware-setup
