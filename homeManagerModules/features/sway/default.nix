@@ -10,6 +10,8 @@ let
     pkill swaybg
     swaybg -i ${backgroundImage} -m fit &
   '';
+  swayrCommand = "${pkgs.swayr}/bin/swayr";
+  execSwayr = "exec ${swayrCommand}";
 in
 {
   options.myHomeManager.sway = {
@@ -21,7 +23,6 @@ in
     };
   };
   config = {
-
     home.sessionVariables = {
       WLR_RENDERER = "vulkan";
       WLR_NO_HARDWARE_CURSORS = "1";
@@ -48,6 +49,10 @@ in
         layout-text-color = "#eceff4";
         line-wrong-color = "#d08770";
       };
+    };
+    programs.swayr = {
+      enable = true;
+      systemd.enable = true;
     };
     services.swayidle = {
       enable = true;
@@ -121,7 +126,9 @@ in
           {
             "print" = "exec grimshot --notify copy area";
             "${mod}+q" = "kill";
+            "${mod}+x" = "exec ${pkgs.sway-easyfocus}/bin/sway-easyfocus";
             "${mod}+f1" = "exec ${lockCommand}";
+            "${mod}+tab" = "${execSwayr} switch-to-urgent-or-lru-window";
           };
         bars = [
           {
@@ -173,12 +180,14 @@ in
         };
       };
     };
+    xdg.configFile."sway-easyfocus/config.yaml".source = ./easyfocus-config.yaml;
 
     myHomeManager.wofi.enable = lib.mkDefault
       true;
     myHomeManager.waybar.enable = lib.mkDefault
       true;
     home.packages = with pkgs; [
+      sway-easyfocus
       sway-contrib.grimshot
       wl-clipboard
       eww
