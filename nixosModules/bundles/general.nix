@@ -30,25 +30,49 @@
     jack.enable = true;
   };
   hardware.pulseaudio.enable = false;
-  stylix.image = ../../media/Abstract.jpg;
+  stylix = {
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/porple.yaml";
+    image = ../../media/pattern.jpg;
+    cursor = {
+      package = pkgs.bibata-cursors;
+      name = "Bibata-Modern-Ice";
+    };
+    fonts = {
+      monospace = {
+        package = pkgs.nerdfonts.override {
+          fonts = [ "JetBrainsMono" ];
+        };
+        name = "JetBrainsMono Nerd Font Mono";
+      };
+      sansSerif = {
+        package = pkgs.dejavu_fonts;
+        name = "DejaVu Sans";
+      };
+      serif = {
+        package = pkgs.dejavu_fonts;
+        name = "DejaVu Serif";
+      };
+    };
+  };
 
   fonts = {
-    packages = with pkgs; [
-      nerdfonts
-      cm_unicode
-      corefonts
-      noto-fonts
-      noto-fonts-cjk
-      noto-fonts-emoji
-      font-awesome
-      source-han-sans
-      source-han-sans-japanese
-      source-han-serif-japanese
-      ubuntu_font_family
-      powerline-fonts
-      powerline-symbols
-      corefonts
-    ];
+    packages = with pkgs;
+      [
+        nerdfonts
+        cm_unicode
+        corefonts
+        noto-fonts
+        noto-fonts-cjk
+        noto-fonts-emoji
+        font-awesome
+        source-han-sans
+        source-han-sans-japanese
+        source-han-serif-japanese
+        ubuntu_font_family
+        powerline-fonts
+        powerline-symbols
+        corefonts
+      ];
     fontconfig = {
       defaultFonts = {
         sansSerif = [ "Nerd Font" ];
