@@ -47,9 +47,12 @@
 
     nur.url = "github:nix-community/NUR";
 
+    nix-ld = {
+      url = "github:Mic92/nix-ld";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    nix-ld.url = "github:Mic92/nix-ld";
-    nix-ld.inputs.nixpkgs.follows = "nixpkgs";
+    stylix.url = "github:danth/stylix";
   };
 
   outputs = { ... } @ inputs:
@@ -63,10 +66,6 @@
         terra = mkSystem ./hosts/terra/configuration.nix;
         io = mkSystem ./hosts/io/configuration.nix;
         mars = mkSystem ./hosts/mars/configuration.nix;
-      };
-
-      homeConfigurations = {
-        "cramt@terra" = mkHome "x86_64-linux" ./hosts/terra/home.nix;
       };
 
       homeManagerModules.default = ./homeManagerModules;

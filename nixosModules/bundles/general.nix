@@ -30,6 +30,7 @@
     jack.enable = true;
   };
   hardware.pulseaudio.enable = false;
+  stylix.image = ../../media/Abstract.jpg;
 
   fonts = {
     packages = with pkgs; [

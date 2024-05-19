@@ -125,6 +125,5 @@ in
   programs.waybar = {
     enable = true;
     settings = { mainBar = mainWaybarConfig; };
-    style = builtins.readFile ./style.css;
   };
 }
