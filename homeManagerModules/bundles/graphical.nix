@@ -9,7 +9,6 @@
     kitty
     brightnessctl
     pavucontrol
-    nwg-launchers
     adwaita-qt
     gimp
     libsForQt5.okular

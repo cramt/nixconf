@@ -9,6 +9,15 @@ let
     pkill swaybg
     swaybg -i ${backgroundImage} -m fit &
   '';
+  rofiMonitor = pkgs.writeShellScriptBin "rofi_monitor" ''
+    monitor="$(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq '[.[].focused] | index(true)')"
+    rofi $@
+  '';
+  rofiGeneric = pkgs.writeShellScriptBin "rofi_generic" ''
+    ${rofiMonitor}/bin/rofi_monitor -show $(echo "calc,emoji,powermenu,top" | rofi -sep ',' -dmenu)
+  '';
+  rofiCommand = "${rofiMonitor}/bin/rofi_monitor -show drun";
+  rofiGenericCommand = "${rofiGeneric}/bin/rofi_generic";
   swayrCommand = "${pkgs.swayr}/bin/swayr";
   execSwayr = "exec ${swayrCommand}";
 in
@@ -91,7 +100,7 @@ in
           );
         modifier = mod;
         terminal = "alacritty";
-        menu = "wofi --show drun";
+        menu = rofiCommand;
         defaultWorkspace = "1";
         window = {
           border = 2;
@@ -113,6 +122,7 @@ in
           {
             "print" = "exec grimshot --notify copy area";
             "${mod}+q" = "kill";
+            "${mod}+shift+d" = "exec ${rofiGenericCommand}";
             "${mod}+x" = "exec ${pkgs.sway-easyfocus}/bin/sway-easyfocus";
             "${mod}+f1" = "exec ${lockCommand}";
             "${mod}+tab" = "${execSwayr} switch-to-urgent-or-lru-window";
@@ -131,18 +141,14 @@ in
     };
     xdg.configFile."sway-easyfocus/config.yaml".source = ./easyfocus-config.yaml;
 
-    myHomeManager.wofi.enable = lib.mkDefault
-      true;
-    myHomeManager.waybar.enable = lib.mkDefault
-      true;
+    myHomeManager.rofi.enable = true;
+    myHomeManager.waybar.enable = true;
     home.packages = with pkgs; [
       sway-easyfocus
       sway-contrib.grimshot
       wl-clipboard
       eww
       networkmanagerapplet
-      wofi
-      waybar
       swaybg
     ];
   };

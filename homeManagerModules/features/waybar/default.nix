@@ -131,7 +131,7 @@ let
 
     "custom/power" = {
       format = "⏻";
-      on-click = "${pkgs.nwg-launchers}/bin/nwgbar";
+      on-click = "rofi -show powermenu";
       tooltip = false;
     };
   };
