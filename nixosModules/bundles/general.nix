@@ -1,7 +1,16 @@
 { pkgs
 , lib
 , ...
-}: {
+}:
+let
+  stylixAsset = ../../media/cosmere.mp4;
+  stylixAssetFirstFrame = pkgs.runCommand "stylix_asset_first_frame" { } ''
+    mkdir -p $out
+    ${pkgs.ffmpeg}/bin/ffmpeg -i ${stylixAsset} -vf "select=eq(n\,0)" $out/output-%03d.png
+    mv $out/output-*.png $out/output.png
+  '';
+in
+{
   time.timeZone = "Europe/Copenhagen";
 
   # Select internationalisation properties.
@@ -31,8 +40,9 @@
   };
   hardware.pulseaudio.enable = false;
   stylix = {
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/porple.yaml";
-    image = ../../media/pattern.jpg;
+    #base16Scheme = "${pkgs.base16-schemes}/share/themes/porple.yaml";
+    polarity = "dark";
+    image = "${stylixAssetFirstFrame}/output.png";
     cursor = {
       package = pkgs.bibata-cursors;
       name = "Bibata-Modern-Ice";

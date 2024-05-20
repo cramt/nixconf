@@ -3,12 +3,28 @@
 let
   cfg = config.myHomeManager.sway;
   mod = "Mod4";
-  lockCommand = "${pkgs.swaylock}/bin/swaylock";
-  backgroundImage = ./../../../media/pattern.jpg;
+  backgroundAsset = ./../../../media/cosmere.mp4;
+  screenSpecificVideos = builtins.mapAttrs
+    (
+      name: value:
+        let
+          res = lib.strings.stringAsChars (x: if x == "x" then ":" else x) value.res;
+        in
+        (pkgs.runCommand "screen_specific_videos" { } ''
+          mkdir -p $out
+          ${pkgs.ffmpeg}/bin/ffmpeg -i ${backgroundAsset} -vf "scale=${res}" $out/output.mp4
+        '')
+    )
+    cfg.monitors;
   setBackground = pkgs.writeShellScriptBin "set_background" ''
-    pkill swaybg
-    swaybg -i ${backgroundImage} -m fit &
+    sleep 1
+    pkill swaybg #stylix sets the wallpapir like a dumbdumb
+    pkill mpvpaper 
+    ${lib.strings.concatStringsSep "\n" (lib.attrsets.mapAttrsToList (
+      name: value: "${pkgs.mpvpaper}/bin/mpvpaper -f '${name}' ${value}/output.mp4"
+    ) screenSpecificVideos)}
   '';
+  lockCommand = "${pkgs.swaylock}/bin/swaylock";
   rofiMonitor = pkgs.writeShellScriptBin "rofi_monitor" ''
     monitor="$(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq '[.[].focused] | index(true)')"
     rofi $@
@@ -84,7 +100,7 @@ in
       config = {
         output = builtins.mapAttrs
           (
-            name: value: builtins.removeAttrs value [ "workspace" ]
+            name: value: (builtins.removeAttrs value [ "workspace" ])
           )
           cfg.monitors;
         workspaceOutputAssign = builtins.attrValues
@@ -98,6 +114,7 @@ in
               )
               cfg.monitors
           );
+
         modifier = mod;
         terminal = "alacritty";
         menu = rofiCommand;
@@ -149,7 +166,6 @@ in
       wl-clipboard
       eww
       networkmanagerapplet
-      swaybg
     ];
   };
 }

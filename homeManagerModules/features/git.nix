@@ -22,6 +22,7 @@ in
       enable = true;
       userName = "Alexandra Østermark";
       userEmail = "alex.cramt@gmail.com";
+      lfs.enable = true;
       aliases = lib.mkMerge
         (
           [
