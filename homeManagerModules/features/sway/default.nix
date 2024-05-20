@@ -21,7 +21,7 @@ let
     pkill swaybg #stylix sets the wallpapir like a dumbdumb
     pkill mpvpaper 
     ${lib.strings.concatStringsSep "\n" (lib.attrsets.mapAttrsToList (
-      name: value: "${pkgs.mpvpaper}/bin/mpvpaper -f '${name}' ${value}/output.mp4"
+      name: value: "${pkgs.mpvpaper}/bin/mpvpaper -o \"--loop\" -f '${name}' ${value}/output.mp4"
     ) screenSpecificVideos)}
   '';
   lockCommand = "${pkgs.swaylock}/bin/swaylock";

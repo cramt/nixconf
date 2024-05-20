@@ -40,9 +40,9 @@ in
   };
   hardware.pulseaudio.enable = false;
   stylix = {
-    #base16Scheme = "${pkgs.base16-schemes}/share/themes/porple.yaml";
     polarity = "dark";
     image = "${stylixAssetFirstFrame}/output.png";
+    opacity.terminal = 0.6;
     cursor = {
       package = pkgs.bibata-cursors;
       name = "Bibata-Modern-Ice";
