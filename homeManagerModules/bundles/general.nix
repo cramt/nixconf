@@ -32,6 +32,7 @@ in
     nix-index.enable = true;
     starship.enable = true;
     java.enable = true;
+    vesktop.enable = true;
     nushell.enable = true;
   };
 
@@ -40,7 +41,6 @@ in
     gnupg
     nushell
     zellij
-    vesktop
     htop
     eza
     zoxide
