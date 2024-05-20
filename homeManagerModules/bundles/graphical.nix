@@ -8,6 +8,7 @@
     alacritty
     kitty
     brightnessctl
+    pavucontrol
     nwg-launchers
     adwaita-qt
     gimp
