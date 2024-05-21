@@ -68,6 +68,7 @@ in
   home.sessionVariables = {
     FLAKE = "${config.home.homeDirectory}/nixconf";
     LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
+    NVIM_APPNAME = "astronvim";
   };
   home.sessionPath = [
     "/home/cramt/.local/share/gem/ruby/3.1.0/bin"
