@@ -139,7 +139,7 @@ in
 {
   config = {
     stylix.targets.waybar = {
-      enableLeftBackColors = true;
+      enableLeftBackColors = false;
       enableRightBackColors = true;
     };
     programs.waybar = {

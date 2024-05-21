@@ -1,5 +1,6 @@
 { pkgs, ... }: {
   config = {
+  xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
     stylix.targets.nixvim.enable = false;
     stylix.targets.vim.enable = false;
     programs.neovim = {
