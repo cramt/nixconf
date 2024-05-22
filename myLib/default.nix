@@ -22,7 +22,6 @@ rec {
       modules = [
         config
         outputs.nixosModules.default
-        inputs.stylix.nixosModules.stylix
       ];
     };
 

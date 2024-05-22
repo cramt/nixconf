@@ -42,7 +42,7 @@ in
   stylix = {
     polarity = "dark";
     image = "${stylixAssetFirstFrame}/output.png";
-    opacity.terminal = 0.6;
+    opacity.terminal = 0.8;
     cursor = {
       package = pkgs.bibata-cursors;
       name = "Bibata-Modern-Ice";
