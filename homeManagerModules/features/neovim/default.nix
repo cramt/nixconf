@@ -1,4 +1,9 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+let
+  toLua = str: "lua << EOF\n${str}\nEOF\n";
+  toLuaFile = file: toLua (builtins.readFile file);
+in
+{
   config = {
     xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
     home.packages = with pkgs; [
@@ -21,6 +26,7 @@
         number = true;
         shiftwidth = 2;
         tabstop = 2;
+        expandtab = true;
       };
       clipboard = {
         providers.wl-copy.enable = true;
@@ -92,6 +98,7 @@
               };
             };
             solargraph.enable = true;
+            lua-ls.enable = true;
           };
         };
         neorg = {
@@ -115,8 +122,29 @@
         lsp-lines = {
           enable = true;
         };
-        lightline = {
+        fugitive = {
           enable = true;
+        };
+        lualine = {
+          enable = true;
+          globalstatus = true;
+          sections = {
+            lualine_x = [ "filetype" ];
+          };
+          tabline = {
+            lualine_a = [
+              {
+                name = "buffers";
+                extraConfig = {
+                  symbols = {
+                    modified = "●";
+                    directory = "";
+                    alternate_file = "";
+                  };
+                };
+              }
+            ];
+          };
         };
         treesitter = {
           enable = true;
