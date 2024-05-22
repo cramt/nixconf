@@ -8,11 +8,12 @@ let
     (
       name: value:
         let
-          res = lib.strings.stringAsChars (x: if x == "x" then ":" else x) value.res;
+          res = "${value.res.width}:${value.res.height}";
         in
         (pkgs.runCommand "screen_specific_videos" { } ''
           mkdir -p $out
-          ${pkgs.ffmpeg}/bin/ffmpeg -i ${backgroundAsset} -vf "scale=${res}" $out/output.mp4
+
+          ${pkgs.ffmpeg}/bin/ffmpeg -i ${backgroundAsset} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}" $out/output.mp4
         '')
     )
     cfg.monitors;
@@ -100,7 +101,9 @@ in
       config = {
         output = builtins.mapAttrs
           (
-            name: value: (builtins.removeAttrs value [ "workspace" ])
+            name: value: ((builtins.removeAttrs value [ "workspace" ]) // {
+              res = "${value.res.width}x${value.res.height}";
+            })
           )
           cfg.monitors;
         workspaceOutputAssign = builtins.attrValues

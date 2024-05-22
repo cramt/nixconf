@@ -76,17 +76,26 @@
     sway.monitors = {
       eDP-1 = {
         pos = "0 0";
-        res = "1920x1200";
+        res = {
+          width = 1920;
+          height = 1200;
+        };
         workspace = "1";
       };
       HDMI-A-1 = {
         pos = "-3440 -900";
-        res = "3440x1440";
+        res = {
+          width = 3440;
+          height = 1440;
+        };
         workspace = "2";
       };
       DP-6 = {
         pos = "-4880 -1500";
-        res = "2560x1440";
+        res = {
+          width = 2560;
+          height = 1440;
+        };
         transform = "270";
         workspace = "3";
       };

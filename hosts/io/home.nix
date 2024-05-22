@@ -17,13 +17,19 @@
     sway.monitors = {
       DP-2 = {
         pos = "0 0";
-        res = "1920x1080";
+        res = {
+          width = 1920;
+          height = 1080;
+        };
         workspace = "1";
         max_render_time = "5";
       };
       HDMI-A-1 = {
         pos = "1920 0";
-        res = "1680x1050";
+        res = {
+          width = 1680;
+          height = 1050;
+        };
         workspace = "2";
         max_render_time = "5";
       };
