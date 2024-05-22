@@ -1,8 +1,4 @@
-{ pkgs, inputs, ... }:
-let
-  toLua = str: "lua << EOF\n${str}\nEOF\n";
-in
-{
+{ pkgs, ... }: {
   config = {
     xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
     home.packages = with pkgs; [
@@ -23,7 +19,8 @@ in
           eob = " ";
         };
         number = true;
-
+        shiftwidth = 2;
+        tabstop = 2;
       };
       clipboard = {
         providers.wl-copy.enable = true;
@@ -57,9 +54,18 @@ in
         {
           mode = "n";
           key = "<leader>e";
-          action = "<Cmd>Neotree toggle<CR>";
+          lua = true;
+          action = ''
+            function()
+            	if vim.bo.filetype == "neo-tree" then
+            		vim.cmd.wincmd "p"
+            	else
+            		vim.cmd.Neotree "focus"
+            	end
+            end
+          '';
           options = {
-            desc = "Toggle explorer";
+            desc = "Open explorer";
           };
         }
         {
@@ -109,8 +115,7 @@ in
         lsp-lines = {
           enable = true;
         };
-        # TODO: switch to airline once the themeing works
-        bufferline = {
+        lightline = {
           enable = true;
         };
         treesitter = {
