@@ -8,13 +8,14 @@ let
     (
       name: value:
         let
-          res = "${value.res.width}:${value.res.height}";
+          res = "${toString value.res.width}:${toString value.res.height}";
         in
         (pkgs.runCommand "screen_specific_videos" { } ''
           mkdir -p $out
 
           ${pkgs.ffmpeg}/bin/ffmpeg -i ${backgroundAsset} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}" $out/output.mp4
         '')
+
     )
     cfg.monitors;
   setBackground = pkgs.writeShellScriptBin "set_background" ''
@@ -102,7 +103,7 @@ in
         output = builtins.mapAttrs
           (
             name: value: ((builtins.removeAttrs value [ "workspace" ]) // {
-              res = "${value.res.width}x${value.res.height}";
+              res = "${toString value.res.width}x${toString value.res.height}";
             })
           )
           cfg.monitors;
