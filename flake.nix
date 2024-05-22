@@ -56,9 +56,10 @@
 
     nixvim = {
       url = "github:nix-community/nixvim";
-
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    neorg-overlay.url = "github:nvim-neorg/nixpkgs-neorg-overlay";
   };
 
   outputs = { ... } @ inputs:
@@ -78,3 +79,4 @@
       nixosModules.default = ./nixosModules;
     };
 }
+

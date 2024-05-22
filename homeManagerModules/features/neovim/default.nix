@@ -1,4 +1,8 @@
-{ pkgs, ... }: {
+{ pkgs, inputs, ... }:
+let
+  toLua = str: "lua << EOF\n${str}\nEOF\n";
+in
+{
   config = {
     xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
     home.packages = with pkgs; [
@@ -7,15 +11,19 @@
 
     programs.nixvim = {
       enable = true;
+      extraConfigLua = ''
+        ${builtins.readFile ./config.lua}
+      '';
       globals = {
         mapleader = " ";
         neovide_transparency = 0.8;
-        number = true;
       };
       globalOpts = {
-	fillchars = {
-	  eob = " ";
+        fillchars = {
+          eob = " ";
         };
+        number = true;
+
       };
       clipboard = {
         providers.wl-copy.enable = true;
@@ -54,22 +62,58 @@
             desc = "Toggle explorer";
           };
         }
+        {
+          mode = "v";
+          key = "<Tab>";
+          action = ">gv";
+        }
+        {
+          mode = "v";
+          key = "<S-Tab>";
+          action = "<gv";
+        }
       ];
       plugins = {
         lsp = {
           enable = true;
           servers = {
-            nil_ls.enable = true;
+            nil_ls = {
+              enable = true;
+              settings = {
+                formatting = {
+                  command = [ "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt" ];
+                };
+              };
+            };
             solargraph.enable = true;
           };
         };
-	lsp-format = {
-	  enable = true;
-	};
-	lsp-lines= {
-	  enable = true;
-	};
+        neorg = {
+          enable = true;
+          modules = {
+            "core.defaults" = {
+              __empty = null;
+            };
+            "core.dirman" = {
+              config = {
+                workspaces = {
+                  notes = "~/notes";
+                };
+              };
+            };
+          };
+        };
+        lsp-format = {
+          enable = true;
+        };
+        lsp-lines = {
+          enable = true;
+        };
+        # TODO: switch to airline once the themeing works
         bufferline = {
+          enable = true;
+        };
+        treesitter = {
           enable = true;
         };
         cmp = {
@@ -86,6 +130,13 @@
         };
         telescope = {
           enable = true;
+          extraOptions = {
+            pickers = {
+              find_files = {
+                theme = "ivy";
+              };
+            };
+          };
           keymaps = {
             "<Leader>ff" = {
               mode = "n";

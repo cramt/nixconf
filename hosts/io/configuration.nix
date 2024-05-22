@@ -14,7 +14,7 @@
   };
 
   security.polkit.enable = true;
-  
+
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
   myNixOS = {
@@ -44,6 +44,7 @@
   nixpkgs = {
     overlays = [
       inputs.nur.overlay
+      inputs.neorg-overlay.overlays.default
     ];
     config = {
       allowUnfree = true;
