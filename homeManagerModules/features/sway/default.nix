@@ -17,12 +17,12 @@ let
     )
     cfg.monitors;
   setBackground = pkgs.writeShellScriptBin "set_background" ''
-    sleep 1
-    pkill swaybg #stylix sets the wallpapir like a dumbdumb
     pkill mpvpaper 
     ${lib.strings.concatStringsSep "\n" (lib.attrsets.mapAttrsToList (
       name: value: "${pkgs.mpvpaper}/bin/mpvpaper -o \"--loop\" -f '${name}' ${value}/output.mp4"
     ) screenSpecificVideos)}
+    sleep 1
+    pkill swaybg #stylix sets the wallpapir like a dumbdumb
   '';
   lockCommand = "${pkgs.swaylock}/bin/swaylock";
   rofiMonitor = pkgs.writeShellScriptBin "rofi_monitor" ''
