@@ -22,6 +22,7 @@
           height = 1080;
         };
         workspace = "1";
+        transform = 0;
         max_render_time = "5";
       };
       HDMI-A-1 = {
@@ -31,6 +32,7 @@
           height = 1050;
         };
         workspace = "2";
+        transform = 0;
         max_render_time = "5";
       };
     };
