@@ -28,6 +28,7 @@ in
         shiftwidth = 2;
         tabstop = 2;
         expandtab = true;
+        showmode = false;
       };
       clipboard = {
         providers.wl-copy.enable = true;
@@ -211,6 +212,12 @@ in
               enabled = true;
               leaveDirsOpen = true;
             };
+            filteredItems = {
+              visible = false;
+              hideDotfiles = false;
+              hideGitignored = true;
+              hideByPattern = [ ".git" ];
+            };
           };
         };
         which-key = {
@@ -218,15 +225,35 @@ in
         };
         cmp = {
           enable = true;
+          settings = {
+            sources = [
+              {
+                name = "nvim_lsp";
+              }
+              {
+                name = "buffer";
+              }
+            ];
+            mapping = {
+              "<C-Space>" = "cmp.mapping.complete()";
+              "<C-d>" = "cmp.mapping.scroll_docs(-4)";
+              "<C-e>" = "cmp.mapping.close()";
+              "<C-f>" = "cmp.mapping.scroll_docs(4)";
+              "<CR>" = "cmp.mapping.confirm({ select = true })";
+              "<S-Tab>" = "cmp.mapping(cmp.mapping.select_prev_item(), {'i', 's'})";
+              "<Tab>" = "cmp.mapping(cmp.mapping.select_next_item(), {'i', 's'})";
+            };
+          };
         };
         cmp-nvim-lsp = {
           enable = true;
         };
-        cmp-snippy = {
+        cmp-buffer = {
           enable = true;
         };
         telescope = {
           enable = true;
+          extensions.fzf-native.enable = true;
           extraOptions = {
             pickers = {
               find_files = {
