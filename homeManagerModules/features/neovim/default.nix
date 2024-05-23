@@ -3,6 +3,7 @@ let
   toLua = str: "lua << EOF\n${str}\nEOF\n";
   toLuaFile = file: toLua (builtins.readFile file);
 in
+
 {
   config = {
     xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
@@ -35,6 +36,38 @@ in
       keymaps = [
         {
           mode = "n";
+          key = "<Leader>l";
+          action = "";
+          options = {
+            desc = "LSP";
+          };
+        }
+        {
+          mode = "n";
+          key = "<Leader>la";
+          lua = true;
+          action = ''
+            function() vim.lsp.buf.code_action() end
+          '';
+          options = {
+            desc = "LSP code action";
+            #cond = "testDocument/codeAction";
+          };
+        }
+        {
+          mode = "n";
+          key = "<Leader>lr";
+          lua = true;
+          action = ''
+            function() vim.lsp.buf.rename() end
+          '';
+          options = {
+            desc = "LSP rename";
+            #cond = "testDocument/rename";
+          };
+        }
+        {
+          mode = "n";
           key = "<Leader>w";
           action = "<Cmd>w<CR>";
           options = {
@@ -55,6 +88,22 @@ in
           action = "<cmd>confirm qall<cr>";
           options = {
             desc = "quit neovim";
+          };
+        }
+        {
+          mode = "n";
+          key = "L";
+          action = "<cmd>bnext<cr>";
+          options = {
+            desc = "next buffer";
+          };
+        }
+        {
+          mode = "n";
+          key = "H";
+          action = "<cmd>bnext<cr>";
+          options = {
+            desc = "previous buffer";
           };
         }
         {
@@ -154,6 +203,18 @@ in
         };
         neo-tree = {
           enable = true;
+          buffers = {
+            followCurrentFile = {
+              enabled = true;
+              leaveDirsOpen = true;
+            };
+          };
+          filesystem = {
+            followCurrentFile = {
+              enabled = true;
+              leaveDirsOpen = true;
+            };
+          };
         };
         which-key = {
           enable = true;
@@ -176,6 +237,14 @@ in
               action = "find_files";
               options = {
                 desc = "Find files";
+              };
+            };
+
+            "<Leader>fw" = {
+              mode = "n";
+              action = "live_grep";
+              options = {
+                desc = "Find by words";
               };
             };
           };

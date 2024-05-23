@@ -80,6 +80,7 @@
           width = 1920;
           height = 1200;
         };
+        transform = 0;
         workspace = "1";
       };
       HDMI-A-1 = {
@@ -88,6 +89,7 @@
           width = 3440;
           height = 1440;
         };
+        transform = 0;
         workspace = "2";
       };
       DP-6 = {
@@ -96,7 +98,7 @@
           width = 2560;
           height = 1440;
         };
-        transform = "270";
+        transform = 270;
         workspace = "3";
       };
     };

@@ -9,11 +9,12 @@ let
       name: value:
         let
           res = "${toString value.res.width}:${toString value.res.height}";
+          rotation = lib.concatMapStrings (_: ",transpose=2") (lib.range 1 (value.transform / 90));
         in
         (pkgs.runCommand "screen_specific_videos" { } ''
           mkdir -p $out
 
-          ${pkgs.ffmpeg}/bin/ffmpeg -i ${backgroundAsset} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}" $out/output.mp4
+          ${pkgs.ffmpeg}/bin/ffmpeg -i ${backgroundAsset} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}${rotation}" $out/output.mp4
         '')
 
     )
@@ -104,6 +105,7 @@ in
           (
             name: value: ((builtins.removeAttrs value [ "workspace" ]) // {
               res = "${toString value.res.width}x${toString value.res.height}";
+              transform = toString value.transform;
             })
           )
           cfg.monitors;
