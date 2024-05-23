@@ -101,7 +101,7 @@ in
         {
           mode = "n";
           key = "H";
-          action = "<cmd>bnext<cr>";
+          action = "<cmd>bprev<cr>";
           options = {
             desc = "previous buffer";
           };
@@ -198,9 +198,6 @@ in
         treesitter = {
           enable = true;
         };
-        cmp = {
-          enable = true;
-        };
         neo-tree = {
           enable = true;
           buffers = {
@@ -219,7 +216,13 @@ in
         which-key = {
           enable = true;
         };
+        cmp = {
+          enable = true;
+        };
         cmp-nvim-lsp = {
+          enable = true;
+        };
+        cmp-snippy = {
           enable = true;
         };
         telescope = {
