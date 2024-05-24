@@ -58,12 +58,12 @@ in
         name = "Iosevka Extended";
       };
       sansSerif = {
-        package = pkgs.iosevka.out;
-        name = "Iosevka Extended";
+        package = pkgs.open-sans.out;
+        name = "Open Sans";
       };
       serif = {
-        package = pkgs.iosevka.out;
-        name = "Iosevka Extended";
+        package = pkgs.open-sans.out;
+        name = "Open Sans";
       };
     };
   };
