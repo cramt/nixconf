@@ -49,18 +49,16 @@ in
     };
     fonts = {
       monospace = {
-        package = pkgs.nerdfonts.override {
-          fonts = [ "JetBrainsMono" ];
-        };
-        name = "JetBrainsMono Nerd Font Mono";
+        package = pkgs.iosevka;
+        name = "Iosevka Extended";
       };
       sansSerif = {
         package = pkgs.dejavu_fonts;
-        name = "DejaVu Sans";
+        name = "Iosevka Etoile";
       };
       serif = {
         package = pkgs.dejavu_fonts;
-        name = "DejaVu Serif";
+        name = "Iosevka Etoile";
       };
     };
   };
@@ -83,13 +81,6 @@ in
         powerline-symbols
         corefonts
       ];
-    fontconfig = {
-      defaultFonts = {
-        sansSerif = [ "Nerd Font" ];
-        serif = [ "Nerd Font" ];
-        monospace = [ "Nerd Font Mono" ];
-      };
-    };
 
     enableDefaultPackages = true;
   };

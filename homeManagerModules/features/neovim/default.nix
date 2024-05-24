@@ -19,6 +19,7 @@ in
       globals = {
         mapleader = " ";
         neovide_transparency = 0.8;
+        guifont = "Iosevka Extended";
       };
       globalOpts = {
         fillchars = {
@@ -127,7 +128,8 @@ in
         {
           mode = "n";
           key = "<leader>bc";
-          action = "<Cmd>%bd<BAR>e#<CR>";
+          lua = true;
+          action = "function() MyBufferHelper.close_all(true) end";
           options = {
             desc = "Close all buffers but current #TODO: kills neo tree and i dont want that";
           };
@@ -135,7 +137,8 @@ in
         {
           mode = "n";
           key = "<leader>c";
-          action = "<Cmd>bprevious<CR><Cmd>bdelete #<CR>";
+          lua = true;
+          action = "function() MyBufferHelper.close() end";
           options = {
             desc = "Close current buffer";
           };
@@ -152,6 +155,12 @@ in
         }
       ];
       plugins = {
+        mini = {
+          enable = true;
+          modules = {
+            bufremove = { };
+          };
+        };
         lsp = {
           enable = true;
           servers = {
