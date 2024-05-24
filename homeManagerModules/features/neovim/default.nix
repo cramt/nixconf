@@ -125,6 +125,22 @@ in
           };
         }
         {
+          mode = "n";
+          key = "<leader>bc";
+          action = "<Cmd>%bd<BAR>e#<CR>";
+          options = {
+            desc = "Close all buffers but current #TODO: kills neo tree and i dont want that";
+          };
+        }
+        {
+          mode = "n";
+          key = "<leader>c";
+          action = "<Cmd>bprevious<CR><Cmd>bdelete #<CR>";
+          options = {
+            desc = "Close current buffer";
+          };
+        }
+        {
           mode = "v";
           key = "<Tab>";
           action = ">gv";
