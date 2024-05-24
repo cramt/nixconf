@@ -243,6 +243,7 @@ in
               hideGitignored = true;
               hideByPattern = [ ".git" ];
             };
+            hijackNetrwBehavior = "open_current";
           };
         };
         which-key = {

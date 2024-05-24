@@ -34,6 +34,7 @@ in
     java.enable = true;
     vesktop.enable = true;
     nushell.enable = true;
+    ruby.enable = true;
   };
 
   home.packages = with pkgs; [
@@ -54,7 +55,6 @@ in
     nodejs_20
     yarn
     nodePackages.pnpm
-    (inputs.nixpkgs-stable.legacyPackages.${"x86_64-linux"}.ruby) #TODO: do better
     unzip
     cargo
     rustc
@@ -63,15 +63,12 @@ in
     luajit
     luajitPackages.luarocks
     clang
+    postgresql.out
   ] ++ ld_packages;
 
   home.sessionVariables = {
     FLAKE = "${config.home.homeDirectory}/nixconf";
     LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
-    NVIM_APPNAME = "astronvim";
     NEOVIDE_FORK = "1";
   };
-  home.sessionPath = [
-    "/home/cramt/.local/share/gem/ruby/3.1.0/bin"
-  ];
 }
