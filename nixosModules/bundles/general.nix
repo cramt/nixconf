@@ -54,16 +54,16 @@ in
     };
     fonts = {
       monospace = {
-        package = pkgs.iosevka;
+        package = pkgs.iosevka.out;
         name = "Iosevka Extended";
       };
       sansSerif = {
-        package = pkgs.iosevka;
-        name = "Iosevka Etoile";
+        package = pkgs.iosevka.out;
+        name = "Iosevka Extended";
       };
       serif = {
-        package = pkgs.iosevka;
-        name = "Iosevka Etoile";
+        package = pkgs.iosevka.out;
+        name = "Iosevka Extended";
       };
     };
   };

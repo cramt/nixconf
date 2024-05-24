@@ -3,8 +3,8 @@ let
   mainWaybarConfig = {
     layer = "top";
     position = "top";
-    height = 30;
-    spacing = 4;
+    height = 15;
+    spacing = 8;
 
     modules-left = [
       "sway/workspaces"
