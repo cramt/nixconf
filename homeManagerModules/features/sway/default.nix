@@ -27,7 +27,11 @@ let
     sleep 1
     pkill swaybg #stylix sets the wallpapir like a dumbdumb
   '';
-  lockCommand = "${pkgs.swaylock}/bin/swaylock";
+  lockCommand = "${pkgs.writeShellScriptBin "lock" ''
+    if [[ "$(${pkgs.playerctl}/bin/playerctl status)" == "Paused" ]]; then
+      ${pkgs.swaylock}/bin/swaylock -f
+    fi
+  ''}/bin/lock";
   rofiMonitor = pkgs.writeShellScriptBin "rofi_monitor" ''
     monitor="$(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq '[.[].focused] | index(true)')"
     rofi $@
@@ -50,6 +54,7 @@ in
     };
   };
   config = {
+    services.playerctld.enable = true;
     home.sessionVariables = {
       WLR_RENDERER = "vulkan";
       WLR_NO_HARDWARE_CURSORS = "1";
@@ -73,21 +78,16 @@ in
       enable = true;
       timeouts = [
         {
-          timeout = 60 * 5;
-          command = lockCommand;
+          timeout = 60 * 15;
+          command = "${pkgs.systemd}/bin/systemctl suspend";
         }
         {
           timeout = 60 * 10;
-          command = "systemctl suspend";
-        }
-      ];
-      events = [
-        {
-          event = "before-sleep";
-          command = lockCommand;
+          command = ''${pkgs.sway}/bin/swaymsg "output * dpms off"'';
+          resumeCommand = ''${pkgs.sway}/bin/swaymsg "output * dpms on"'';
         }
         {
-          event = "lock";
+          timeout = 60 * 5;
           command = lockCommand;
         }
       ];
@@ -99,7 +99,6 @@ in
         workspace 1
       '';
       wrapperFeatures.gtk = true;
-      extraOptions = [ "--unsupported-gpu" ];
       config = {
         output = builtins.mapAttrs
           (
@@ -149,6 +148,7 @@ in
             "${mod}+x" = "exec ${pkgs.sway-easyfocus}/bin/sway-easyfocus";
             "${mod}+f1" = "exec ${lockCommand}";
             "${mod}+tab" = "${execSwayr} switch-to-urgent-or-lru-window";
+            "${mod}+Shift+Return" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl play-pause";
           };
         bars = [
           {
