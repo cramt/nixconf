@@ -35,6 +35,21 @@ in
         providers.wl-copy.enable = true;
         register = "unnamedplus";
       };
+      extraPlugins = with pkgs.vimPlugins; [
+        # we wanna setup this manually
+        # aka not with nixvim
+        # cause it breaks neovide transparency
+        {
+          plugin = transparent-nvim;
+          config = toLua ''
+            if not vim.g.neovide then
+              vim.g.transparent_enabled = true
+              require("transparent").setup({})
+            end
+          '';
+        }
+
+      ];
       keymaps = [
         {
           mode = "n";
