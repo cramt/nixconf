@@ -47,9 +47,19 @@
 
     nur.url = "github:nix-community/NUR";
 
+    nix-ld = {
+      url = "github:Mic92/nix-ld";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    nix-ld.url = "github:Mic92/nix-ld";
-    nix-ld.inputs.nixpkgs.follows = "nixpkgs";
+    stylix.url = "github:danth/stylix";
+
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    neorg-overlay.url = "github:nvim-neorg/nixpkgs-neorg-overlay";
   };
 
   outputs = { ... } @ inputs:
@@ -65,11 +75,8 @@
         mars = mkSystem ./hosts/mars/configuration.nix;
       };
 
-      homeConfigurations = {
-        "cramt@terra" = mkHome "x86_64-linux" ./hosts/terra/home.nix;
-      };
-
       homeManagerModules.default = ./homeManagerModules;
       nixosModules.default = ./nixosModules;
     };
 }
+

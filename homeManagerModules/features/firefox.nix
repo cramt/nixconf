@@ -18,7 +18,6 @@ in
               ublock-origin
               sponsorblock
               vimium
-              dracula-dark-colorscheme
               widegithub
             ];
 

@@ -1,12 +1,32 @@
-{ ... }:
+{ pkgs, ... }:
 let
   mainWaybarConfig = {
     layer = "top";
     position = "top";
-    height = 30;
+    height = 15;
+    spacing = 8;
 
-    modules-left = [ "sway/workspaces" "sway/mode" "sway/window" ];
-    modules-right = [ "backlight" "custom/keyboard-layout" "cpu" "memory" "battery" "network" "pulseaudio" "tray" "idle_inhibitor" "clock" "custom/power" ];
+    modules-left = [
+      "sway/workspaces"
+      "sway/mode"
+      "sway/window"
+      "sway/scratchpad"
+    ];
+    modules-right = [
+      "power-profiles-daemon"
+      "idle_inhibitor"
+      "backlight"
+      "cpu"
+      "memory"
+      "keyboard-state"
+      "sway/language"
+      "battery"
+      "network"
+      "pulseaudio"
+      "tray"
+      "clock"
+      "custom/power"
+    ];
 
     "sway/workspaces" = {
       format = "{icon}";
@@ -31,8 +51,12 @@ let
       format = "<span style=\"italic\">{}</span>";
     };
 
-    "sway/window" = {
-      format = "{}";
+    "sway/scratchpad" = {
+      "format" = "{icon} {count}";
+      "show-empty" = false;
+      "format-icons" = [ "" "" ];
+      "tooltip" = true;
+      "tooltip-format" = "{app}: {title}";
     };
 
     idle_inhibitor = {
@@ -44,8 +68,7 @@ let
     };
 
     tray = {
-      icon-size = 14;
-      spacing = 5;
+      spacing = 10;
     };
 
     clock = {
@@ -68,8 +91,8 @@ let
     backlight = {
       format = "{icon} {percent}%";
       format-icons = [ "" "" ];
-      on-scroll-down = "brightnessctl -c backlight set 1%-";
-      on-scroll-up = "brightnessctl -c backlight set +1%";
+      on-scroll-down = "${pkgs.brightnessctl}/bin/brightnessctl -c backlight set 1%-";
+      on-scroll-up = "${pkgs.brightnessctl}/bin/brightnessctl -c backlight set +1%";
     };
 
     battery = {
@@ -90,7 +113,7 @@ let
     };
 
     pulseaudio = {
-      scroll-step = 5;
+      scroll-step = 1;
       format = "{icon} {volume}%";
       format-bluetooth = "{icon} {volume}%";
       format-muted = "muted ";
@@ -103,28 +126,25 @@ let
         car = "";
         default = [ "" "" ];
       };
-      on-click = "pavucontrol";
+      on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
     };
 
     "custom/power" = {
       format = "⏻";
-      on-click = "nwgbar";
-      tooltip = false;
-    };
-
-    "custom/keyboard-layout" = {
-      exec = "swaymsg -t get_inputs | grep -m1 'xkb_active_layout_name' | cut -d '\"' -f4";
-      interval = 30;
-      format = "  {}";
-      signal = 1;
+      on-click = "rofi -show powermenu";
       tooltip = false;
     };
   };
 in
 {
-  programs.waybar = {
-    enable = true;
-    settings = { mainBar = mainWaybarConfig; };
-    style = builtins.readFile ./style.css;
+  config = {
+    stylix.targets.waybar = {
+      enableLeftBackColors = false;
+      enableRightBackColors = true;
+    };
+    programs.waybar = {
+      enable = true;
+      settings = { mainBar = mainWaybarConfig; };
+    };
   };
 }

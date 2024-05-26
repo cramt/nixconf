@@ -1,7 +1,16 @@
 { pkgs
 , lib
 , ...
-}: {
+}:
+let
+  stylixAsset = ../../media/cosmere.mp4;
+  stylixAssetFirstFrame = pkgs.runCommand "stylix_asset_first_frame" { } ''
+    mkdir -p $out
+    ${pkgs.ffmpeg}/bin/ffmpeg -i ${stylixAsset} -vf "select=eq(n\,0)" $out/output-%03d.png
+    mv $out/output-*.png $out/output.png
+  '';
+in
+{
   time.timeZone = "Europe/Copenhagen";
 
   # Select internationalisation properties.
@@ -30,31 +39,53 @@
     jack.enable = true;
   };
   hardware.pulseaudio.enable = false;
-
-  fonts = {
-    packages = with pkgs; [
-      nerdfonts
-      cm_unicode
-      corefonts
-      noto-fonts
-      noto-fonts-cjk
-      noto-fonts-emoji
-      font-awesome
-      source-han-sans
-      source-han-sans-japanese
-      source-han-serif-japanese
-      ubuntu_font_family
-      powerline-fonts
-      powerline-symbols
-      corefonts
-    ];
-    fontconfig = {
-      defaultFonts = {
-        sansSerif = [ "Nerd Font" ];
-        serif = [ "Nerd Font" ];
-        monospace = [ "Nerd Font Mono" ];
+  stylix = {
+    polarity = "dark";
+    image = "${stylixAssetFirstFrame}/output.png";
+    opacity = {
+      terminal = 0.8;
+      applications = 0.8;
+      desktop = 0.5;
+      popups = 0.8;
+    };
+    cursor = {
+      package = pkgs.bibata-cursors;
+      name = "Bibata-Modern-Ice";
+    };
+    fonts = {
+      monospace = {
+        package = pkgs.iosevka.out;
+        name = "Iosevka Extended";
+      };
+      sansSerif = {
+        package = pkgs.open-sans.out;
+        name = "Open Sans";
+      };
+      serif = {
+        package = pkgs.open-sans.out;
+        name = "Open Sans";
       };
     };
+  };
+
+  fonts = {
+    packages = with pkgs;
+      [
+        nerdfonts
+        cm_unicode
+        corefonts
+        noto-fonts
+        noto-fonts-cjk
+        noto-fonts-emoji
+        font-awesome
+        source-han-sans
+        source-han-sans-japanese
+        source-han-serif-japanese
+        ubuntu_font_family
+        powerline-fonts
+        powerline-symbols
+        corefonts
+      ];
 
     enableDefaultPackages = true;
   };
