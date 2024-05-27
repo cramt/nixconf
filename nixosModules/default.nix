@@ -32,6 +32,17 @@ let
         configExtension = config: (lib.mkIf cfg.bundles.${name}.enable config);
       })
       (myLib.filesIn ./bundles);
+
+  services =
+    myLib.extendModules
+      (name: {
+        extraOptions = {
+          myNixOS.services.${name}.enable = lib.mkEnableOption "enable ${name} service";
+        };
+
+        configExtension = config: (lib.mkIf cfg.services.${name}.enable config);
+      })
+      (myLib.filesIn ./services);
 in
 {
   imports =
@@ -40,7 +51,8 @@ in
       inputs.stylix.nixosModules.stylix
     ]
     ++ features
-    ++ bundles;
+    ++ bundles
+    ++ services;
 
   config = {
     nix.settings.experimental-features = [ "nix-command" "flakes" ];

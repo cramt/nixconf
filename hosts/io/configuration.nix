@@ -25,11 +25,47 @@
     amd.enable = true;
     bundles.users.enable = true;
 
+    services.jellyfin = {
+      enable = true;
+      configVolume = "/tmp/jellyfin_config";
+      mediaVolumes = {
+        tvshows = "/tmp/jellyfin_tvshows";
+      };
+      gpuDevices = [
+        "/dev/dri/card1"
+        "/dev/dri/renderD128"
+      ];
+    };
+    services.caddy = {
+      enable = true;
+      cacheVolume = "/tmp/caddy_cache";
+      staticFileVolume = "/tmp/caddy_static_files";
+      domain = "localhost";
+      protocol = "http";
+    };
+    services.qbittorrent = {
+      enable = true;
+      configVolume = "/tmp/qbit_config";
+      downloadVolume = "/tmp/qbit_download";
+    };
+    services.foundryvtt = {
+      enable = true;
+      dataVolume = "/tmp/foundryvtt_data";
+    };
+
     home-users = {
       "cramt" = {
         userConfig = ./home.nix;
         userSettings = {
-          extraGroups = [ "networkmanager" "wheel" "libvirtd" "docker" "adbusers" "openrazer" ];
+          extraGroups = [
+            "networkmanager"
+            "wheel"
+            "libvirtd"
+            "docker"
+            "adbusers"
+            "openrazer"
+            "audio"
+          ];
         };
       };
     };

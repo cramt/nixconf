@@ -1,5 +1,6 @@
 { pkgs
 , lib
+, inputs
 , ...
 }:
 let
@@ -32,11 +33,16 @@ in
   sound.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
+    package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.pipewire;
     enable = true;
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
     jack.enable = true;
+    wireplumber = {
+      enable = true;
+      package = pkgs.wireplumber;
+    };
   };
   hardware.pulseaudio.enable = false;
   stylix = {
