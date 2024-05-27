@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 let
   toLua = str: "lua << EOF\n${str}\nEOF\n";
   toLuaFile = file: toLua (builtins.readFile file);
@@ -187,7 +187,10 @@ in
                 };
               };
             };
-            solargraph.enable = true;
+            solargraph = {
+              enable = true;
+              package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rubyPackages.solargraph;
+            };
             lua-ls.enable = true;
           };
         };
