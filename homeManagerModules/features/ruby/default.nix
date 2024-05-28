@@ -1,6 +1,7 @@
 { pkgs, config, inputs, ... }: {
-  home.packages = [
-    inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.ruby
+  home.packages = with inputs.nixpkgs-stable.legacyPackages.${pkgs.system}; [
+    ruby
+    rubyPackages.yard
   ];
   home.file."${config.home.homeDirectory}/.bundle/config" = {
     text = ''
