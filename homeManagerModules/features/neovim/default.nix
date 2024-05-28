@@ -192,6 +192,7 @@ in
               package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rubyPackages.solargraph;
             };
             lua-ls.enable = true;
+            sqls.enable = true;
           };
         };
         neorg = {
@@ -293,6 +294,12 @@ in
           enable = true;
         };
         cmp-buffer = {
+          enable = true;
+        };
+        cmp_luasnip = {
+          enable = true;
+        };
+        luasnip = {
           enable = true;
         };
         telescope = {
