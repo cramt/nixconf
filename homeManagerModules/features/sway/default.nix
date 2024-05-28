@@ -28,7 +28,7 @@ let
     pkill swaybg #stylix sets the wallpapir like a dumbdumb
   '';
   lockCommand = "${pkgs.writeShellScriptBin "lock" ''
-    if [[ "$(${pkgs.playerctl}/bin/playerctl status)" == "Paused" ]]; then
+    if [[ "$(${pkgs.playerctl}/bin/playerctl status)" != "Playing" ]]; then
       ${pkgs.swaylock}/bin/swaylock -f
     fi
   ''}/bin/lock";
