@@ -64,6 +64,9 @@ in
     luajitPackages.luarocks
     clang
     postgresql.out
+    terraform
+    tflint
+    awscli2
   ] ++ ld_packages;
 
   home.sessionVariables = {

@@ -193,6 +193,8 @@ in
             };
             lua-ls.enable = true;
             sqls.enable = true;
+            yamlls.enable = true;
+            terraformls.enable = true;
           };
         };
         neorg = {
@@ -301,6 +303,7 @@ in
         };
         luasnip = {
           enable = true;
+          package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.vimPlugins.luasnip;
         };
         telescope = {
           enable = true;
