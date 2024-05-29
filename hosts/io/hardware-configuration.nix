@@ -5,7 +5,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod" ];
@@ -13,15 +14,24 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
-  fileSystems."/" =
-    { device = "/dev/disk/by-uuid/c6b28ee6-1f02-4dd5-800a-2de536700724";
-      fsType = "ext4";
-    };
+  fileSystems."/" = {
+    device = "/dev/disk/by-uuid/c6b28ee6-1f02-4dd5-800a-2de536700724";
+    fsType = "ext4";
+  };
 
-  fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/71FA-A8B1";
-      fsType = "vfat";
-    };
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-uuid/71FA-A8B1";
+    fsType = "vfat";
+  };
+
+  fileSystems."/mnt/amirani" = {
+    device = "/dev/disk/by-uuid/94c8d7b9-75ca-4f31-87d7-42944c58207e";
+    fsType = "ext4";
+    options = [
+      "users"
+      "nofail"
+    ];
+  };
 
   swapDevices = [ ];
 
