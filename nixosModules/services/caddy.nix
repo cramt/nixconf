@@ -51,10 +51,17 @@ in
             reverse_proxy http://foundryvtt:30000
           }
         '' else "";
+      prowlarrCaddy =
+        if config.myNixOS.services.prowlarr.enable then ''
+          ${cfg.protocol}://prowlarr.${cfg.domain} {
+            reverse_proxy http://prowlarr:9696
+          }
+        '' else "";
       caddyFile = pkgs.writeText "Caddyfile" ''
         ${jellyfinCaddy}
         ${qbittorrentCaddy}
         ${foundryvttCaddy}
+        ${prowlarrCaddy}
       '';
     in
     {

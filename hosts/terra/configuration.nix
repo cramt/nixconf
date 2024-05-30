@@ -30,9 +30,6 @@
     home-users = {
       "cramt" = {
         userConfig = ./home.nix;
-        userSettings = {
-          extraGroups = [ "networkmanager" "wheel" "libvirtd" "docker" "adbusers" "openrazer" ];
-        };
       };
     };
   };
