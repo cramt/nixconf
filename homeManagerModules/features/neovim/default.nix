@@ -195,6 +195,7 @@ in
             sqls.enable = true;
             yamlls.enable = true;
             terraformls.enable = true;
+            gopls.enable = true;
           };
         };
         neorg = {

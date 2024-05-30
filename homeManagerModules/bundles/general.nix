@@ -23,6 +23,7 @@ in
   };
 
   programs.home-manager.enable = true;
+  programs.go.enable = true;
 
   myHomeManager = {
     neovim.enable = true;
