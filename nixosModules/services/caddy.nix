@@ -2,6 +2,13 @@
 let
 
   cfg = config.myNixOS.services.caddy;
+  staticFiles = lib.attrsets.mapAttrsToList
+    (name: value: {
+      innerFolder = "/${builtins.hashString "md5" name}";
+      folder = value;
+      subdomain = name;
+    })
+    cfg.staticFileVolumes;
 in
 {
   options.myNixOS.services.caddy = {
@@ -11,10 +18,10 @@ in
         destination for the caddy to cache tls and stuff
       '';
     };
-    staticFileVolume = lib.mkOption {
-      type = lib.types.str;
+    staticFileVolumes = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
       description = ''
-        destination for the caddy to mount static files
+        destinations for the caddy to mount static files
       '';
     };
     domain = lib.mkOption {
@@ -57,11 +64,35 @@ in
             reverse_proxy http://prowlarr:9696
           }
         '' else "";
+      radarrCaddy =
+        if config.myNixOS.services.radarr.enable then ''
+          ${cfg.protocol}://radarr.${cfg.domain} {
+            reverse_proxy http://radarr:7878
+          }
+        '' else "";
+      sonarrCaddy =
+        if config.myNixOS.services.sonarr.enable then ''
+          ${cfg.protocol}://sonarr.${cfg.domain} {
+            reverse_proxy http://sonarr:8989
+          }
+        '' else "";
+      staticFileCaddy = lib.strings.concatStringsSep "\n" (
+        builtins.map
+          (x: ''
+            ${cfg.protocol}://${x.subdomain}.${cfg.domain} {
+              file_server ${x.innerFolder} browse
+            }
+          '')
+          staticFiles
+      );
       caddyFile = pkgs.writeText "Caddyfile" ''
         ${jellyfinCaddy}
         ${qbittorrentCaddy}
         ${foundryvttCaddy}
         ${prowlarrCaddy}
+        ${radarrCaddy}
+        ${sonarrCaddy}
+        ${staticFileCaddy}
       '';
     in
     {
@@ -84,8 +115,7 @@ in
           "${cfg.cacheVolume}/config:/config"
           "${cfg.cacheVolume}/data:/data"
           "${caddyFile}:/etc/caddy/Caddyfile"
-          "${cfg.staticFileVolume}:/files/"
-        ];
+        ] ++ builtins.map (x: "${x.innerFolder}:${x.folder} ") staticFiles;
         ports = [
           "443:443"
           "80:80"
@@ -101,4 +131,5 @@ in
       };
     };
 }
+
 
