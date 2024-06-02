@@ -19,7 +19,7 @@ in
       globals = {
         mapleader = " ";
         neovide_transparency = 0.8;
-        guifont = "Iosevka Extended";
+        guifont = "Iosevka Nerd Font";
       };
       globalOpts = {
         fillchars = {

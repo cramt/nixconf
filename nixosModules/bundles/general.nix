@@ -61,7 +61,7 @@ in
     fonts = {
       monospace = {
         package = pkgs.iosevka.out;
-        name = "Iosevka Extended";
+        name = "Iosevka Nerd Font";
       };
       sansSerif = {
         package = pkgs.open-sans.out;
