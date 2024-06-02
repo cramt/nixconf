@@ -145,6 +145,24 @@ in
             always = true;
           }
         ];
+        modes = {
+          resize =
+            let
+              size = builtins.toString 50;
+            in
+            rec {
+              Down = "resize shrink height ${size} px";
+              j = Down;
+              Up = "resize grow height ${size} px";
+              k = Up;
+              Left = "resize grow width ${size} px";
+              h = Left;
+              Right = "resize shrink width ${size} px";
+              l = Right;
+              Return = "mode default";
+              Escape = Return;
+            };
+        };
         keybindings = lib.mkOptionDefault
           {
             "print" = "exec grimshot --notify copy area";
