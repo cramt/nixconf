@@ -140,6 +140,10 @@ in
             command = "${setBackground}/bin/set_background";
             always = true;
           }
+          {
+            command = "${pkgs.autotiling}/bin/autotiling";
+            always = true;
+          }
         ];
         keybindings = lib.mkOptionDefault
           {
