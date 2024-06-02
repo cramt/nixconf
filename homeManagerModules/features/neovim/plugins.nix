@@ -18,7 +18,7 @@
       };
       solargraph = {
         enable = true;
-        package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rubyPackages.solargraph;
+        package = inputs.nixpkgs-solargraph-downgrade.legacyPackages.${pkgs.system}.rubyPackages.solargraph;
       };
       lua-ls.enable = true;
       sqls.enable = true;

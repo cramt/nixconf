@@ -27,11 +27,12 @@ let
     sleep 1
     pkill swaybg #stylix sets the wallpapir like a dumbdumb
   '';
-  lockCommand = "${pkgs.writeShellScriptBin "lock" ''
+  mkRunIfNoMedia = name: cmd: "${pkgs.writeShellScriptBin name ''
     if [[ "$(${pkgs.playerctl}/bin/playerctl status)" != "Playing" ]]; then
-      ${pkgs.swaylock}/bin/swaylock -f
+      ${cmd}
     fi
-  ''}/bin/lock";
+  ''}/bin/${name}";
+  lockCommand = mkRunIfNoMedia "lock" "${pkgs.swaylock}/bin/swaylock -f";
   rofiMonitor = pkgs.writeShellScriptBin "rofi_monitor" ''
     monitor="$(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq '[.[].focused] | index(true)')"
     rofi $@
@@ -79,11 +80,11 @@ in
       timeouts = [
         {
           timeout = 60 * 15;
-          command = "${pkgs.systemd}/bin/systemctl suspend";
+          command = mkRunIfNoMedia "hypernate" "${pkgs.systemd}/bin/systemctl suspend";
         }
         {
           timeout = 60 * 10;
-          command = ''${pkgs.sway}/bin/swaymsg "output * dpms off"'';
+          command = mkRunIfNoMedia "screen_off" ''${pkgs.sway}/bin/swaymsg "output * dpms off"'';
           resumeCommand = ''${pkgs.sway}/bin/swaymsg "output * dpms on"'';
         }
         {
