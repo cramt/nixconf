@@ -148,16 +148,17 @@ in
         modes = {
           resize =
             let
-              size = builtins.toString 50;
+              size = builtins.toString 10;
+              unit = "ppt";
             in
             rec {
-              Down = "resize shrink height ${size} px";
+              Down = "resize shrink height ${size} ${unit}";
               j = Down;
-              Up = "resize grow height ${size} px";
+              Up = "resize grow height ${size} ${unit}";
               k = Up;
-              Left = "resize grow width ${size} px";
+              Left = "resize grow width ${size} ${unit}";
               h = Left;
-              Right = "resize shrink width ${size} px";
+              Right = "resize shrink width ${size} ${unit}";
               l = Right;
               Return = "mode default";
               Escape = Return;
