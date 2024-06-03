@@ -21,6 +21,7 @@
     gnupg.enable = true;
     qemu.enable = true;
     bundles.general.enable = true;
+    bundles.graphical.enable = true;
     steam.enable = true;
     amd.enable = true;
     bundles.users.enable = true;

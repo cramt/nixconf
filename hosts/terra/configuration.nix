@@ -24,6 +24,7 @@
     };
     nvidia.package_version = "legacy_390";
     bundles.general.enable = true;
+    bundles.graphical.enable = true;
     steam.enable = true;
     bundles.users.enable = true;
 

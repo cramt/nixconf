@@ -19,6 +19,7 @@
     qemu.enable = false;
     docker.enable = true;
     bundles.general.enable = true;
+    bundles.graphical.enable = true;
     bundles.users.enable = true;
 
     home-users = {
