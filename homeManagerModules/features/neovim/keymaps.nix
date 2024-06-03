@@ -73,7 +73,7 @@ let
       };
       L = {
         desc = "next buffer";
-        action = "<Cmd>bnest<CR>";
+        action = "<Cmd>bnext<CR>";
       };
       H = {
         desc = "previous buffer";

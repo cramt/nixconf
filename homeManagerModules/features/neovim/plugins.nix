@@ -5,6 +5,20 @@
       bufremove = { };
     };
   };
+  none-ls = {
+    enable = true;
+    sources = {
+      formatting = {
+        prettier.enable = true;
+        prettier.disableTsServerFormatter = true;
+        just.enable = true;
+        terraform_fmt.enable = true;
+      };
+      diagnostics = {
+        actionlint.enable = true;
+      };
+    };
+  };
   lsp = {
     enable = true;
     servers = {
@@ -25,6 +39,8 @@
       yamlls.enable = true;
       terraformls.enable = true;
       gopls.enable = true;
+      tsserver.enable = true;
+      eslint.enable = true;
     };
   };
   neorg = {
