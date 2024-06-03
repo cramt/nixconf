@@ -7,8 +7,6 @@
     # downgrade to 0.49.0 solargraph as 0.50 requires strscan 3.0.9 which i cant get to work due to it being a pre-installed gem from ruby itself
     nixpkgs-solargraph-downgrade.url = "github:nixos/nixpkgs/52c874987156f13ef08993618ea8bfb0531c0463";
 
-    xremap-flake.url = "github:xremap/nix-flake";
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -19,33 +17,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    firefox-addons = {
-      url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nix-alien = {
-      url = "github:thiagokokada/nix-alien";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nix-colors.url = "github:misterio77/nix-colors";
-
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    disko = {
-      url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    impermanence = {
-      url = "github:nix-community/impermanence";
-    };
-
-    persist-retro.url = "github:Geometer1729/persist-retro";
 
     nur.url = "github:nix-community/NUR";
 
