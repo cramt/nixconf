@@ -61,6 +61,9 @@ in
       WLR_NO_HARDWARE_CURSORS = "1";
       XWAYLAND_NO_GLAMOR = "1";
     };
+    programs.tofi = {
+      enable = true;
+    };
     programs.swaylock = {
       enable = true;
       settings = {

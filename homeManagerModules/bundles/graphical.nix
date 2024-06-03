@@ -11,7 +11,6 @@
     pavucontrol
     adwaita-qt
     gimp
-    libsForQt5.okular
   ];
 
   myHomeManager = {
@@ -21,6 +20,7 @@
     alacritty.enable = true;
     gtk.enable = true;
     mako.enable = true;
+    zathura.enable = true;
     network-manager-applet.enable = true;
   };
 }
