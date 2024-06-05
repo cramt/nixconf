@@ -79,6 +79,14 @@ let
         desc = "previous buffer";
         action = "<Cmd>bprev<CR>";
       };
+      "<C-Left>" = {
+        desc = "resize left";
+        action = ":vertical resize -5<CR>";
+      };
+      "<C-Right>" = {
+        desc = "resize right";
+        action = ":vertical resize +5<CR>";
+      };
     };
     v = {
       "<Tab>" = {

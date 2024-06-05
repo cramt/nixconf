@@ -13,6 +13,10 @@
         prettier.disableTsServerFormatter = true;
         just.enable = true;
         terraform_fmt.enable = true;
+        rubocop = {
+          enable = true;
+          package = inputs.nixpkgs-solargraph-downgrade.legacyPackages.${pkgs.system}.rubyPackages.rubocop;
+        };
       };
       diagnostics = {
         actionlint.enable = true;
