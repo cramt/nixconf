@@ -15,7 +15,7 @@
         terraform_fmt.enable = true;
         rubocop = {
           enable = true;
-          package = inputs.nixpkgs-solargraph-downgrade.legacyPackages.${pkgs.system}.rubyPackages.rubocop;
+          package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.rubocop;
         };
       };
       diagnostics = {
@@ -36,7 +36,7 @@
       };
       solargraph = {
         enable = true;
-        package = inputs.nixpkgs-solargraph-downgrade.legacyPackages.${pkgs.system}.rubyPackages.solargraph;
+        package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.solargraph;
       };
       lua-ls.enable = true;
       sqls.enable = true;

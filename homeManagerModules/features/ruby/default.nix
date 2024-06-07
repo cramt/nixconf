@@ -1,5 +1,5 @@
 { pkgs, config, inputs, ... }: {
-  home.packages = with inputs.nixpkgs-stable.legacyPackages.${pkgs.system}; [
+  home.packages = with inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}; [
     ruby
     rubyPackages.yard
   ];

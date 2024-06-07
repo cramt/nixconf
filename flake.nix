@@ -5,7 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
     # downgrade to 0.49.0 solargraph as 0.50 requires strscan 3.0.9 which i cant get to work due to it being a pre-installed gem from ruby itself
-    nixpkgs-solargraph-downgrade.url = "github:nixos/nixpkgs/52c874987156f13ef08993618ea8bfb0531c0463";
+    nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/52c874987156f13ef08993618ea8bfb0531c0463";
 
     home-manager = {
       url = "github:nix-community/home-manager";
