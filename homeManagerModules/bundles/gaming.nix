@@ -19,5 +19,6 @@
 
   myHomeManager = {
     wowup.enable = true;
+    cockatrice.enable = true;
   };
 }

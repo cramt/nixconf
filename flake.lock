@@ -130,6 +130,22 @@
         "type": "github"
       }
     },
+    "darkmingo-cockactrice-theme": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1629230979,
+        "narHash": "sha256-1+r9ujcwGGR7fSpurReVozT80kCtKHCwHOb12SaNudA=",
+        "owner": "mingomongo",
+        "repo": "DarkMingo-Theme-for-Cockatrice",
+        "rev": "aba61886b0ce86aa158659f9e4d431cfa0513544",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mingomongo",
+        "repo": "DarkMingo-Theme-for-Cockatrice",
+        "type": "github"
+      }
+    },
     "devshell": {
       "inputs": {
         "flake-utils": "flake-utils_4",
@@ -842,6 +858,7 @@
     },
     "root": {
       "inputs": {
+        "darkmingo-cockactrice-theme": "darkmingo-cockactrice-theme",
         "foundryvtt": "foundryvtt",
         "home-manager": "home-manager",
         "neorg-overlay": "neorg-overlay",

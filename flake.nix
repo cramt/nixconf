@@ -36,6 +36,11 @@
     neorg-overlay.url = "github:nvim-neorg/nixpkgs-neorg-overlay";
 
     foundryvtt.url = "github:reckenrode/nix-foundryvtt";
+
+    darkmingo-cockactrice-theme = {
+      url = "github:mingomongo/DarkMingo-Theme-for-Cockatrice";
+      flake = false;
+    };
   };
 
   outputs = { ... } @ inputs:
