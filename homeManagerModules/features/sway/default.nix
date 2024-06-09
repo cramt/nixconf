@@ -40,7 +40,6 @@ let
   rofiGeneric = pkgs.writeShellScriptBin "rofi_generic" ''
     ${rofiMonitor}/bin/rofi_monitor -show $(echo "calc,emoji,powermenu,top" | rofi -sep ',' -dmenu)
   '';
-  rofiCommand = "${rofiMonitor}/bin/rofi_monitor -show drun";
   rofiGenericCommand = "${rofiGeneric}/bin/rofi_generic";
   swayrCommand = "${pkgs.swayr}/bin/swayr";
   execSwayr = "exec ${swayrCommand}";
@@ -126,7 +125,7 @@ in
 
         modifier = mod;
         terminal = "alacritty";
-        menu = rofiCommand;
+        menu = "${pkgs.tofi}/bin/tofi-drun | xargs swaymsg exec --";
         defaultWorkspace = "1";
         window = {
           border = 2;
