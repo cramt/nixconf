@@ -32,7 +32,7 @@
     };
   };
 
-  networking.hostName = "io";
+  networking.hostName = "saturn";
 
   networking.networkmanager.enable = true;
 

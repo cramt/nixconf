@@ -52,7 +52,7 @@
     with myLib; {
       nixosConfigurations = {
         terra = mkSystem ./hosts/terra/configuration.nix;
-        io = mkSystem ./hosts/io/configuration.nix;
+        saturn = mkSystem ./hosts/saturn/configuration.nix;
         mars = mkSystem ./hosts/mars/configuration.nix;
         luna = mkSystem ./hosts/luna/configuration.nix;
       };
