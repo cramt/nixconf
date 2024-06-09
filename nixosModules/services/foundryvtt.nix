@@ -8,19 +8,16 @@ let
   dockerImage = pkgs.dockerTools.buildImage {
     name = "foundryvtt";
     tag = "11";
-    copyToRoot = pkgs.buildEnv {
-      name = "image-root";
-      paths = with pkgs; [
-        bash
-        gnulib
-        foundryvttPkg
-      ];
-      pathsToLink = [ "/bin" ];
-    };
+    copyToRoot = with pkgs; [
+      cacert
+      bash
+      gnulib
+      foundryvttPkg
+    ];
 
     config = {
       Cmd = [
-        "/bin/foundryvtt"
+        "${foundryvttPkg}/bin/foundryvtt"
         "--headless"
         "--dataPath=/data"
       ];
