@@ -5,22 +5,20 @@ let
     version = version;
   };
   cfg = config.myNixOS.services.foundryvtt;
-  dockerImage = pkgs.dockerTools.buildImage {
+  dockerImage = pkgs.dockerTools.buildLayeredImage {
     name = "foundryvtt";
     tag = "11";
-    copyToRoot = with pkgs; [
+    contents = with pkgs; [
       cacert
-      bash
-      gnulib
       foundryvttPkg
     ];
-
     config = {
       Cmd = [
         "${foundryvttPkg}/bin/foundryvtt"
         "--headless"
         "--dataPath=/data"
       ];
+      Env = [ "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" ];
     };
   };
 
