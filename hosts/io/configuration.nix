@@ -25,53 +25,6 @@
     amd.enable = true;
     bundles.users.enable = true;
 
-    services.jellyfin = {
-      enable = true;
-      configVolume = "/tmp/jellyfin_config";
-      mediaVolumes = {
-        tvshows = "/tmp/jellyfin_tvshows";
-        movies = "/tmp/jellyfin_movies";
-      };
-      gpuDevices = [
-        "/dev/dri/card1"
-        "/dev/dri/renderD128"
-      ];
-    };
-    services.caddy = {
-      enable = true;
-      cacheVolume = "/tmp/caddy_cache";
-      staticFileVolumes = {
-        files = "/tmp/caddy_static_files";
-      };
-      domain = "localhost";
-      protocol = "http";
-    };
-    services.qbittorrent = {
-      enable = true;
-      configVolume = "/tmp/qbit_config";
-      downloadVolume = "/tmp/qbit_download";
-    };
-    services.foundryvtt = {
-      enable = true;
-      dataVolume = "/tmp/foundryvtt_data";
-    };
-    services.prowlarr = {
-      enable = true;
-      configVolume = "/tmp/prowlarr_config";
-    };
-    services.radarr = {
-      enable = true;
-      configVolume = "/tmp/radarr_config";
-      downloadVolume = "/tmp/qbit_download";
-      movieVolume = "/tmp/jellyfin_movies";
-    };
-    services.sonarr = {
-      enable = true;
-      configVolume = "/tmp/sonarr_config";
-      downloadVolume = "/tmp/qbit_download";
-      tvVolume = "/tmp/jellyfin_tvshows";
-    };
-
     home-users = {
       "cramt" = {
         userConfig = ./home.nix;
