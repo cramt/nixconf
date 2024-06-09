@@ -54,6 +54,7 @@
         terra = mkSystem ./hosts/terra/configuration.nix;
         io = mkSystem ./hosts/io/configuration.nix;
         mars = mkSystem ./hosts/mars/configuration.nix;
+        luna = mkSystem ./hosts/luna/configuration.nix;
       };
 
       homeManagerModules.default = ./homeManagerModules;

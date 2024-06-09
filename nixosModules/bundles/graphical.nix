@@ -2,14 +2,6 @@
 , inputs
 , ...
 }:
-let
-  stylixAsset = ../../media/cosmere.mp4;
-  stylixAssetFirstFrame = pkgs.runCommand "stylix_asset_first_frame" { } ''
-    mkdir -p $out
-    ${pkgs.ffmpeg}/bin/ffmpeg -i ${stylixAsset} -vf "select=eq(n\,0)" $out/output-%03d.png
-    mv $out/output-*.png $out/output.png
-  '';
-in
 {
   # Enable sound with pipewire.
   sound.enable = true;
@@ -27,35 +19,6 @@ in
     };
   };
   hardware.pulseaudio.enable = false;
-  stylix = {
-    polarity = "dark";
-    image = "${stylixAssetFirstFrame}/output.png";
-    opacity = {
-      terminal = 0.8;
-      applications = 0.8;
-      desktop = 0.5;
-      popups = 0.8;
-    };
-    cursor = {
-      package = pkgs.bibata-cursors;
-      name = "Bibata-Modern-Ice";
-    };
-    fonts = {
-      monospace = {
-        package = pkgs.iosevka.out;
-        name = "Iosevka Nerd Font";
-      };
-      sansSerif = {
-        package = pkgs.open-sans.out;
-        name = "Open Sans";
-      };
-      serif = {
-        package = pkgs.open-sans.out;
-        name = "Open Sans";
-      };
-    };
-  };
-
   fonts = {
     packages = with pkgs;
       [
