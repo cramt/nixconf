@@ -76,6 +76,12 @@ in
             reverse_proxy http://sonarr:8989
           }
         '' else "";
+      bazarrCaddy =
+        if config.myNixOS.services.sonarr.enable then ''
+          ${cfg.protocol}://bazarr.${cfg.domain} {
+            reverse_proxy http://bazarr:6767
+          }
+        '' else "";
       staticFileCaddy = lib.strings.concatStringsSep "\n" (
         builtins.map
           (x: ''
@@ -92,6 +98,7 @@ in
         ${prowlarrCaddy}
         ${radarrCaddy}
         ${sonarrCaddy}
+        ${bazarrCaddy}
         ${staticFileCaddy}
       '';
     in

@@ -76,6 +76,13 @@
           downloadVolume = downloads.raw;
           tvVolume = downloads.tvshows;
         };
+        bazarr = {
+          enable = true;
+          configVolume = "/mnt/pierre/configs/bazarr";
+          downloadVolume = downloads.raw;
+          tvVolume = downloads.tvshows;
+          movieVolume = downloads.movies;
+        };
         sshd.enable = true;
       };
 

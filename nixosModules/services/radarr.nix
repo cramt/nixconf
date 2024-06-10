@@ -25,7 +25,7 @@ in
   };
   config = {
     virtualisation.oci-containers.containers.radarr = {
-      hostname = "prowlarr";
+      hostname = "radarr";
       image = "ghcr.io/hotio/radarr";
       volumes = [
         "${cfg.configVolume}:/config"

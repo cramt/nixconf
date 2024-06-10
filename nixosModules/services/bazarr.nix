@@ -1,16 +1,16 @@
 { config, lib, ... }:
 let
-  cfg = config.myNixOS.services.sonarr;
+  cfg = config.myNixOS.services.bazarr;
 in
 {
-  options.myNixOS.services.sonarr = {
+  options.myNixOS.services.bazarr = {
     configVolume = lib.mkOption {
       type = lib.types.str;
       description = ''
         destination for the config
       '';
     };
-    downloadVolume = lib.mkOption {
+    movieVolume = lib.mkOption {
       type = lib.types.str;
       description = ''
         destination for the downloads
@@ -22,19 +22,26 @@ in
         destination for the downloads
       '';
     };
+    downloadVolume = lib.mkOption {
+      type = lib.types.str;
+      description = ''
+        destination for the downloads
+      '';
+    };
   };
   config = {
-    virtualisation.oci-containers.containers.sonarr = {
-      hostname = "sonarr";
-      image = "ghcr.io/hotio/sonarr";
+    virtualisation.oci-containers.containers.bazarr = {
+      hostname = "bazarr";
+      image = "ghcr.io/hotio/bazarr";
       volumes = [
         "${cfg.configVolume}:/config"
+        "${cfg.movieVolume}:/movies"
         "${cfg.tvVolume}:/tv"
         "${cfg.downloadVolume}:/downloads"
       ];
       extraOptions = [
         "--network=caddy"
-        "--expose=8989"
+        "--expose=6767"
       ];
       environment = {
         PUID = "1000";
