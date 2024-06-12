@@ -9,19 +9,43 @@ let
             children = {
               a = {
                 desc = "code action";
-                lua = true;
-                action = ''
-                  function() vim.lsp.buf.code_action() end
-                '';
-                cond = "testDocument/codeAction";
+                action = "<Cmd>Lspsaga code_action<CR>";
+                cond = "textDocument/codeaction";
               };
               r = {
                 desc = "rename";
-                lua = true;
-                action = ''
-                  function() vim.lsp.buf.rename() end
-                '';
-                cond = "testDocument/rename";
+                action = "<Cmd>Lspsaga rename<CR>";
+                cond = "textDocument/rename";
+              };
+              c = {
+                desc = "incomming calls";
+                action = "<Cmd>Lspsaga incomming_calls<CR>";
+                cond = "callHierarchy/incomingCalls";
+              };
+              C = {
+                desc = "outgoing calls";
+                action = "<Cmd>Lspsaga outgoing_calls<CR>";
+                cond = "callHierarchy/outgoingCalls";
+              };
+              h = {
+                desc = "hover docs";
+                action = "<Cmd>Lspsaga hover_doc<CR>";
+                cond = "textDocument/hover";
+              };
+              d = {
+                desc = "definition";
+                children = {
+                  p = {
+                    desc = "peek";
+                    action = "<Cmd>Lspsaga peek_definition<CR>";
+                    cond = "textDocument/definition";
+                  };
+                  g = {
+                    desc = "goto";
+                    action = "<Cmd>Lspsaga goto_definition<CR>";
+                    cond = "textDocument/definition";
+                  };
+                };
               };
             };
           };

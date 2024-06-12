@@ -23,6 +23,9 @@
       };
     };
   };
+  lspsaga = {
+    enable = true;
+  };
   lsp = {
     enable = true;
     servers = {
@@ -125,6 +128,7 @@
   };
   cmp = {
     enable = true;
+    autoEnableSources = true;
     settings = {
       sources = [
         {
@@ -132,6 +136,12 @@
         }
         {
           name = "buffer";
+        }
+        {
+          name = "path";
+        }
+        {
+          name = "vsnip";
         }
       ];
       mapping = {
@@ -151,13 +161,7 @@
   cmp-buffer = {
     enable = true;
   };
-  cmp_luasnip = {
-    enable = true;
-  };
-  luasnip = {
-    enable = true;
-    package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.vimPlugins.luasnip;
-  };
+  cmp-vsnip.enable = true;
   telescope = {
     enable = true;
     extensions.fzf-native.enable = true;
