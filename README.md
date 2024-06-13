@@ -4,8 +4,8 @@
 
 - Additional firefox profiles
 - zsh stuff
-- use tofi and onagre
+- use onagre
 - use sddm and maybe using stylix to theme qt will style it
+- switch from alacritty to rio, might need to pr stylix
 
 ### Server stuff
-- add public key from mars to server
