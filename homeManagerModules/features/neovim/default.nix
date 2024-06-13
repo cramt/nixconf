@@ -6,6 +6,7 @@ in
 
 {
   config = {
+    stylix.targets.nixvim.enable = true;
     xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
     home.packages = with pkgs; [
       neovide
@@ -32,6 +33,7 @@ in
         copyindent = true;
         expandtab = true;
         showmode = false;
+        signcolumn = "yes";
       };
       clipboard = {
         providers.wl-copy.enable = true;

@@ -49,11 +49,11 @@ in
         name = "Iosevka Nerd Font";
       };
       sansSerif = {
-        package = pkgs.open-sans.out;
+        package = pkgs.inter.out;
         name = "Open Sans";
       };
       serif = {
-        package = pkgs.open-sans.out;
+        package = pkgs.inter.out;
         name = "Open Sans";
       };
     };

@@ -25,6 +25,7 @@
   };
   lspsaga = {
     enable = true;
+    lightbulb.virtualText = false;
   };
   lsp = {
     enable = true;
