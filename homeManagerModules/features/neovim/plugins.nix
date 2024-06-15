@@ -53,18 +53,35 @@
   };
   neorg = {
     enable = true;
-    modules = {
-      "core.defaults" = {
-        __empty = null;
-      };
-      "core.dirman" = {
-        config = {
-          workspaces = {
-            notes = "~/notes";
+    modules =
+      let
+        empty = { __empty = null; };
+      in
+      {
+        "core.defaults" = empty;
+        "core.concealer" = {
+          config = {
+            icon_preset = "diamond";
+          };
+        };
+        "core.export" = empty;
+        "core.summary" = empty;
+        "core.keybinds" = empty;
+        "core.completion" = {
+          config = {
+            engine = "nvim-cmp";
+          };
+        };
+        "core.journal" = empty;
+        "core.dirman" = {
+          config = {
+            workspaces = {
+              notes = "~/notes";
+            };
+            default_workspace = "notes";
           };
         };
       };
-    };
   };
   lsp-format = {
     enable = true;
@@ -131,19 +148,12 @@
     enable = true;
     autoEnableSources = true;
     settings = {
-      sources = [
-        {
-          name = "nvim_lsp";
-        }
-        {
-          name = "buffer";
-        }
-        {
-          name = "path";
-        }
-        {
-          name = "vsnip";
-        }
+      sources = builtins.map (x: { name = x; }) [
+        "nvim_lsp"
+        "buffer"
+        "path"
+        "vsnip"
+        "neorg"
       ];
       mapping = {
         "<C-Space>" = "cmp.mapping.complete()";
