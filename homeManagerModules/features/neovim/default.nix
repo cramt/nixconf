@@ -54,6 +54,25 @@ in
         }
 
       ];
+      userCommands =
+        let
+          searchAndReplaceAliases = {
+            NewLineRemove = [
+              ''/\([^\s]\)\-\n/\1/''
+              ''/\n/ /''
+            ];
+          };
+        in
+        builtins.mapAttrs
+          (name: value: {
+            command = (
+              lib.strings.concatStringsSep " | " (
+                builtins.map (regex: "'<,'>s${regex}e") value
+              )
+            ) + " | noh";
+            range = true;
+          })
+          searchAndReplaceAliases;
       keymaps = ((import ./keymaps.nix) {
         inherit lib;
       }).keymaps;

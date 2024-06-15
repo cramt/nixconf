@@ -59,11 +59,7 @@
       in
       {
         "core.defaults" = empty;
-        "core.concealer" = {
-          config = {
-            icon_preset = "diamond";
-          };
-        };
+        "core.concealer" = empty;
         "core.export" = empty;
         "core.summary" = empty;
         "core.keybinds" = empty;
