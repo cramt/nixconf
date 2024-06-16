@@ -1,38 +1,34 @@
-{ pkgs, config, ... }: {
+{ pkgs, lib, config, ... }: {
   config = {
-    home.file = {
-      ".local/share/zsh/zsh-autosuggestions".source = "${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions";
-      ".local/share/zsh/zsh-fast-syntax-highlighting".source = "${pkgs.zsh-fast-syntax-highlighting}/share/zsh/site-functions";
-      ".local/share/zsh/nix-zsh-completions".source = "${pkgs.nix-zsh-completions}/share/zsh/plugins/nix";
-      ".local/share/zsh/zsh-vi-mode".source = "${pkgs.zsh-vi-mode}/share/zsh-vi-mode";
-    };
     programs.zsh = {
       enable = true;
-
       shellAliases = {
         ls = "${pkgs.eza}/bin/eza --icons -a --group-directories-first";
         tree = "${pkgs.eza}/bin/eza --color=auto --tree";
         ssh_jump = "ssh ao@161.35.219.109 -A";
       };
-      plugins = [
+      plugins = lib.attrsets.mapAttrsToList
+        (name: value: {
+          name = name;
+          src = value.pkgs or pkgs.${name};
+          file = value.file or "";
+        })
         {
-          name = "zsh-syntax-highlighting";
-          src = pkgs.zsh-syntax-highlighting;
-        }
-        {
-          name = "zsh-completions";
-          src = pkgs.zsh-completions;
-        }
-        {
-          name = "zsh-vi-mode";
-          src = pkgs.zsh-vi-mode;
-        }
-        {
-          name = "zsh-autosuggestions";
-          src = pkgs.zsh-autosuggestions;
-        }
-      ];
-      oh-my-zsh.enable = true;
+          "zsh-syntax-highlighting" = {
+            file = "share/zsh/site-functions";
+          };
+          "zsh-completions" = {
+            pkgs = pkgs.nix-zsh-completions;
+            file = "share/zsh/plugins/nix";
+          };
+          "zsh-vi-mode" = {
+            file = "share/zsh-vi-mode/zsh-vi-mode.plugin.zsh";
+          };
+          "zsh-history-substring-search" = {
+            file = "share/zsh-history-substring-search/zsh-history-substring-search.zsh";
+          };
+        };
+      autosuggestion.enable = true;
       syntaxHighlighting.enable = true;
       initExtra = ''
         if [[ -z "''${SSH_AGENT_PID}" ]]
