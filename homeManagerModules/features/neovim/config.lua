@@ -9,7 +9,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 
 vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
     pattern = { "*.norg" },
-    command = "set conceallevel=3"
+    command = "set conceallevel=3 | set linebreak"
 })
 
 MyBufferHelper = {}

@@ -59,7 +59,7 @@ in
           searchAndReplaceAliases = {
             NewLineRemove = [
               ''/\([^\s]\)\-\n/\1/''
-              ''/\n/ /''
+              ''/\s*\n\s*/ /''
             ];
           };
         in
