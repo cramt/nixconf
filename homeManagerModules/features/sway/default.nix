@@ -3,13 +3,46 @@
 let
   cfg = config.myHomeManager.sway;
   mod = "Mod4";
-  lockCommand = "${pkgs.swaylock}/bin/swaylock";
-  lockImage = ./../../../media/Abstract.jpg;
-  backgroundImage = ./../../../media/pattern.jpg;
+  backgroundAsset = ./../../../media/cosmere.mp4;
+  screenSpecificVideos = builtins.mapAttrs
+    (
+      name: value:
+        let
+          res = "${toString value.res.width}:${toString value.res.height}";
+          rotation = lib.concatMapStrings (_: ",transpose=2") (lib.range 1 (value.transform / 90));
+        in
+        (pkgs.runCommand "screen_specific_videos" { } ''
+          mkdir -p $out
+
+          ${pkgs.ffmpeg}/bin/ffmpeg -i ${backgroundAsset} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}${rotation}" $out/output.mp4
+        '')
+
+    )
+    cfg.monitors;
   setBackground = pkgs.writeShellScriptBin "set_background" ''
-    pkill swaybg
-    swaybg -i ${backgroundImage} -m fit &
+    pkill mpvpaper 
+    ${lib.strings.concatStringsSep "\n" (lib.attrsets.mapAttrsToList (
+      name: value: "${pkgs.mpvpaper}/bin/mpvpaper -o \"--loop\" -f '${name}' ${value}/output.mp4"
+    ) screenSpecificVideos)}
+    sleep 1
+    pkill swaybg #stylix sets the wallpapir like a dumbdumb
   '';
+  mkRunIfNoMedia = name: cmd: "${pkgs.writeShellScriptBin name ''
+    if [[ "$(${pkgs.playerctl}/bin/playerctl status)" != "Playing" ]]; then
+      ${cmd}
+    fi
+  ''}/bin/${name}";
+  lockCommand = mkRunIfNoMedia "lock" "${pkgs.swaylock}/bin/swaylock -f";
+  rofiMonitor = pkgs.writeShellScriptBin "rofi_monitor" ''
+    monitor="$(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq '[.[].focused] | index(true)')"
+    rofi $@
+  '';
+  rofiGeneric = pkgs.writeShellScriptBin "rofi_generic" ''
+    ${rofiMonitor}/bin/rofi_monitor -show $(echo "calc,emoji,powermenu,top" | rofi -sep ',' -dmenu)
+  '';
+  rofiGenericCommand = "${rofiGeneric}/bin/rofi_generic";
+  swayrCommand = "${pkgs.swayr}/bin/swayr";
+  execSwayr = "exec ${swayrCommand}";
 in
 {
   options.myHomeManager.sway = {
@@ -21,49 +54,43 @@ in
     };
   };
   config = {
-
+    services.playerctld.enable = true;
     home.sessionVariables = {
       WLR_RENDERER = "vulkan";
       WLR_NO_HARDWARE_CURSORS = "1";
       XWAYLAND_NO_GLAMOR = "1";
     };
+    programs.tofi = {
+      enable = true;
+    };
     programs.swaylock = {
       enable = true;
       settings = {
-        image = "${lockImage}";
         indicator-caps-lock = true;
         scaling = "fill";
         font = "Ubuntu Mono";
         font-size = 20;
         indicator-radius = 360;
-        line-color = "#3b4252";
-        text-color = "#d8dee9";
-        inside-color = "#2e344098";
-        inside-ver-color = "#5e81ac";
-        line-ver-color = "#5e81ac";
-        ring-ver-color = "#5e81ac98";
-        ring-color = "#4c566a";
-        key-hl-color = "#5e81ac";
-        separator-color = "#4c566a";
-        layout-text-color = "#eceff4";
-        line-wrong-color = "#d08770";
       };
+    };
+    programs.swayr = {
+      enable = true;
+      systemd.enable = true;
     };
     services.swayidle = {
       enable = true;
       timeouts = [
         {
+          timeout = 60 * 15;
+          command = mkRunIfNoMedia "hypernate" "${pkgs.systemd}/bin/systemctl suspend";
+        }
+        {
           timeout = 60 * 10;
-          command = lockCommand;
-        }
-      ];
-      events = [
-        {
-          event = "before-sleep";
-          command = lockCommand;
+          command = mkRunIfNoMedia "screen_off" ''${pkgs.sway}/bin/swaymsg "output * dpms off"'';
+          resumeCommand = ''${pkgs.sway}/bin/swaymsg "output * dpms on"'';
         }
         {
-          event = "lock";
+          timeout = 60 * 5;
           command = lockCommand;
         }
       ];
@@ -75,11 +102,13 @@ in
         workspace 1
       '';
       wrapperFeatures.gtk = true;
-      extraOptions = [ "--unsupported-gpu" ];
       config = {
         output = builtins.mapAttrs
           (
-            name: value: builtins.removeAttrs value [ "workspace" ]
+            name: value: ((builtins.removeAttrs value [ "workspace" ]) // {
+              res = "${toString value.res.width}x${toString value.res.height}";
+              transform = toString value.transform;
+            })
           )
           cfg.monitors;
         workspaceOutputAssign = builtins.attrValues
@@ -93,9 +122,10 @@ in
               )
               cfg.monitors
           );
+
         modifier = mod;
         terminal = "alacritty";
-        menu = "wofi --show drun";
+        menu = "${pkgs.tofi}/bin/tofi-drun | xargs swaymsg exec --";
         defaultWorkspace = "1";
         window = {
           border = 2;
@@ -112,12 +142,39 @@ in
             command = "${setBackground}/bin/set_background";
             always = true;
           }
+          {
+            command = "${pkgs.autotiling}/bin/autotiling";
+            always = true;
+          }
         ];
+        modes = {
+          resize =
+            let
+              size = builtins.toString 10;
+              unit = "ppt";
+            in
+            rec {
+              Down = "resize shrink height ${size} ${unit}";
+              j = Down;
+              Up = "resize grow height ${size} ${unit}";
+              k = Up;
+              Left = "resize grow width ${size} ${unit}";
+              h = Left;
+              Right = "resize shrink width ${size} ${unit}";
+              l = Right;
+              Return = "mode default";
+              Escape = Return;
+            };
+        };
         keybindings = lib.mkOptionDefault
           {
             "print" = "exec grimshot --notify copy area";
             "${mod}+q" = "kill";
+            "${mod}+shift+d" = "exec ${rofiGenericCommand}";
+            "${mod}+x" = "exec ${pkgs.sway-easyfocus}/bin/sway-easyfocus";
             "${mod}+f1" = "exec ${lockCommand}";
+            "${mod}+tab" = "${execSwayr} switch-to-urgent-or-lru-window";
+            "${mod}+Shift+Return" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl play-pause";
           };
         bars = [
           {
@@ -129,59 +186,18 @@ in
           outer = 0;
           smartBorders = "on";
         };
-        colors = {
-          background = "#f8f8f2";
-          focused = {
-            background = "#4d0426";
-            border = "#4d0426";
-            childBorder = "#4d0426";
-            indicator = "#ff92df";
-            text = "#f8f8f2";
-          };
-          focusedInactive = {
-            background = "#44475A";
-            border = "#44475A";
-            childBorder = "#44475A";
-            indicator = "#44475A";
-            text = "#f8f8f2";
-          };
-          unfocused = {
-            background = "#1d212a";
-            border = "#44475A";
-            childBorder = "#1d212a";
-            indicator = "#1d212a";
-            text = "#f8f8f2";
-          };
-          urgent = {
-            background = "#f05c8e";
-            border = "#44475A";
-            childBorder = "#f05c8e";
-            indicator = "#f05c8e";
-            text = "#f8f8f2";
-          };
-          placeholder = {
-            background = "#1d212a";
-            border = "#1d212a";
-            childBorder = "#1d212a";
-            indicator = "#1d212a";
-            text = "#f8f8f2";
-          };
-        };
       };
     };
+    xdg.configFile."sway-easyfocus/config.yaml".source = ./easyfocus-config.yaml;
 
-    myHomeManager.wofi.enable = lib.mkDefault
-      true;
-    myHomeManager.waybar.enable = lib.mkDefault
-      true;
+    myHomeManager.rofi.enable = true;
+    myHomeManager.waybar.enable = true;
     home.packages = with pkgs; [
+      sway-easyfocus
       sway-contrib.grimshot
       wl-clipboard
       eww
       networkmanagerapplet
-      wofi
-      waybar
-      swaybg
     ];
   };
 }

@@ -1,0 +1,8 @@
+{ pkgs, ... }: {
+  config = {
+    stylix.targets.vesktop.enable = true;
+    home.packages = with pkgs; [
+      vesktop
+    ];
+  };
+}

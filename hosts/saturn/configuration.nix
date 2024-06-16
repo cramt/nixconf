@@ -5,7 +5,6 @@
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      inputs.disko.nixosModules.default
     ];
 
   boot = {
@@ -14,13 +13,14 @@
   };
 
   security.polkit.enable = true;
-  
+
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
   myNixOS = {
     gnupg.enable = true;
     qemu.enable = true;
     bundles.general.enable = true;
+    bundles.graphical.enable = true;
     steam.enable = true;
     amd.enable = true;
     bundles.users.enable = true;
@@ -28,14 +28,11 @@
     home-users = {
       "cramt" = {
         userConfig = ./home.nix;
-        userSettings = {
-          extraGroups = [ "networkmanager" "wheel" "libvirtd" "docker" "adbusers" "openrazer" ];
-        };
       };
     };
   };
 
-  networking.hostName = "io";
+  networking.hostName = "saturn";
 
   networking.networkmanager.enable = true;
 
@@ -44,6 +41,7 @@
   nixpkgs = {
     overlays = [
       inputs.nur.overlay
+      inputs.neorg-overlay.overlays.default
     ];
     config = {
       allowUnfree = true;

@@ -3,7 +3,14 @@
 , inputs
 , lib
 , ...
-}: {
+}:
+let
+  ld_packages = with pkgs; [
+    libyaml
+    stdenv.cc.cc.lib
+  ];
+in
+{
   imports = [
     inputs.nix-colors.homeManagerModules.default
   ];
@@ -16,6 +23,7 @@
   };
 
   programs.home-manager.enable = true;
+  programs.go.enable = true;
 
   myHomeManager = {
     neovim.enable = true;
@@ -25,7 +33,9 @@
     nix-index.enable = true;
     starship.enable = true;
     java.enable = true;
+    vesktop.enable = true;
     nushell.enable = true;
+    ruby.enable = true;
   };
 
   home.packages = with pkgs; [
@@ -33,14 +43,12 @@
     gnupg
     nushell
     zellij
-    vesktop
     htop
     eza
     zoxide
     bat
     gnumake
     (hiPrio gcc)
-    clang
     ripgrep
     neofetch
     lazygit
@@ -48,22 +56,23 @@
     nodejs_20
     yarn
     nodePackages.pnpm
-    (inputs.nixpkgs-stable.legacyPackages.${"x86_64-linux"}.ruby) #TODO: do better
     unzip
     cargo
     rustc
     nh
     just
-    stdenv.cc.cc.lib
     luajit
     luajitPackages.luarocks
-  ];
+    clang
+    postgresql.out
+    terraform
+    tflint
+    awscli2
+  ] ++ ld_packages;
 
   home.sessionVariables = {
     FLAKE = "${config.home.homeDirectory}/nixconf";
-    LD_LIBRARY_PATH = "${lib.makeLibraryPath (with pkgs; [ libyaml stdenv.cc.cc.lib ])}";
+    LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
+    NEOVIDE_FORK = "1";
   };
-  home.sessionPath = [
-    "/home/cramt/.local/share/gem/ruby/3.1.0/bin"
-  ];
 }

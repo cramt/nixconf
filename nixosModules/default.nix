@@ -32,16 +32,30 @@ let
         configExtension = config: (lib.mkIf cfg.bundles.${name}.enable config);
       })
       (myLib.filesIn ./bundles);
+
+  services =
+    myLib.extendModules
+      (name: {
+        extraOptions = {
+          myNixOS.services.${name}.enable = lib.mkEnableOption "enable ${name} service";
+        };
+
+        configExtension = config: (lib.mkIf cfg.services.${name}.enable config);
+      })
+      (myLib.filesIn ./services);
 in
 {
   imports =
     [
       inputs.home-manager.nixosModules.home-manager
+      inputs.stylix.nixosModules.stylix
     ]
     ++ features
-    ++ bundles;
+    ++ bundles
+    ++ services;
 
   config = {
+    stylix.enable = true;
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
     programs.nix-ld.enable = true;
     nixpkgs.config.allowUnfree = true;

@@ -17,9 +17,8 @@ in
           default = ./../../home-manager/work.nix;
           example = "DP-1";
         };
-        userSettings = lib.mkOption {
-          default = { };
-          example = "{}";
+        authorizedKeys = lib.mkOption {
+          default = [ ];
         };
       };
     });
@@ -59,15 +58,14 @@ in
 
     users.users = builtins.mapAttrs
       (
-        name: user:
-          {
-            isNormalUser = true;
-            initialPassword = "12345";
-            description = "";
-            shell = pkgs.zsh;
-            extraGroups = [ "libvirtd" "networkmanager" "wheel" ];
-          }
-          // user.userSettings
+        name: user: {
+          isNormalUser = true;
+          initialPassword = "12345";
+          description = "";
+          shell = pkgs.zsh;
+          extraGroups = [ "libvirtd" "networkmanager" "wheel" "docker" ];
+          openssh.authorizedKeys.keys = user.authorizedKeys;
+        }
       )
       (config.myNixOS.home-users);
   };

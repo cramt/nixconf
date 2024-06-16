@@ -3,9 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.11";
-
-    xremap-flake.url = "github:xremap/nix-flake";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
+    # downgrade to 0.49.0 solargraph as 0.50 requires strscan 3.0.9 which i cant get to work due to it being a pre-installed gem from ruby itself
+    nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/52c874987156f13ef08993618ea8bfb0531c0463";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -17,39 +17,30 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    firefox-addons = {
-      url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nix-alien = {
-      url = "github:thiagokokada/nix-alien";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nix-colors.url = "github:misterio77/nix-colors";
-
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    disko = {
-      url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    impermanence = {
-      url = "github:nix-community/impermanence";
-    };
-
-    persist-retro.url = "github:Geometer1729/persist-retro";
 
     nur.url = "github:nix-community/NUR";
 
+    nix-ld = {
+      url = "github:Mic92/nix-ld";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    nix-ld.url = "github:Mic92/nix-ld";
-    nix-ld.inputs.nixpkgs.follows = "nixpkgs";
+    stylix.url = "github:danth/stylix";
+
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    neorg-overlay.url = "github:nvim-neorg/nixpkgs-neorg-overlay";
+
+    foundryvtt.url = "github:reckenrode/nix-foundryvtt";
+
+    darkmingo-cockactrice-theme = {
+      url = "github:mingomongo/DarkMingo-Theme-for-Cockatrice";
+      flake = false;
+    };
   };
 
   outputs = { ... } @ inputs:
@@ -61,15 +52,13 @@
     with myLib; {
       nixosConfigurations = {
         terra = mkSystem ./hosts/terra/configuration.nix;
-        io = mkSystem ./hosts/io/configuration.nix;
+        saturn = mkSystem ./hosts/saturn/configuration.nix;
         mars = mkSystem ./hosts/mars/configuration.nix;
-      };
-
-      homeConfigurations = {
-        "cramt@terra" = mkHome "x86_64-linux" ./hosts/terra/home.nix;
+        luna = mkSystem ./hosts/luna/configuration.nix;
       };
 
       homeManagerModules.default = ./homeManagerModules;
       nixosModules.default = ./nixosModules;
     };
 }
+

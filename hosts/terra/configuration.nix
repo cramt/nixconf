@@ -5,7 +5,6 @@
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      inputs.disko.nixosModules.default
     ];
 
   # Bootloader.
@@ -24,15 +23,13 @@
     };
     nvidia.package_version = "legacy_390";
     bundles.general.enable = true;
+    bundles.graphical.enable = true;
     steam.enable = true;
     bundles.users.enable = true;
 
     home-users = {
       "cramt" = {
         userConfig = ./home.nix;
-        userSettings = {
-          extraGroups = [ "networkmanager" "wheel" "libvirtd" "docker" "adbusers" "openrazer" ];
-        };
       };
     };
   };
