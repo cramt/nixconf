@@ -13,6 +13,8 @@
     gimp
   ];
 
+  xdg.enable = true;
+
   myHomeManager = {
     firefox.enable = true;
     sway.enable = true;
@@ -22,5 +24,6 @@
     mako.enable = true;
     zathura.enable = true;
     network-manager-applet.enable = true;
+    nautilus.enable = true;
   };
 }

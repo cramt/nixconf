@@ -54,6 +54,8 @@ in
     };
   };
   config = {
+    stylix.targets.hyprpaper.enable = false;
+    stylix.targets.hyprland.enable = false;
     services.playerctld.enable = true;
     home.sessionVariables = {
       WLR_RENDERER = "vulkan";
