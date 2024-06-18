@@ -37,7 +37,6 @@ in
     nushell.enable = true;
     ruby.enable = true;
     zellij.enable = true;
-    ssh_luna.enable = true;
   };
 
   home.packages = with pkgs; [
