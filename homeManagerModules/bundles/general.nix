@@ -36,6 +36,7 @@ in
     vesktop.enable = true;
     nushell.enable = true;
     ruby.enable = true;
+    zellij.enable = true;
   };
 
   home.packages = with pkgs; [
