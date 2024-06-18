@@ -26,7 +26,7 @@
         downloads = {
           raw = "/mnt/crisium/downloads/raw";
           movies = "/mnt/crisium/downloads/movies";
-          tvshows = "/mnt/crisium/downloads/tvshows";
+          tvshows = "/mnt/imbrium/downloads/tvshows";
         };
       in
       {
