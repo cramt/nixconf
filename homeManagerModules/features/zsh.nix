@@ -15,11 +15,6 @@
         ssh_jump = "ssh ao@161.35.219.109 -A";
       };
       initExtra = ''
-        if [[ -z "''${SSH_AGENT_PID}" ]]
-        then
-          eval `ssh-agent -s` > /dev/null
-        fi
-
         # PLUGINS (whatever)
         [ -f "$HOME/.local/share/zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh" ] && \
         source "$HOME/.local/share/zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh"

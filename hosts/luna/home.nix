@@ -15,8 +15,4 @@
   };
 
   home.stateVersion = "24.05";
-
-  home.sessionVariables = {
-    EDITOR = "nvim";
-  };
 }

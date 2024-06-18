@@ -37,6 +37,7 @@ in
     nushell.enable = true;
     ruby.enable = true;
     zellij.enable = true;
+    ssh_luna.enable = true;
   };
 
   home.packages = with pkgs; [
@@ -75,5 +76,8 @@ in
     FLAKE = "${config.home.homeDirectory}/nixconf";
     LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
     NEOVIDE_FORK = "1";
+    EDITOR = "nvim";
+    BROWSER = "firefox";
+    TERMINAL = "alacritty";
   };
 }

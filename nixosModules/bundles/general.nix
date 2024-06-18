@@ -59,6 +59,10 @@ in
     };
   };
 
+  myNixOS = {
+    ssh.enable = true;
+  };
+
   nix = {
     optimise.automatic = true;
     gc = {
