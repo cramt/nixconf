@@ -17,6 +17,7 @@
           enable = true;
           package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.rubocop;
         };
+        sqlfluff.enable = true;
       };
       diagnostics = {
         actionlint.enable = true;
