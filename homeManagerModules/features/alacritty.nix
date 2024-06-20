@@ -1,10 +1,16 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+let
+  zellij_smart_start = ((import ../../scripts/zellij_smart_start.nix) {
+    inherit pkgs;
+  });
+in
+{
   programs.alacritty = {
     enable = true;
     settings = {
       shell = {
         program = "${pkgs.zsh}/bin/zsh";
-        args = [ "-l" "-c" "${pkgs.zellij}/bin/zellij attach --index 0 || ${pkgs.zellij}/bin/zellij" ];
+        args = [ "-l" "-c" "${zellij_smart_start}/bin/zellij_smart_start" ];
       };
       colors = {
         draw_bold_text_with_bright_colors = true;

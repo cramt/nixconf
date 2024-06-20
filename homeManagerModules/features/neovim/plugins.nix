@@ -7,6 +7,7 @@
   };
   none-ls = {
     enable = true;
+    enableLspFormat = true;
     sources = {
       formatting = {
         prettier.enable = true;
@@ -50,6 +51,7 @@
       gopls.enable = true;
       tsserver.enable = true;
       eslint.enable = true;
+      rust-analyzer.enable = true;
     };
   };
   neorg = {
