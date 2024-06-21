@@ -15,7 +15,7 @@
         just.enable = true;
         terraform_fmt.enable = true;
         rubocop = {
-          enable = true;
+          enable = false;
           package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.rubocop;
         };
         sqlfluff.enable = true;
@@ -41,8 +41,18 @@
         };
       };
       solargraph = {
-        enable = true;
+        enable = false;
         package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.solargraph;
+      };
+      ruby-lsp = {
+        enable = true;
+        package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.ruby-lsp;
+        extraOptions = {
+          rubyLsp = {
+            rubyVersionManager = "custom";
+            customRubyCommand = "";
+          };
+        };
       };
       lua-ls.enable = true;
       sqls.enable = true;

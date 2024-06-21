@@ -6,7 +6,7 @@
 }:
 let
   ld_packages = with pkgs; [
-    libyaml
+    libyaml.dev
     stdenv.cc.cc.lib
   ];
 in
