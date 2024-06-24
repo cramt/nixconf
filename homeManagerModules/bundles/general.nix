@@ -62,13 +62,12 @@ in
     rustc
     nh
     just
-    luajit
-    luajitPackages.luarocks
     clang
     postgresql.out
     terraform
     tflint
     awscli2
+    dnsutils
   ] ++ ld_packages;
 
   home.sessionVariables = {
