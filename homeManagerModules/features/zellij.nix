@@ -9,6 +9,7 @@
     enable = true;
     settings = {
       pane_frames = false;
+      session_serialization = false;
     };
   };
 }
