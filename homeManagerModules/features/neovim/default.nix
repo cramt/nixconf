@@ -52,7 +52,12 @@ in
             end
           '';
         }
-
+        {
+          plugin = pkgs.vimPlugins.otter-nvim;
+          config = toLua ''
+            require("otter").activate(nil, true, true, nil)
+          '';
+        }
       ];
       userCommands =
         let

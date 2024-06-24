@@ -163,6 +163,7 @@
         "path"
         "vsnip"
         "neorg"
+        "otter"
       ];
       mapping = {
         "<C-Space>" = "cmp.mapping.complete()";

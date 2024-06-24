@@ -1,5 +1,4 @@
-{ pkgs }: pkgs.writeScriptBin "zellij_smart_start" ''
-  #!${pkgs.nushell}/bin/nu
+{ pkgs }: pkgs.writers.writeNuBin "zellij_smart_start" ''
   let attched_sessions = ps --long | where command =~ "zellij --server" | each { 
     let value = $in.command | split row "/" | last | str replace "main" ""
     try { $value | into int }
