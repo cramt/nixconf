@@ -63,7 +63,7 @@ in
           initialPassword = "12345";
           description = "";
           shell = pkgs.zsh;
-          extraGroups = [ "libvirtd" "networkmanager" "wheel" "docker" ];
+          extraGroups = [ "libvirtd" "networkmanager" "wheel" "docker" "storage" ];
           openssh.authorizedKeys.keys = user.authorizedKeys;
         }
       )
