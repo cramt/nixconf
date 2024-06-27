@@ -18,6 +18,7 @@
       package = pkgs.wireplumber;
     };
   };
+  myNixOS.services.udisks.enable = true;
   hardware.pulseaudio.enable = false;
   fonts = {
     packages = with pkgs;
