@@ -33,6 +33,7 @@ in
         copyindent = true;
         expandtab = true;
         showmode = false;
+        foldenable = false;
         signcolumn = "yes";
       };
       clipboard = {

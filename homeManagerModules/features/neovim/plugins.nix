@@ -18,7 +18,6 @@
           enable = false;
           package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.rubocop;
         };
-        sqlfluff.enable = true;
       };
       diagnostics = {
         actionlint.enable = true;
@@ -55,7 +54,7 @@
         };
       };
       lua-ls.enable = true;
-      sqls.enable = true;
+      sqls.enable = false;
       yamlls.enable = true;
       terraformls.enable = true;
       gopls.enable = true;
