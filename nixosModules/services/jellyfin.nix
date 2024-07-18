@@ -29,7 +29,7 @@ in
     virtualisation.podman.enableNvidia = true;
     virtualisation.oci-containers.containers.jellyfin = {
       hostname = "jellyfin";
-      image = "lscr.io/linuxserver/jellyfin";
+      image = "lscr.io/linuxserver/jellyfin:10.9.7";
       volumes = (
         lib.attrsets.mapAttrsToList
           (
