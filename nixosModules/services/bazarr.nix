@@ -1,6 +1,7 @@
 { config, lib, ... }:
 let
   cfg = config.myNixOS.services.bazarr;
+  docker_versions = import ../../docker_versions.nix;
 in
 {
   options.myNixOS.services.bazarr = {
@@ -32,7 +33,7 @@ in
   config = {
     virtualisation.oci-containers.containers.bazarr = {
       hostname = "bazarr";
-      image = "ghcr.io/hotio/bazarr";
+      image = "ghcr.io/hotio/bazarr:${docker_versions.bazarr}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.movieVolume}:/movies"

@@ -1,6 +1,7 @@
 { config, lib, ... }:
 let
   cfg = config.myNixOS.services.qbittorrent;
+  docker_versions = import ../../docker_versions.nix;
 in
 {
   options.myNixOS.services.qbittorrent = {
@@ -20,7 +21,7 @@ in
   config = {
     virtualisation.oci-containers.containers.qbittorrent = {
       hostname = "qbittorrent";
-      image = "lscr.io/linuxserver/qbittorrent";
+      image = "lscr.io/linuxserver/qbittorrent:${docker_versions.qbittorrent}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.downloadVolume}:/downloads"

@@ -1,6 +1,7 @@
 { config, lib, ... }:
 let
   cfg = config.myNixOS.services.sonarr;
+  docker_versions = import ../../docker_versions.nix;
 in
 {
   options.myNixOS.services.sonarr = {
@@ -26,7 +27,7 @@ in
   config = {
     virtualisation.oci-containers.containers.sonarr = {
       hostname = "sonarr";
-      image = "ghcr.io/hotio/sonarr";
+      image = "ghcr.io/hotio/sonarr:${docker_versions.sonarr}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.tvVolume}:/tv"

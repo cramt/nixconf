@@ -1,6 +1,7 @@
 { config, lib, ... }:
 let
   cfg = config.myNixOS.services.radarr;
+  docker_versions = import ../../docker_versions.nix;
 in
 {
   options.myNixOS.services.radarr = {
@@ -26,7 +27,7 @@ in
   config = {
     virtualisation.oci-containers.containers.radarr = {
       hostname = "radarr";
-      image = "ghcr.io/hotio/radarr";
+      image = "ghcr.io/hotio/radarr:${docker_versions.radarr}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.movieVolume}:/movies"

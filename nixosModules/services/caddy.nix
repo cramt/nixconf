@@ -9,6 +9,7 @@ let
       subdomain = name;
     })
     cfg.staticFileVolumes;
+  docker_versions = import ../../docker_versions.nix;
 in
 {
   options.myNixOS.services.caddy = {
@@ -117,7 +118,7 @@ in
       };
       virtualisation.oci-containers.containers.caddy = {
         hostname = "caddy";
-        image = "caddy";
+        image = "caddy:${docker_versions.caddy}";
         volumes = [
           "${cfg.cacheVolume}/config:/config"
           "${cfg.cacheVolume}/data:/data"

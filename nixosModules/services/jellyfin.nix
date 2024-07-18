@@ -1,7 +1,7 @@
 { config, lib, ... }:
 let
-
   cfg = config.myNixOS.services.jellyfin;
+  docker_versions = import ../../docker_versions.nix;
 in
 {
   options.myNixOS.services.jellyfin = {
@@ -29,7 +29,7 @@ in
     virtualisation.podman.enableNvidia = true;
     virtualisation.oci-containers.containers.jellyfin = {
       hostname = "jellyfin";
-      image = "lscr.io/linuxserver/jellyfin:10.9.7";
+      image = "lscr.io/linuxserver/jellyfin:${docker_versions.jellyfin}";
       volumes = (
         lib.attrsets.mapAttrsToList
           (
