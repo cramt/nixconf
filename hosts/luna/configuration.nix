@@ -16,10 +16,9 @@
 
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
-  powerManagement.powertop.enable = true;
-
   myNixOS = {
     gnupg.enable = true;
+    powertop.enable = true;
     bundles.general.enable = true;
     bundles.users.enable = true;
 
