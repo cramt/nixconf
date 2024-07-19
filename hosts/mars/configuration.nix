@@ -20,6 +20,14 @@
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.users.enable = true;
+    services.pihole.enable = false;
+    services.caddy = {
+      enable = false;
+      protocol = "http";
+      domain = "localhost";
+      staticFileVolumes = { };
+      cacheVolume = "/tmp/b";
+    };
 
     home-users = {
       "cramt" = {

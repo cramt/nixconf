@@ -83,6 +83,12 @@ in
             reverse_proxy http://bazarr:6767
           }
         '' else "";
+      piholeCaddy =
+        if config.myNixOS.services.pihole.enable then ''
+          ${cfg.protocol}://pihole.${cfg.domain} {
+            reverse_proxy http://pihole:80
+          }
+        '' else "";
       staticFileCaddy = lib.strings.concatStringsSep "\n" (
         builtins.map
           (x: ''
@@ -100,6 +106,7 @@ in
         ${radarrCaddy}
         ${sonarrCaddy}
         ${bazarrCaddy}
+        ${piholeCaddy}
         ${staticFileCaddy}
       '';
     in
