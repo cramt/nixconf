@@ -27,7 +27,7 @@ in
   config = {
     virtualisation.oci-containers.containers.sonarr = {
       hostname = "sonarr";
-      image = "ghcr.io/hotio/sonarr:${docker_versions.sonarr}";
+      image = "linuxserver/sonarr:${docker_versions.sonarr}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.tvVolume}:/tv"

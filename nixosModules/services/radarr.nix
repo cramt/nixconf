@@ -27,7 +27,7 @@ in
   config = {
     virtualisation.oci-containers.containers.radarr = {
       hostname = "radarr";
-      image = "ghcr.io/hotio/radarr:${docker_versions.radarr}";
+      image = "linuxserver/radarr:${docker_versions.radarr}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.movieVolume}:/movies"

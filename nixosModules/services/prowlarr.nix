@@ -15,7 +15,7 @@ in
   config = {
     virtualisation.oci-containers.containers.prowlarr = {
       hostname = "prowlarr";
-      image = "ghcr.io/hotio/prowlarr:${docker_versions.prowlarr}";
+      image = "linuxserver/prowlarr:${docker_versions.prowlarr}";
       volumes = [
         "${cfg.configVolume}:/config"
       ];

@@ -33,7 +33,7 @@ in
   config = {
     virtualisation.oci-containers.containers.bazarr = {
       hostname = "bazarr";
-      image = "ghcr.io/hotio/bazarr:${docker_versions.bazarr}";
+      image = "linuxserver/bazarr:${docker_versions.bazarr}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.movieVolume}:/movies"
