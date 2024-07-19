@@ -6,7 +6,7 @@
   caddy = "2.8.0";
   bazarr = "1.4.3";
   qbittorrent = "4.6.5";
-  pihole = "2024.07.0";
+  adguard = "v0.107.52";
 }
 
 

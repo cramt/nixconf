@@ -24,6 +24,18 @@
     steam.enable = true;
     amd.enable = true;
     bundles.users.enable = true;
+    services.adguard = {
+      enable = false;
+      configVolume = "/tmp/a";
+      workVolume = "/tmp/c";
+    };
+    services.caddy = {
+      enable = false;
+      protocol = "http";
+      domain = "localhost";
+      staticFileVolumes = { };
+      cacheVolume = "/tmp/b";
+    };
 
     home-users = {
       "cramt" = {

@@ -83,10 +83,13 @@ in
             reverse_proxy http://bazarr:6767
           }
         '' else "";
-      piholeCaddy =
-        if config.myNixOS.services.pihole.enable then ''
-          ${cfg.protocol}://pihole.${cfg.domain} {
-            reverse_proxy http://pihole:80
+      adguardCaddy =
+        if config.myNixOS.services.adguard.enable then ''
+          ${cfg.protocol}://adguard_setup.${cfg.domain} {
+            reverse_proxy http://adguard:3000
+          }
+          ${cfg.protocol}://adguard.${cfg.domain} {
+            reverse_proxy http://adguard:80
           }
         '' else "";
       staticFileCaddy = lib.strings.concatStringsSep "\n" (
@@ -106,7 +109,7 @@ in
         ${radarrCaddy}
         ${sonarrCaddy}
         ${bazarrCaddy}
-        ${piholeCaddy}
+        ${adguardCaddy}
         ${staticFileCaddy}
       '';
     in
