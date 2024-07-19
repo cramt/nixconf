@@ -56,6 +56,10 @@ in
     ++ services;
 
   config = {
+    age = {
+      secrets.main.file = ../secrets/main.age;
+      identityPaths = [ "/home/cramt/.ssh/id_ed25519" ];
+    };
     stylix.enable = true;
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
     programs.nix-ld.enable = true;
