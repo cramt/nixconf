@@ -19,3 +19,4 @@
 - update the version of foundry used
 - auto add foundry zips to store
 - make and setup bot for status check
+- pihole
