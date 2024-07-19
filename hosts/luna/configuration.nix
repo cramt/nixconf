@@ -84,7 +84,8 @@
           tvVolume = downloads.tvshows;
           movieVolume = downloads.movies;
         };
-        adgaurd = {
+
+        adguard = {
           enable = true;
           configVolume = "/mnt/pierre/configs/adgaurd_conf";
           workVolume = "/mnt/pierre/configs/adgaurd_work";
