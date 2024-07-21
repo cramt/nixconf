@@ -42,11 +42,6 @@
       flake = false;
     };
 
-    agenix = {
-      url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     homelab_discord_bot = {
       url = "github:cramt/homelab_discord_bot";
       inputs.nixpkgs.follows = "nixpkgs";

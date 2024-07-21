@@ -68,7 +68,6 @@ in
     tflint
     awscli2
     dnsutils
-    inputs.agenix.packages.${pkgs.system}.default
   ] ++ ld_packages;
 
   home.sessionVariables = {
