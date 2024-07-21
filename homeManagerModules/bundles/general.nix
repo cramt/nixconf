@@ -68,6 +68,7 @@ in
     tflint
     awscli2
     dnsutils
+    sops
   ] ++ ld_packages;
 
   home.sessionVariables = {

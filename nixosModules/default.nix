@@ -49,17 +49,23 @@ in
     [
       inputs.home-manager.nixosModules.home-manager
       inputs.stylix.nixosModules.stylix
+      inputs.sops-nix.nixosModules.sops
     ]
     ++ features
     ++ bundles
     ++ services;
 
   config = {
-    # using age like this requires ssh password on boot
-    #age = {
-    #secrets.main.file = ../secrets/main.age;
-    #identityPaths = [ "/home/cramt/.ssh/id_ed25519" ];
-    #};
+    sops = {
+      defaultSopsFile = ../secrets/secrets.yaml;
+      defaultSopsFormat = "yaml";
+      age = {
+        keyFile = "/home/cramt/.config/sops/age/keys.txt";
+      };
+      secrets = {
+        "homelab_discord_bot/discord_token" = { };
+      };
+    };
     stylix.enable = true;
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
     programs.nix-ld.enable = true;

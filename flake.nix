@@ -42,6 +42,11 @@
       flake = false;
     };
 
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     homelab_discord_bot = {
       url = "github:cramt/homelab_discord_bot";
       inputs.nixpkgs.follows = "nixpkgs";
