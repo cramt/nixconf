@@ -84,11 +84,14 @@
           tvVolume = downloads.tvshows;
           movieVolume = downloads.movies;
         };
-
         adguard = {
           enable = true;
           configVolume = "/mnt/pierre/configs/adgaurd_conf";
           workVolume = "/mnt/pierre/configs/adgaurd_work";
+        };
+        homelab_discord_bot = {
+          enable = true;
+          databaseUrl = "sqlite:/mnt/pierre/homelab_discord_bot.db?mode=rwc";
         };
         sshd.enable = true;
       };
