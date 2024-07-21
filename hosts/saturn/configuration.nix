@@ -24,6 +24,10 @@
     steam.enable = true;
     amd.enable = true;
     bundles.users.enable = true;
+    services.homelab_discord_bot = {
+      enable = false;
+      databaseUrl = "sqlite:/tmp/db.db?mode=rwc";
+    };
     services.adguard = {
       enable = false;
       configVolume = "/tmp/a";
