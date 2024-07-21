@@ -20,3 +20,4 @@
 - auto add foundry zips to store
 - make and setup bot for status check
 - config adgaurd with nix
+- do this https://nix.dev/manual/nix/2.22/package-management/binary-cache-substituter
