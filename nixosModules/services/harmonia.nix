@@ -1,0 +1,3 @@
+{ ... }: {
+  services.harmonia.enable = true;
+}

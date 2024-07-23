@@ -68,6 +68,7 @@ in
 
   myNixOS = {
     ssh.enable = true;
+    services.harmonia.enable = true;
   };
 
   nix = {
