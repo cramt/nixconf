@@ -58,9 +58,15 @@
   # Configure console keymap
   console.keyMap = "dk-latin1";
 
-
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  nix.settings.trusted-substituters = [ "192.168.0.103:5000" "192.168.0.107:5000" "https://cache.nixos.org/" ];
+  nix.settings =
+    let
+      caches = [ "https://cache.nixos.org/" "http://192.168.0.103:5000/" "http://192.168.0.107:5000/" ];
+    in
+    {
+      trusted-substituters = caches;
+      substituters = caches;
+      experimental-features = [ "nix-command" "flakes" ];
+    };
   environment.systemPackages = [
   ];
 
