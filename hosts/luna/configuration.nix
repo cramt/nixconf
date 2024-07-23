@@ -138,6 +138,7 @@
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.trusted-substituters = [ "192.168.0.106:5000" "192.168.0.107:5000" "https://cache.nixos.org/" ];
+  nix.settings.substituters = [ "192.168.0.106:5000" "192.168.0.107:5000" "https://cache.nixos.org/" ];
   environment.systemPackages = [
   ];
 
