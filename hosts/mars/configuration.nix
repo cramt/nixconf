@@ -60,6 +60,7 @@
 
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.trusted-substituters = [ "192.168.0.103:5000" "https://cache.nixos.org/" ];
   environment.systemPackages = [
   ];
 
