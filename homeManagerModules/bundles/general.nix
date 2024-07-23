@@ -60,7 +60,6 @@ in
     unzip
     cargo
     rustc
-    nh
     just
     clang
     postgresql.out

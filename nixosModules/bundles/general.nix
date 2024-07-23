@@ -25,6 +25,13 @@ in
     LC_TIME = "da_DK.UTF-8";
   };
 
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep-since 4d --keep 3";
+    flake = "/home/cramt/nixconf";
+  };
+
 
   environment.sessionVariables = { };
   # battery
@@ -65,10 +72,5 @@ in
 
   nix = {
     optimise.automatic = true;
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
-    };
   };
 }

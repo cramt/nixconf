@@ -10,7 +10,6 @@
 - do a ranger thingy after ^
 - maybe delete gruvbox now that we use stylix
 - get inline sql formatting working with something like https://github.com/LostNeophyte/null-ls-embedded
-- use nh for cleaning
 
 ### server stuff
 
