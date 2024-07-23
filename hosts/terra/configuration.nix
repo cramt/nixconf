@@ -15,13 +15,7 @@
 
   myNixOS = {
     gnupg.enable = true;
-    nvidia.enable = false;
     qemu.enable = true;
-    nvidia.prime = {
-      intelBusId = "PCI:0:2:0";
-      nvidiaBusId = "PCI:1:0:0";
-    };
-    nvidia.package_version = "legacy_390";
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     steam.enable = true;
@@ -54,8 +48,10 @@
 
   # Configure keymap in X11
   services.xserver = {
-    layout = "dk";
-    xkbVariant = "nodeadkeys";
+    xkb = {
+      variant = "nodeadkeys";
+      layout = "dk";
+    };
   };
 
   # Configure console keymap

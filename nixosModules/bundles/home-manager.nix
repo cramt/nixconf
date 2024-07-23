@@ -37,7 +37,7 @@ in
     programs.zsh.enable = true;
     programs.sway.enable = true;
 
-    services.xserver = {
+    services = {
       displayManager = {
         defaultSession = "sway";
       };

@@ -31,7 +31,7 @@
   lsp = {
     enable = true;
     servers = {
-      nil_ls = {
+      nil-ls = {
         enable = true;
         settings = {
           formatting = {
@@ -60,7 +60,11 @@
       gopls.enable = true;
       tsserver.enable = true;
       eslint.enable = true;
-      rust-analyzer.enable = true;
+      rust-analyzer = {
+        enable = true;
+        installCargo = true;
+        installRustc = true;
+      };
     };
   };
   neorg = {
@@ -185,7 +189,7 @@
   telescope = {
     enable = true;
     extensions.fzf-native.enable = true;
-    extraOptions = {
+    settings = {
       pickers = {
         find_files = {
           theme = "ivy";

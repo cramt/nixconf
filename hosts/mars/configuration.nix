@@ -49,8 +49,10 @@
 
   # Configure keymap in X11
   services.xserver = {
-    layout = "dk";
-    xkbVariant = "nodeadkeys";
+    xkb = {
+      variant = "nodeadkeys";
+      layout = "dk";
+    };
   };
 
   # Configure console keymap

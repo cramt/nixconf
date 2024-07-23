@@ -11,15 +11,16 @@
     videoDrivers = [ "amdgpu" ];
   };
 
-  hardware.opengl = {
-    extraPackages = with pkgs; [
-      rocmPackages.clr.icd
-      amdvlk
-    ];
-    driSupport32Bit = true;
-    extraPackages32 = with pkgs; [
-      driversi686Linux.amdvlk
-    ];
-
+  hardware = {
+    graphics = {
+      extraPackages = with pkgs; [
+        rocmPackages.clr.icd
+        amdvlk
+      ];
+      extraPackages32 = with pkgs; [
+        driversi686Linux.amdvlk
+      ];
+      enable32Bit = true;
+    };
   };
 }
