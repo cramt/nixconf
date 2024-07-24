@@ -88,8 +88,10 @@
       caches = [ "https://cache.nixos.org/" "http://192.168.0.103:5000/" "http://192.168.0.106:5000/" ];
     in
     {
-      trusted-substituters = caches;
-      substituters = caches;
+      # this doesnt work when the hosts arent available https://github.com/NixOS/nix/issues/6901
+      # should only be using this strategy on the server
+      #trusted-substituters = caches;
+      #substituters = caches;
       experimental-features = [ "nix-command" "flakes" ];
     };
   environment.systemPackages = [
