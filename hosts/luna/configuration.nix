@@ -98,6 +98,9 @@
           enable = true;
           prio = 50;
         };
+        tor-privoxy = {
+          enable = false;
+        };
       };
 
     home-users = {

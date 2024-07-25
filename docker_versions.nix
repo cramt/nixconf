@@ -7,6 +7,7 @@
   bazarr = "1.4.3";
   qbittorrent = "4.6.5";
   adguard = "v0.107.52";
+  tor-privoxy = "latest";
 }
 
 

@@ -21,6 +21,17 @@
     bundles.graphical.enable = true;
     bundles.users.enable = true;
 
+    services.tor-privoxy = {
+      enable = false;
+    };
+    services.caddy = {
+      enable = false;
+      protocol = "http";
+      domain = "localhost";
+      staticFileVolumes = { };
+      cacheVolume = "/tmp/b";
+    };
+
     home-users = {
       "cramt" = {
         userConfig = ./home.nix;
