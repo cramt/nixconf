@@ -14,9 +14,7 @@
 ### server stuff
 
 - setup attic https://github.com/zhaofengli/attic
-- torproxy for the adarr stuff
 - update the version of foundry used
 - auto add foundry zips to store
 - make and setup bot for status check
 - config adgaurd with nix
-- do this https://nix.dev/manual/nix/2.22/package-management/binary-cache-substituter
