@@ -564,11 +564,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1721731193,
-        "narHash": "sha256-dr1j+FkS6C6LrgKZshFhAF4ePg1K51HdzvJLwREDOFM=",
+        "lastModified": 1721890300,
+        "narHash": "sha256-1F4euUGq44522KZ8g48Q8CGSFtPVHdqdJfXlsCQ21Dg=",
         "owner": "cramt",
         "repo": "homelab_discord_bot",
-        "rev": "64f02fd82e38240e983fa93128116c3a04f55ffb",
+        "rev": "b904b6186e0130ec1e98dc108bd7aab8e2da4c72",
         "type": "github"
       },
       "original": {
@@ -943,11 +943,11 @@
     },
     "nur": {
       "locked": {
-        "lastModified": 1721886788,
-        "narHash": "sha256-yMGKGzsbr0HhtWtoz6Fanrf6S1zjk3s1s1J4Hw7ujzU=",
+        "lastModified": 1721890023,
+        "narHash": "sha256-Q0VVuQBsFuofMsneR4ilRp+eznN8Q/Gz+cv+BlslK6w=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "4fbb78daa6e22e1ccdcbb020091ac84532994bef",
+        "rev": "1002ee1f90ca51d8891642094d3a1e840d82b616",
         "type": "github"
       },
       "original": {
