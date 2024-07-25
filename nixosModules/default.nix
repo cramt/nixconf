@@ -64,6 +64,7 @@ in
       };
       secrets = {
         "homelab_discord_bot/discord_token" = { };
+        "homelab_discord_bot/allowed_guild" = { };
       };
     };
     stylix.enable = true;
