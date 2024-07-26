@@ -1,6 +1,6 @@
 {
   jellyfin = "10.9.8";
-  prowlarr = "1.21.1";
+  prowlarr = "1.20.1";
   sonarr = "4.0.8";
   radarr = "5.9.0";
   caddy = "2.8.4";
