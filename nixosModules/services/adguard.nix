@@ -28,7 +28,7 @@ in
         "${cfg.workVolume}:/opt/adguardhome/work"
       ];
       ports = [
-        "53:53"
+        "53:53/udp"
       ];
       extraOptions = [
         "--network=caddy"
