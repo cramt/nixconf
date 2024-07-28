@@ -20,6 +20,7 @@ in
       };
     };
   config = {
+    networking.firewall.allowedTCPPorts = [ 53 ];
     virtualisation.oci-containers.containers.adguard = {
       hostname = "adguard";
       image = "adguard/adguardhome:${docker_versions.adguard}";
