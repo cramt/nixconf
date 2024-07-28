@@ -15,6 +15,7 @@
   xdg.enable = true;
 
   myHomeManager = {
+    thunderbird.enable = true;
     firefox.enable = true;
     sway.enable = true;
     alacritty.enable = true;
