@@ -10,6 +10,7 @@
     settings = {
       pane_frames = false;
       session_serialization = false;
+      pane_viewport_serialization = false;
     };
   };
 }
