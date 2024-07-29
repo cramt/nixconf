@@ -9,8 +9,8 @@
 - switch from alacritty to rio, might need to pr stylix
 - do a ranger thingy after ^
 - maybe delete gruvbox now that we use stylix
-- get inline sql formatting working with something like https://github.com/LostNeophyte/null-ls-embedded
 - use nixpkgs wowup
+- inline sql in rust working https://github.com/helix-editor/helix/blob/68c7537de522cf6b38705a7af51eeaac260fdc98/runtime/queries/rust/injections.scm
 
 ### server stuff
 
