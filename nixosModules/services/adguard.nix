@@ -21,8 +21,8 @@ in
     };
   config = {
     networking.firewall = {
-      allowedUDPPorts = [ 553 ];
-      allowedTCPPorts = [ 553 ];
+      allowedUDPPorts = [ 53 ];
+      allowedTCPPorts = [ 53 ];
     };
     virtualisation.oci-containers.containers.adguard = {
       hostname = "adguard";
@@ -32,8 +32,8 @@ in
         "${cfg.workVolume}:/opt/adguardhome/work"
       ];
       ports = [
-        "553:53/udp"
-        "553:53/tcp"
+        "53:53/udp"
+        "53:53/tcp"
       ];
       extraOptions = [
         "--network=caddy"
