@@ -15,7 +15,7 @@
 
   myNixOS = {
     gnupg.enable = true;
-    qemu.enable = false;
+    qemu.enable = true;
     docker.enable = true;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
