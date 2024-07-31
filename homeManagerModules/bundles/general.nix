@@ -64,6 +64,7 @@ in
     clang
     postgresql.out
     terraform
+    opentofu
     tflint
     awscli2
     dnsutils
