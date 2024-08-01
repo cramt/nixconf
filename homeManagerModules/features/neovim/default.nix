@@ -79,9 +79,6 @@ in
             range = true;
           })
           searchAndReplaceAliases;
-      keymaps = ((import ./keymaps.nix) {
-        inherit lib;
-      }).keymaps;
       plugins = (import ./plugins.nix) {
         inherit pkgs;
         inherit inputs;

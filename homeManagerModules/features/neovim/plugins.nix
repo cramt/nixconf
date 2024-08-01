@@ -153,9 +153,14 @@
   };
   which-key = {
     enable = true;
-    registrations = ((import ./keymaps.nix) {
-      inherit lib;
-    }).keymapGroups;
+    settings.spec = lib.attrsets.mapAttrsToList
+      (name: value: (lib.attrsets.filterAttrs (n: v: n != "action") value) // {
+        __unkeyed-1 = name;
+        __unkeyed-2 = value.action;
+      })
+      ((import ./keymaps.nix) {
+        inherit lib;
+      }).keymap;
   };
   cmp = {
     enable = true;

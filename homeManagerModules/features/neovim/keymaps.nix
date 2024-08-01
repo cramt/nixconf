@@ -63,8 +63,7 @@ let
           };
           e = {
             desc = "open explorer";
-            lua = true;
-            action = ''
+            action.__raw = ''
               function()
                 if vim.bo.filetype == "neo-tree" then
                   vim.cmd.wincmd "p"
@@ -79,8 +78,7 @@ let
             children = {
               c = {
                 desc = "close all but current";
-                lua = true;
-                action = ''
+                action.__raw = ''
                   function() MyBufferHelper.close_all(true) end
                 '';
               };
@@ -88,8 +86,7 @@ let
           };
           c = {
             desc = "Close current buffer";
-            lua = true;
-            action = ''
+            action.__raw = ''
               function() MyBufferHelper.close() end
             '';
           };
@@ -137,21 +134,16 @@ let
       )
       [ prefixes object ]
   );
-  getFinalMap = prefixes: object:
-    let
-      merged = carryPrefixes prefixes object;
-    in
-    if lib.attrsets.hasAttrByPath [ "children" ] merged
-    then map (child: getFinalMap merged child) (unpackCollection merged.children)
-    else [ merged ];
 
-  getFinalGroups = prefixes: object:
+  getFinal = prefixes: object:
     let
       merged = carryPrefixes prefixes object;
     in
-    if lib.attrsets.hasAttrByPath [ "children" ] merged
-    then (map (child: getFinalGroups merged child) (unpackCollection merged.children)) ++ [ merged ]
-    else [ ];
+    (
+      if lib.attrsets.hasAttrByPath [ "children" ] merged
+      then (map (child: getFinal merged child) (unpackCollection merged.children))
+      else [ ]
+    ) ++ [ merged ];
 
   normalized =
     lib.lists.flatten
@@ -163,29 +155,21 @@ let
       );
 in
 {
-  keymaps = map
-    (attr: {
-      mode = attr.mode;
-      key = attr.key;
-      lua = attr.lua or false;
-      action = attr.action;
-      options = {
-        desc = attr.desc;
-      };
-    })
-    (lib.lists.flatten (
-      map (getFinalMap { }) normalized
-    ));
-  keymapGroups = builtins.listToAttrs
+  keymap = builtins.listToAttrs
     (builtins.filter
       (attr: attr.value != "")
       (map
         (attr: {
           name = attr.key;
-          value = attr.desc;
+          value = {
+            desc = attr.desc;
+            mode = attr.mode;
+            cond = attr.cond or null;
+            action = attr.action or null;
+          };
         })
         (lib.lists.flatten (
-          map (getFinalGroups { }) normalized
+          map (getFinal { }) normalized
         ))
       )
     );
