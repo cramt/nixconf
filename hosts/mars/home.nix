@@ -14,6 +14,7 @@
     bundles.graphical.enable = true;
     bundles.work.enable = true;
     git.signingKey = "5A2AFD974351E6CA";
+    cockatrice.enable = true;
     firefox.profiles = {
       cramt = {
         extensions = with pkgs.nur.repos.rycee.firefox-addons;

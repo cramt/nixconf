@@ -5,6 +5,10 @@
 {
   # Enable sound with pipewire.
   security.rtkit.enable = true;
+  xdg.portal = {
+    enable = true;
+    wlr.enable = true;
+  };
   services.pipewire = {
     package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.pipewire;
     enable = true;
