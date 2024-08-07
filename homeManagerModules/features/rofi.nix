@@ -24,15 +24,11 @@ in
       ]);
     };
     plugins =
-      (map
-        (x: x.override {
-          rofi-unwrapped = pkgs.rofi-wayland-unwrapped;
-        })
-        (with pkgs; [
-          rofi-calc
-          rofi-emoji
-          rofi-top
-        ])) ++ [
+      (with pkgs; [
+        rofi-calc
+        rofi-emoji
+        rofi-top
+      ]) ++ [
         pkgs.rofi-power-menu
       ];
 
