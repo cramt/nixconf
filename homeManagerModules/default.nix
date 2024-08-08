@@ -37,6 +37,7 @@ in
   imports =
     [
       inputs.nixvim.homeManagerModules.nixvim
+      inputs.walker.homeManagerModules.default
     ]
     ++ features
     ++ bundles;

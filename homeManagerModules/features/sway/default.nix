@@ -1,4 +1,4 @@
-{ lib, config, pkgs, ... }:
+{ lib, config, pkgs, inputs, ... }:
 
 let
   cfg = config.myHomeManager.sway;
@@ -33,14 +33,6 @@ let
     fi
   ''}/bin/${name}";
   lockCommand = mkRunIfNoMedia "lock" "${pkgs.swaylock}/bin/swaylock -f";
-  rofiMonitor = pkgs.writeShellScriptBin "rofi_monitor" ''
-    monitor="$(swaymsg -t get_outputs | ${pkgs.jq}/bin/jq '[.[].focused] | index(true)')"
-    rofi $@
-  '';
-  rofiGeneric = pkgs.writeShellScriptBin "rofi_generic" ''
-    ${rofiMonitor}/bin/rofi_monitor -show $(echo "calc,emoji,powermenu,top" | rofi -sep ',' -dmenu)
-  '';
-  rofiGenericCommand = "${rofiGeneric}/bin/rofi_generic";
   swayrCommand = "${pkgs.swayr}/bin/swayr";
   execSwayr = "exec ${swayrCommand}";
 in
@@ -172,7 +164,7 @@ in
           {
             "print" = "exec grimshot --notify copy area";
             "${mod}+q" = "kill";
-            "${mod}+shift+d" = "exec ${rofiGenericCommand}";
+            "${mod}+shift+d" = "exec ${inputs.walker.packages.${pkgs.system}.default}/bin/walker";
             "${mod}+x" = "exec ${pkgs.sway-easyfocus}/bin/sway-easyfocus";
             "${mod}+f1" = "exec ${lockCommand}";
             "${mod}+tab" = "${execSwayr} switch-to-urgent-or-lru-window";
@@ -194,6 +186,7 @@ in
 
     myHomeManager.rofi.enable = true;
     myHomeManager.waybar.enable = true;
+    myHomeManager.walker.enable = true;
     home.packages = with pkgs; [
       sway-easyfocus
       sway-contrib.grimshot
