@@ -19,6 +19,7 @@ in
               sponsorblock
               vimium
               widegithub
+              firenvim
             ];
 
           search.force = true;

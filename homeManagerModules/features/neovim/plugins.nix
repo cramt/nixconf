@@ -223,4 +223,7 @@
       };
     };
   };
+  firenvim = {
+    enable = true;
+  };
 }
