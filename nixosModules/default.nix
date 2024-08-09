@@ -70,7 +70,7 @@ in
     stylix.enable = true;
     nix.settings = {
       experimental-features = [ "nix-command" "flakes" ];
-      trusted-users = [ "cramt" ];
+      trusted-users = [ "cramt" "root" ];
     };
     programs.nix-ld.enable = true;
     nixpkgs.config.allowUnfree = true;
