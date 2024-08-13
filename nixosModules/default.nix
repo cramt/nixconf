@@ -71,6 +71,8 @@ in
     nix.settings = {
       experimental-features = [ "nix-command" "flakes" ];
       trusted-users = [ "cramt" "root" ];
+      substituters = [ "https://walker.cachix.org" ];
+      trusted-public-keys = [ "walker.cachix.org-1:fG8q+uAaMqhsMxWjwvk0IMb4mFPFLqHjuvfwQxE4oJM=" ];
     };
     programs.nix-ld.enable = true;
     nixpkgs.config.allowUnfree = true;
