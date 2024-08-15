@@ -60,6 +60,7 @@
       gopls.enable = true;
       tsserver.enable = true;
       eslint.enable = true;
+      astro.enable = true;
       rust-analyzer = {
         enable = true;
         installCargo = true;
