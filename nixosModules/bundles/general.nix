@@ -68,7 +68,8 @@ in
 
   myNixOS = {
     ssh.enable = true;
-    services.harmonia.enable = true;
+    #todo fix with https://github.com/NixOS/nixpkgs/issues/332957
+    #services.harmonia.enable = true;
   };
 
   nix = {

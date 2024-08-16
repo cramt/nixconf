@@ -66,7 +66,8 @@ in
     terraform
     opentofu
     tflint
-    awscli2
+    #todo fix with https://github.com/NixOS/nixpkgs/issues/332957
+    #awscli2
     dnsutils
     sops
   ] ++ ld_packages;
