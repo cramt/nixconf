@@ -18,7 +18,8 @@
 
   myNixOS = {
     gnupg.enable = true;
-    qemu.enable = true;
+    #todo fix with https://github.com/NixOS/nixpkgs/issues/332957
+    #qemu.enable = true;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     steam.enable = true;
