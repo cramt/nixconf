@@ -59,7 +59,8 @@
       terraformls.enable = true;
       gopls.enable = true;
       tsserver.enable = true;
-      eslint.enable = true;
+      #TODO: enable again once https://github.com/NixOS/nixpkgs/pull/335559 is in unstable
+      #eslint.enable = true;
       astro.enable = true;
       rust-analyzer = {
         enable = true;
