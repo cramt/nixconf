@@ -18,6 +18,7 @@
     #todo fix with https://github.com/NixOS/nixpkgs/issues/332957
     #qemu.enable = true;
     docker.enable = true;
+    bluetooth.enable = true;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.users.enable = true;

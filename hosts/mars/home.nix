@@ -14,6 +14,7 @@
     bundles.graphical.enable = true;
     bundles.work.enable = true;
     git.signingKey = "5A2AFD974351E6CA";
+    blueman.enable = true;
     cockatrice.enable = true;
     firefox.profiles = {
       cramt = {
