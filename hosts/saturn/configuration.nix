@@ -18,8 +18,7 @@
 
   myNixOS = {
     gnupg.enable = true;
-    #todo fix with https://nixpk.gs/pr-tracker.html?pr=334286
-    #qemu.enable = true;
+    qemu.enable = true;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     steam.enable = true;

@@ -15,7 +15,7 @@
     bundles.gaming.enable = true;
     git.signingKey = "C2B9D34D979B6063";
     sway.monitors = {
-      DP-2 = {
+      HDMI-A-1 = {
         pos = "0 0";
         res = {
           width = 1920;
@@ -25,7 +25,7 @@
         transform = 0;
         max_render_time = "5";
       };
-      HDMI-A-1 = {
+      DP-2 = {
         pos = "1920 0";
         res = {
           width = 1680;

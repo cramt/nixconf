@@ -15,8 +15,7 @@
 
   myNixOS = {
     gnupg.enable = true;
-    #todo fix with https://nixpk.gs/pr-tracker.html?pr=334286
-    #qemu.enable = true;
+    qemu.enable = true;
     docker.enable = true;
     bluetooth.enable = true;
     bundles.general.enable = true;
