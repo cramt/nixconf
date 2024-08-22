@@ -25,7 +25,6 @@
             sponsorblock
             vimium
             widegithub
-            firenvim
           ];
 
         search.force = true;
@@ -54,7 +53,6 @@
             sponsorblock
             vimium
             widegithub
-            firenvim
           ];
 
         search.force = true;
