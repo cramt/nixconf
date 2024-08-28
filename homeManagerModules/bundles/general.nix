@@ -69,6 +69,9 @@ in
     awscli2
     dnsutils
     sops
+
+
+    inputs.zen-browser.packages."${pkgs.system}".specific
   ] ++ ld_packages;
 
   home.sessionVariables = {

@@ -3,5 +3,6 @@
     slack
     postgresql
     teams-for-linux
+    ngrok
   ];
 }

@@ -1037,7 +1037,8 @@
         "nur": "nur",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
-        "walker": "walker"
+        "walker": "walker",
+        "zen-browser": "zen-browser"
       }
     },
     "sops-nix": {
@@ -1205,6 +1206,26 @@
       "original": {
         "owner": "abenz1267",
         "repo": "walker",
+        "type": "github"
+      }
+    },
+    "zen-browser": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1724745035,
+        "narHash": "sha256-WhTJaCw0XDR9gAQ6uEIMkT7bKsHXBafj1GJnRsWXHpk=",
+        "owner": "MarceColl",
+        "repo": "zen-browser-flake",
+        "rev": "723039271547eb4c648e5bd774e2f7bc73564b16",
+        "type": "github"
+      },
+      "original": {
+        "owner": "MarceColl",
+        "repo": "zen-browser-flake",
         "type": "github"
       }
     }
