@@ -788,17 +788,17 @@
     },
     "nixpkgs-ruby-downgrade": {
       "locked": {
-        "lastModified": 1703517675,
-        "narHash": "sha256-c6+sDBvS4UM9g2V8vGID3lWeiozuWVwU2URsvjh5k/4=",
+        "lastModified": 1724531977,
+        "narHash": "sha256-XROVLf9ti4rrNCFLr+DmXRZtPjCQTW4cYy59owTEmxk=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "52c874987156f13ef08993618ea8bfb0531c0463",
+        "rev": "2527da1ef492c495d5391f3bcf9c1dd9f4514e32",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
+        "ref": "nixos-24.05",
         "repo": "nixpkgs",
-        "rev": "52c874987156f13ef08993618ea8bfb0531c0463",
         "type": "github"
       }
     },

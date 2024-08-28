@@ -4,3 +4,6 @@ add_foundry_zips:
 
 build_luna: add_foundry_zips
     nixos-rebuild switch --flake .#luna --target-host root@192.168.0.103
+
+clean_ruby:
+    rm -rf ~/.local/share/gem/
