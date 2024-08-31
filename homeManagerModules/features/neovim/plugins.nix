@@ -128,7 +128,8 @@
     };
   };
   treesitter = {
-    enable = true;
+    # treesitter is packaged inside neovim now, maybe this will be fixed in nixvim in future
+    #enable = true;
     settings.highlight.enable = true;
   };
   neo-tree = {
