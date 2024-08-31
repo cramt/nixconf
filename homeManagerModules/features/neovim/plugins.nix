@@ -59,15 +59,12 @@
       terraformls.enable = true;
       gopls.enable = true;
       tsserver.enable = true;
-      #todo: fix with https://nixpk.gs/pr-tracker.html?pr=335559
-      #eslint.enable = true;
+      eslint.enable = true;
       astro.enable = true;
-      rust-analyzer = {
-        enable = true;
-        installCargo = true;
-        installRustc = true;
-      };
     };
+  };
+  rustaceanvim = {
+    enable = true;
   };
   neorg = {
     enable = true;
