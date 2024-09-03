@@ -1,11 +1,5 @@
-{ pkgs, config, ... }: {
+{ pkgs, ... }: {
   config = {
-    home.file = {
-      ".local/share/zsh/zsh-autosuggestions".source = "${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions";
-      ".local/share/zsh/zsh-fast-syntax-highlighting".source = "${pkgs.zsh-fast-syntax-highlighting}/share/zsh/site-functions";
-      ".local/share/zsh/nix-zsh-completions".source = "${pkgs.nix-zsh-completions}/share/zsh/plugins/nix";
-      ".local/share/zsh/zsh-vi-mode".source = "${pkgs.zsh-vi-mode}/share/zsh-vi-mode";
-    };
     programs.zsh = {
       enable = true;
 
@@ -14,23 +8,10 @@
         tree = "${pkgs.eza}/bin/eza --color=auto --tree";
         ssh_jump = "ssh ao@161.35.219.109 -A";
       };
+      enableCompletion = true;
+      autosuggestion.enable = true;
+
       initExtra = ''
-        # PLUGINS (whatever)
-        [ -f "$HOME/.local/share/zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh" ] && \
-        source "$HOME/.local/share/zsh/zsh-vi-mode/zsh-vi-mode.plugin.zsh"
-
-        [ -f "$HOME/.local/share/zsh/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh" ] && \
-        source "$HOME/.local/share/zsh/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh"
-
-        ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#${config.colorScheme.colors.base03}"
-        bindkey '^ ' autosuggest-accept
-
-        [ -f "$HOME/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh" ] && \
-        source "$HOME/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-        [ -f "$HOME/.local/share/zsh/nix-zsh-completions/nix.plugin.zsh" ] && \
-        source "$HOME/.local/share/zsh/nix-zsh-completions/nix.plugin.zsh"
-
         bios_reboot() {
           systemctl reboot --firmware-setup
         }
