@@ -8,7 +8,6 @@
 - use sddm and maybe using stylix to theme qt will style it
 - switch from alacritty to rio, might need to pr stylix
 - do a ranger thingy after ^
-- maybe delete gruvbox now that we use stylix
 - inline sql in rust working https://github.com/helix-editor/helix/blob/68c7537de522cf6b38705a7af51eeaac260fdc98/runtime/queries/rust/injections.scm
 - get https://github.com/knoellle/wfinfo-ng working, maybe contribute to it
 

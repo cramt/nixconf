@@ -7,8 +7,6 @@
   home.homeDirectory = "/home/cramt";
 
 
-  colorScheme = inputs.nix-colors.colorSchemes.gruvbox-dark-medium;
-
   myHomeManager = {
     bundles.general.enable = true;
     bundles.graphical.enable = true;
