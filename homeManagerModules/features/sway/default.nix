@@ -19,6 +19,10 @@ let
 
     )
     cfg.monitors;
+  killVesktop =
+    ((import ../../../scripts/kill_vesktop.nix) {
+      inherit pkgs;
+    });
   setBackground = pkgs.writeShellScriptBin "set_background" ''
     pkill mpvpaper 
     ${lib.strings.concatStringsSep "\n" (lib.attrsets.mapAttrsToList (
@@ -29,10 +33,11 @@ let
   '';
   mkRunIfNoMedia = name: cmd: "${pkgs.writeShellScriptBin name ''
     if [[ "$(${pkgs.playerctl}/bin/playerctl status)" != "Playing" ]]; then
+      ${killVesktop}/bin/kill_vesktop
       ${cmd}
     fi
   ''}/bin/${name}";
-  lockCommand = mkRunIfNoMedia "lock" "${pkgs.swaylock}/bin/swaylock -f";
+  lockCommand = "${pkgs.swaylock}/bin/swaylock -f";
   swayrCommand = "${pkgs.swayr}/bin/swayr";
   execSwayr = "exec ${swayrCommand}";
 in
@@ -85,7 +90,7 @@ in
         }
         {
           timeout = 60 * 5;
-          command = lockCommand;
+          command = mkRunIfNoMedia "lock" lockCommand;
         }
       ];
     };
