@@ -79,11 +79,15 @@ in
             range = true;
           })
           searchAndReplaceAliases;
-      plugins = (import ./plugins.nix) {
-        inherit pkgs;
-        inherit inputs;
-        inherit lib;
-      };
+      plugins =
+        let
+          plugins = (import ./plugins.nix) {
+            inherit pkgs;
+            inherit inputs;
+            inherit lib;
+          };
+        in
+        plugins // { };
     };
   };
 }

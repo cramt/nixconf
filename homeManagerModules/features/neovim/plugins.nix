@@ -222,7 +222,4 @@
       };
     };
   };
-  firenvim = {
-    enable = true;
-  };
 }
