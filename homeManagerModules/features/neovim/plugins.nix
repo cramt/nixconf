@@ -105,8 +105,10 @@
   };
   lualine = {
     enable = true;
-    settings.options = {
-      globalstatus = true;
+    settings = {
+      options = {
+        globalstatus = true;
+      };
       sections = {
         lualine_x = [ "filetype" ];
       };
