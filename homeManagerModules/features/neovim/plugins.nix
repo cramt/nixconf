@@ -105,23 +105,25 @@
   };
   lualine = {
     enable = true;
-    globalstatus = true;
-    sections = {
-      lualine_x = [ "filetype" ];
-    };
-    tabline = {
-      lualine_a = [
-        {
-          name = "buffers";
-          extraConfig = {
-            symbols = {
-              modified = "●";
-              directory = "";
-              alternate_file = "";
+    settings.options = {
+      globalstatus = true;
+      sections = {
+        lualine_x = [ "filetype" ];
+      };
+      tabline = {
+        lualine_a = [
+          {
+            name = "buffers";
+            extraConfig = {
+              symbols = {
+                modified = "●";
+                directory = "";
+                alternate_file = "";
+              };
             };
-          };
-        }
-      ];
+          }
+        ];
+      };
     };
   };
   treesitter = {

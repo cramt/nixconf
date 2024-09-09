@@ -73,35 +73,42 @@
         };
       };
     };
-    sway.monitors = {
-      eDP-1 = {
-        pos = "0 0";
-        res = {
-          width = 1920;
-          height = 1200;
+    sway.monitors =
+      let
+        dp = {
+
+          pos = "-4880 -1500";
+          res = {
+            width = 2560;
+            height = 1440;
+          };
+          transform = 270;
+          workspace = "3";
         };
-        transform = 0;
-        workspace = "1";
-      };
-      HDMI-A-1 = {
-        pos = "-3440 -900";
-        res = {
-          width = 3440;
-          height = 1440;
+      in
+      {
+        eDP-1 = {
+          pos = "0 0";
+          res = {
+            width = 1920;
+            height = 1200;
+          };
+          transform = 0;
+          workspace = "1";
         };
-        transform = 0;
-        workspace = "2";
-      };
-      DP-6 = {
-        pos = "-4880 -1500";
-        res = {
-          width = 2560;
-          height = 1440;
+        HDMI-A-1 = {
+          pos = "-3440 -900";
+          res = {
+            width = 3440;
+            height = 1440;
+          };
+          transform = 0;
+          workspace = "2";
         };
-        transform = 270;
-        workspace = "3";
+        DP-6 = dp;
+        DP-7 = dp;
+        DP-8 = dp;
       };
-    };
   };
 
   home.stateVersion = "23.11";
