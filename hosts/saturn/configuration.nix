@@ -34,7 +34,7 @@
       in
       {
         jellyfin = {
-          enable = true;
+          enable = false;
           configVolume = "/mnt/amirani/configs/jellyfin";
           mediaVolumes = {
             tvshows = downloads.tvshows;
