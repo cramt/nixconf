@@ -2,6 +2,8 @@
 let
   cfg = config.myNixOS.services.jellyfin;
   docker_versions = import ../../docker_versions.nix;
+  port = "8096";
+  port_config = if cfg.externalPort then "-p=${port}:${port}" else "--expose=${port}";
 in
 {
   options.myNixOS.services.jellyfin = {
@@ -17,6 +19,13 @@ in
         destination for the jellyfin mutable config
       '';
     };
+    externalPort = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        if port should be exportal
+      '';
+    };
     gpuDevices = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
@@ -26,7 +35,7 @@ in
     };
   };
   config = {
-    virtualisation.podman.enableNvidia = true;
+    virtualisation.oci-containers.backend = "docker";
     virtualisation.oci-containers.containers.jellyfin = {
       hostname = "jellyfin";
       image = "lscr.io/linuxserver/jellyfin:${docker_versions.jellyfin}";
@@ -39,7 +48,7 @@ in
       ) ++ [ "${cfg.configVolume}:/config" ];
       extraOptions = [
         "--network=caddy"
-        "--expose=8096"
+        "${port_config}"
       ] ++ builtins.map (d: "--device=${d}:${d}") cfg.gpuDevices;
       environment = {
         PUID = "1000";

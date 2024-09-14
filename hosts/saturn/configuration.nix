@@ -24,22 +24,77 @@
     steam.enable = true;
     amd.enable = true;
     bundles.users.enable = true;
-    services.homelab_discord_bot = {
-      enable = false;
-      databaseUrl = "sqlite:/tmp/db.db?mode=rwc";
-    };
-    services.adguard = {
-      enable = false;
-      configVolume = "/tmp/a";
-      workVolume = "/tmp/c";
-    };
-    services.caddy = {
-      enable = false;
-      protocol = "http";
-      domain = "localhost";
-      staticFileVolumes = { };
-      cacheVolume = "/tmp/b";
-    };
+    services =
+      let
+        downloads = {
+          raw = "/mnt/amirani/raw_downloads";
+          movies = "/mnt/amirani/movies";
+          tvshows = "/mnt/amirani/tvshows";
+        };
+      in
+      {
+        jellyfin = {
+          enable = true;
+          configVolume = "/mnt/amirani/configs/jellyfin";
+          mediaVolumes = {
+            tvshows = downloads.tvshows;
+            movies = downloads.movies;
+          };
+          externalPort = true;
+          gpuDevices = [
+            "/dev/dri/card1"
+            "/dev/dri/renderD128"
+          ];
+        };
+        caddy = {
+          enable = false;
+          cacheVolume = "/mnt/amirani/configs/caddy-cache";
+          staticFileVolumes = { };
+          domain = "localhost";
+          protocol = "http";
+        };
+        qbittorrent = {
+          enable = false;
+          configVolume = "/mnt/amirani/configs/qbittorrent";
+          downloadVolume = downloads.raw;
+        };
+        foundryvtt = {
+          enable = false;
+          dataVolume = "/mnt/amirani/configs/foundryvtt_a";
+        };
+        prowlarr = {
+          enable = false;
+          configVolume = "/mnt/amirani/configs/prowlarr";
+        };
+        radarr = {
+          enable = false;
+          configVolume = "/mnt/amirani/configs/radarr";
+          downloadVolume = downloads.raw;
+          movieVolume = downloads.movies;
+        };
+        sonarr = {
+          enable = false;
+          configVolume = "/mnt/amirani/configs/sonarr";
+          downloadVolume = downloads.raw;
+          tvVolume = downloads.tvshows;
+        };
+        bazarr = {
+          enable = false;
+          configVolume = "/mnt/amirani/configs/bazarr";
+          downloadVolume = downloads.raw;
+          tvVolume = downloads.tvshows;
+          movieVolume = downloads.movies;
+        };
+        adguard = {
+          enable = false;
+          configVolume = "/mnt/amirani/configs/adgaurd_conf";
+          workVolume = "/mnt/amirani/configs/adgaurd_work";
+        };
+        homelab_discord_bot = {
+          enable = false;
+          databaseUrl = "sqlite:/mnt/amirani/homelab_discord_bot.db?mode=rwc";
+        };
+      };
 
     home-users = {
       "cramt" = {
