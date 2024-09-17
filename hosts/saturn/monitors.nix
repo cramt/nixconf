@@ -4,7 +4,7 @@
       width = 1920;
       height = 1080;
     };
-    refresh_rate = "60.000";
+    refresh_rate = "119.982";
     sway_conf = {
       pos = "0 0";
       workspace = "1";
