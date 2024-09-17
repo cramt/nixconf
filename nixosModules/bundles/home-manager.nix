@@ -36,6 +36,7 @@ in
   config = {
     programs.zsh.enable = true;
     programs.sway.enable = true;
+    programs.sway.package = null;
 
     services = {
       displayManager = {

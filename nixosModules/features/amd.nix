@@ -2,7 +2,6 @@
 {
   boot = {
     initrd.kernelModules = [ "amdgpu" ];
-    kernelParams = [ "radeon.si_support=0" "amdgpu.si_support=1" ];
   };
 
 

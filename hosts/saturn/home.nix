@@ -1,4 +1,4 @@
-{ input, inputs, outputs, config, pkgs, ... }:
+{ input, inputs, outputs, config, pkgs, lib, ... }:
 {
 
   imports = [ outputs.homeManagerModules.default ];
@@ -12,28 +12,12 @@
     bundles.graphical.enable = true;
     bundles.gaming.enable = true;
     git.signingKey = "C2B9D34D979B6063";
-    sway.monitors = {
-      HDMI-A-1 = {
-        pos = "0 0";
-        res = {
-          width = 1920;
-          height = 1080;
-        };
-        workspace = "1";
-        transform = 0;
-        max_render_time = "5";
-      };
-      DP-2 = {
-        pos = "1920 0";
-        res = {
-          width = 1680;
-          height = 1050;
-        };
-        workspace = "2";
-        transform = 0;
-        max_render_time = "5";
-      };
-    };
+    sway.monitors = lib.attrsets.mapAttrs
+      (_: value: value.sway_conf // {
+        res = value.res;
+        mode = "${toString value.res.width}x${toString value.res.height}@${value.refresh_rate}Hz";
+      })
+      (import ./monitors.nix);
   };
 
   home.stateVersion = "24.05";
