@@ -1,7 +1,6 @@
 { pkgs, inputs, ... }: {
   home.packages = with pkgs; [
     xorg.libxcb
-    lutris
     protonup-ng
     gamemode
     dxvk
