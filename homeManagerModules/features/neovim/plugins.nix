@@ -1,4 +1,10 @@
-{ pkgs, inputs, lib }: {
+{ pkgs, inputs, lib }:
+let
+  rubyGems = (import ../../../gems/default.nix) {
+    pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system};
+  };
+in
+{
   mini = {
     enable = true;
     modules = {
@@ -16,7 +22,7 @@
         terraform_fmt.enable = true;
         rubocop = {
           enable = false;
-          package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.rubocop;
+          package = rubyGems.rubocop;
         };
       };
       diagnostics = {
@@ -41,9 +47,7 @@
       };
       ruby-lsp = {
         enable = true;
-        package = ((import ../../../gems/default.nix) {
-          pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system};
-        }).ruby-lsp;
+        package = rubyGems.ruby-lsp;
         extraOptions = {
           rubyLsp = {
             rubyVersionManager = "custom";

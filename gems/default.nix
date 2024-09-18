@@ -6,4 +6,4 @@
       gemdir = ./.;
       exes = [ x ];
     };
-  }) [ "ruby-lsp" ])
+  }) [ "ruby-lsp" "rubocop" ])
