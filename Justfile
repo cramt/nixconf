@@ -7,3 +7,15 @@ build_luna: add_foundry_zips
 
 clean_ruby:
     rm -rf ~/.local/share/gem/
+
+update_flake:
+    nix flake update
+
+update_gems:
+    (cd gems && bundle update)
+    (cd gems && bundix)
+
+update:
+    just update_flake
+    just update_gems
+    nh os switch

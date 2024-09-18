@@ -39,13 +39,11 @@
           };
         };
       };
-      solargraph = {
-        enable = false;
-        package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.solargraph;
-      };
       ruby-lsp = {
         enable = true;
-        package = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system}.rubyPackages.ruby-lsp;
+        package = ((import ../../../gems/default.nix) {
+          pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system};
+        }).ruby-lsp;
         extraOptions = {
           rubyLsp = {
             rubyVersionManager = "custom";
