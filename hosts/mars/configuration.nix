@@ -17,6 +17,7 @@
     gnupg.enable = true;
     qemu.enable = true;
     docker.enable = true;
+    steam.enable = true;
     bluetooth.enable = true;
     bundles.general.enable = true;
     bundles.graphical.enable = true;

@@ -58,7 +58,7 @@
       yamlls.enable = true;
       terraformls.enable = true;
       gopls.enable = true;
-      tsserver.enable = true;
+      ts-ls.enable = true;
       eslint.enable = true;
       astro.enable = true;
     };
