@@ -7,6 +7,6 @@
     -1
   }) * ${toString direction}
   not $on | into string | save -f /tmp/gaming_mode
-  swaymsg $"output HDMI-A-1 pos ($change + $rect.x) ($change + $rect.y)"
+  swaymsg $"output ${output} pos ($change + $rect.x) ($change + $rect.y)"
   null
 ''

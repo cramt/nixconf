@@ -10,8 +10,8 @@
   home.packages = [
     ((import ../../scripts/sway_gaming.nix) {
       inherit pkgs;
-      direction = -1001;
-      output = "HDMI-A-1";
+      direction = 10000;
+      output = "DP-2";
     })
   ];
 
