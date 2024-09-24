@@ -10,7 +10,7 @@
   home.packages = [
     ((import ../../scripts/sway_gaming.nix) {
       inherit pkgs;
-      direction = 10000;
+      direction = -100;
       output = "DP-2";
     })
   ];
