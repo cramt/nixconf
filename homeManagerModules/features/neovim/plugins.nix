@@ -134,6 +134,9 @@ in
     enable = true;
     settings.highlight.enable = true;
   };
+  web-devicons = {
+    enable = true;
+  };
   neo-tree = {
     enable = true;
     buffers = {
@@ -177,7 +180,6 @@ in
         "path"
         "vsnip"
         "neorg"
-        "otter"
       ];
       mapping = {
         "<C-Space>" = "cmp.mapping.complete()";
@@ -194,6 +196,9 @@ in
     enable = true;
   };
   cmp-buffer = {
+    enable = true;
+  };
+  otter = {
     enable = true;
   };
   cmp-vsnip.enable = true;

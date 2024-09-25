@@ -139,10 +139,10 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "0gca3mxn4vagb196ai5gy7dcfmdppb33m3xakbgsqip6y1nzzyfd";
+      sha256 = "1vcc5g6cqnsaakq14j4sv6c66jkbc6ksanyyiishckb93cvwg6s5";
       type = "gem";
     };
-    version = "0.18.2";
+    version = "0.18.3";
   };
   ruby-progressbar = {
     groups = ["default"];
