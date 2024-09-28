@@ -20,6 +20,7 @@
     firefox.enable = true;
     sway.enable = true;
     alacritty.enable = true;
+    rio.enable = true;
     mako.enable = true;
     zathura.enable = true;
     network-manager-applet.enable = true;
