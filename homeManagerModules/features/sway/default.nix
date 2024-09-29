@@ -3,7 +3,6 @@
 let
   cfg = config.myHomeManager.sway;
   mod = "Mod4";
-  backgroundAsset = ./../../../media/cosmere.mp4;
   screenSpecificVideos = builtins.mapAttrs
     (
       name: value:
@@ -14,7 +13,7 @@ let
         (pkgs.runCommand "screen_specific_videos" { } ''
           mkdir -p $out
 
-          ${pkgs.ffmpeg}/bin/ffmpeg -i ${backgroundAsset} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}${rotation}" $out/output.mp4
+          ${pkgs.ffmpeg}/bin/ffmpeg -i ${cfg.backgroundVideo} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}${rotation}" $out/output.mp4
         '')
 
     )
@@ -48,6 +47,9 @@ in
       description = ''
         sway monitor setup
       '';
+    };
+    backgroundVideo = lib.mkOption {
+      type = lib.types.path;
     };
   };
   config = {

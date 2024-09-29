@@ -20,7 +20,9 @@
     gnupg.enable = true;
     qemu.enable = true;
     bundles.general.enable = true;
+    bundles.general.stylixAssetVideo = ../../media/xal.mp4;
     bundles.graphical.enable = true;
+
     steam.enable = true;
     amd.enable = true;
     bundles.users.enable = true;

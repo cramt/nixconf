@@ -27,6 +27,7 @@
         mode = "${toString value.res.width}x${toString value.res.height}@${value.refresh_rate}Hz";
       })
       (import ./monitors.nix);
+    sway.backgroundVideo = ../../media/xal.mp4;
   };
 
   home.stateVersion = "24.05";
