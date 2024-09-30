@@ -109,6 +109,8 @@
         DP-7 = dp;
         DP-8 = dp;
       };
+
+    sway.backgroundVideo = ../../media/cosmere.mp4;
   };
 
   home.stateVersion = "24.05";
