@@ -117,13 +117,11 @@ in
       tabline = {
         lualine_a = [
           {
-            name = "buffers";
-            extraConfig = {
-              symbols = {
-                modified = "●";
-                directory = "";
-                alternate_file = "";
-              };
+            __unkeyed-1 = "buffers";
+            symbols = {
+              modified = "●";
+              directory = "";
+              alternate_file = "";
             };
           }
         ];
