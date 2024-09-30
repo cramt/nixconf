@@ -20,6 +20,7 @@
     gnupg.enable = true;
     powertop.enable = true;
     bundles.general.enable = true;
+    bundles.general.stylixAssetVideo = ../../media/xal.mp4;
     bundles.users.enable = true;
 
     services =
