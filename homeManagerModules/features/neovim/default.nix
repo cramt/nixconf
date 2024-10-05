@@ -27,6 +27,7 @@ in
           eob = " ";
         };
         number = true;
+        textwidth = 80;
         shiftwidth = 4;
         tabstop = 4;
         preserveindent = true;
@@ -58,6 +59,12 @@ in
           config = toLua ''
             require("otter").activate(nil, true, true, nil)
           '';
+        }
+        {
+          plugin = pkgs.vimUtils.buildVimPlugin {
+            name = "neorg-conceal-wrap";
+            src = inputs.neorg-conceal-wrap;
+          };
         }
       ];
       userCommands =

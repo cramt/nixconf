@@ -77,6 +77,7 @@ in
         empty = { __empty = null; };
       in
       {
+        "external.conceal-wrap" = empty;
         "core.defaults" = empty;
         "core.concealer" = empty;
         "core.export" = empty;

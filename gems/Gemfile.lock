@@ -27,13 +27,13 @@ GEM
       unicode-display_width (>= 2.4.0, < 3.0)
     rubocop-ast (1.32.3)
       parser (>= 3.3.1.0)
-    ruby-lsp (0.19.0)
+    ruby-lsp (0.19.1)
       language_server-protocol (~> 3.17.0)
       prism (>= 1.1, < 2.0)
       rbs (>= 3, < 4)
       sorbet-runtime (>= 0.5.10782)
     ruby-progressbar (1.13.0)
-    sorbet-runtime (0.5.11595)
+    sorbet-runtime (0.5.11597)
     unicode-display_width (2.6.0)
 
 PLATFORMS
