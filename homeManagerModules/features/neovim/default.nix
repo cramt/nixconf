@@ -27,7 +27,7 @@ in
           eob = " ";
         };
         number = true;
-        textwidth = 80;
+        #textwidth = 80; todo add this only to norg files
         shiftwidth = 4;
         tabstop = 4;
         preserveindent = true;
