@@ -37,7 +37,7 @@ in
   lsp = {
     enable = true;
     servers = {
-      nil-ls = {
+      nil_ls = {
         enable = true;
         settings = {
           formatting = {
@@ -45,7 +45,7 @@ in
           };
         };
       };
-      ruby-lsp = {
+      ruby_lsp = {
         enable = true;
         package = rubyGems.ruby-lsp;
         extraOptions = {
@@ -55,12 +55,12 @@ in
           };
         };
       };
-      lua-ls.enable = true;
+      lua_ls.enable = true;
       sqls.enable = false;
       yamlls.enable = true;
       terraformls.enable = true;
       gopls.enable = true;
-      ts-ls.enable = true;
+      ts_ls.enable = true;
       eslint.enable = true;
       astro.enable = true;
     };
