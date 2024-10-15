@@ -72,5 +72,13 @@ in
       enable = true;
       profiles = cfg.profiles;
     };
+    home.packages = builtins.attrValues (builtins.mapAttrs
+      (name: value: pkgs.makeDesktopItem {
+        name = "firefox ${name}";
+        desktopName = "firefox ${name}";
+        exec = "${pkgs.firefox}/bin/firefox -p ${name}";
+      })
+      cfg.profiles);
+
   };
 }
