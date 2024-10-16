@@ -159,10 +159,10 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "1vypqcs7m7dma28j0n1530wsmz0ndvjic29djldjg9bqrd81sdg0";
+      sha256 = "1g85fqjbl8j7ggbfvcr7ncigiaqppxbwnkcyw7dfshdrkdjcbd87";
       type = "gem";
     };
-    version = "0.5.11602";
+    version = "0.5.11604";
   };
   unicode-display_width = {
     groups = ["default"];
