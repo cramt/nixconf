@@ -22,8 +22,12 @@
     bundles.general.enable = true;
     bundles.general.stylixAssetVideo = ../../media/xal.mp4;
     bundles.graphical.enable = true;
-
-    steam.enable = true;
+    steam = {
+      enable = true;
+      swayGamingPackage = ((import ./sway_gaming.nix) {
+        inherit pkgs;
+      });
+    };
     amd.enable = true;
     bundles.users.enable = true;
     services =

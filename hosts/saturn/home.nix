@@ -8,10 +8,8 @@
 
 
   home.packages = [
-    ((import ../../scripts/sway_gaming.nix) {
+    ((import ./sway_gaming.nix) {
       inherit pkgs;
-      direction = -100;
-      output = "DP-2";
     })
   ];
 
