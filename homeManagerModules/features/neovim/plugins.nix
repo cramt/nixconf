@@ -67,8 +67,6 @@ in
   };
   rustaceanvim = {
     enable = true;
-    # TODO: delete line bellow once this is fixed https://github.com/NixOS/nixpkgs/issues/345965
-    package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.vimPlugins.rustaceanvim;
   };
   neorg = {
     enable = true;
