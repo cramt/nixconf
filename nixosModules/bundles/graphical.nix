@@ -21,6 +21,9 @@
       package = pkgs.wireplumber;
     };
   };
+  boot.plymouth = {
+    enable = true;
+  };
   myNixOS.services.udisks.enable = true;
   hardware.pulseaudio.enable = false;
   fonts = {
