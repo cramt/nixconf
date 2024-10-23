@@ -37,11 +37,11 @@ in
   lsp = {
     enable = true;
     servers = {
-      nil_ls = {
+      nixd = {
         enable = true;
         settings = {
           formatting = {
-            command = [ "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt" ];
+            command = [ "${pkgs.alejandra}/bin/alejandra" ];
           };
         };
       };

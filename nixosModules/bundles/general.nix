@@ -1,4 +1,4 @@
-{ pkgs, lib, config, ... }:
+{ pkgs, lib, config, inputs, ... }:
 let
   cfg = config.myNixOS.bundles.general;
   stylixAssetFirstFrame = pkgs.runCommand "stylix_asset_first_frame" { } ''
@@ -15,6 +15,8 @@ in
     };
   };
   config = {
+    nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
+
     time.timeZone = "Europe/Copenhagen";
 
     # Select internationalisation properties.
