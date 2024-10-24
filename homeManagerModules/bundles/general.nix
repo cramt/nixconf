@@ -54,8 +54,8 @@ in
     neofetch
     lazygit
     wget
-    nodejs_20
     yarn
+    inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nodejs_20
     nodePackages.pnpm
     unzip
     cargo
