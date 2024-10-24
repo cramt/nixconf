@@ -1,4 +1,4 @@
-{ pkgs, lib, config, ... }:
+{ pkgs, lib, config, inputs, ... }:
 let
   cfg = config.myNixOS.bundles.general;
   stylixAssetFirstFrame = pkgs.runCommand "stylix_asset_first_frame" { } ''
@@ -15,6 +15,8 @@ in
     };
   };
   config = {
+    nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
+
     time.timeZone = "Europe/Copenhagen";
 
     # Select internationalisation properties.
@@ -37,6 +39,13 @@ in
       clean.enable = true;
       clean.extraArgs = "--keep-since 4d --keep 3";
       flake = "/home/cramt/nixconf";
+    };
+
+    nixpkgs = {
+      overlays = [
+        # TODO: delete this next time you see it, was tmp fix from here https://github.com/nix-community/home-manager/issues/5991
+        (self: super: { utillinux = super.util-linux; })
+      ];
     };
 
 
