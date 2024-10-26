@@ -33,7 +33,7 @@ GEM
       rbs (>= 3, < 4)
       sorbet-runtime (>= 0.5.10782)
     ruby-progressbar (1.13.0)
-    sorbet-runtime (0.5.11615)
+    sorbet-runtime (0.5.11618)
     unicode-display_width (2.6.0)
 
 PLATFORMS
