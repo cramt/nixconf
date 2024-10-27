@@ -26,6 +26,9 @@
   };
   myNixOS.services.udisks.enable = true;
   hardware.pulseaudio.enable = false;
+  myNixOS = {
+    keymapp.enable = true;
+  };
   fonts = {
     packages = with pkgs; [
       nerdfonts

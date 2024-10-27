@@ -1,7 +1,8 @@
-{ pkgs
-, config
-, inputs
-, ...
+{
+  pkgs,
+  config,
+  inputs,
+  ...
 }: {
   home.packages = with pkgs; [
     alacritty
@@ -25,5 +26,6 @@
     zathura.enable = true;
     network-manager-applet.enable = true;
     nautilus.enable = true;
+    keymapp.enable = true;
   };
 }

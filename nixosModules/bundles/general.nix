@@ -1,14 +1,17 @@
-{ pkgs, lib, config, inputs, ... }:
-let
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
+}: let
   cfg = config.myNixOS.bundles.general;
-  stylixAssetFirstFrame = pkgs.runCommand "stylix_asset_first_frame" { } ''
+  stylixAssetFirstFrame = pkgs.runCommand "stylix_asset_first_frame" {} ''
     mkdir -p $out
     ${pkgs.ffmpeg}/bin/ffmpeg -i ${cfg.stylixAssetVideo} -vf "select=eq(n\,0)" $out/output-%03d.png
     mv $out/output-*.png $out/output.png
   '';
-in
-{
-
+in {
   options.myNixOS.bundles.general = {
     stylixAssetVideo = lib.mkOption {
       type = lib.types.path;
@@ -44,12 +47,11 @@ in
     nixpkgs = {
       overlays = [
         # TODO: delete this next time you see it, was tmp fix from here https://github.com/nix-community/home-manager/issues/5991
-        (self: super: { utillinux = super.util-linux; })
+        (self: super: {utillinux = super.util-linux;})
       ];
     };
 
-
-    environment.sessionVariables = { };
+    environment.sessionVariables = {};
     # battery
     services.upower.enable = true;
 
