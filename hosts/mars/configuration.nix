@@ -1,17 +1,22 @@
-{ inputs, config, pkgs, lib, ... }:
-
 {
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  inputs,
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   security.polkit.enable = true;
+
+  boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
   myNixOS = {
     gnupg.enable = true;
@@ -30,7 +35,7 @@
       enable = false;
       protocol = "http";
       domain = "localhost";
-      staticFileVolumes = { };
+      staticFileVolumes = {};
       cacheVolume = "/tmp/b";
     };
 
@@ -71,17 +76,15 @@
   # Configure console keymap
   console.keyMap = "dk-latin1";
 
-  nix.settings =
-    let
-      caches = [ "https://cache.nixos.org/" "http://192.168.0.103:5000/" "http://192.168.0.107:5000/" ];
-    in
-    {
-      # this doesnt work when the hosts arent available https://github.com/NixOS/nix/issues/6901
-      # should only be using this strategy on the server
-      #trusted-substituters = caches;
-      #substituters = caches;
-      experimental-features = [ "nix-command" "flakes" ];
-    };
+  nix.settings = let
+    caches = ["https://cache.nixos.org/" "http://192.168.0.103:5000/" "http://192.168.0.107:5000/"];
+  in {
+    # this doesnt work when the hosts arent available https://github.com/NixOS/nix/issues/6901
+    # should only be using this strategy on the server
+    #trusted-substituters = caches;
+    #substituters = caches;
+    experimental-features = ["nix-command" "flakes"];
+  };
   environment.systemPackages = [
   ];
 
@@ -111,5 +114,4 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.05"; # Did you read the comment?
-
 }
