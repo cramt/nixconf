@@ -11,7 +11,6 @@
     pavucontrol
     adwaita-qt
     gimp
-    wf-recorder
   ];
 
   xdg.enable = true;
