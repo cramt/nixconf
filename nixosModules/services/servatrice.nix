@@ -1,25 +1,32 @@
 {
   pkgs,
   lib,
+  config,
   ...
 }: let
   servatricePkg = pkgs.cockatrice.overrideAttrs (final: prev: {
     pname = "servatrice";
     cmakeFlags = ["-DWITH_SERVER=1" "-DWITH_CLIENT=0" "-DWITH_ORACLE=0" "-DWITH_DBCONVERTER=0"];
   });
+  starter = pkgs.writeShellScriptBin "servatrice_starter" ''
+    export PASSWORD=$(${pkgs.coreutils}/bin/cat /config/password)
+    ${pkgs.coreutils}/bin/mkdir -p /tmp/
+    ${pkgs.envsubst}/bin/envsubst < /config/servatrice.ini > /tmp/servatrice.ini
+    ${servatricePkg}/bin/servatrice --config /tmp/servatrice.ini --log-to-console
+  '';
   dockerImage = pkgs.dockerTools.buildLayeredImage {
     name = "servatrice";
     tag = "1";
     contents = with pkgs; [
+      coreutils
+      envsubst
       cacert
       servatricePkg
+      starter
     ];
     config = {
       Cmd = [
-        "${servatricePkg}/bin/servatrice"
-        "--config"
-        "/config/servatrice.ini"
-        "--log-to-console"
+        "${starter}/bin/servatrice_starter"
       ];
       Env = ["SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"];
     };
@@ -48,7 +55,7 @@
     };
     authentication = {
       method = "password";
-      password = "1234"; # TODO do real password thats in secrets
+      password = "$PASSWORD"; # TODO do real password thats in secrets
       regonly = true;
     };
     database = {
@@ -69,6 +76,7 @@ in {
       image = "servatrice:1";
       volumes = [
         "${configFile}:/config/servatrice.ini"
+        "${config.sops.secrets."cockatrice/password".path}:/config/password"
       ];
       extraOptions = [
         "--network=caddy"
