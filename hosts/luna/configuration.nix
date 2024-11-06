@@ -60,7 +60,7 @@
         downloadVolume = downloads.raw;
       };
       foundryvtt = {
-        enable = false;
+        enable = true;
         dataVolume = "/mnt/pierre/configs/foundryvtt_a";
       };
       prowlarr = {

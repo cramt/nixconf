@@ -1,13 +1,18 @@
-{ pkgs, inputs, config, lib, ... }:
-let
-  version = "11.0.0+315";
+{
+  pkgs,
+  inputs,
+  config,
+  lib,
+  ...
+}: let
+  version = "12.0.0+331";
   foundryvttPkg = inputs.foundryvtt.packages.${pkgs.system}.foundryvtt.overrideAttrs {
     version = version;
   };
   cfg = config.myNixOS.services.foundryvtt;
   dockerImage = pkgs.dockerTools.buildLayeredImage {
     name = "foundryvtt";
-    tag = "11";
+    tag = "12";
     contents = with pkgs; [
       cacert
       foundryvttPkg
@@ -18,17 +23,15 @@ let
         "--headless"
         "--dataPath=/data"
       ];
-      Env = [ "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" ];
+      Env = ["SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"];
     };
   };
-
-in
-{
+in {
   options.myNixOS.services.foundryvtt = {
     dataVolume = lib.mkOption {
       type = lib.types.str;
       description = ''
-        destination for the foundry data 
+        destination for the foundry data
       '';
     };
   };
@@ -36,7 +39,7 @@ in
     virtualisation.oci-containers.containers.foundryvtt = {
       hostname = "foundryvtt";
       imageFile = dockerImage;
-      image = "foundryvtt:11";
+      image = "foundryvtt:12";
       volumes = [
         "${cfg.dataVolume}:/data"
       ];
