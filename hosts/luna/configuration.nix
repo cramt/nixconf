@@ -95,6 +95,7 @@
         enable = true;
         databaseUrl = "sqlite:/mnt/pierre/homelab_discord_bot.db?mode=rwc";
       };
+      servatrice.enable = true;
       sshd.enable = true;
       harmonia = {
         prio = 50;
