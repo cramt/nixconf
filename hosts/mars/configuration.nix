@@ -31,12 +31,15 @@
     services.tor-privoxy = {
       enable = false;
     };
-    services.caddy = {
-      enable = false;
-      protocol = "http";
-      domain = "localhost";
-      staticFileVolumes = {};
-      cacheVolume = "/tmp/b";
+    services = {
+      caddy = {
+        enable = false;
+        protocol = "http";
+        domain = "localhost";
+        staticFileVolumes = {};
+        cacheVolume = "/tmp/b";
+      };
+      servatrice.enable = false;
     };
 
     home-users = {
