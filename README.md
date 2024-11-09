@@ -18,4 +18,3 @@
 - auto add foundry zips to store
 - make and setup bot for status check
 - config adgaurd with nix
-- cockatrice server
