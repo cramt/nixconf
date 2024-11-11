@@ -1,11 +1,15 @@
-{ input, inputs, outputs, config, pkgs, ... }:
 {
-
-  imports = [ outputs.homeManagerModules.default ];
+  input,
+  inputs,
+  outputs,
+  config,
+  pkgs,
+  ...
+}: {
+  imports = [outputs.homeManagerModules.default];
 
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
-
 
   myHomeManager = {
     bundles.general.enable = true;
@@ -16,14 +20,13 @@
     cockatrice.enable = true;
     firefox.profiles = {
       cramt = {
-        extensions = with pkgs.nur.repos.rycee.firefox-addons;
-          [
-            dashlane
-            ublock-origin
-            sponsorblock
-            vimium
-            widegithub
-          ];
+        extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+          dashlane
+          ublock-origin
+          sponsorblock
+          vimium
+          widegithub
+        ];
 
         search.force = true;
 
@@ -45,13 +48,13 @@
         };
       };
       work = {
-        extensions = with pkgs.nur.repos.rycee.firefox-addons;
-          [
-            ublock-origin
-            sponsorblock
-            vimium
-            widegithub
-          ];
+        extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+          dashlane
+          ublock-origin
+          sponsorblock
+          vimium
+          widegithub
+        ];
 
         search.force = true;
 
@@ -73,42 +76,39 @@
         };
       };
     };
-    sway.monitors =
-      let
-        dp = {
-
-          pos = "-4880 -1500";
-          res = {
-            width = 2560;
-            height = 1440;
-          };
-          transform = 270;
-          workspace = "3";
+    sway.monitors = let
+      dp = {
+        pos = "-4880 -1500";
+        res = {
+          width = 2560;
+          height = 1440;
         };
-      in
-      {
-        eDP-1 = {
-          pos = "0 0";
-          res = {
-            width = 1920;
-            height = 1200;
-          };
-          transform = 0;
-          workspace = "1";
-        };
-        HDMI-A-1 = {
-          pos = "-3440 -900";
-          res = {
-            width = 3440;
-            height = 1440;
-          };
-          transform = 0;
-          workspace = "2";
-        };
-        DP-6 = dp;
-        DP-7 = dp;
-        DP-8 = dp;
+        transform = 270;
+        workspace = "3";
       };
+    in {
+      eDP-1 = {
+        pos = "0 0";
+        res = {
+          width = 1920;
+          height = 1200;
+        };
+        transform = 0;
+        workspace = "1";
+      };
+      HDMI-A-1 = {
+        pos = "-3440 -900";
+        res = {
+          width = 3440;
+          height = 1440;
+        };
+        transform = 0;
+        workspace = "2";
+      };
+      DP-6 = dp;
+      DP-7 = dp;
+      DP-8 = dp;
+    };
 
     sway.backgroundVideo = ../../media/cosmere.mp4;
   };
