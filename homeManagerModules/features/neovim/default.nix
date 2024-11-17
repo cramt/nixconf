@@ -1,15 +1,18 @@
-{ pkgs, inputs, lib, ... }:
-let
+{
+  pkgs,
+  inputs,
+  lib,
+  ...
+}: let
   toLua = str: "lua << EOF\n${str}\nEOF\n";
   toLuaFile = file: toLua (builtins.readFile file);
-in
-
-{
+in {
   config = {
     stylix.targets.nixvim.enable = true;
     xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
-    home.packages = with pkgs; [
-      neovide
+    home.packages = [
+      # TODO: change back to normal once this is merged https://nixpk.gs/pr-tracker.html?pr=356292
+      inputs.nixpkgs-master.legacyPackages.${pkgs.system}.neovide
     ];
 
     programs.nixvim = {
@@ -67,35 +70,34 @@ in
           };
         }
       ];
-      userCommands =
-        let
-          searchAndReplaceAliases = {
-            NewLineRemove = [
-              ''/\([^\s]\)\-\n/\1/''
-              ''/\s*\n\s*/ /''
-            ];
-          };
-        in
+      userCommands = let
+        searchAndReplaceAliases = {
+          NewLineRemove = [
+            ''/\([^\s]\)\-\n/\1/''
+            ''/\s*\n\s*/ /''
+          ];
+        };
+      in
         builtins.mapAttrs
-          (name: value: {
-            command = (
+        (name: value: {
+          command =
+            (
               lib.strings.concatStringsSep " | " (
                 builtins.map (regex: "'<,'>s${regex}e") value
               )
-            ) + " | noh";
-            range = true;
-          })
-          searchAndReplaceAliases;
-      plugins =
-        let
-          plugins = (import ./plugins.nix) {
-            inherit pkgs;
-            inherit inputs;
-            inherit lib;
-          };
-        in
-        plugins // { };
+            )
+            + " | noh";
+          range = true;
+        })
+        searchAndReplaceAliases;
+      plugins = let
+        plugins = (import ./plugins.nix) {
+          inherit pkgs;
+          inherit inputs;
+          inherit lib;
+        };
+      in
+        plugins // {};
     };
   };
 }
-

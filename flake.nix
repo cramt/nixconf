@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs-master.url = "github:nixos/nixpkgs/master";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-24.05";
 
     home-manager = {
