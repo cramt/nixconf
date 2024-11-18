@@ -23,7 +23,7 @@
     gnupg.enable = true;
     qemu.enable = true;
     bundles.general.enable = true;
-    bundles.general.stylixAssetVideo = ../../media/xal.mp4;
+    bundles.general.stylixAssetVideo = ../../media/cosmere.mp4;
     bundles.graphical.enable = true;
     steam = {
       enable = true;
