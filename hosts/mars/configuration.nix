@@ -56,7 +56,6 @@
   nixpkgs = {
     overlays = [
       inputs.nur.overlay
-      inputs.neorg-overlay.overlays.default
     ];
     config = {
       allowUnfree = true;
