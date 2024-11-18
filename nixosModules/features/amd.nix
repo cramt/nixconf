@@ -1,16 +1,19 @@
-{ config, pkgs, lib, inputs, ... }:
 {
+  config,
+  pkgs,
+  lib,
+  inputs,
+  ...
+}: {
   boot = {
-    initrd.kernelModules = [ "amdgpu" ];
+    initrd.kernelModules = ["amdgpu"];
   };
-
 
   services.xserver = {
     enable = true;
-    videoDrivers = [ "amdgpu" ];
+    videoDrivers = ["amdgpu"];
   };
 
-  #todo change back to regular unstable after https://nixpk.gs/pr-tracker.html?pr=349246
   hardware = {
     graphics = {
       extraPackages = with pkgs; [

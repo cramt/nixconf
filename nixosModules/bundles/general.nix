@@ -44,13 +44,6 @@ in {
       flake = "/home/cramt/nixconf";
     };
 
-    nixpkgs = {
-      overlays = [
-        # TODO: delete this next time you see it, was tmp fix from here https://github.com/nix-community/home-manager/issues/5991
-        (self: super: {utillinux = super.util-linux;})
-      ];
-    };
-
     environment.sessionVariables = {};
     # battery
     services.upower.enable = true;
