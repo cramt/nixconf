@@ -17,7 +17,6 @@
       "backlight"
       "cpu"
       "memory"
-      "keyboard-state"
       "sway/language"
       "battery"
       "network"
