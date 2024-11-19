@@ -176,7 +176,7 @@ in {
             "${mod}+q" = "kill";
             "${mod}+shift+d" = "exec ${inputs.walker.packages.${pkgs.system}.default}/bin/walker";
             "${mod}+x" = "exec ${pkgs.sway-easyfocus}/bin/sway-easyfocus";
-            "${mod}+z" = "exec ${pkgs.alsa-utils}/bin/amixer set Master toggle";
+            "${mod}+z" = "exec ${pkgs.alsa-utils}/bin/amixer set Capture toggle";
             "${mod}+f1" = "exec ${lockCommand}";
             "${mod}+tab" = "${execSwayr} switch-to-urgent-or-lru-window";
             "${mod}+Shift+Return" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl play-pause";

@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-let
+{pkgs, ...}: let
   mainWaybarConfig = {
     layer = "top";
     position = "top";
@@ -54,7 +53,7 @@ let
     "sway/scratchpad" = {
       "format" = "{icon} {count}";
       "show-empty" = false;
-      "format-icons" = [ "" "" ];
+      "format-icons" = ["" ""];
       "tooltip" = true;
       "tooltip-format" = "{app}: {title}";
     };
@@ -90,7 +89,7 @@ let
 
     backlight = {
       format = "{icon} {percent}%";
-      format-icons = [ "" "" ];
+      format-icons = ["" ""];
       on-scroll-down = "${pkgs.brightnessctl}/bin/brightnessctl -c backlight set 1%-";
       on-scroll-up = "${pkgs.brightnessctl}/bin/brightnessctl -c backlight set +1%";
     };
@@ -101,7 +100,7 @@ let
         critical = 15;
       };
       format = "{icon} {capacity}%";
-      format-icons = [ "" "" "" "" "" ];
+      format-icons = ["" "" "" "" ""];
     };
 
     network = {
@@ -114,9 +113,10 @@ let
 
     pulseaudio = {
       scroll-step = 1;
-      format = "{icon} {volume}%";
-      format-bluetooth = "{icon} {volume}%";
-      format-muted = "muted ";
+      format-source = "";
+      format-source-muted = "";
+      format = "{icon} {volume}% {format_source}";
+      format-muted = "muted  {format_source}";
       format-icons = {
         headphones = "";
         handsfree = "";
@@ -124,7 +124,7 @@ let
         phone = "";
         portable = "";
         car = "";
-        default = [ "" "" ];
+        default = ["" ""];
       };
       on-click = "${pkgs.pavucontrol}/bin/pavucontrol";
     };
@@ -135,8 +135,7 @@ let
       tooltip = false;
     };
   };
-in
-{
+in {
   config = {
     stylix.targets.waybar = {
       enableLeftBackColors = false;
@@ -144,7 +143,7 @@ in
     };
     programs.waybar = {
       enable = true;
-      settings = { mainBar = mainWaybarConfig; };
+      settings = {mainBar = mainWaybarConfig;};
     };
   };
 }
