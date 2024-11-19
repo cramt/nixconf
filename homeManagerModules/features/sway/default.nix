@@ -1,32 +1,34 @@
-{ lib, config, pkgs, inputs, ... }:
-
-let
+{
+  lib,
+  config,
+  pkgs,
+  inputs,
+  ...
+}: let
   cfg = config.myHomeManager.sway;
   mod = "Mod4";
-  screenSpecificVideos = builtins.mapAttrs
+  screenSpecificVideos =
+    builtins.mapAttrs
     (
-      name: value:
-        let
-          res = "${toString value.res.width}:${toString value.res.height}";
-          rotation = lib.concatMapStrings (_: ",transpose=2") (lib.range 1 (value.transform / 90));
-        in
-        (pkgs.runCommand "screen_specific_videos" { } ''
-          mkdir -p $out
+      name: value: let
+        res = "${toString value.res.width}:${toString value.res.height}";
+        rotation = lib.concatMapStrings (_: ",transpose=2") (lib.range 1 (value.transform / 90));
+      in (pkgs.runCommand "screen_specific_videos" {} ''
+        mkdir -p $out
 
-          ${pkgs.ffmpeg}/bin/ffmpeg -i ${cfg.backgroundVideo} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}${rotation}" $out/output.mp4
-        '')
-
+        ${pkgs.ffmpeg}/bin/ffmpeg -i ${cfg.backgroundVideo} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}${rotation}" $out/output.mp4
+      '')
     )
     cfg.monitors;
-  killVesktop =
-    ((import ../../../scripts/kill_vesktop.nix) {
-      inherit pkgs;
-    });
+  killVesktop = (import ../../../scripts/kill_vesktop.nix) {
+    inherit pkgs;
+  };
   setBackground = pkgs.writeShellScriptBin "set_background" ''
-    pkill mpvpaper 
+    pkill mpvpaper
     ${lib.strings.concatStringsSep "\n" (lib.attrsets.mapAttrsToList (
-      name: value: "${pkgs.mpvpaper}/bin/mpvpaper -o \"--loop\" -f '${name}' ${value}/output.mp4"
-    ) screenSpecificVideos)}
+        name: value: "${pkgs.mpvpaper}/bin/mpvpaper -o \"--loop\" -f '${name}' ${value}/output.mp4"
+      )
+      screenSpecificVideos)}
     sleep 1
     pkill swaybg #stylix sets the wallpapir like a dumbdumb
   '';
@@ -39,11 +41,10 @@ let
   lockCommand = "${pkgs.swaylock}/bin/swaylock -f";
   swayrCommand = "${pkgs.swayr}/bin/swayr";
   execSwayr = "exec ${swayrCommand}";
-in
-{
+in {
   options.myHomeManager.sway = {
     monitors = lib.mkOption {
-      default = { };
+      default = {};
       description = ''
         sway monitor setup
       '';
@@ -104,24 +105,27 @@ in
       '';
       wrapperFeatures.gtk = true;
       config = {
-        output = builtins.mapAttrs
+        output =
+          builtins.mapAttrs
           (
-            name: value: ((builtins.removeAttrs value [ "workspace" ]) // {
-              res = "${toString value.res.width}x${toString value.res.height}";
-              transform = toString value.transform;
-            })
+            name: value: ((builtins.removeAttrs value ["workspace"])
+              // {
+                res = "${toString value.res.width}x${toString value.res.height}";
+                transform = toString value.transform;
+              })
           )
           cfg.monitors;
-        workspaceOutputAssign = builtins.attrValues
+        workspaceOutputAssign =
+          builtins.attrValues
           (
             builtins.mapAttrs
-              (
-                name: value: {
-                  output = name;
-                  workspace = value.workspace;
-                }
-              )
-              cfg.monitors
+            (
+              name: value: {
+                output = name;
+                workspace = value.workspace;
+              }
+            )
+            cfg.monitors
           );
 
         modifier = mod;
@@ -149,30 +153,30 @@ in
           }
         ];
         modes = {
-          resize =
-            let
-              size = builtins.toString 10;
-              unit = "ppt";
-            in
-            rec {
-              Down = "resize shrink height ${size} ${unit}";
-              j = Down;
-              Up = "resize grow height ${size} ${unit}";
-              k = Up;
-              Left = "resize grow width ${size} ${unit}";
-              h = Left;
-              Right = "resize shrink width ${size} ${unit}";
-              l = Right;
-              Return = "mode default";
-              Escape = Return;
-            };
+          resize = let
+            size = builtins.toString 10;
+            unit = "ppt";
+          in rec {
+            Down = "resize shrink height ${size} ${unit}";
+            j = Down;
+            Up = "resize grow height ${size} ${unit}";
+            k = Up;
+            Left = "resize grow width ${size} ${unit}";
+            h = Left;
+            Right = "resize shrink width ${size} ${unit}";
+            l = Right;
+            Return = "mode default";
+            Escape = Return;
+          };
         };
-        keybindings = lib.mkOptionDefault
+        keybindings =
+          lib.mkOptionDefault
           {
             "print" = "exec grimshot --notify copy area";
             "${mod}+q" = "kill";
             "${mod}+shift+d" = "exec ${inputs.walker.packages.${pkgs.system}.default}/bin/walker";
             "${mod}+x" = "exec ${pkgs.sway-easyfocus}/bin/sway-easyfocus";
+            "${mod}+z" = "exec ${pkgs.alsa-utils}/bin/amixer set Master toggle";
             "${mod}+f1" = "exec ${lockCommand}";
             "${mod}+tab" = "${execSwayr} switch-to-urgent-or-lru-window";
             "${mod}+Shift+Return" = "exec --no-startup-id ${pkgs.playerctl}/bin/playerctl play-pause";
