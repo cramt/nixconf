@@ -188,9 +188,9 @@ in {
         ];
         window.commands = [
           {
-            command = "bindsym ${mod}+q";
+            command = "bindsym ${mod}+q exec :";
             criteria = {
-              instance = ".exe";
+              instance = "steam_proton";
             };
           }
         ];
