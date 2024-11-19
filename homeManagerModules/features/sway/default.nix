@@ -186,6 +186,14 @@ in {
             command = "${pkgs.waybar}/bin/waybar";
           }
         ];
+        window.commands = [
+          {
+            command = "bindsym ${mod}+q";
+            criteria = {
+              instance = ".exe";
+            };
+          }
+        ];
         gaps = {
           inner = 0;
           outer = 0;
