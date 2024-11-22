@@ -11,8 +11,7 @@ in {
     stylix.targets.nixvim.enable = true;
     xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
     home.packages = [
-      # TODO: change back to normal once this is merged https://nixpk.gs/pr-tracker.html?pr=356292
-      inputs.nixpkgs-master.legacyPackages.${pkgs.system}.neovide
+      pkgs.neovide
     ];
 
     programs.nixvim = {
