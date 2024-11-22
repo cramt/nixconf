@@ -13,7 +13,7 @@ update_flake:
     nix flake update
 
 update_gems:
-    (cd gems && bundle update)
+    (cd gems && bundle lock --update)
     (cd gems && bundix)
 
 update:
