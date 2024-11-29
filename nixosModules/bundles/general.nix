@@ -58,7 +58,7 @@ in {
         popups = 0.8;
       };
       cursor = {
-        package = pkgs.bibata-cursors;
+        package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.bibata-cursors;
         name = "Bibata-Modern-Ice";
       };
       fonts = {
