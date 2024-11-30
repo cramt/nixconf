@@ -31,7 +31,7 @@
   };
   fonts = {
     packages = with pkgs; [
-      nerdfonts
+      nerd-fonts.iosevka
       cm_unicode
       corefonts
       noto-fonts
