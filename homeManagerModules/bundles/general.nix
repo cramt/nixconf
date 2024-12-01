@@ -69,6 +69,7 @@ in {
       awscli2
       dnsutils
       sops
+      zed-editor
 
       inputs.zen-browser.packages."${pkgs.system}".specific
     ]
