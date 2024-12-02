@@ -91,6 +91,13 @@
         configVolume = "/mnt/pierre/configs/adgaurd_conf";
         workVolume = "/mnt/pierre/configs/adgaurd_work";
       };
+      valheim = {
+        enable = true;
+        configVolume = "/mnt/pierre/valheim_config";
+        binaryVolume = "/mnt/pierre/valheim_binary";
+        serverName = "wutwutgame3";
+        worldName = "wutwutgame3";
+      };
       homelab_discord_bot = {
         enable = true;
         databaseUrl = "sqlite:/mnt/pierre/homelab_discord_bot.db?mode=rwc";
