@@ -12,7 +12,7 @@ GEM
     prism (1.2.0)
     racc (1.8.1)
     rainbow (3.1.1)
-    rbs (3.6.1)
+    rbs (3.7.0)
       logger
     regexp_parser (2.9.3)
     rubocop (1.69.1)
@@ -33,7 +33,7 @@ GEM
       rbs (>= 3, < 4)
       sorbet-runtime (>= 0.5.10782)
     ruby-progressbar (1.13.0)
-    sorbet-runtime (0.5.11672)
+    sorbet-runtime (0.5.11685)
     unicode-display_width (3.1.2)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
