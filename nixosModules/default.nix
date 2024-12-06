@@ -49,6 +49,7 @@ in {
       inputs.home-manager.nixosModules.home-manager
       inputs.stylix.nixosModules.stylix
       inputs.sops-nix.nixosModules.sops
+      inputs.nixos-cosmic.nixosModules.default
     ]
     ++ features
     ++ bundles
@@ -75,10 +76,12 @@ in {
       substituters = [
         "https://walker.cachix.org"
         "https://walker-git.cachix.org"
+        "https://cosmic.cachix.org"
       ];
       trusted-public-keys = [
         "walker.cachix.org-1:fG8q+uAaMqhsMxWjwvk0IMb4mFPFLqHjuvfwQxE4oJM="
         "walker-git.cachix.org-1:vmC0ocfPWh0S/vRAQGtChuiZBTAe4wiKDeyyXM0/7pM="
+        "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE="
       ];
     };
     programs.nix-ld.enable = true;
