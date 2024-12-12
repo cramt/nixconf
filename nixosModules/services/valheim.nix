@@ -35,6 +35,10 @@ in {
   };
   config = {
     virtualisation.oci-containers.backend = "docker";
+    networking.firewall = {
+      allowedUDPPorts = [2456 2457];
+      allowedTCPPorts = [2456 2457];
+    };
     virtualisation.oci-containers.containers.valheim = {
       hostname = "valheim";
       image = "lloesche/valheim-server:latest";
