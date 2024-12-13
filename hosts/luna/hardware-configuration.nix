@@ -43,6 +43,7 @@
     fsType = "ext4";
     options = [
       "users"
+      "exec"
       "nofail"
     ];
   };
@@ -52,6 +53,7 @@
     fsType = "ext3";
     options = [
       "users"
+      "exec"
       "nofail"
     ];
   };
