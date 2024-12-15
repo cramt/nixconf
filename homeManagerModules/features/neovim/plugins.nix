@@ -1,14 +1,16 @@
-{ pkgs, inputs, lib }:
-let
+{
+  pkgs,
+  inputs,
+  lib,
+}: let
   rubyGems = (import ../../../gems/default.nix) {
     pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system};
   };
-in
-{
+in {
   mini = {
     enable = true;
     modules = {
-      bufremove = { };
+      bufremove = {};
     };
   };
   none-ls = {
@@ -41,7 +43,7 @@ in
         enable = true;
         settings = {
           formatting = {
-            command = [ "${pkgs.alejandra}/bin/alejandra" ];
+            command = ["${pkgs.alejandra}/bin/alejandra"];
           };
         };
       };
@@ -70,32 +72,30 @@ in
   };
   neorg = {
     enable = true;
-    modules =
-      let
-        empty = { __empty = null; };
-      in
-      {
-        "external.conceal-wrap" = empty;
-        "core.defaults" = empty;
-        "core.concealer" = empty;
-        "core.export" = empty;
-        "core.summary" = empty;
-        "core.keybinds" = empty;
-        "core.completion" = {
-          config = {
-            engine = "nvim-cmp";
-          };
-        };
-        "core.journal" = empty;
-        "core.dirman" = {
-          config = {
-            workspaces = {
-              notes = "~/notes";
-            };
-            default_workspace = "notes";
-          };
+    settings.load = let
+      empty = {__empty = null;};
+    in {
+      "external.conceal-wrap" = empty;
+      "core.defaults" = empty;
+      "core.concealer" = empty;
+      "core.export" = empty;
+      "core.summary" = empty;
+      "core.keybinds" = empty;
+      "core.completion" = {
+        config = {
+          engine = "nvim-cmp";
         };
       };
+      "core.journal" = empty;
+      "core.dirman" = {
+        config = {
+          workspaces = {
+            notes = "~/notes";
+          };
+          default_workspace = "notes";
+        };
+      };
+    };
   };
   lsp-format = {
     enable = true;
@@ -113,7 +113,7 @@ in
         globalstatus = true;
       };
       sections = {
-        lualine_x = [ "filetype" ];
+        lualine_x = ["filetype"];
       };
       tabline = {
         lualine_a = [
@@ -153,27 +153,31 @@ in
         visible = false;
         hideDotfiles = false;
         hideGitignored = true;
-        hideByPattern = [ ".git" ];
+        hideByPattern = [".git"];
       };
       hijackNetrwBehavior = "open_current";
     };
   };
   which-key = {
     enable = true;
-    settings.spec = lib.attrsets.mapAttrsToList
-      (name: value: (lib.attrsets.filterAttrs (n: v: n != "action") value) // {
-        __unkeyed-1 = name;
-        __unkeyed-2 = value.action;
-      })
+    settings.spec =
+      lib.attrsets.mapAttrsToList
+      (name: value:
+        (lib.attrsets.filterAttrs (n: v: n != "action") value)
+        // {
+          __unkeyed-1 = name;
+          __unkeyed-2 = value.action;
+        })
       ((import ./keymaps.nix) {
         inherit lib;
-      }).keymap;
+      })
+      .keymap;
   };
   cmp = {
     enable = true;
     autoEnableSources = true;
     settings = {
-      sources = builtins.map (x: { name = x; }) [
+      sources = builtins.map (x: {name = x;}) [
         "nvim_lsp"
         "buffer"
         "path"

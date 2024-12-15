@@ -85,6 +85,13 @@ in {
       ];
     };
     programs.nix-ld.enable = true;
-    nixpkgs.config.allowUnfree = true;
+    nixpkgs = {
+      overlays = [
+        inputs.nur.overlays.default
+      ];
+      config = {
+        allowUnfree = true;
+      };
+    };
   };
 }

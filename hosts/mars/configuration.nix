@@ -53,15 +53,6 @@
 
   networking.networkmanager.enable = true;
 
-  nixpkgs = {
-    overlays = [
-      inputs.nur.overlay
-    ];
-    config = {
-      allowUnfree = true;
-    };
-  };
-
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 

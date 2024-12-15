@@ -129,15 +129,6 @@
 
   programs.nix-ld.enable = true;
 
-  nixpkgs = {
-    overlays = [
-      inputs.nur.overlay
-    ];
-    config = {
-      allowUnfree = true;
-    };
-  };
-
   # Configure keymap in X11
   services.xserver = {
     xkb = {
