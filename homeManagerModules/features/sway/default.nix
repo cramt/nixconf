@@ -88,12 +88,12 @@ in {
         }
         {
           timeout = 60 * 10;
-          command = mkRunIfNoMedia "screen_off" ''${pkgs.sway}/bin/swaymsg "output * dpms off"'';
-          resumeCommand = ''${pkgs.sway}/bin/swaymsg "output * dpms on"'';
+          command = mkRunIfNoMedia "lock" lockCommand;
         }
         {
           timeout = 60 * 5;
-          command = mkRunIfNoMedia "lock" lockCommand;
+          command = mkRunIfNoMedia "screen_off" ''${pkgs.sway}/bin/swaymsg "output * dpms off"'';
+          resumeCommand = ''${pkgs.sway}/bin/swaymsg "output * dpms on"'';
         }
       ];
     };
