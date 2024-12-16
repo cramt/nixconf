@@ -1,13 +1,16 @@
-{ lib, config, pkgs, ... }:
-let
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}: let
   cfg = config.myHomeManager.git;
   cmpScript = pkgs.writeShellScriptBin "git_cmp" ''
     git add -A
     git commit -m "$@"
     git push
   '';
-in
-{
+in {
   options.myHomeManager.git = {
     signingKey = lib.mkOption {
       default = "";
@@ -23,37 +26,37 @@ in
       userName = "Alexandra Østermark";
       userEmail = "alex.cramt@gmail.com";
       lfs.enable = true;
-      aliases = lib.mkMerge
+      aliases =
+        lib.mkMerge
         (
           [
             {
               cmp = "!${cmpScript}/bin/git_cmp";
               tswitch = "town switch";
             }
-          ] ++ (
+          ]
+          ++ (
             builtins.map
-              (v: { ${v} = "town ${v}"; })
-              [
-                "hack"
-                "sync"
-                "propose"
-                "continue"
-                "skip"
-                "status"
-                "undo"
-                "append"
-                "prepend"
-                "set-parent"
-                "diff-parent"
-                "contribute"
-                "observe"
-                "park"
-                "compress"
-                "kill"
-                "rename-branch"
-                "repo"
-                "ship"
-              ]
+            (v: {${v} = "town ${v}";})
+            [
+              "hack"
+              "sync"
+              "propose"
+              "continue"
+              "skip"
+              "status"
+              "undo"
+              "append"
+              "prepend"
+              "set-parent"
+              "diff-parent"
+              "contribute"
+              "observe"
+              "park"
+              "compress"
+              "repo"
+              "ship"
+            ]
           )
         );
       extraConfig = {
