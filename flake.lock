@@ -84,18 +84,12 @@
       }
     },
     "crane": {
-      "inputs": {
-        "nixpkgs": [
-          "homelab_discord_bot",
-          "nixpkgs"
-        ]
-      },
       "locked": {
-        "lastModified": 1721322122,
-        "narHash": "sha256-a0G1NvyXGzdwgu6e1HQpmK5R5yLsfxeBe07nNDyYd+g=",
+        "lastModified": 1734324364,
+        "narHash": "sha256-omYTR59TdH0AumP1cfh49fBnWZ52HjfdNfaLzCMZBx0=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "8a68b987c476a33e90f203f0927614a75c3f47ea",
+        "rev": "60d7623f1320470bf2fdb92fd2dca1e9a27b98ce",
         "type": "github"
       },
       "original": {
@@ -255,11 +249,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1710146030,
-        "narHash": "sha256-SZ5L6eA7HJ/nmkzGG7/ISclqe6oZdOZTNoesiInkXPQ=",
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "b1d9ab70662946ef0850d488da1c9019f3a9752a",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
         "type": "github"
       },
       "original": {
@@ -481,11 +475,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1722083543,
-        "narHash": "sha256-fnqTuNpaSD4IFeFmV0xmEugpHvXv+EX7eetdD/cJ6WU=",
+        "lastModified": 1734450006,
+        "narHash": "sha256-ekkURNXPDhCcIE9buTaQOmNur5guk6bEV1wZlpXE0YM=",
         "owner": "cramt",
         "repo": "homelab_discord_bot",
-        "rev": "c916061765b2e22a911870cb9086147cf5be55ac",
+        "rev": "5f7e1f9fd4d5bcead8dc5536f3e596f0ef46905a",
         "type": "github"
       },
       "original": {

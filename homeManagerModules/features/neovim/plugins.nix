@@ -65,6 +65,7 @@ in {
       ts_ls.enable = true;
       eslint.enable = true;
       astro.enable = true;
+      arduino_language_server.enable = true;
     };
   };
   rustaceanvim = {
