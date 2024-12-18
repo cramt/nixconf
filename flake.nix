@@ -67,10 +67,6 @@
       url = "github:lilyinstarlight/nixos-cosmic";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # todo delete once fixed https://github.com/danth/stylix/issues/642
-    stylix.inputs.base16.follows = "base16";
-    base16.url = "github:Noodlez1232/base16.nix/slugify-fix";
   };
 
   outputs = {...} @ inputs: let

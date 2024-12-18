@@ -65,7 +65,20 @@ in {
       ts_ls.enable = true;
       eslint.enable = true;
       astro.enable = true;
-      arduino_language_server.enable = true;
+      arduino_language_server = {
+        enable = true;
+        cmd = [
+          "${pkgs.arduino-language-server}/bin/arduino-language-server"
+          "-clangd"
+          "${pkgs.libclang}/bin/clangd"
+          "-cli"
+          "${pkgs.arduino-cli}/bin/arduino-cli"
+          "-cli-config"
+          "$ARDUINO_CONFIG_FILE"
+          "-fqbn"
+          "$ARDUINO_FQBN"
+        ];
+      };
     };
   };
   rustaceanvim = {
