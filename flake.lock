@@ -5,16 +5,15 @@
         "fromYaml": "fromYaml"
       },
       "locked": {
-        "lastModified": 1732075760,
+        "lastModified": 1732200724,
         "narHash": "sha256-+R1BH5wHhfnycySb7Sy5KbYEaTJZWm1h+LW1OtyhiTs=",
-        "owner": "Noodlez1232",
+        "owner": "SenchoPens",
         "repo": "base16.nix",
-        "rev": "5322a1628f1f038e1dd31a22370391cbdb50768a",
+        "rev": "153d52373b0fb2d343592871009a286ec8837aec",
         "type": "github"
       },
       "original": {
-        "owner": "Noodlez1232",
-        "ref": "slugify-fix",
+        "owner": "SenchoPens",
         "repo": "base16.nix",
         "type": "github"
       }
@@ -716,11 +715,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1734119587,
-        "narHash": "sha256-AKU6qqskl0yf2+JdRdD0cfxX4b9x3KKV5RqA6wijmPM=",
+        "lastModified": 1734424634,
+        "narHash": "sha256-cHar1vqHOOyC7f1+tVycPoWTfKIaqkoe1Q6TnKzuti4=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "3566ab7246670a43abd2ffa913cc62dad9cdf7d5",
+        "rev": "d3c42f187194c26d9f0309a8ecc469d6c878ce33",
         "type": "github"
       },
       "original": {
@@ -732,11 +731,11 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1734119587,
-        "narHash": "sha256-AKU6qqskl0yf2+JdRdD0cfxX4b9x3KKV5RqA6wijmPM=",
+        "lastModified": 1734424634,
+        "narHash": "sha256-cHar1vqHOOyC7f1+tVycPoWTfKIaqkoe1Q6TnKzuti4=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "3566ab7246670a43abd2ffa913cc62dad9cdf7d5",
+        "rev": "d3c42f187194c26d9f0309a8ecc469d6c878ce33",
         "type": "github"
       },
       "original": {
@@ -793,11 +792,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1734446876,
-        "narHash": "sha256-cGZBeTh+9pChvz0phepOzM+NK7QVl0Cp5EPBlh1l5xc=",
+        "lastModified": 1734472356,
+        "narHash": "sha256-RIoG3zXarfuHfzM/z/NPjoHHxl3sqYrtEatSLA1/bIk=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "f4b7fd46f6caf984fdfc41281792eac7b7ab8f24",
+        "rev": "4f1fe403b18c45614d6b81423038a34cff371244",
         "type": "github"
       },
       "original": {
@@ -813,11 +812,11 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1734441016,
-        "narHash": "sha256-5yhAotAxJJEEjrKE5RqpqRpJ73XLCu+HBHTSib1/UQI=",
+        "lastModified": 1734529681,
+        "narHash": "sha256-pe/fHd6nuz8nxwyVsLDDilgy+0rXJ1iYhCFojFlV8QE=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "6df25dc17e9c708bee5866a23d6974be4f90b332",
+        "rev": "29cbfd0aad3f30ed30312668b3d8dca522175349",
         "type": "github"
       },
       "original": {
@@ -851,7 +850,6 @@
     },
     "root": {
       "inputs": {
-        "base16": "base16",
         "darkmingo-cockactrice-theme": "darkmingo-cockactrice-theme",
         "foundryvtt": "foundryvtt",
         "home-manager": "home-manager",
@@ -915,9 +913,7 @@
     },
     "stylix": {
       "inputs": {
-        "base16": [
-          "base16"
-        ],
+        "base16": "base16",
         "base16-fish": "base16-fish",
         "base16-helix": "base16-helix",
         "base16-vim": "base16-vim",
@@ -1088,11 +1084,11 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1734351064,
-        "narHash": "sha256-yrFeq+2dyK0RZ7kDEbwW55Ev2KHKb8gObshQYP49/aU=",
+        "lastModified": 1734528923,
+        "narHash": "sha256-53+Q32j65WUHKo2wN+6tMxlZJ2yLnT2w3N97Ae4YHRI=",
         "owner": "abenz1267",
         "repo": "walker",
-        "rev": "0ba640a11bd9b74ec697cadf0e758c56238e7c43",
+        "rev": "1bc6d8e2e803ea18c643d3822e387b308412b850",
         "type": "github"
       },
       "original": {
