@@ -305,11 +305,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1726638033,
-        "narHash": "sha256-+hcgXKG5t/9wibv+8T9WASWItBAWb0tsmcZXH+VIYdw=",
+        "lastModified": 1734569542,
+        "narHash": "sha256-NGGpF4cAs7AhO9RUWtlBQ5A6XCaFogQzn7DArJo2gck=",
         "owner": "reckenrode",
         "repo": "nix-foundryvtt",
-        "rev": "bf07f9dd916a97a091f8ab83358c2f295bea9ec9",
+        "rev": "4f37df2400138a57126ee3ebcee5602ef82ef220",
         "type": "github"
       },
       "original": {
@@ -636,16 +636,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1726447378,
-        "narHash": "sha256-2yV8nmYE1p9lfmLHhOCbYwQC/W8WYfGQABoGzJOb1JQ=",
+        "lastModified": 1734323986,
+        "narHash": "sha256-m/lh6hYMIWDYHCAsn81CDAiXoT3gmxXI9J987W5tZrE=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "086b448a5d54fd117f4dc2dee55c9f0ff461bdc1",
+        "rev": "394571358ce82dff7411395829aa6a3aad45b907",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-24.05",
+        "ref": "nixos-24.11",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -662,6 +662,22 @@
       "original": {
         "owner": "nix-community",
         "repo": "nixpkgs.lib",
+        "type": "github"
+      }
+    },
+    "nixpkgs-playwright": {
+      "locked": {
+        "lastModified": 1732433315,
+        "narHash": "sha256-PdXPJ8CJR+QZHmoP2o3NVFkZ6eTWITbOECSybEPEuCI=",
+        "owner": "kalekseev",
+        "repo": "nixpkgs",
+        "rev": "3d6bd425985b55c33bc58e41fa7f481468c1dffb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kalekseev",
+        "ref": "playwright-149",
+        "repo": "nixpkgs",
         "type": "github"
       }
     },
@@ -792,11 +808,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1734544724,
-        "narHash": "sha256-TNUqxDzCew3kDGT2bAXkr0kT+AhVwTiqJTL2DtLr2cA=",
+        "lastModified": 1734567959,
+        "narHash": "sha256-ghNQlnI/r6cnknY58x60695sFrYnI6ZUMg65bmoNGqw=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "eaa20846279654fa038427ce078d4cd9609e5f2f",
+        "rev": "37608b462772e35220e02bfbd9045d0946564436",
         "type": "github"
       },
       "original": {
@@ -812,11 +828,11 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1734547928,
-        "narHash": "sha256-QcR5k79PKcgGvjWN00NLgIkUnE+UAuAuCKHOiJ4ofek=",
+        "lastModified": 1734582852,
+        "narHash": "sha256-noclzoGo/tdXK3ae1B+uzAe3tt8/hkAM+BSBbodeuU4=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "3e283929308430aa30e5d2be14c382ab69550b62",
+        "rev": "ec475c3d51d2eb5a4af54f603fe08edafd1d5380",
         "type": "github"
       },
       "original": {
@@ -860,6 +876,7 @@
         "nix-ld": "nix-ld",
         "nixos-cosmic": "nixos-cosmic",
         "nixpkgs": "nixpkgs_2",
+        "nixpkgs-playwright": "nixpkgs-playwright",
         "nixpkgs-ruby-downgrade": "nixpkgs-ruby-downgrade",
         "nixpkgs-stable": "nixpkgs-stable_2",
         "nixvim": "nixvim",
