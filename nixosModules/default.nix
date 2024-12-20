@@ -67,6 +67,7 @@ in {
         "homelab_discord_bot/allowed_guild" = {};
         "cockatrice/password" = {};
         "valheim/secrets" = {};
+        "pap_secrets" = {};
       };
     };
     stylix.enable = true;
