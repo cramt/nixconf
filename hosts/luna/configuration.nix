@@ -92,7 +92,7 @@
         workVolume = "/mnt/pierre/configs/adgaurd_work";
       };
       valheim = {
-        enable = true;
+        enable = false;
         configVolume = "/mnt/pierre/valheim_config";
         binaryVolume = "/mnt/pierre/valheim_binary";
         serverName = "wutwutgame3";

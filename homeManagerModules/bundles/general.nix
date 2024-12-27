@@ -78,6 +78,7 @@ in {
   home.sessionVariables = {
     FLAKE = "${config.home.homeDirectory}/nixconf";
     LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
+    LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
     NEOVIDE_FORK = "1";
     EDITOR = "nvim";
     BROWSER = "firefox";
