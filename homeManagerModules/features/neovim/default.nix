@@ -62,12 +62,6 @@ in {
             require("otter").activate(nil, true, true, nil)
           '';
         }
-        {
-          plugin = pkgs.vimUtils.buildVimPlugin {
-            name = "neorg-conceal-wrap";
-            src = inputs.neorg-conceal-wrap;
-          };
-        }
       ];
       userCommands = let
         searchAndReplaceAliases = {

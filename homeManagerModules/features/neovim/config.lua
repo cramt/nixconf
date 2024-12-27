@@ -13,14 +13,6 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
 })
 
 
-vim.api.nvim_create_autocmd("BufWritePre", {
-    pattern = { "*.norg" },
-    group = "AutoFormatting",
-    callback = function()
-        require("neorg.modules.external.conceal-wrap.module").public.format()
-    end,
-})
-
 MyBufferHelper = {}
 
 local function mini_confirm(func, bufnr, force)

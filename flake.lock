@@ -515,22 +515,6 @@
         "type": "github"
       }
     },
-    "neorg-conceal-wrap": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1725735873,
-        "narHash": "sha256-375izZm21/qk1mV8xlKayMIEvdJKsU8ffc2dXTMHxMs=",
-        "owner": "benlubas",
-        "repo": "neorg-conceal-wrap",
-        "rev": "e08b06042b175355496d3b5b033658021b90cd82",
-        "type": "github"
-      },
-      "original": {
-        "owner": "benlubas",
-        "repo": "neorg-conceal-wrap",
-        "type": "github"
-      }
-    },
     "nix-colors": {
       "inputs": {
         "base16-schemes": "base16-schemes",
@@ -870,7 +854,6 @@
         "foundryvtt": "foundryvtt",
         "home-manager": "home-manager",
         "homelab_discord_bot": "homelab_discord_bot",
-        "neorg-conceal-wrap": "neorg-conceal-wrap",
         "nix-colors": "nix-colors",
         "nix-index-database": "nix-index-database",
         "nix-ld": "nix-ld",

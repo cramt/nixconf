@@ -60,11 +60,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    neorg-conceal-wrap = {
-      flake = false;
-      url = "github:benlubas/neorg-conceal-wrap";
-    };
-
     nixos-cosmic = {
       url = "github:lilyinstarlight/nixos-cosmic";
       inputs.nixpkgs.follows = "nixpkgs";
