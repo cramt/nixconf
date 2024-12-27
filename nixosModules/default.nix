@@ -56,6 +56,13 @@ in {
     ++ services;
 
   config = {
+    services.udev.extraRules = ''
+      # STM32F3DISCOVERY rev A/B - ST-LINK/V2
+      ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3748", TAG+="uaccess"
+
+      # STM32F3DISCOVERY rev C+ - ST-LINK/V2-1
+      ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", TAG+="uaccess"
+    '';
     sops = {
       defaultSopsFile = ../secrets/secrets.yaml;
       defaultSopsFormat = "yaml";

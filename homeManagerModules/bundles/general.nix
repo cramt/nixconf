@@ -70,7 +70,8 @@ in {
       dnsutils
       sops
       zed-editor
-
+      gcc-arm-embedded
+      openocd
       inputs.zen-browser.packages."${pkgs.system}".specific
     ]
     ++ ld_packages;
