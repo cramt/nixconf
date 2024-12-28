@@ -98,7 +98,7 @@
         serverName = "wutwutgame3";
         worldName = "wutwutgame3";
       };
-      homelab_discord_bot = {
+      homelab_system_controller = {
         enable = true;
         databaseUrl = "sqlite:/mnt/pierre/homelab_discord_bot.db?mode=rwc";
       };

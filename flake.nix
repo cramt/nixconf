@@ -46,8 +46,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    homelab_discord_bot = {
-      url = "github:cramt/homelab_discord_bot";
+    homelab_system_controller = {
+      url = "github:cramt/homelab_system_controller";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -62,6 +62,11 @@
 
     nixos-cosmic = {
       url = "github:lilyinstarlight/nixos-cosmic";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    probe-rs-rules = {
+      url = "github:jneem/probe-rs-rules";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

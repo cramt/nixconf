@@ -97,7 +97,7 @@
         configVolume = "/mnt/amirani/configs/adgaurd_conf";
         workVolume = "/mnt/amirani/configs/adgaurd_work";
       };
-      homelab_discord_bot = {
+      homelab_system_controller = {
         enable = false;
         databaseUrl = "sqlite:/mnt/amirani/homelab_discord_bot.db?mode=rwc";
       };

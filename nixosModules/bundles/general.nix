@@ -48,6 +48,8 @@ in {
     # battery
     services.upower.enable = true;
 
+    services.udev.packages = [inputs.probe-rs-rules.packages.${pkgs.system}.default];
+
     stylix = {
       polarity = "dark";
       image = "${stylixAssetFirstFrame}/output.png";

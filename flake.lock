@@ -84,11 +84,11 @@
     },
     "crane": {
       "locked": {
-        "lastModified": 1734324364,
-        "narHash": "sha256-omYTR59TdH0AumP1cfh49fBnWZ52HjfdNfaLzCMZBx0=",
+        "lastModified": 1734808813,
+        "narHash": "sha256-3aH/0Y6ajIlfy7j52FGZ+s4icVX0oHhqBzRdlOeztqg=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "60d7623f1320470bf2fdb92fd2dca1e9a27b98ce",
+        "rev": "72e2d02dbac80c8c86bf6bf3e785536acf8ee926",
         "type": "github"
       },
       "original": {
@@ -281,6 +281,24 @@
     },
     "flake-utils_3": {
       "inputs": {
+        "systems": "systems_3"
+      },
+      "locked": {
+        "lastModified": 1689068808,
+        "narHash": "sha256-6ixXo3wt24N/melDWjq70UuHQLxGV8jZvooRanIHXw0=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "919d646de7be200f3bf08cb76ae1f09402b6f9b4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_4": {
+      "inputs": {
         "systems": [
           "stylix",
           "systems"
@@ -465,25 +483,26 @@
         "type": "github"
       }
     },
-    "homelab_discord_bot": {
+    "homelab_system_controller": {
       "inputs": {
         "crane": "crane",
         "flake-utils": "flake-utils",
         "nixpkgs": [
           "nixpkgs"
-        ]
+        ],
+        "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1734450006,
-        "narHash": "sha256-ekkURNXPDhCcIE9buTaQOmNur5guk6bEV1wZlpXE0YM=",
+        "lastModified": 1735412844,
+        "narHash": "sha256-zRgyxX26C5CN5fcPasOyT9Hd27DTHRU5UeqRU/+Mqvo=",
         "owner": "cramt",
-        "repo": "homelab_discord_bot",
-        "rev": "5f7e1f9fd4d5bcead8dc5536f3e596f0ef46905a",
+        "repo": "homelab_system_controller",
+        "rev": "03cc454fb8cc798a528bd0384cc90832ee2d2ced",
         "type": "github"
       },
       "original": {
         "owner": "cramt",
-        "repo": "homelab_discord_bot",
+        "repo": "homelab_system_controller",
         "type": "github"
       }
     },
@@ -602,7 +621,7 @@
           "nixpkgs"
         ],
         "nixpkgs-stable": "nixpkgs-stable",
-        "rust-overlay": "rust-overlay"
+        "rust-overlay": "rust-overlay_2"
       },
       "locked": {
         "lastModified": 1735362320,
@@ -848,12 +867,33 @@
         "type": "github"
       }
     },
+    "probe-rs-rules": {
+      "inputs": {
+        "flake-utils": "flake-utils_3",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1692475801,
+        "narHash": "sha256-k3sX153Fi2yHIVGMOqcyHuQ6csjcFOtQRI0iQ0KB988=",
+        "owner": "jneem",
+        "repo": "probe-rs-rules",
+        "rev": "0bd3e0d06235d743a37440b13387ee7b73b42535",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jneem",
+        "repo": "probe-rs-rules",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "darkmingo-cockactrice-theme": "darkmingo-cockactrice-theme",
         "foundryvtt": "foundryvtt",
         "home-manager": "home-manager",
-        "homelab_discord_bot": "homelab_discord_bot",
+        "homelab_system_controller": "homelab_system_controller",
         "nix-colors": "nix-colors",
         "nix-index-database": "nix-index-database",
         "nix-ld": "nix-ld",
@@ -864,6 +904,7 @@
         "nixpkgs-stable": "nixpkgs-stable_2",
         "nixvim": "nixvim",
         "nur": "nur",
+        "probe-rs-rules": "probe-rs-rules",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
         "walker": "walker",
@@ -871,6 +912,27 @@
       }
     },
     "rust-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "homelab_system_controller",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1735352767,
+        "narHash": "sha256-3zXufMRWUdwmp8/BTmxVW/k4MyqsPjLnnt/IlQyZvhc=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "a16b9a7cac7f4d39a84234d62e91890370c57d76",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "rust-overlay_2": {
       "inputs": {
         "nixpkgs": [
           "nixos-cosmic",
@@ -918,11 +980,11 @@
         "base16-helix": "base16-helix",
         "base16-vim": "base16-vim",
         "flake-compat": "flake-compat_3",
-        "flake-utils": "flake-utils_3",
+        "flake-utils": "flake-utils_4",
         "gnome-shell": "gnome-shell",
         "home-manager": "home-manager_3",
         "nixpkgs": "nixpkgs_4",
-        "systems": "systems_3",
+        "systems": "systems_4",
         "tinted-foot": "tinted-foot",
         "tinted-kitty": "tinted-kitty",
         "tinted-tmux": "tinted-tmux"
@@ -972,6 +1034,21 @@
       }
     },
     "systems_3": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_4": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",

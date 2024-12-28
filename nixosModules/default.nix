@@ -56,13 +56,6 @@ in {
     ++ services;
 
   config = {
-    services.udev.extraRules = ''
-      # STM32F3DISCOVERY rev A/B - ST-LINK/V2
-      ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3748", TAG+="uaccess"
-
-      # STM32F3DISCOVERY rev C+ - ST-LINK/V2-1
-      ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", TAG+="uaccess"
-    '';
     sops = {
       defaultSopsFile = ../secrets/secrets.yaml;
       defaultSopsFormat = "yaml";
@@ -70,8 +63,8 @@ in {
         keyFile = "/home/cramt/.config/sops/age/keys.txt";
       };
       secrets = {
-        "homelab_discord_bot/discord_token" = {};
-        "homelab_discord_bot/allowed_guild" = {};
+        "homelab_system_controller/discord_token" = {};
+        "homelab_system_controller/allowed_guild" = {};
         "cockatrice/password" = {};
         "valheim/secrets" = {};
         "pap_secrets" = {};

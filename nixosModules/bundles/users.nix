@@ -1,15 +1,14 @@
-{ lib
-, config
-, inputs
-, outputs
-, myLib
-, pkgs
-, ...
-}:
-let
-  cfg = config.myNixOS;
-in
 {
+  lib,
+  config,
+  inputs,
+  outputs,
+  myLib,
+  pkgs,
+  ...
+}: let
+  cfg = config.myNixOS;
+in {
   options.myNixOS.home-users = lib.mkOption {
     type = lib.types.attrsOf (lib.types.submodule {
       options = {
@@ -18,11 +17,11 @@ in
           example = "DP-1";
         };
         authorizedKeys = lib.mkOption {
-          default = [ ];
+          default = [];
         };
       };
     });
-    default = { };
+    default = {};
   };
 
   config = {
@@ -47,17 +46,18 @@ in
 
       users =
         builtins.mapAttrs
-          (name: user: { ... }: {
-            imports = [
-              (import user.userConfig)
-              outputs.homeManagerModules.default
-            ];
-          })
-          (config.myNixOS.home-users);
+        (name: user: {...}: {
+          imports = [
+            (import user.userConfig)
+            outputs.homeManagerModules.default
+          ];
+        })
+        (config.myNixOS.home-users);
     };
 
-    users.users = (
-      builtins.mapAttrs
+    users.users =
+      (
+        builtins.mapAttrs
         (
           name: user: {
             isNormalUser = true;
@@ -71,13 +71,16 @@ in
               "docker"
               "storage"
               "gamemode"
+              "plugdev"
+              "dailout"
             ];
             openssh.authorizedKeys.keys = user.authorizedKeys;
           }
         )
         (config.myNixOS.home-users)
-    ) // {
-      root.openssh.authorizedKeys.keys = lib.lists.flatten (lib.attrsets.mapAttrsToList (name: user: user.authorizedKeys) config.myNixOS.home-users);
-    };
+      )
+      // {
+        root.openssh.authorizedKeys.keys = lib.lists.flatten (lib.attrsets.mapAttrsToList (name: user: user.authorizedKeys) config.myNixOS.home-users);
+      };
   };
 }
