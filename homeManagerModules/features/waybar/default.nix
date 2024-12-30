@@ -78,12 +78,12 @@
 
     cpu = {
       format = "﬙ {usage}%";
-      on-click = "alacritty -e htop";
+      on-click = "alacritty -e btop";
     };
 
     memory = {
       format = " {}%";
-      on-click = "alacritty -e htop";
+      on-click = "alacritty -e btop";
     };
 
     backlight = {

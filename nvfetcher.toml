@@ -1,0 +1,35 @@
+[jellyfin]
+src.container = "jellyfin/jellyfin"
+fetch.docker = "jellyfin/jellyfin"
+
+[bazarr]
+src.container = "linuxserver/bazarr"
+fetch.docker = "linuxserver/bazarr"
+
+[sonarr]
+src.container = "linuxserver/sonarr"
+fetch.docker = "linuxserver/sonarr"
+
+[radarr]
+src.container = "linuxserver/radarr"
+fetch.docker = "linuxserver/radarr"
+
+[prowlarr]
+src.container = "linuxserver/prowlarr"
+fetch.docker = "linuxserver/prowlarr"
+
+[caddy]
+src.container = "library/caddy"
+fetch.docker = "library/caddy"
+
+[qbittorrent]
+src.container = "linuxserver/qbittorrent"
+fetch.docker = "linuxserver/qbittorrent"
+
+[adguard]
+src.container = "adguard/adguardhome"
+fetch.docker = "adguard/adguardhome"
+
+[tor-privoxy]
+src.container = "dockage/tor-privoxy"
+fetch.docker = "dockage/tor-privoxy"

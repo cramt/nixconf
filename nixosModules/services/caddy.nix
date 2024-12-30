@@ -13,7 +13,12 @@
       subdomain = name;
     })
     cfg.staticFileVolumes;
-  docker_versions = import ../../docker_versions.nix;
+  docker_source =
+    ((import ../../_sources/generated.nix) {
+      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
+    })
+    .caddy
+    .src;
 in {
   options.myNixOS.services.caddy = {
     cacheVolume = lib.mkOption {
@@ -152,7 +157,8 @@ in {
     };
     virtualisation.oci-containers.containers.caddy = {
       hostname = "caddy";
-      image = "caddy:${docker_versions.caddy}";
+      imageFile = docker_source;
+      image = "${docker_source.imageName}:${docker_source.imageTag}";
       volumes =
         [
           "${cfg.cacheVolume}/config:/config"

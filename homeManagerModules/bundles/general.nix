@@ -36,6 +36,7 @@ in {
     nushell.enable = true;
     ruby.enable = true;
     zellij.enable = true;
+    btop.enable = true;
   };
 
   home.packages = with pkgs;
@@ -44,7 +45,6 @@ in {
       gnupg
       nushell
       zellij
-      htop
       eza
       zoxide
       bat
@@ -73,6 +73,7 @@ in {
       gcc-arm-embedded
       openocd
       inputs.zen-browser.packages."${pkgs.system}".specific
+      inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nvfetcher
     ]
     ++ ld_packages;
 

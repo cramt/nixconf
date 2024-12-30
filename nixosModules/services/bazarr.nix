@@ -1,9 +1,17 @@
-{ config, lib, ... }:
-let
-  cfg = config.myNixOS.services.bazarr;
-  docker_versions = import ../../docker_versions.nix;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  cfg = config.myNixOS.services.bazarr;
+  docker_source =
+    ((import ../../_sources/generated.nix) {
+      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
+    })
+    .bazarr
+    .src;
+in {
   options.myNixOS.services.bazarr = {
     configVolume = lib.mkOption {
       type = lib.types.str;
@@ -33,7 +41,8 @@ in
   config = {
     virtualisation.oci-containers.containers.bazarr = {
       hostname = "bazarr";
-      image = "linuxserver/bazarr:${docker_versions.bazarr}";
+      imageFile = docker_source;
+      image = "${docker_source.imageName}:${docker_source.imageTag}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.movieVolume}:/movies"

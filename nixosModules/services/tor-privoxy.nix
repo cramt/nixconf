@@ -1,12 +1,16 @@
-{ config, lib, ... }:
-let
-  docker_versions = import ../../docker_versions.nix;
-in
-{
+{pkgs, ...}: let
+  docker_source =
+    ((import ../../_sources/generated.nix) {
+      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
+    })
+    .tor-privoxy
+    .src;
+in {
   config = {
     virtualisation.oci-containers.containers.tor-privoxy = {
       hostname = "tor-privoxy";
-      image = "dockage/tor-privoxy:${docker_versions.tor-privoxy}";
+      imageFile = docker_source;
+      image = "${docker_source.imageName}:${docker_source.imageTag}";
       extraOptions = [
         "--network=caddy"
         "--expose=9050"

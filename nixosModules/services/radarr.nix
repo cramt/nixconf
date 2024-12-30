@@ -1,9 +1,17 @@
-{ config, lib, ... }:
-let
-  cfg = config.myNixOS.services.radarr;
-  docker_versions = import ../../docker_versions.nix;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  cfg = config.myNixOS.services.radarr;
+  docker_source =
+    ((import ../../_sources/generated.nix) {
+      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
+    })
+    .radarr
+    .src;
+in {
   options.myNixOS.services.radarr = {
     configVolume = lib.mkOption {
       type = lib.types.str;
@@ -27,7 +35,8 @@ in
   config = {
     virtualisation.oci-containers.containers.radarr = {
       hostname = "radarr";
-      image = "linuxserver/radarr:${docker_versions.radarr}";
+      imageFile = docker_source;
+      image = "${docker_source.imageName}:${docker_source.imageTag}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.movieVolume}:/movies"

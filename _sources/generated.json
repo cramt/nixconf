@@ -1,0 +1,182 @@
+{
+    "adguard": {
+        "cargoLocks": null,
+        "date": null,
+        "extract": null,
+        "name": "adguard",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "arch": null,
+            "finalImageName": null,
+            "finalImageTag": null,
+            "imageDigest": "sha256:e8739116749fb37d7c66b0f47207fd0844816cefcbd35100b06bca8df23adac9",
+            "imageName": "adguard/adguardhome",
+            "imageTag": "v0.108.0-b.61",
+            "os": null,
+            "sha256": "sha256-Dn/YBp4gepQYQeuWyhdJt7aa32gTBz5zWZKKD5DaHN4=",
+            "tlsVerify": null
+        },
+        "version": "v0.108.0-b.61"
+    },
+    "bazarr": {
+        "cargoLocks": null,
+        "date": null,
+        "extract": null,
+        "name": "bazarr",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "arch": null,
+            "finalImageName": null,
+            "finalImageTag": null,
+            "imageDigest": "sha256:c99ddc0c3a6c23edec34faf81a21fd9bdb60a02b3b5d916590b7a7e48254c87f",
+            "imageName": "linuxserver/bazarr",
+            "imageTag": "1.5.0",
+            "os": null,
+            "sha256": "sha256-e3jtlAa1P0m9sV66XqLTh70Xm9OXsW8n/ZoCZ+DFE34=",
+            "tlsVerify": null
+        },
+        "version": "1.5.0"
+    },
+    "caddy": {
+        "cargoLocks": null,
+        "date": null,
+        "extract": null,
+        "name": "caddy",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "arch": null,
+            "finalImageName": null,
+            "finalImageTag": null,
+            "imageDigest": "sha256:b6a227acd28adab47f7976208c42e145dbc3d78c01543c554e918cc23f2d3849",
+            "imageName": "library/caddy",
+            "imageTag": "2.9",
+            "os": null,
+            "sha256": "sha256-Rv2YMzxpijXJzMZV5KKnXncRS3ba8vvnzqyes8KRpdU=",
+            "tlsVerify": null
+        },
+        "version": "2.9"
+    },
+    "jellyfin": {
+        "cargoLocks": null,
+        "date": null,
+        "extract": null,
+        "name": "jellyfin",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "arch": null,
+            "finalImageName": null,
+            "finalImageTag": null,
+            "imageDigest": "sha256:497babafb37686958d6ec7fb67f3a5d4f7fcde307a79c4f05d3ca649cecd6f84",
+            "imageName": "jellyfin/jellyfin",
+            "imageTag": "2024123005",
+            "os": null,
+            "sha256": "sha256-+E0gJivaGqCmNdPVDTaFnijmd8vtDzs4oaTFdrd66BE=",
+            "tlsVerify": null
+        },
+        "version": "2024123005"
+    },
+    "prowlarr": {
+        "cargoLocks": null,
+        "date": null,
+        "extract": null,
+        "name": "prowlarr",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "arch": null,
+            "finalImageName": null,
+            "finalImageTag": null,
+            "imageDigest": "sha256:447b8d85c4b1290d42b526e4cdd70af380e69bb2f70c4d2497816d7a528d2a08",
+            "imageName": "linuxserver/prowlarr",
+            "imageTag": "1.28.2",
+            "os": null,
+            "sha256": "sha256-s7akuQwRFr3CcvOXXrnWe6DlAtVY0xje7p7XX6Mqbgo=",
+            "tlsVerify": null
+        },
+        "version": "1.28.2"
+    },
+    "qbittorrent": {
+        "cargoLocks": null,
+        "date": null,
+        "extract": null,
+        "name": "qbittorrent",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "arch": null,
+            "finalImageName": null,
+            "finalImageTag": null,
+            "imageDigest": "sha256:6dc86c50de23768683915d023b9b13dc40e5c2f8157fda19d6becfa93f7b1ac8",
+            "imageName": "linuxserver/qbittorrent",
+            "imageTag": "113",
+            "os": null,
+            "sha256": "sha256-Vn4+tqnniwhieChWPmfsYEHH4Qux5nf0pXRLJf3+fUA=",
+            "tlsVerify": null
+        },
+        "version": "113"
+    },
+    "radarr": {
+        "cargoLocks": null,
+        "date": null,
+        "extract": null,
+        "name": "radarr",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "arch": null,
+            "finalImageName": null,
+            "finalImageTag": null,
+            "imageDigest": "sha256:89d6cbcb5e84b14f44701f661d143a330b00b6bae134858710e5744730c53c64",
+            "imageName": "linuxserver/radarr",
+            "imageTag": "151",
+            "os": null,
+            "sha256": "sha256-g0LlC0iY1kMvKgRzZaU3sEY6wSP5ncoYK4hJSG9cbi0=",
+            "tlsVerify": null
+        },
+        "version": "151"
+    },
+    "sonarr": {
+        "cargoLocks": null,
+        "date": null,
+        "extract": null,
+        "name": "sonarr",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "arch": null,
+            "finalImageName": null,
+            "finalImageTag": null,
+            "imageDigest": "sha256:da13ef0d9d5f86d533523540be117d7e691ce346b010313ae1f0aa884ce903a9",
+            "imageName": "linuxserver/sonarr",
+            "imageTag": "176",
+            "os": null,
+            "sha256": "sha256-lINubLU095Q/QE1LBKaeNLDcz2RWC9n4MVMhYOTIA5g=",
+            "tlsVerify": null
+        },
+        "version": "176"
+    },
+    "tor-privoxy": {
+        "cargoLocks": null,
+        "date": null,
+        "extract": null,
+        "name": "tor-privoxy",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "arch": null,
+            "finalImageName": null,
+            "finalImageTag": null,
+            "imageDigest": "sha256:7688b62223e1107adcda1418c2f9f95f9173abec7118431d776a0793135844f0",
+            "imageName": "dockage/tor-privoxy",
+            "imageTag": "latest",
+            "os": null,
+            "sha256": "sha256-pWk0Ci7gSSfzUaY2bOtOaMlFnBjO0gBtwIU7nuq8ZMQ=",
+            "tlsVerify": null
+        },
+        "version": "latest"
+    }
+}

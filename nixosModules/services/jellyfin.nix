@@ -1,11 +1,22 @@
-{ config, lib, ... }:
-let
-  cfg = config.myNixOS.services.jellyfin;
-  docker_versions = import ../../docker_versions.nix;
-  port = "8096";
-  port_config = if cfg.externalPort then "-p=${port}:${port}" else "--expose=${port}";
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  cfg = config.myNixOS.services.jellyfin;
+  port = "8096";
+  port_config =
+    if cfg.externalPort
+    then "-p=${port}:${port}"
+    else "--expose=${port}";
+  docker_source =
+    ((import ../../_sources/generated.nix) {
+      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
+    })
+    .jellyfin
+    .src;
+in {
   options.myNixOS.services.jellyfin = {
     mediaVolumes = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
@@ -28,7 +39,7 @@ in
     };
     gpuDevices = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ ];
+      default = [];
       description = ''
         gpu devices to pass to jellyfin
       '';
@@ -38,18 +49,23 @@ in
     virtualisation.oci-containers.backend = "docker";
     virtualisation.oci-containers.containers.jellyfin = {
       hostname = "jellyfin";
-      image = "lscr.io/linuxserver/jellyfin:${docker_versions.jellyfin}";
-      volumes = (
-        lib.attrsets.mapAttrsToList
+      imageFile = docker_source;
+      image = "${docker_source.imageName}:${docker_source.imageTag}";
+      volumes =
+        (
+          lib.attrsets.mapAttrsToList
           (
             name: value: "${value}:/data/${name}"
           )
           cfg.mediaVolumes
-      ) ++ [ "${cfg.configVolume}:/config" ];
-      extraOptions = [
-        "--network=caddy"
-        "${port_config}"
-      ] ++ builtins.map (d: "--device=${d}:${d}") cfg.gpuDevices;
+        )
+        ++ ["${cfg.configVolume}:/config"];
+      extraOptions =
+        [
+          "--network=caddy"
+          "${port_config}"
+        ]
+        ++ builtins.map (d: "--device=${d}:${d}") cfg.gpuDevices;
       environment = {
         PUID = "1000";
         PGID = "1000";

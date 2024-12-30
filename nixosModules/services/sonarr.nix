@@ -1,9 +1,17 @@
-{ config, lib, ... }:
-let
-  cfg = config.myNixOS.services.sonarr;
-  docker_versions = import ../../docker_versions.nix;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  cfg = config.myNixOS.services.sonarr;
+  docker_source =
+    ((import ../../_sources/generated.nix) {
+      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
+    })
+    .sonarr
+    .src;
+in {
   options.myNixOS.services.sonarr = {
     configVolume = lib.mkOption {
       type = lib.types.str;
@@ -27,7 +35,8 @@ in
   config = {
     virtualisation.oci-containers.containers.sonarr = {
       hostname = "sonarr";
-      image = "linuxserver/sonarr:${docker_versions.sonarr}";
+      imageFile = docker_source;
+      image = "${docker_source.imageName}:${docker_source.imageTag}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.tvVolume}:/tv"

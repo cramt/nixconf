@@ -1,9 +1,16 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   cfg = config.myNixOS.services.valheim;
+  docker_source =
+    ((import ../../_sources/generated.nix) {
+      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
+    })
+    .valheim
+    .src;
 in {
   options.myNixOS.services.valheim = {
     configVolume = lib.mkOption {
@@ -41,7 +48,8 @@ in {
     };
     virtualisation.oci-containers.containers.valheim = {
       hostname = "valheim";
-      image = "lloesche/valheim-server:latest";
+      imageFile = docker_source;
+      image = "${docker_source.imageName}:${docker_source.imageTag}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.binaryVolume}:/opt/valheim"

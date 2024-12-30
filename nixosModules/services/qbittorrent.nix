@@ -1,9 +1,17 @@
-{ config, lib, ... }:
-let
-  cfg = config.myNixOS.services.qbittorrent;
-  docker_versions = import ../../docker_versions.nix;
-in
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  cfg = config.myNixOS.services.qbittorrent;
+  docker_source =
+    ((import ../../_sources/generated.nix) {
+      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
+    })
+    .qbittorrent
+    .src;
+in {
   options.myNixOS.services.qbittorrent = {
     downloadVolume = lib.mkOption {
       type = lib.types.str;
@@ -21,7 +29,8 @@ in
   config = {
     virtualisation.oci-containers.containers.qbittorrent = {
       hostname = "qbittorrent";
-      image = "lscr.io/linuxserver/qbittorrent:${docker_versions.qbittorrent}";
+      imageFile = docker_source;
+      image = "${docker_source.imageName}:${docker_source.imageTag}";
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.downloadVolume}:/downloads"

@@ -19,4 +19,5 @@ update_gems:
 update:
     just update_flake
     just update_gems
+    nvfetcher
     nh os switch
