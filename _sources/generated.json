@@ -30,14 +30,14 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:c99ddc0c3a6c23edec34faf81a21fd9bdb60a02b3b5d916590b7a7e48254c87f",
+            "imageDigest": "sha256:ac9fe56bee9133bcb9e27fe48faaf83c57b83d75bacc277d9b2619136632b1fe",
             "imageName": "linuxserver/bazarr",
-            "imageTag": "1.5.0",
+            "imageTag": "1.5.1",
             "os": null,
-            "sha256": "sha256-e3jtlAa1P0m9sV66XqLTh70Xm9OXsW8n/ZoCZ+DFE34=",
+            "sha256": "sha256-xSr7YKWSHB1Ma7o1eEInGF4yD8g097kqRUUCNVxVCvc=",
             "tlsVerify": null
         },
-        "version": "1.5.0"
+        "version": "1.5.1"
     },
     "caddy": {
         "cargoLocks": null,

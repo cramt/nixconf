@@ -13,12 +13,12 @@
   };
   bazarr = {
     pname = "bazarr";
-    version = "1.5.0";
+    version = "1.5.1";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:c99ddc0c3a6c23edec34faf81a21fd9bdb60a02b3b5d916590b7a7e48254c87f";
-      sha256 = "sha256-e3jtlAa1P0m9sV66XqLTh70Xm9OXsW8n/ZoCZ+DFE34=";
-      finalImageTag = "1.5.0";
+      imageDigest = "sha256:ac9fe56bee9133bcb9e27fe48faaf83c57b83d75bacc277d9b2619136632b1fe";
+      sha256 = "sha256-xSr7YKWSHB1Ma7o1eEInGF4yD8g097kqRUUCNVxVCvc=";
+      finalImageTag = "1.5.1";
     };
   };
   caddy = {
