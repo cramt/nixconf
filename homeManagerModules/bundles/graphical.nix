@@ -16,6 +16,7 @@
   xdg.enable = true;
 
   myHomeManager = {
+    git_update_notifier.enable = true;
     thunderbird.enable = false;
     firefox.enable = true;
     sway.enable = true;

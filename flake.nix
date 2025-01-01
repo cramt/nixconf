@@ -51,6 +51,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    git_update_notifier = {
+      url = "github:cramt/git_update_notifier";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     walker = {
       url = "github:abenz1267/walker";
     };
