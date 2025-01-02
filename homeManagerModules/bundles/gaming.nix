@@ -1,4 +1,8 @@
-{ pkgs, inputs, ... }: {
+{
+  pkgs,
+  inputs,
+  ...
+}: {
   home.packages = with pkgs; [
     xorg.libxcb
     protonup-ng
@@ -13,8 +17,9 @@
     winetricks
     inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.melonDS
     prismlauncher
-    heroic
-    bottles
+    # TODO: back to unstable when it works again
+    inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.heroic
+    inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.bottles
   ];
 
   myHomeManager = {
