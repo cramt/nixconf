@@ -17,9 +17,8 @@
     winetricks
     inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.melonDS
     prismlauncher
-    # TODO: back to unstable when it works again
-    inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.heroic
-    inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.bottles
+    heroic
+    bottles
   ];
 
   myHomeManager = {
