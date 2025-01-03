@@ -72,7 +72,6 @@ in {
       zed-editor
       gcc-arm-embedded
       openocd
-      inputs.zen-browser.packages."${pkgs.system}".specific
       inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nvfetcher
     ]
     ++ ld_packages;
