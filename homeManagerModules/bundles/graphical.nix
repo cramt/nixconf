@@ -16,6 +16,7 @@
   xdg.enable = true;
 
   myHomeManager = {
+    ghostty.enable = true;
     git_update_notifier.enable = true;
     thunderbird.enable = false;
     firefox.enable = true;
