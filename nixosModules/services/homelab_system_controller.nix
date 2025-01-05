@@ -21,7 +21,7 @@ in {
       script = let
         envs = {
           DATABASE_URL = cfg.databaseUrl;
-          LISTEN_PORT = 1622;
+          LISTEN_PORT = "1622";
           DISCORD_TOKEN = "$(cat ${config.sops.secrets."homelab_system_controller/discord_token".path})";
           ALLOWED_GUILD = "$(cat ${config.sops.secrets."homelab_system_controller/allowed_guild".path})";
           SYSTEMCTL_PATH = "${pkgs.systemd}/bin/systemctl";
