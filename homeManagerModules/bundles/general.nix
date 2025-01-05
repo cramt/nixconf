@@ -25,6 +25,7 @@ in {
   programs.go.enable = true;
 
   myHomeManager = {
+    yazi.enable = true;
     neovim.enable = true;
     zsh.enable = true;
     ssh.enable = true;
