@@ -48,7 +48,12 @@ in {
     # battery
     services.upower.enable = true;
 
-    services.udev.packages = [inputs.probe-rs-rules.packages.${pkgs.system}.default];
+    services.udev = {
+      extraRules = ''
+        ENV{ID_VENDOR_ID}=="6969", ENV{ID_MODEL_ID}=="b00b", MODE="7777"
+      '';
+      packages = [inputs.probe-rs-rules.packages.${pkgs.system}.default];
+    };
 
     stylix = {
       polarity = "dark";
