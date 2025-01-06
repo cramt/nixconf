@@ -33,22 +33,22 @@
   };
   jellyfin = {
     pname = "jellyfin";
-    version = "2024123005";
+    version = "2025010605";
     src = dockerTools.pullImage {
       imageName = "jellyfin/jellyfin";
-      imageDigest = "sha256:497babafb37686958d6ec7fb67f3a5d4f7fcde307a79c4f05d3ca649cecd6f84";
-      sha256 = "sha256-+E0gJivaGqCmNdPVDTaFnijmd8vtDzs4oaTFdrd66BE=";
-      finalImageTag = "2024123005";
+      imageDigest = "sha256:e7d86520e47c75ea808fff9cfddb74e11551d410980337e7c5e5d191bc023a5a";
+      sha256 = "sha256-+Azuv0RHwa1BiLOyA3Dcdgk17e0Mn0Uky8YkuIOxb9A=";
+      finalImageTag = "2025010605";
     };
   };
   prowlarr = {
     pname = "prowlarr";
-    version = "1.28.2";
+    version = "1.29.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/prowlarr";
-      imageDigest = "sha256:447b8d85c4b1290d42b526e4cdd70af380e69bb2f70c4d2497816d7a528d2a08";
-      sha256 = "sha256-s7akuQwRFr3CcvOXXrnWe6DlAtVY0xje7p7XX6Mqbgo=";
-      finalImageTag = "1.28.2";
+      imageDigest = "sha256:1f235ff7a178444398a9a431a4e65704d22f83a348192dececf75811212c9217";
+      sha256 = "sha256-RovkWU9rEQmhDAT2p5QtGjEoDuWQVcPabux82jG+Xfs=";
+      finalImageTag = "1.29.2";
     };
   };
   qbittorrent = {
