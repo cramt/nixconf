@@ -21,6 +21,11 @@
     bottles
   ];
 
+  stylix.targets.steam = {
+    enable = true;
+    adwaitaForSteam.enable = true;
+  };
+
   myHomeManager = {
     wowup.enable = true;
     cockatrice.enable = true;

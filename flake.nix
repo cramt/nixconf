@@ -28,7 +28,8 @@
     };
 
     stylix = {
-      url = "github:danth/stylix";
+      # back to normal once this has been merged https://github.com/danth/stylix/pull/696
+      url = "github:brckd/stylix/steam/init-adwaita-for-steam";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
