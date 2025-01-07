@@ -23,12 +23,12 @@
   };
   caddy = {
     pname = "caddy";
-    version = "2.9";
+    version = "2.8.4";
     src = dockerTools.pullImage {
       imageName = "library/caddy";
-      imageDigest = "sha256:b6a227acd28adab47f7976208c42e145dbc3d78c01543c554e918cc23f2d3849";
-      sha256 = "sha256-Rv2YMzxpijXJzMZV5KKnXncRS3ba8vvnzqyes8KRpdU=";
-      finalImageTag = "2.9";
+      imageDigest = "sha256:226d1f059b75399fe19182893c7184591c07b97afc8dfcf44eeb80c9a77a530f";
+      sha256 = "sha256-sW9w8kpBBdPmpYAdxqsZV8Yr58TIgAY3qUi42lm+XY0=";
+      finalImageTag = "2.8.4";
     };
   };
   jellyfin = {
@@ -53,32 +53,32 @@
   };
   qbittorrent = {
     pname = "qbittorrent";
-    version = "113";
+    version = "20.04.1";
     src = dockerTools.pullImage {
       imageName = "linuxserver/qbittorrent";
-      imageDigest = "sha256:6dc86c50de23768683915d023b9b13dc40e5c2f8157fda19d6becfa93f7b1ac8";
-      sha256 = "sha256-Vn4+tqnniwhieChWPmfsYEHH4Qux5nf0pXRLJf3+fUA=";
-      finalImageTag = "113";
+      imageDigest = "sha256:fc98c8af048936d0070dc5e5992feab08664f8a61a860d91be02f782f8721485";
+      sha256 = "sha256-GZAC1cA7pShhKQB92d8JMbsUUYICplel+Mp2GqkFH/w=";
+      finalImageTag = "20.04.1";
     };
   };
   radarr = {
     pname = "radarr";
-    version = "151";
+    version = "5.17.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/radarr";
-      imageDigest = "sha256:89d6cbcb5e84b14f44701f661d143a330b00b6bae134858710e5744730c53c64";
-      sha256 = "sha256-g0LlC0iY1kMvKgRzZaU3sEY6wSP5ncoYK4hJSG9cbi0=";
-      finalImageTag = "151";
+      imageDigest = "sha256:e633fc93b9e2cea959853d27c6acc1d0b2d1ed7db4a800f6f46fe5b217f13102";
+      sha256 = "sha256-s7LVbtOUeDcfamvuRumWOvLGx8aR4M4PqNN8S8YqLvA=";
+      finalImageTag = "5.17.2";
     };
   };
   sonarr = {
     pname = "sonarr";
-    version = "176";
+    version = "4.0.12";
     src = dockerTools.pullImage {
       imageName = "linuxserver/sonarr";
-      imageDigest = "sha256:da13ef0d9d5f86d533523540be117d7e691ce346b010313ae1f0aa884ce903a9";
-      sha256 = "sha256-lINubLU095Q/QE1LBKaeNLDcz2RWC9n4MVMhYOTIA5g=";
-      finalImageTag = "176";
+      imageDigest = "sha256:23f6911b2b81cb69aa03166b53c15081d5c3a5ed58f5b183c5900c2d8fc9759a";
+      sha256 = "sha256-BRAMd1mjH622xY5/w/xR1D0GnS/TUSrebZVo9paCKmo=";
+      finalImageTag = "4.0.12";
     };
   };
   tor-privoxy = {

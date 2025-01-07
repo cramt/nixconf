@@ -4,26 +4,32 @@ fetch.docker = "jellyfin/jellyfin"
 
 [bazarr]
 src.container = "linuxserver/bazarr"
+src.include_regex = "\\d+\\.\\d+\\.\\d+"
 fetch.docker = "linuxserver/bazarr"
 
 [sonarr]
 src.container = "linuxserver/sonarr"
+src.include_regex = "\\d+\\.\\d+\\.\\d+"
 fetch.docker = "linuxserver/sonarr"
 
 [radarr]
 src.container = "linuxserver/radarr"
+src.include_regex = "\\d+\\.\\d+\\.\\d+"
 fetch.docker = "linuxserver/radarr"
 
 [prowlarr]
 src.container = "linuxserver/prowlarr"
+src.include_regex = "\\d+\\.\\d+\\.\\d+"
 fetch.docker = "linuxserver/prowlarr"
 
 [caddy]
 src.container = "library/caddy"
+src.include_regex = "\\d+\\.\\d+\\.\\d+"
 fetch.docker = "library/caddy"
 
 [qbittorrent]
 src.container = "linuxserver/qbittorrent"
+src.include_regex = "\\d+\\.\\d+\\.\\d+"
 fetch.docker = "linuxserver/qbittorrent"
 
 [adguard]
