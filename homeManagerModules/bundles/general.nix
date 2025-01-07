@@ -14,13 +14,6 @@ in {
     inputs.nix-colors.homeManagerModules.default
   ];
 
-  nixpkgs = {
-    config = {
-      allowUnfree = true;
-      experimental-features = ["nix-command" "flakes" "pipe-operators"];
-    };
-  };
-
   programs.home-manager.enable = true;
   programs.go.enable = true;
 
