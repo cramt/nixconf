@@ -61,6 +61,7 @@ in {
       opentofu
       tflint
       awscli2
+      ssm-session-manager-plugin
       dnsutils
       sops
       zed-editor
