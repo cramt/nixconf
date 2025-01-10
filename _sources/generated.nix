@@ -23,12 +23,12 @@
   };
   caddy = {
     pname = "caddy";
-    version = "2.8.4";
+    version = "2.9.1";
     src = dockerTools.pullImage {
       imageName = "library/caddy";
-      imageDigest = "sha256:226d1f059b75399fe19182893c7184591c07b97afc8dfcf44eeb80c9a77a530f";
-      sha256 = "sha256-sW9w8kpBBdPmpYAdxqsZV8Yr58TIgAY3qUi42lm+XY0=";
-      finalImageTag = "2.8.4";
+      imageDigest = "sha256:2c136eb7e4daa97deed8738aab21994ea88dc0ced06aa44e30a949ba3d60e213";
+      sha256 = "sha256-BjLwNrXPZFwZs7Fau/pxhUPSImBT8ms+nUVBs1PO4H8=";
+      finalImageTag = "2.9.1";
     };
   };
   jellyfin = {
