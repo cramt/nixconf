@@ -10,6 +10,7 @@
 - inline sql in rust working https://github.com/helix-editor/helix/blob/68c7537de522cf6b38705a7af51eeaac260fdc98/runtime/queries/rust/injections.scm
 - https://github.com/benlubas/neorg-conceal-wrap/tree/main
 - enable sway gaming with gamemode
+- setup hardcoded refresh rates in sway config
 
 ### server stuff
 
