@@ -57,6 +57,17 @@ in {
           };
         };
       };
+      tailwindcss = {
+        enable = true;
+        extraOptions = {
+          tailwindCSS = {
+            includeLanguages = {
+              rust = "html";
+            };
+            experimental.classRegex = [''class: "(.*)"''];
+          };
+        };
+      };
       lua_ls.enable = true;
       sqls.enable = false;
       yamlls.enable = true;

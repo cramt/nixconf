@@ -52,7 +52,7 @@ in {
       if config.myNixOS.services.jellyfin.enable
       then ''
         ${cfg.protocol}://jellyfin.${cfg.domain} {
-          import cors {header.origin}
+          import cors
           reverse_proxy http://jellyfin:8096
         }
       ''
@@ -61,7 +61,7 @@ in {
       if config.myNixOS.services.qbittorrent.enable
       then ''
         ${cfg.protocol}://qbit.${cfg.domain} {
-          import cors {header.origin}
+          import cors
           reverse_proxy http://qbittorrent:8080
         }
       ''
@@ -70,7 +70,7 @@ in {
       if config.myNixOS.services.foundryvtt.enable
       then ''
         ${cfg.protocol}://foundry-a.${cfg.domain} {
-          import cors {header.origin}
+          import cors
           reverse_proxy http://foundryvtt:30000
         }
       ''
@@ -79,7 +79,7 @@ in {
       if config.myNixOS.services.prowlarr.enable
       then ''
         ${cfg.protocol}://prowlarr.${cfg.domain} {
-          import cors {header.origin}
+          import cors
           reverse_proxy http://prowlarr:9696
         }
       ''
@@ -88,7 +88,7 @@ in {
       if config.myNixOS.services.radarr.enable
       then ''
         ${cfg.protocol}://radarr.${cfg.domain} {
-          import cors {header.origin}
+          import cors
           reverse_proxy http://radarr:7878
         }
       ''
@@ -97,7 +97,7 @@ in {
       if config.myNixOS.services.sonarr.enable
       then ''
         ${cfg.protocol}://sonarr.${cfg.domain} {
-          import cors {header.origin}
+          import cors
           reverse_proxy http://sonarr:8989
         }
       ''
@@ -106,7 +106,7 @@ in {
       if config.myNixOS.services.bazarr.enable
       then ''
         ${cfg.protocol}://bazarr.${cfg.domain} {
-          import cors {header.origin}
+          import cors
           reverse_proxy http://bazarr:6767
         }
       ''
@@ -115,7 +115,7 @@ in {
       if config.myNixOS.services.servatrice.enable
       then ''
         ${cfg.protocol}://cockatrice.${cfg.domain} {
-          import cors {header.origin}
+          import cors
           reverse_proxy servatrice:4748
         }
       ''
@@ -145,17 +145,21 @@ in {
        @cors_preflight method OPTIONS
 
        header {
-        Access-Control-Allow-Origin "{header.origin}"
-        Vary Origin
-        Access-Control-Expose-Headers "Authorization"
-        Access-Control-Allow-Credentials "true"
+         ?Access-Control-Allow-Origin "*"
+         ?Access-Control-Expose-Headers "Authorization"
+         ?Access-Control-Allow-Credentials "true"
+         ?Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
+         ?Access-Control-Max-Age "3600"
        }
 
        handle @cors_preflight {
-        header {
-         Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
-         Access-Control-Max-Age "3600"
-        }
+         header {
+           ?Access-Control-Allow-Origin "*"
+           Access-Control-Expose-Headers "Authorization"
+           Access-Control-Allow-Credentials "true"
+           Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
+           Access-Control-Max-Age "3600"
+         }
         respond "" 204
        }
       }
