@@ -59,6 +59,7 @@ in {
       };
       tailwindcss = {
         enable = true;
+        filetypes = ["rust"];
         extraOptions = {
           tailwindCSS = {
             includeLanguages = {
