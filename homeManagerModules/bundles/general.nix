@@ -68,6 +68,7 @@ in {
       gcc-arm-embedded
       openocd
       inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nvfetcher
+      jq
     ]
     ++ ld_packages;
 
