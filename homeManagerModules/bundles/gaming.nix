@@ -11,7 +11,6 @@
     gamescope
     mangohud
     (wineWowPackages.full.override {
-      wineRelease = "staging";
       mingwSupport = true;
     })
     winetricks
