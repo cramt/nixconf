@@ -26,7 +26,7 @@
           ublock-origin
           sponsorblock
           vimium
-          widegithub
+          refined-github
         ];
 
         search.force = true;
@@ -54,7 +54,7 @@
           ublock-origin
           sponsorblock
           vimium
-          widegithub
+          refined-github
         ];
 
         search.force = true;

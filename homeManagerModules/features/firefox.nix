@@ -1,25 +1,23 @@
-{ inputs
-, pkgs
-, config
-, lib
-, ...
-}:
-let
-  cfg = config.myHomeManager.firefox;
-in
 {
+  inputs,
+  pkgs,
+  config,
+  lib,
+  ...
+}: let
+  cfg = config.myHomeManager.firefox;
+in {
   options.myHomeManager.firefox = {
     profiles = lib.mkOption {
       default = {
         cramt = {
-          extensions = with pkgs.nur.repos.rycee.firefox-addons;
-            [
-              dashlane
-              ublock-origin
-              sponsorblock
-              vimium
-              widegithub
-            ];
+          extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+            dashlane
+            ublock-origin
+            sponsorblock
+            vimium
+            refined-github
+          ];
 
           search.force = true;
 
@@ -46,26 +44,29 @@ in
     xdg = {
       mimeApps = {
         enable = true;
-        defaultApplications =
-          let
-            mimeTypes = [
-              "application/x-extension-htm"
-              "application/x-extension-html"
-              "application/x-extension-shtml"
-              "application/x-extension-xht"
-              "application/x-extension-xhtml"
-              "application/xhtml+xml"
-              "image/svg+xml"
-              "image/jpeg"
-              "image/png"
-              "text/html"
-              "text/uri-list"
-              "x-scheme-handler/chrome"
-              "x-scheme-handler/http"
-              "x-scheme-handler/https"
-            ];
-          in
-          builtins.listToAttrs (builtins.map (v: { name = v; value = "firefox.desktop"; }) mimeTypes);
+        defaultApplications = let
+          mimeTypes = [
+            "application/x-extension-htm"
+            "application/x-extension-html"
+            "application/x-extension-shtml"
+            "application/x-extension-xht"
+            "application/x-extension-xhtml"
+            "application/xhtml+xml"
+            "image/svg+xml"
+            "image/jpeg"
+            "image/png"
+            "text/html"
+            "text/uri-list"
+            "x-scheme-handler/chrome"
+            "x-scheme-handler/http"
+            "x-scheme-handler/https"
+          ];
+        in
+          builtins.listToAttrs (builtins.map (v: {
+              name = v;
+              value = "firefox.desktop";
+            })
+            mimeTypes);
       };
     };
     programs.firefox = {
@@ -73,12 +74,12 @@ in
       profiles = cfg.profiles;
     };
     home.packages = builtins.attrValues (builtins.mapAttrs
-      (name: value: pkgs.makeDesktopItem {
-        name = "firefox ${name}";
-        desktopName = "firefox ${name}";
-        exec = "${pkgs.firefox}/bin/firefox -p ${name}";
-      })
+      (name: value:
+        pkgs.makeDesktopItem {
+          name = "firefox ${name}";
+          desktopName = "firefox ${name}";
+          exec = "${pkgs.firefox}/bin/firefox -p ${name}";
+        })
       cfg.profiles);
-
   };
 }

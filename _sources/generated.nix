@@ -16,8 +16,8 @@
     version = "1.5.1";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:ac9fe56bee9133bcb9e27fe48faaf83c57b83d75bacc277d9b2619136632b1fe";
-      sha256 = "sha256-xSr7YKWSHB1Ma7o1eEInGF4yD8g097kqRUUCNVxVCvc=";
+      imageDigest = "sha256:972715e7a7f18e14c39f2d10e833c5a823d11528e4531d3a496351f170e135d1";
+      sha256 = "sha256-AV824F+MnH4fVhETKDkeswiXzGYhr8RTE9e9VHzw0Hg=";
       finalImageTag = "1.5.1";
     };
   };
@@ -76,8 +76,8 @@
     version = "4.0.12";
     src = dockerTools.pullImage {
       imageName = "linuxserver/sonarr";
-      imageDigest = "sha256:23f6911b2b81cb69aa03166b53c15081d5c3a5ed58f5b183c5900c2d8fc9759a";
-      sha256 = "sha256-BRAMd1mjH622xY5/w/xR1D0GnS/TUSrebZVo9paCKmo=";
+      imageDigest = "sha256:f0a375411bebbd7fe5657019b355a1457821dee9720e54853f5ada24fa0f696b";
+      sha256 = "sha256-43T/5oGuxaT6kD71cK/Q6GbXR9zWCxGJfUPZ2WnOwxM=";
       finalImageTag = "4.0.12";
     };
   };
