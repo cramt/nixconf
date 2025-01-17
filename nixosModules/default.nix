@@ -91,10 +91,6 @@ in {
     nixpkgs = {
       overlays = [
         inputs.nur.overlays.default
-        # TODO: delete overlay when rocm stuff works again
-        (final: prev: {
-          rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rocmPackages;
-        })
       ];
       config = {
         allowUnfree = true;
