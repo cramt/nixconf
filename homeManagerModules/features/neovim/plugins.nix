@@ -104,6 +104,9 @@ in {
       "core.defaults" = empty;
       "core.concealer" = empty;
       "core.export" = empty;
+      "core.export.markdown" = {
+        extensions = ["metadata"];
+      };
       "core.summary" = empty;
       "core.keybinds" = empty;
       "core.completion" = {
