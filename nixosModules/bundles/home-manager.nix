@@ -44,12 +44,10 @@ in {
     };
 
     home-manager = {
-      useGlobalPkgs = true;
-      useUserPackages = true;
-
       extraSpecialArgs = {
         inherit inputs;
         inherit myLib;
+        inherit pkgs;
         outputs = inputs.self.outputs;
       };
       users = {

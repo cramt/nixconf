@@ -21,7 +21,10 @@ in {
         prettier.enable = true;
         prettier.disableTsServerFormatter = true;
         just.enable = true;
-        terraform_fmt.enable = true;
+        terraform_fmt = {
+          enable = true;
+          package = pkgs.terraform;
+        };
         rubocop = {
           enable = false;
           package = rubyGems.rubocop;

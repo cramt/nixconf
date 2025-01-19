@@ -16,6 +16,5 @@
 
 - setup attic https://github.com/zhaofengli/attic
 - update the version of foundry used
-- auto add foundry zips to store
-- make and setup bot for status check
-- config adgaurd with nix
+- change caddy to not be in docker and thus having to use port on all the other services
+- setup matrix-synapse
