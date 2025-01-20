@@ -45,6 +45,8 @@ in {
       gnumake
       (hiPrio gcc)
       ripgrep
+      sd
+      fd
       neofetch
       lazygit
       wget
