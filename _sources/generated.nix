@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.61";
+    version = "v0.108.0-b.62";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:e8739116749fb37d7c66b0f47207fd0844816cefcbd35100b06bca8df23adac9";
-      sha256 = "sha256-Dn/YBp4gepQYQeuWyhdJt7aa32gTBz5zWZKKD5DaHN4=";
-      finalImageTag = "v0.108.0-b.61";
+      imageDigest = "sha256:1c0025ab891508e0945b2d050f4a4d696e1ad8910452e5bd9b6caab744c6e033";
+      sha256 = "sha256-Hu1DHGUTaC97/EqTd2+Wha9zzWwiQMw3tvjOwGFhmSc=";
+      finalImageTag = "v0.108.0-b.62";
     };
   };
   bazarr = {
@@ -16,8 +16,8 @@
     version = "1.5.1";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:ac9fe56bee9133bcb9e27fe48faaf83c57b83d75bacc277d9b2619136632b1fe";
-      sha256 = "sha256-xSr7YKWSHB1Ma7o1eEInGF4yD8g097kqRUUCNVxVCvc=";
+      imageDigest = "sha256:972715e7a7f18e14c39f2d10e833c5a823d11528e4531d3a496351f170e135d1";
+      sha256 = "sha256-AV824F+MnH4fVhETKDkeswiXzGYhr8RTE9e9VHzw0Hg=";
       finalImageTag = "1.5.1";
     };
   };
@@ -33,12 +33,12 @@
   };
   jellyfin = {
     pname = "jellyfin";
-    version = "2025011305";
+    version = "2025012005";
     src = dockerTools.pullImage {
       imageName = "jellyfin/jellyfin";
-      imageDigest = "sha256:94e8f2e485c24b18b20a0255418746197e02933eca67f3c511e05d75fe4d8b7e";
-      sha256 = "sha256-6aDpuuDj3iNr+FGleEuTAgSMf4tvvVBMsf8NVTDQwTo=";
-      finalImageTag = "2025011305";
+      imageDigest = "sha256:ab357c368e9038156793a9dea11707c55fd375e775418753ae6fe11cf2e99a59";
+      sha256 = "sha256-S4g65I645J+rA8TYNOsNoF10nUFdELqXVDTHXFfVV44=";
+      finalImageTag = "2025012005";
     };
   };
   prowlarr = {
@@ -76,8 +76,8 @@
     version = "4.0.12";
     src = dockerTools.pullImage {
       imageName = "linuxserver/sonarr";
-      imageDigest = "sha256:23f6911b2b81cb69aa03166b53c15081d5c3a5ed58f5b183c5900c2d8fc9759a";
-      sha256 = "sha256-BRAMd1mjH622xY5/w/xR1D0GnS/TUSrebZVo9paCKmo=";
+      imageDigest = "sha256:f0a375411bebbd7fe5657019b355a1457821dee9720e54853f5ada24fa0f696b";
+      sha256 = "sha256-43T/5oGuxaT6kD71cK/Q6GbXR9zWCxGJfUPZ2WnOwxM=";
       finalImageTag = "4.0.12";
     };
   };
