@@ -3,10 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.05";
-    nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-24.05";
-    # https://github.com/NixOS/nixpkgs/pull/358638
-    nixpkgs-playwright.url = "github:kalekseev/nixpkgs/playwright-149";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-24.11";
 
     home-manager = {
       url = "github:nix-community/home-manager";
