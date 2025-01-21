@@ -123,7 +123,6 @@ in {
           workspaces = {
             notes = "~/notes";
           };
-          default_workspace = "notes";
         };
       };
     };
