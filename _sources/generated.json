@@ -10,14 +10,14 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:e8739116749fb37d7c66b0f47207fd0844816cefcbd35100b06bca8df23adac9",
+            "imageDigest": "sha256:1c0025ab891508e0945b2d050f4a4d696e1ad8910452e5bd9b6caab744c6e033",
             "imageName": "adguard/adguardhome",
-            "imageTag": "v0.108.0-b.61",
+            "imageTag": "v0.108.0-b.62",
             "os": null,
-            "sha256": "sha256-Dn/YBp4gepQYQeuWyhdJt7aa32gTBz5zWZKKD5DaHN4=",
+            "sha256": "sha256-Hu1DHGUTaC97/EqTd2+Wha9zzWwiQMw3tvjOwGFhmSc=",
             "tlsVerify": null
         },
-        "version": "v0.108.0-b.61"
+        "version": "v0.108.0-b.62"
     },
     "bazarr": {
         "cargoLocks": null,
@@ -30,11 +30,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:ac9fe56bee9133bcb9e27fe48faaf83c57b83d75bacc277d9b2619136632b1fe",
+            "imageDigest": "sha256:972715e7a7f18e14c39f2d10e833c5a823d11528e4531d3a496351f170e135d1",
             "imageName": "linuxserver/bazarr",
             "imageTag": "1.5.1",
             "os": null,
-            "sha256": "sha256-xSr7YKWSHB1Ma7o1eEInGF4yD8g097kqRUUCNVxVCvc=",
+            "sha256": "sha256-AV824F+MnH4fVhETKDkeswiXzGYhr8RTE9e9VHzw0Hg=",
             "tlsVerify": null
         },
         "version": "1.5.1"
@@ -70,14 +70,14 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:94e8f2e485c24b18b20a0255418746197e02933eca67f3c511e05d75fe4d8b7e",
+            "imageDigest": "sha256:ab357c368e9038156793a9dea11707c55fd375e775418753ae6fe11cf2e99a59",
             "imageName": "jellyfin/jellyfin",
-            "imageTag": "2025011305",
+            "imageTag": "2025012005",
             "os": null,
-            "sha256": "sha256-6aDpuuDj3iNr+FGleEuTAgSMf4tvvVBMsf8NVTDQwTo=",
+            "sha256": "sha256-S4g65I645J+rA8TYNOsNoF10nUFdELqXVDTHXFfVV44=",
             "tlsVerify": null
         },
-        "version": "2025011305"
+        "version": "2025012005"
     },
     "prowlarr": {
         "cargoLocks": null,
@@ -150,11 +150,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:23f6911b2b81cb69aa03166b53c15081d5c3a5ed58f5b183c5900c2d8fc9759a",
+            "imageDigest": "sha256:f0a375411bebbd7fe5657019b355a1457821dee9720e54853f5ada24fa0f696b",
             "imageName": "linuxserver/sonarr",
             "imageTag": "4.0.12",
             "os": null,
-            "sha256": "sha256-BRAMd1mjH622xY5/w/xR1D0GnS/TUSrebZVo9paCKmo=",
+            "sha256": "sha256-43T/5oGuxaT6kD71cK/Q6GbXR9zWCxGJfUPZ2WnOwxM=",
             "tlsVerify": null
         },
         "version": "4.0.12"
