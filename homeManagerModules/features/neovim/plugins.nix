@@ -15,11 +15,13 @@ in {
   };
   none-ls = {
     enable = true;
-    enableLspFormat = true;
     sources = {
       formatting = {
-        prettier.enable = true;
-        prettier.disableTsServerFormatter = true;
+        prettier = {
+          enable = true;
+          disableTsServerFormatter = true;
+          settings.disabled_filetypes = ["astro"]; # for some reason this fucks up astro
+        };
         just.enable = true;
         terraform_fmt = {
           enable = true;
@@ -108,7 +110,23 @@ in {
       "core.concealer" = empty;
       "core.export" = empty;
       "core.export.markdown" = {
-        extensions = ["metadata"];
+        config = {
+          extensions = ["metadata"];
+        };
+      };
+      "core.esupports.metagen" = {
+        config = {
+          type = "auto";
+          template = [
+            ["title"]
+            ["description" "empty"]
+            ["authors"]
+            ["categories" "[]"]
+            ["created"]
+            ["updated"]
+            ["version"]
+          ];
+        };
       };
       "core.summary" = empty;
       "core.keybinds" = empty;
@@ -229,9 +247,6 @@ in {
     enable = true;
   };
   cmp-buffer = {
-    enable = true;
-  };
-  otter = {
     enable = true;
   };
   cmp-vsnip.enable = true;

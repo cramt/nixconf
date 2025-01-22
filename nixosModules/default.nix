@@ -91,6 +91,9 @@ in {
     nixpkgs = {
       overlays = [
         inputs.nur.overlays.default
+        (final: prev: {
+          rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rocmPackages;
+        })
       ];
       config = {
         allowUnfree = true;
