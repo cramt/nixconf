@@ -39,3 +39,8 @@ fetch.docker = "adguard/adguardhome"
 [tor-privoxy]
 src.container = "dockage/tor-privoxy"
 fetch.docker = "dockage/tor-privoxy"
+
+[minecraft-server]
+src.container = "itzg/minecraft-server"
+src.include_regex = "java8"
+fetch.docker = "itzg/minecraft-server"

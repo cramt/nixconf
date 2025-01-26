@@ -33,6 +33,11 @@
         tvshows = "/mnt/imbrium/downloads/tvshows";
       };
     in {
+      minecraft-forge = {
+        enable = true;
+        url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
+        dataDir = "/mnt/pierre/minecraft-forge";
+      };
       jellyfin = {
         enable = true;
         configVolume = "/mnt/pierre/configs/jellyfin";

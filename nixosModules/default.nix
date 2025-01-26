@@ -68,6 +68,7 @@ in {
         "cockatrice/password" = {};
         "valheim/secrets" = {};
         "pap_secrets" = {};
+        "minecraft_server" = {};
       };
     };
     stylix.enable = true;
