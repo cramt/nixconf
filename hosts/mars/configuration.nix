@@ -18,6 +18,8 @@
 
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
+  networking.firewall.allowedTCPPorts = [3600];
+
   myNixOS = {
     gnupg.enable = true;
     qemu.enable = true;
