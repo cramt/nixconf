@@ -44,6 +44,7 @@ in {
       environmentFiles = [
         config.sops.secrets."minecraft_server".path
       ];
+      autoStart = false;
     };
   };
 }
