@@ -11,6 +11,7 @@
     pavucontrol
     adwaita-qt
     gimp
+    inputs.zen-browser.packages."${pkgs.system}".default
   ];
 
   xdg.enable = true;
