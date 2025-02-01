@@ -27,6 +27,11 @@ in {
           backend = "gpg";
           key = cfg.signingKey;
         };
+        aliases = {
+          push_new = ["git" "push" "-c" "@"];
+          push_main = ["git" "push"];
+          fetch = ["git fetch"];
+        };
       };
     };
   };
