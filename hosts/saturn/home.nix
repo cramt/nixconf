@@ -23,6 +23,10 @@
     bundles.graphical.enable = true;
     bundles.gaming.enable = true;
     git.signingKey = "C2B9D34D979B6063";
+    jujutsu = {
+      enable = true;
+      signingKey = "C2B9D34D979B6063";
+    };
     sway.monitors =
       lib.attrsets.mapAttrs
       (_: value:

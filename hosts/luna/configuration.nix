@@ -54,7 +54,7 @@
         enable = true;
         cacheVolume = "/mnt/pierre/configs/caddy-cache";
         staticFileVolumes = {
-          files = "/tmp/caddy_static_files";
+          books = "/mnt/pierre/books";
         };
         domain = "cramt.schniebster.dk";
         protocol = "https";
