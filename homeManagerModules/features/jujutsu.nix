@@ -2,6 +2,7 @@
   lib,
   config,
   pkgs,
+  inputs,
   ...
 }: let
   cfg = config.myHomeManager.jujutsu;
@@ -27,12 +28,23 @@ in {
           backend = "gpg";
           key = cfg.signingKey;
         };
+        git = {
+          auto-locale-bookmark = true;
+        };
         aliases = {
           push_new = ["git" "push" "-c" "@"];
-          push_main = ["git" "push"];
-          fetch = ["git fetch"];
+          push_curr = ["git" "push"];
+          fetch = ["git" "fetch"];
+          clone = ["git" "clone"];
+          sync = ["rebase -d" "main"];
         };
       };
     };
+    home.packages = [
+      (pkgs.lazyjj.overrideAttrs (old: {
+        src = inputs.lazyjj;
+        doCheck = false;
+      }))
+    ];
   };
 }
