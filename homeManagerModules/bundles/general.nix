@@ -35,7 +35,6 @@ in {
 
   home.packages = with pkgs;
     [
-      graphite-cli
       git
       gnupg
       nushell
