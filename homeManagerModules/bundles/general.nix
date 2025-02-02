@@ -80,7 +80,7 @@ in {
     LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
     NEOVIDE_FORK = "1";
     EDITOR = "nvim";
-    BROWSER = "firefox";
+    BROWSER = "zen";
     TERMINAL = "alacritty";
   };
 }
