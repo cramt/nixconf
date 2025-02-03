@@ -69,16 +69,17 @@
     "base16-vim": {
       "flake": false,
       "locked": {
-        "lastModified": 1735953590,
-        "narHash": "sha256-YbQwaApLFJobn/0lbpMKcJ8N5axKlW2QIGkDS5+xoSU=",
+        "lastModified": 1732806396,
+        "narHash": "sha256-e0bpPySdJf0F68Ndanwm+KWHgQiZ0s7liLhvJSWDNsA=",
         "owner": "tinted-theming",
         "repo": "base16-vim",
-        "rev": "c2a1232aa2c0ed27dcbf005779bcfe0e0ab5e85d",
+        "rev": "577fe8125d74ff456cf942c733a85d769afe58b7",
         "type": "github"
       },
       "original": {
         "owner": "tinted-theming",
         "repo": "base16-vim",
+        "rev": "577fe8125d74ff456cf942c733a85d769afe58b7",
         "type": "github"
       }
     },
@@ -1087,16 +1088,15 @@
         "tinted-zed": "tinted-zed"
       },
       "locked": {
-        "lastModified": 1737237466,
-        "narHash": "sha256-plw7NqgIRdGPDuypc2urlQvGAsArCAQJRHGRj3AmIfY=",
-        "owner": "brckd",
+        "lastModified": 1738604441,
+        "narHash": "sha256-FgE39yKu5Tjyy0JcWyzfHEuKt4v4CVw/Qb6KE6OYBYA=",
+        "owner": "danth",
         "repo": "stylix",
-        "rev": "8673f0de0965e342928e720faabc2111825d72b6",
+        "rev": "b7f50a56c3ccda1e6020e62b77a9f9ea80d6a656",
         "type": "github"
       },
       "original": {
-        "owner": "brckd",
-        "ref": "steam/init-adwaita-for-steam",
+        "owner": "danth",
         "repo": "stylix",
         "type": "github"
       }
