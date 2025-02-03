@@ -73,12 +73,12 @@
   };
   radarr = {
     pname = "radarr";
-    version = "5.17.2";
+    version = "5.18.4";
     src = dockerTools.pullImage {
       imageName = "linuxserver/radarr";
-      imageDigest = "sha256:e633fc93b9e2cea959853d27c6acc1d0b2d1ed7db4a800f6f46fe5b217f13102";
-      sha256 = "sha256-s7LVbtOUeDcfamvuRumWOvLGx8aR4M4PqNN8S8YqLvA=";
-      finalImageTag = "5.17.2";
+      imageDigest = "sha256:b2d2bc9bafb76073d96142bda07ea90c6d6afd9207fe4ff2d4f9d3b50fcdbd76";
+      sha256 = "sha256-91QtWW/o5qMWCATgq3NzsG56E5er0xZu2ECNpYzut0A=";
+      finalImageTag = "5.18.4";
     };
   };
   sonarr = {

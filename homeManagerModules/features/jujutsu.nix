@@ -40,11 +40,5 @@ in {
         };
       };
     };
-    home.packages = [
-      (pkgs.lazyjj.overrideAttrs (old: {
-        src = inputs.lazyjj;
-        doCheck = false;
-      }))
-    ];
   };
 }
