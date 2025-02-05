@@ -55,10 +55,10 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "16qi2qhpszm842awxghmsp64yvvawafq96w5jw98irz3f4bh2jbl";
+      sha256 = "18dcwrcnddvi8gl3hmbsb2cj1l7afxk2lh3jmhj90l95h1hn3gkx";
       type = "gem";
     };
-    version = "3.3.7.0";
+    version = "3.3.7.1";
   };
   prism = {
     groups = ["default"];
@@ -159,10 +159,10 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "1zph8bpa8pgd56s6bhqriwrm31460am2nlbj0wfdqyfphagfpyaj";
+      sha256 = "1mjvwa5qgkljkvkpqksyh433nbhi12f6p2hqsz6xacj961ds4vd9";
       type = "gem";
     };
-    version = "0.5.11801";
+    version = "0.5.11802";
   };
   unicode-display_width = {
     dependencies = ["unicode-emoji"];
