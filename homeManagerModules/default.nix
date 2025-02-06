@@ -36,6 +36,7 @@ in {
   imports =
     [
       inputs.nixvim.homeManagerModules.nixvim
+      inputs.nvf.homeManagerModules.default
       inputs.walker.homeManagerModules.default
     ]
     ++ features
