@@ -2,6 +2,7 @@
   pkgs,
   config,
   inputs,
+  lib,
   ...
 }: let
   rubyGems = (import ../../../gems/default.nix) {
@@ -57,6 +58,28 @@ in {
               mode = "n";
               action = "<Cmd>confirm qall<CR>";
               desc = "Quit all";
+            }
+            {
+              key = "<leader>c";
+              mode = "n";
+              action = ''
+                function()
+                  require("bufdelete").bufdelete(vim.api.nvim_get_current_buf(), false)
+                end
+              '';
+              lua = true;
+              desc = "Close buffer";
+            }
+            {
+              key = "<leader>C";
+              mode = "n";
+              action = ''
+                function()
+                  require("bufdelete").bufdelete(vim.api.nvim_get_current_buf(), true)
+                end
+              '';
+              lua = true;
+              desc = "Force close buffer";
             }
             {
               key = "L";
@@ -151,7 +174,6 @@ in {
             css.enable = true;
             html.enable = true;
             sql.enable = true;
-            ts.enable = true;
             go.enable = true;
             lua.enable = true;
             rust = {
@@ -161,6 +183,10 @@ in {
             astro.enable = true;
             nu.enable = true;
             tailwind.enable = true;
+            ts = {
+              enable = true;
+              extraDiagnostics.enable = true;
+            };
             ruby = {
               enable = true;
               lsp.enable = false;
