@@ -318,6 +318,7 @@ in {
           };
 
           notes = {
+            obsidian = {enable = true;};
             neorg = {
               enable = true;
               setupOpts.load = {

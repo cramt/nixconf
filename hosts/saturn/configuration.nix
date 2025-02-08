@@ -40,6 +40,7 @@
         tvshows = "/mnt/amirani/tvshows";
       };
     in {
+      ollama.enable = true;
       jellyfin = {
         enable = false;
         configVolume = "/mnt/amirani/configs/jellyfin";
