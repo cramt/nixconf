@@ -182,7 +182,7 @@ in {
             clang.enable = true;
             css.enable = true;
             html.enable = true;
-            sql.enable = true;
+            sql.enable = false;
             go.enable = true;
             lua.enable = true;
             rust = {
