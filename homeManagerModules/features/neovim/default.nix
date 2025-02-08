@@ -20,6 +20,13 @@ in {
       enable = true;
       settings = {
         vim = {
+          luaConfigRC.no_fill_chars =
+            # lua
+            ''
+              vim.opt.fillchars = {
+                eob = ' ',
+              }
+            '';
           globals = {
             neovide_transparency = 0.8;
             guifont = "Iosevka Nerd Font";
@@ -153,6 +160,8 @@ in {
             '';
           };
 
+          fzf-lua.profile = "fzf-native";
+
           debugger = {
             nvim-dap = {
               enable = true;
@@ -232,6 +241,24 @@ in {
           filetree = {
             neo-tree = {
               enable = true;
+              setupOpts = {
+                buffers = {
+                  follow_current_file = {
+                    enabled = true;
+                    leave_dirs_open = true;
+                  };
+                };
+                filesystem = {
+                  hijack_netrw_behavior = "open_current";
+
+                  filtered_items = {
+                    visible = false;
+                    hide_dotfiles = false;
+                    hide_gitignored = true;
+                    hide_by_pattern = [".git" ".jj"];
+                  };
+                };
+              };
             };
           };
 
