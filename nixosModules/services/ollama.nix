@@ -2,7 +2,7 @@
   services.ollama = {
     enable = true;
     loadModels = [
-      "deepseek-v3"
+      "llama3.2"
     ];
     acceleration = "rocm";
   };
