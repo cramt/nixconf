@@ -185,6 +185,7 @@ in {
             sql.enable = false;
             go.enable = true;
             lua.enable = true;
+            terraform.enable = true;
             rust = {
               enable = true;
               crates.enable = true;
