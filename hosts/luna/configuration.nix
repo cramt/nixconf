@@ -36,11 +36,11 @@
       minecraft-forge = {
         enable = true;
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
-        dataDir = "/mnt/pierre/minecraft-forge";
+        dataDir = "/mnt/imbrium/minecraft-forge";
       };
       jellyfin = {
         enable = true;
-        configVolume = "/mnt/pierre/configs/jellyfin";
+        configVolume = "/mnt/imbrium/configs/jellyfin";
         mediaVolumes = {
           tvshows = downloads.tvshows;
           movies = downloads.movies;
@@ -52,60 +52,60 @@
       };
       caddy = {
         enable = true;
-        cacheVolume = "/mnt/pierre/configs/caddy-cache";
+        cacheVolume = "/mnt/imbrium/configs/caddy-cache";
         staticFileVolumes = {
-          books = "/mnt/pierre/books";
+          books = "/mnt/imbrium/books";
         };
         domain = "cramt.schniebster.dk";
         protocol = "https";
       };
       qbittorrent = {
         enable = true;
-        configVolume = "/mnt/pierre/configs/qbittorrent";
+        configVolume = "/mnt/imbrium/configs/qbittorrent";
         downloadVolume = downloads.raw;
       };
       foundryvtt = {
         enable = true;
-        dataVolume = "/mnt/pierre/configs/foundryvtt_a";
+        dataVolume = "/mnt/imbrium/configs/foundryvtt_a";
       };
       prowlarr = {
         enable = true;
-        configVolume = "/mnt/pierre/configs/prowlarr";
+        configVolume = "/mnt/imbrium/configs/prowlarr";
       };
       radarr = {
         enable = true;
-        configVolume = "/mnt/pierre/configs/radarr";
+        configVolume = "/mnt/imbrium/configs/radarr";
         downloadVolume = downloads.raw;
         movieVolume = downloads.movies;
       };
       sonarr = {
         enable = true;
-        configVolume = "/mnt/pierre/configs/sonarr";
+        configVolume = "/mnt/imbrium/configs/sonarr";
         downloadVolume = downloads.raw;
         tvVolume = downloads.tvshows;
       };
       bazarr = {
         enable = true;
-        configVolume = "/mnt/pierre/configs/bazarr";
+        configVolume = "/mnt/imbrium/configs/bazarr";
         downloadVolume = downloads.raw;
         tvVolume = downloads.tvshows;
         movieVolume = downloads.movies;
       };
       adguard = {
         enable = true;
-        configVolume = "/mnt/pierre/configs/adgaurd_conf";
-        workVolume = "/mnt/pierre/configs/adgaurd_work";
+        configVolume = "/mnt/imbrium/configs/adgaurd_conf";
+        workVolume = "/mnt/imbrium/configs/adgaurd_work";
       };
       valheim = {
         enable = false;
-        configVolume = "/mnt/pierre/valheim_config";
-        binaryVolume = "/mnt/pierre/valheim_binary";
+        configVolume = "/mnt/imbrium/valheim_config";
+        binaryVolume = "/mnt/imbrium/valheim_binary";
         serverName = "wutwutgame3";
         worldName = "wutwutgame3";
       };
       homelab_system_controller = {
         enable = true;
-        databaseUrl = "sqlite:/mnt/pierre/homelab_discord_bot.db?mode=rwc";
+        databaseUrl = "sqlite:/mnt/imbrium/homelab_discord_bot.db?mode=rwc";
       };
       servatrice.enable = true;
       sshd.enable = true;

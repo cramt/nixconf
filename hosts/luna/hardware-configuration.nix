@@ -48,16 +48,6 @@
     ];
   };
 
-  fileSystems."/mnt/pierre" = {
-    device = "/dev/disk/by-uuid/1fec8fd2-ac7d-4370-90b2-8c4079557f60";
-    fsType = "ext3";
-    options = [
-      "users"
-      "exec"
-      "nofail"
-    ];
-  };
-
   swapDevices = [];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
