@@ -69,6 +69,12 @@ in {
         push = {
           autoSetupRemote = true;
         };
+        pull = {
+          rebase = true;
+        };
+        rebase = {
+          updateRefs = true;
+        };
       };
     };
     home.packages = with pkgs; [
