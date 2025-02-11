@@ -31,6 +31,7 @@ in {
     ruby.enable = true;
     zellij.enable = true;
     btop.enable = true;
+    lazygit.enable = true;
   };
 
   home.packages = with pkgs;
@@ -48,7 +49,6 @@ in {
       sd
       fd
       neofetch
-      lazygit
       wget
       yarn
       inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nodejs_20

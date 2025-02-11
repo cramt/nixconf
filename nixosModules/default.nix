@@ -93,6 +93,11 @@ in {
       overlays = [
         inputs.nur.overlays.default
         (final: prev: {
+          lazygit = prev.writeScriptBin "lazygit" ''
+            echo 'a' | ${prev.gnupg}/bin/gpg --sign -u alex.cramt@gmail.com && ${prev.lazygit}/bin/lazygit
+          '';
+        })
+        (final: prev: {
           rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rocmPackages;
         })
       ];
