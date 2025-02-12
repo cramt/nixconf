@@ -30,11 +30,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:8415caab20c3642adb281ea066e82a58b8011b6e12bec5339db66599b700f805",
+            "imageDigest": "sha256:ac9fe56bee9133bcb9e27fe48faaf83c57b83d75bacc277d9b2619136632b1fe",
             "imageName": "linuxserver/bazarr",
             "imageTag": "1.5.1",
             "os": null,
-            "sha256": "sha256-7mABS8PqgYktqyhr4I2gnLqF0wMwm/WLYH8MQf3UR4Q=",
+            "sha256": "sha256-xSr7YKWSHB1Ma7o1eEInGF4yD8g097kqRUUCNVxVCvc=",
             "tlsVerify": null
         },
         "version": "1.5.1"
@@ -50,7 +50,7 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:a863d46cf06a9084f36cbffbe9f4ad046971dca32f79c68129aaf15ad356d6ce",
+            "imageDigest": "sha256:2c136eb7e4daa97deed8738aab21994ea88dc0ced06aa44e30a949ba3d60e213",
             "imageName": "library/caddy",
             "imageTag": "2.9.1",
             "os": null,
@@ -90,11 +90,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:b70787a42a14867669d66c900b5c42bbaf9d2a21c7e0edd29b9c0e050c95b6ea",
+            "imageDigest": "sha256:40083af30bd9d75358ba14a825f3c1d3620875be0c055b212c9aed76420a9d54",
             "imageName": "itzg/minecraft-server",
             "imageTag": "java8",
             "os": null,
-            "sha256": "sha256-V1M5cd2IoxZcm+xOle+CdCCFN0E+uujRMbTbT5fIqWA=",
+            "sha256": "sha256-ve8kNL+OKdwuONuN+SWRha6T4G5g5amjg+idFi4+2Wo=",
             "tlsVerify": null
         },
         "version": "java8"
@@ -110,11 +110,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:b242bc98897d8fa65db7b72f5dbde04b161a092d3cce2321b8c7e62c9321820d",
+            "imageDigest": "sha256:5c9d62af19a810f7799c1d5fbf686cc6c28690c00f916c029699ae3d1c75e8ef",
             "imageName": "linuxserver/prowlarr",
             "imageTag": "1.30.2",
             "os": null,
-            "sha256": "sha256-aiGzBIqvKrA1/BoJ4N6GPGjQ5hyzVWg5+FV8jkLtBWY=",
+            "sha256": "sha256-KsVLg/m+WNduLRhvAwZZ0NAUlPSoJyfMqHL5bOKjYBM=",
             "tlsVerify": null
         },
         "version": "1.30.2"
