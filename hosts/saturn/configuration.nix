@@ -40,7 +40,11 @@
         tvshows = "/mnt/amirani/tvshows";
       };
     in {
-      ollama.enable = true;
+      ollama = {
+        enable = true;
+        gpu = "rocm";
+        rocmVersion = "11.0.1";
+      };
       jellyfin = {
         enable = false;
         configVolume = "/mnt/amirani/configs/jellyfin";
