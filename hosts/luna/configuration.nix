@@ -43,6 +43,10 @@
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
         dataDir = "/mnt/imbrium/minecraft-forge";
       };
+      gtnh = {
+        enable = true;
+        dataVolume = "/mnt/imbrium/gtnh";
+      };
       jellyfin = {
         enable = true;
         configVolume = "/mnt/imbrium/configs/jellyfin";

@@ -42,6 +42,10 @@
         cacheVolume = "/tmp/b";
       };
       servatrice.enable = false;
+      gtnh = {
+        enable = false;
+        dataVolume = "/home/cramt/gtnh";
+      };
     };
 
     home-users = {
