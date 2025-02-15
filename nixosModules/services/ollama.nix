@@ -14,7 +14,7 @@ in {
     };
     rocmVersion = lib.mkOption {
       type = lib.types.str;
-      default = null;
+      default = "";
       description = ''
         which rocm version
       '';
@@ -28,9 +28,9 @@ in {
       ];
       acceleration = cfg.gpu;
       environmentVariables = {
-        HCC_AMDGPU_TARGET = lib.mkIf (cfg.rocmVersion != null) "gfx${builtins.replaceStrings ["."] [""] cfg.rocmVersion}";
+        HCC_AMDGPU_TARGET = lib.mkIf (cfg.rocmVersion != "") "gfx${builtins.replaceStrings ["."] [""] cfg.rocmVersion}";
       };
-      rocmOverrideGfx = lib.mkIf (cfg.rocmVersion != null) cfg.rocmVersion;
+      rocmOverrideGfx = lib.mkIf (cfg.rocmVersion != "") cfg.rocmVersion;
     };
   };
 }

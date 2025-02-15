@@ -33,6 +33,10 @@
         tvshows = "/mnt/imbrium/downloads/tvshows";
       };
     in {
+      ollama = {
+        enable = true;
+        gpu = "cuda";
+      };
       minecraft-forge = {
         enable = true;
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
