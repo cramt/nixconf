@@ -22,6 +22,7 @@
   myNixOS = {
     gnupg.enable = true;
     powertop.enable = true;
+    nvidia.enable = true;
     bundles.general.enable = true;
     bundles.general.stylixAssetVideo = ../../media/cosmere.mp4;
     bundles.users.enable = true;
@@ -50,7 +51,7 @@
           movies = downloads.movies;
         };
         gpuDevices = [
-          "/dev/dri/card1"
+          "/dev/dri/card0"
           "/dev/dri/renderD128"
         ];
       };

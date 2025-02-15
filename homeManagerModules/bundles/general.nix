@@ -51,7 +51,7 @@ in {
       neofetch
       wget
       yarn
-      inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nodejs_20
+      inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nodejs_23
       nodePackages.pnpm
       unzip
       cargo
