@@ -71,6 +71,7 @@ in {
       openocd
       inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nvfetcher
       jq
+      nix-output-monitor
     ]
     ++ ld_packages;
 
