@@ -66,7 +66,6 @@ in {
       ssm-session-manager-plugin
       dnsutils
       sops
-      zed-editor
       gcc-arm-embedded
       openocd
       inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nvfetcher
