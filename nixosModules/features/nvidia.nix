@@ -2,8 +2,13 @@
   driver = config.boot.kernelPackages.nvidiaPackages.stable;
 in {
   config = {
-    boot.initrd.kernelModules = ["nvidia"];
-    boot.extraModulePackages = [driver];
+    boot = {
+      extraModprobeConfig = ''
+        options nvidia NVreg_RestrictProfilingToAdminUsers=0 NVreg_DeviceFileMode=0666
+      '';
+      initrd.kernelModules = ["nvidia"];
+      extraModulePackages = [driver];
+    };
     services.xserver = {
       enable = true;
       videoDrivers = ["nvidia"];

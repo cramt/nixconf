@@ -7,7 +7,8 @@
 }: let
   ld_packages = with pkgs; [
     libyaml.dev
-    stdenv.cc.cc.lib
+    stdenv.cc.cc
+    linuxPackages.nvidia_x11
   ];
 in {
   imports = [
@@ -71,6 +72,7 @@ in {
       inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nvfetcher
       jq
       nix-output-monitor
+      julia-bin
     ]
     ++ ld_packages;
 
