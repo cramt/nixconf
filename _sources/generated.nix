@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.62";
+    version = "v0.108.0-b.63";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:1c0025ab891508e0945b2d050f4a4d696e1ad8910452e5bd9b6caab744c6e033";
-      sha256 = "sha256-Hu1DHGUTaC97/EqTd2+Wha9zzWwiQMw3tvjOwGFhmSc=";
-      finalImageTag = "v0.108.0-b.62";
+      imageDigest = "sha256:dd9a77fdc6fc7ee548a09a0af9c6db52e1a5658d98fa85c0980bc8c1f382acf0";
+      sha256 = "sha256-ycHe/RxFB6LOVnOZueVrjUB9oydzqzTb0/R1vu4eo98=";
+      finalImageTag = "v0.108.0-b.63";
     };
   };
   bazarr = {
@@ -16,8 +16,8 @@
     version = "1.5.1";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:ac9fe56bee9133bcb9e27fe48faaf83c57b83d75bacc277d9b2619136632b1fe";
-      sha256 = "sha256-xSr7YKWSHB1Ma7o1eEInGF4yD8g097kqRUUCNVxVCvc=";
+      imageDigest = "sha256:8415caab20c3642adb281ea066e82a58b8011b6e12bec5339db66599b700f805";
+      sha256 = "sha256-7mABS8PqgYktqyhr4I2gnLqF0wMwm/WLYH8MQf3UR4Q=";
       finalImageTag = "1.5.1";
     };
   };
@@ -26,7 +26,7 @@
     version = "2.9.1";
     src = dockerTools.pullImage {
       imageName = "library/caddy";
-      imageDigest = "sha256:2c136eb7e4daa97deed8738aab21994ea88dc0ced06aa44e30a949ba3d60e213";
+      imageDigest = "sha256:a863d46cf06a9084f36cbffbe9f4ad046971dca32f79c68129aaf15ad356d6ce";
       sha256 = "sha256-BjLwNrXPZFwZs7Fau/pxhUPSImBT8ms+nUVBs1PO4H8=";
       finalImageTag = "2.9.1";
     };
@@ -46,8 +46,8 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:40083af30bd9d75358ba14a825f3c1d3620875be0c055b212c9aed76420a9d54";
-      sha256 = "sha256-ve8kNL+OKdwuONuN+SWRha6T4G5g5amjg+idFi4+2Wo=";
+      imageDigest = "sha256:b70787a42a14867669d66c900b5c42bbaf9d2a21c7e0edd29b9c0e050c95b6ea";
+      sha256 = "sha256-V1M5cd2IoxZcm+xOle+CdCCFN0E+uujRMbTbT5fIqWA=";
       finalImageTag = "java8";
     };
   };
@@ -56,8 +56,8 @@
     version = "1.30.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/prowlarr";
-      imageDigest = "sha256:5c9d62af19a810f7799c1d5fbf686cc6c28690c00f916c029699ae3d1c75e8ef";
-      sha256 = "sha256-KsVLg/m+WNduLRhvAwZZ0NAUlPSoJyfMqHL5bOKjYBM=";
+      imageDigest = "sha256:b242bc98897d8fa65db7b72f5dbde04b161a092d3cce2321b8c7e62c9321820d";
+      sha256 = "sha256-aiGzBIqvKrA1/BoJ4N6GPGjQ5hyzVWg5+FV8jkLtBWY=";
       finalImageTag = "1.30.2";
     };
   };
