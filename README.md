@@ -21,3 +21,4 @@
 - change caddy to not be in docker and thus having to use port on all the other
   services
 - setup matrix-synapse
+- setup backups on saturn hybrid drive
