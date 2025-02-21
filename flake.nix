@@ -16,6 +16,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    openwrt-imagebuilder.url = "github:cramt/nix-openwrt-imagebuilder/fix_some_imagebuilder_files_not_including_variant";
+
     nix-colors.url = "github:misterio77/nix-colors";
 
     nur.url = "github:nix-community/NUR";
@@ -91,5 +93,25 @@
 
       homeManagerModules.default = ./homeManagerModules;
       nixosModules.default = ./nixosModules;
+      packages.x86_64-linux.sol = let
+        pkgs = import inputs.nixpkgs {
+          system = "x86_64-linux";
+          config = {
+            permittedInsecurePackages = [
+              "python-2.7.18.8"
+            ];
+          };
+        };
+        config = {
+          # TODO: ssh https://openwrt.org/docs/guide-user/additional-software/imagebuilder#restricting_root_access
+          # TODO: make wrapper around `files` thingy so it isnt hell
+          inherit pkgs;
+          release = "19.07.10";
+          target = "bcm53xx";
+          profile = "tplink-archer-c5-v2";
+          packages = ["dockerd"];
+        };
+      in
+        inputs.openwrt-imagebuilder.lib.build config;
     };
 }
