@@ -23,6 +23,10 @@
     gnupg.enable = true;
     powertop.enable = true;
     nvidia.enable = true;
+    docker = {
+      enable = true;
+      httpPort = 2375;
+    };
     bundles.general.enable = true;
     bundles.general.stylixAssetVideo = ../../media/cosmere.mp4;
     bundles.users.enable = true;
