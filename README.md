@@ -22,3 +22,9 @@
   services
 - setup matrix-synapse
 - setup backups on saturn hybrid drive
+
+### Yazi
+
+https://github.com/dawsers/fuse-archive.yazi
+
+look at more cool stuff https://yazi-rs.github.io/docs/resources
