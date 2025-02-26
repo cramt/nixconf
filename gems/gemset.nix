@@ -138,10 +138,10 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "1bi6pgnii77763dzwhafcp8lrmnh4n1bqbdimhc9lfj4zs96gpsg";
+      sha256 = "1zjpv3kw4ciwk0dh43zj17ws318vnirby1clmcy6j9mvr4mbxv40";
       type = "gem";
     };
-    version = "1.38.0";
+    version = "1.38.1";
   };
   ruby-lsp = {
     dependencies = ["language_server-protocol" "prism" "rbs" "sorbet-runtime"];
@@ -169,10 +169,10 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "1adsjcnp3zcs4qrhz00hhrjwb23ar9dq6cmb1519jdaxvfdc54h2";
+      sha256 = "1dq87ymb09q5xkal5k6ln1s15l5kdxpx0s0xyhh8s8p3hzrqyrgw";
       type = "gem";
     };
-    version = "0.5.11856";
+    version = "0.5.11862";
   };
   unicode-display_width = {
     dependencies = ["unicode-emoji"];
