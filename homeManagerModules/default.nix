@@ -38,6 +38,7 @@ in {
       inputs.nixvim.homeManagerModules.nixvim
       inputs.nvf.homeManagerModules.default
       inputs.walker.homeManagerModules.default
+      inputs.nix-yazi-plugins.legacyPackages.${pkgs.system}.homeManagerModules.default
     ]
     ++ features
     ++ bundles;
