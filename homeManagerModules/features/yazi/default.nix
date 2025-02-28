@@ -18,7 +18,7 @@ in {
       linkHomeLedger = lib.hm.dag.entryAfter ["writeBoundary"] ''
 
         ${lib.concatStrings (builtins.map (name: "PATH=PATH:${pkgs.git}/bin ${yazi}/bin/ya pack -a ${name} || true\n") pluginNames)}
-        PATH=PATH:${pkgs.git}/bin ${yazi}/bin/ya pack -u
+        PATH=PATH:${pkgs.git}/bin ${yazi}/bin/ya pack -u || true
       '';
     };
     home.packages = [
