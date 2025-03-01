@@ -24,12 +24,15 @@ in {
     home.packages = [
       pkgs.fuse-archive
       pkgs.glow
+      pkgs.ueberzugpp
+      pkgs.chafa
     ];
     programs.yazi = {
       enable = true;
       enableZshIntegration = true;
       initLua = ./init.lua;
       package = yazi;
+      shellWrapperName = "y";
 
       keymap = {
         manager = {
