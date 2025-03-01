@@ -15,7 +15,6 @@
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.work.enable = true;
-    playwright_driver.enable = true;
     git.signingKey = "2FB7AC531E930F27";
     blueman.enable = true;
     cockatrice.enable = true;

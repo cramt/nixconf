@@ -129,7 +129,7 @@ in {
           );
 
         modifier = mod;
-        terminal = "alacritty";
+        terminal = "rio";
         menu = "${pkgs.tofi}/bin/tofi-drun | xargs swaymsg exec --";
         defaultWorkspace = "1";
         window = {
