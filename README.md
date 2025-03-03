@@ -12,6 +12,7 @@
 - setup hardcoded refresh rates in sway config
 - lazygit + gpgsign https://github.com/jesseduffield/lazygit/issues/1146
 - lemurs as login manager once it works on nix
+- obsidian :eyes:
 
 ### server stuff
 
