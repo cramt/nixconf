@@ -14,6 +14,7 @@ in {
     xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
     home.packages = [
       pkgs.neovide
+      pkgs.obsidian
     ];
 
     programs.nvf = {
@@ -250,8 +251,11 @@ in {
                   };
                 };
                 filesystem = {
+                  follow_current_file = {
+                    enabled = true;
+                    leave_dirs_open = true;
+                  };
                   hijack_netrw_behavior = "open_current";
-
                   filtered_items = {
                     visible = false;
                     hide_dotfiles = false;
@@ -320,7 +324,15 @@ in {
 
           notes = {
             obsidian = {
-              enable = false;
+              enable = true;
+              setupOpts = {
+                workspaces = [
+                  {
+                    name = "_default";
+                    path = ../../../empty_obsidian_workspace;
+                  }
+                ];
+              };
             };
             neorg = {
               enable = true;
