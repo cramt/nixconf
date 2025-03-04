@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "NonSteamLaunchers": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1741059203,
+        "narHash": "sha256-IK/ggprSFpWc5QYDPmeoEDyoEb8b6T/+xcWiWMY7i3A=",
+        "owner": "moraroy",
+        "repo": "NonSteamLaunchers-On-Steam-Deck",
+        "rev": "840b0977c458605d02287965043254eb9f8d58f3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "moraroy",
+        "ref": "main",
+        "repo": "NonSteamLaunchers-On-Steam-Deck",
+        "type": "github"
+      }
+    },
     "base16": {
       "inputs": {
         "fromYaml": "fromYaml"
@@ -1208,6 +1225,7 @@
     },
     "root": {
       "inputs": {
+        "NonSteamLaunchers": "NonSteamLaunchers",
         "darkmingo-cockactrice-theme": "darkmingo-cockactrice-theme",
         "foundryvtt": "foundryvtt",
         "git_update_notifier": "git_update_notifier",

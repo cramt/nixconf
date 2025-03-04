@@ -23,6 +23,7 @@
   myHomeManager = {
     wowup.enable = true;
     cockatrice.enable = true;
+    nonsteamlauncher.enable = true;
   };
 
   # this is to make "wine system tray" not show up as a seperate stupid window

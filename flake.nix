@@ -6,6 +6,11 @@
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-24.11";
 
+    NonSteamLaunchers = {
+      url = "github:moraroy/NonSteamLaunchers-On-Steam-Deck/main";
+      flake = false;
+    };
+
     nix-yazi-plugins = {
       url = "github:lordkekz/nix-yazi-plugins";
       inputs.nixpkgs.follows = "nixpkgs";
