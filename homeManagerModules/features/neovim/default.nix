@@ -143,6 +143,7 @@ in {
           ];
 
           lsp = {
+            null-ls.default_timeout = 10000;
             formatOnSave = true;
             lspkind.enable = false;
             lightbulb.enable = true;
