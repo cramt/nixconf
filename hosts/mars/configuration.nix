@@ -46,6 +46,13 @@
         enable = false;
         dataVolume = "/home/cramt/gtnh";
       };
+      valheim = {
+        enable = true;
+        configVolume = "/mnt/imbrium/valheim_config";
+        binaryVolume = "/mnt/imbrium/valheim_binary";
+        serverName = "wutwutgame3";
+        worldName = "wutwutgame3";
+      };
     };
 
     home-users = {

@@ -44,3 +44,7 @@ fetch.docker = "dockage/tor-privoxy"
 src.container = "itzg/minecraft-server"
 src.include_regex = "java8"
 fetch.docker = "itzg/minecraft-server"
+
+[odin]
+src.git = "https://github.com/mbround18/valheim-docker"
+fetch.github = "mbround18/valheim-docker"

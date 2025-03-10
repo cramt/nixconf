@@ -10,14 +10,14 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:dd9a77fdc6fc7ee548a09a0af9c6db52e1a5658d98fa85c0980bc8c1f382acf0",
+            "imageDigest": "sha256:3583eea486e7c01a520ff9445c3a3859a63f27752c1ac1855c178bb013993ecf",
             "imageName": "adguard/adguardhome",
-            "imageTag": "v0.108.0-b.63",
+            "imageTag": "v0.108.0-b.64",
             "os": null,
-            "sha256": "sha256-ycHe/RxFB6LOVnOZueVrjUB9oydzqzTb0/R1vu4eo98=",
+            "sha256": "sha256-grp+95h6t1zDu82jyc/J1oh8/Z79wvo6YEl872CfDP4=",
             "tlsVerify": null
         },
-        "version": "v0.108.0-b.63"
+        "version": "v0.108.0-b.64"
     },
     "bazarr": {
         "cargoLocks": null,
@@ -98,6 +98,26 @@
             "tlsVerify": null
         },
         "version": "java8"
+    },
+    "odin": {
+        "cargoLocks": null,
+        "date": "2025-03-10",
+        "extract": null,
+        "name": "odin",
+        "passthru": null,
+        "pinned": false,
+        "src": {
+            "deepClone": false,
+            "fetchSubmodules": false,
+            "leaveDotGit": false,
+            "name": null,
+            "owner": "mbround18",
+            "repo": "valheim-docker",
+            "rev": "be8fed556d8c0aa5538a2ca93557af23a7cce6f7",
+            "sha256": "sha256-yrsHsb7wPAazv1azAXvgi9yKWt4ClA0Py6xUbf5qbok=",
+            "type": "github"
+        },
+        "version": "be8fed556d8c0aa5538a2ca93557af23a7cce6f7"
     },
     "prowlarr": {
         "cargoLocks": null,
