@@ -110,8 +110,8 @@
         workVolume = "/mnt/imbrium/configs/adgaurd_work";
       };
       valheim = {
-        enable = false;
-        configVolume = "/mnt/imbrium/valheim_config";
+        enable = true;
+        worldVolume = "/mnt/imbrium/valheim_config";
         binaryVolume = "/mnt/imbrium/valheim_binary";
         serverName = "wutwutgame3";
         worldName = "wutwutgame3";
