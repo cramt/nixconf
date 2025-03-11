@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.63";
+    version = "v0.108.0-b.64";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:dd9a77fdc6fc7ee548a09a0af9c6db52e1a5658d98fa85c0980bc8c1f382acf0";
-      sha256 = "sha256-ycHe/RxFB6LOVnOZueVrjUB9oydzqzTb0/R1vu4eo98=";
-      finalImageTag = "v0.108.0-b.63";
+      imageDigest = "sha256:3583eea486e7c01a520ff9445c3a3859a63f27752c1ac1855c178bb013993ecf";
+      sha256 = "sha256-grp+95h6t1zDu82jyc/J1oh8/Z79wvo6YEl872CfDP4=";
+      finalImageTag = "v0.108.0-b.64";
     };
   };
   bazarr = {
@@ -50,6 +50,18 @@
       sha256 = "sha256-ve8kNL+OKdwuONuN+SWRha6T4G5g5amjg+idFi4+2Wo=";
       finalImageTag = "java8";
     };
+  };
+  odin = {
+    pname = "odin";
+    version = "be8fed556d8c0aa5538a2ca93557af23a7cce6f7";
+    src = fetchFromGitHub {
+      owner = "mbround18";
+      repo = "valheim-docker";
+      rev = "be8fed556d8c0aa5538a2ca93557af23a7cce6f7";
+      fetchSubmodules = false;
+      sha256 = "sha256-yrsHsb7wPAazv1azAXvgi9yKWt4ClA0Py6xUbf5qbok=";
+    };
+    date = "2025-03-10";
   };
   prowlarr = {
     pname = "prowlarr";
