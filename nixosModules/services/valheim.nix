@@ -60,8 +60,8 @@ in {
         PGID = "1000";
         TZ = "Europe/Copenhagen";
         PORT = "2456";
-        NAME = "valheim server";
-        WORLD = "Dedicated";
+        NAME = cfg.serverName;
+        WORLD = cfg.worldName;
         PUBLIC = "0";
         AUTO_UPDATE = "0";
         PASSWORD = "12345";
