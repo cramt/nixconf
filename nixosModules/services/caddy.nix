@@ -47,167 +47,144 @@ in {
       '';
     };
   };
-  config = let
-    jellyfinCaddy =
-      if config.myNixOS.services.jellyfin.enable
-      then ''
-        ${cfg.protocol}://jellyfin.${cfg.domain} {
-          import cors
-          reverse_proxy http://jellyfin:8096
-        }
-      ''
-      else "";
-    qbittorrentCaddy =
-      if config.myNixOS.services.qbittorrent.enable
-      then ''
-        ${cfg.protocol}://qbit.${cfg.domain} {
-          import cors
-          reverse_proxy http://qbittorrent:8080
-        }
-      ''
-      else "";
-    foundryvttCaddy =
-      if config.myNixOS.services.foundryvtt.enable
-      then ''
-        ${cfg.protocol}://foundry-a.${cfg.domain} {
-          import cors
-          reverse_proxy http://foundryvtt:30000
-        }
-      ''
-      else "";
-    prowlarrCaddy =
-      if config.myNixOS.services.prowlarr.enable
-      then ''
-        ${cfg.protocol}://prowlarr.${cfg.domain} {
-          import cors
-          reverse_proxy http://prowlarr:9696
-        }
-      ''
-      else "";
-    radarrCaddy =
-      if config.myNixOS.services.radarr.enable
-      then ''
-        ${cfg.protocol}://radarr.${cfg.domain} {
-          import cors
-          reverse_proxy http://radarr:7878
-        }
-      ''
-      else "";
-    sonarrCaddy =
-      if config.myNixOS.services.sonarr.enable
-      then ''
-        ${cfg.protocol}://sonarr.${cfg.domain} {
-          import cors
-          reverse_proxy http://sonarr:8989
-        }
-      ''
-      else "";
-    bazarrCaddy =
-      if config.myNixOS.services.bazarr.enable
-      then ''
-        ${cfg.protocol}://bazarr.${cfg.domain} {
-          import cors
-          reverse_proxy http://bazarr:6767
-        }
-      ''
-      else "";
-    servatriceCaddy =
-      if config.myNixOS.services.servatrice.enable
-      then ''
-        ${cfg.protocol}://cockatrice.${cfg.domain} {
-          import cors
-          reverse_proxy servatrice:4748
-        }
-      ''
-      else "";
-    adguardCaddy =
-      if config.myNixOS.services.adguard.enable
-      then ''
-        ${cfg.protocol}://adguard_setup.${cfg.domain} {
-          reverse_proxy http://adguard:3000
-        }
-        ${cfg.protocol}://adguard.${cfg.domain} {
-          reverse_proxy http://adguard:80
-        }
-      ''
-      else "";
-    staticFileCaddy = lib.strings.concatStringsSep "\n" (
-      builtins.map
-      (x: ''
-        ${cfg.protocol}://${x.subdomain}.${cfg.domain} {
-          file_server ${x.innerFolder} browse
-        }
-      '')
-      staticFiles
-    );
-    caddyFile = pkgs.writeText "Caddyfile" ''
-      (cors) {
-       @cors_preflight method OPTIONS
+  config = {
+    services.caddy = {
+      enable = true;
+      email = "alex.cramt@gmail.com";
+      virtualHosts =
+        {
+          "(cors)" = {
+            extraConfig = ''
 
-       header {
-         ?Access-Control-Allow-Origin "*"
-         ?Access-Control-Expose-Headers "Authorization"
-         ?Access-Control-Allow-Credentials "true"
-         ?Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
-         ?Access-Control-Max-Age "3600"
-       }
+              @cors_preflight method OPTIONS
 
-       handle @cors_preflight {
-         header {
-           ?Access-Control-Allow-Origin "*"
-           Access-Control-Expose-Headers "Authorization"
-           Access-Control-Allow-Credentials "true"
-           Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
-           Access-Control-Max-Age "3600"
-         }
-        respond "" 204
-       }
-      }
-      ${jellyfinCaddy}
-      ${qbittorrentCaddy}
-      ${foundryvttCaddy}
-      ${prowlarrCaddy}
-      ${radarrCaddy}
-      ${sonarrCaddy}
-      ${bazarrCaddy}
-      ${servatriceCaddy}
-      ${adguardCaddy}
-      ${staticFileCaddy}
-    '';
-  in {
-    virtualisation.oci-containers.backend = "docker";
-    systemd.services.docker-create-caddy-network = {
-      serviceConfig.Type = "oneshot";
-      wantedBy = ["docker-caddy.service"];
-      script = let
-        sudo_docker = "${pkgs.sudo}/bin/sudo ${pkgs.docker}/bin/docker";
-      in ''
-        ${sudo_docker} network inspect caddy >/dev/null 2>&1 || ${sudo_docker} network create --driver bridge caddy
-      '';
-    };
-    virtualisation.oci-containers.containers.caddy = {
-      hostname = "caddy";
-      imageFile = docker_source;
-      image = "${docker_source.imageName}:${docker_source.imageTag}";
-      volumes =
-        [
-          "${cfg.cacheVolume}/config:/config"
-          "${cfg.cacheVolume}/data:/data"
-          "${caddyFile}:/etc/caddy/Caddyfile"
-        ]
-        ++ builtins.map (x: "${x.innerFolder}:${x.folder} ") staticFiles;
-      ports = [
-        "443:443"
-        "80:80"
-        "2019:2019"
-      ];
-      extraOptions = [
-        "--network=caddy"
-      ];
-      environment = {
-        EMAIL = "alex.cramt@gmail.com";
-      };
-      autoStart = true;
+              header {
+                ?Access-Control-Allow-Origin "*"
+                ?Access-Control-Expose-Headers "Authorization"
+                ?Access-Control-Allow-Credentials "true"
+                ?Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
+                ?Access-Control-Max-Age "3600"
+              }
+
+              handle @cors_preflight {
+                header {
+                  ?Access-Control-Allow-Origin "*"
+                  Access-Control-Expose-Headers "Authorization"
+                  Access-Control-Allow-Credentials "true"
+                  Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
+                  Access-Control-Max-Age "3600"
+                }
+               respond "" 204
+               }
+            '';
+          };
+        }
+        // (lib.attrsets.mapAttrs' (name: value: {
+            name = "${cfg.protocol}://${name}.${cfg.domain}";
+            value = {
+              extraConfig = ''
+                file_server ${value} browse
+              '';
+            };
+          })
+          cfg.staticFileVolumes)
+        // (
+          if config.myNixOS.services.jellyfin.enable
+          then {
+            "${cfg.protocol}://jellyfin.${cfg.domain}" = {
+              extraConfig = ''
+                import cors
+                reverse_proxy http://localhost:8096
+              '';
+            };
+          }
+          else {}
+        )
+        // (
+          if config.myNixOS.services.qbittorrent.enable
+          then {
+            "${cfg.protocol}://qbit.${cfg.domain}" = {
+              extraConfig = ''
+                import cors
+                reverse_proxy http://localhost:8080
+              '';
+            };
+          }
+          else {}
+        )
+        // (
+          if config.myNixOS.services.foundryvtt.enable
+          then {
+            "${cfg.protocol}://foundry-a.${cfg.domain}" = {
+              extraConfig = ''
+                import cors
+                reverse_proxy http://localhost:30000
+              '';
+            };
+          }
+          else {}
+        )
+        // (
+          if config.myNixOS.services.prowlarr.enable
+          then {
+            "${cfg.protocol}://prowlarr.${cfg.domain}" = {
+              extraConfig = ''
+                import cors
+                reverse_proxy http://localhost:9696
+              '';
+            };
+          }
+          else {}
+        )
+        // (
+          if config.myNixOS.services.radarr.enable
+          then {
+            "${cfg.protocol}://radarr.${cfg.domain}" = {
+              extraConfig = ''
+                import cors
+                reverse_proxy http://localhost:7878
+              '';
+            };
+          }
+          else {}
+        )
+        // (
+          if config.myNixOS.services.sonarr.enable
+          then {
+            "${cfg.protocol}://sonarr.${cfg.domain}" = {
+              extraConfig = ''
+                import cors
+                reverse_proxy http://localhost:8989
+              '';
+            };
+          }
+          else {}
+        )
+        // (
+          if config.myNixOS.services.bazarr.enable
+          then {
+            "${cfg.protocol}://bazarr.${cfg.domain}" = {
+              extraConfig = ''
+                import cors
+                reverse_proxy http://localhost:6767
+
+              '';
+            };
+          }
+          else {}
+        )
+        // (
+          if config.myNixOS.services.servatrice.enable
+          then {
+            "${cfg.protocol}://cockatrice.${cfg.domain}" = {
+              extraConfig = ''
+                import cors
+                reverse_proxy localhost:4748
+              '';
+            };
+          }
+          else {}
+        );
     };
   };
 }

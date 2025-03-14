@@ -11,11 +11,10 @@ in {
       hostname = "tor-privoxy";
       imageFile = docker_source;
       image = "${docker_source.imageName}:${docker_source.imageTag}";
-      extraOptions = [
-        "--network=caddy"
-        "--expose=9050"
-        "--expose=9051"
-        "--expose=8118"
+      ports = [
+        "9050:9050"
+        "9051:9051"
+        "8118:8118"
       ];
       autoStart = true;
     };

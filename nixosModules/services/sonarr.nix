@@ -42,9 +42,8 @@ in {
         "${cfg.tvVolume}:/tv"
         "${cfg.downloadVolume}:/downloads"
       ];
-      extraOptions = [
-        "--network=caddy"
-        "--expose=8989"
+      ports = [
+        "8989:8989"
       ];
       environment = {
         PUID = "1000";

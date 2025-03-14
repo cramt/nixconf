@@ -35,13 +35,10 @@ in {
         "${cfg.configVolume}:/config"
         "${cfg.downloadVolume}:/downloads"
       ];
-      extraOptions = [
-        "--network=caddy"
-        "--expose=8080"
-      ];
       ports = [
         "6881:6881"
         "6881:6881/udp"
+        "8080:8080"
       ];
       environment = {
         PUID = "1000";

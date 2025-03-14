@@ -100,6 +100,11 @@ in {
           '';
         })
         (final: prev: {
+          docker = prev.docker.override {
+            buildxSupport = true;
+          };
+        })
+        (final: prev: {
           rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rocmPackages;
         })
       ];

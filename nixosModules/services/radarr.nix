@@ -42,10 +42,7 @@ in {
         "${cfg.movieVolume}:/movies"
         "${cfg.downloadVolume}:/downloads"
       ];
-      extraOptions = [
-        "--network=caddy"
-        "--expose=7878"
-      ];
+      ports = ["7878:7878"];
       environment = {
         PUID = "1000";
         PGID = "1000";

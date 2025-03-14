@@ -104,11 +104,6 @@
         tvVolume = downloads.tvshows;
         movieVolume = downloads.movies;
       };
-      adguard = {
-        enable = true;
-        configVolume = "/mnt/imbrium/configs/adgaurd_conf";
-        workVolume = "/mnt/imbrium/configs/adgaurd_work";
-      };
       valheim = {
         enable = true;
         worldVolume = "/mnt/imbrium/valheim_config";

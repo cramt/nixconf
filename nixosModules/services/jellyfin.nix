@@ -5,11 +5,6 @@
   ...
 }: let
   cfg = config.myNixOS.services.jellyfin;
-  port = "8096";
-  port_config =
-    if cfg.externalPort
-    then "-p=${port}:${port}"
-    else "--expose=${port}";
   docker_source =
     ((import ../../_sources/generated.nix) {
       inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
@@ -28,13 +23,6 @@ in {
       type = lib.types.str;
       description = ''
         destination for the jellyfin mutable config
-      '';
-    };
-    externalPort = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        if port should be exportal
       '';
     };
     gpuDevices = lib.mkOption {
@@ -60,12 +48,10 @@ in {
           cfg.mediaVolumes
         )
         ++ ["${cfg.configVolume}:/config"];
-      extraOptions =
-        [
-          "--network=caddy"
-          "${port_config}"
-        ]
-        ++ builtins.map (d: "--device=${d}:${d}") cfg.gpuDevices;
+      extraOptions = builtins.map (d: "--device=${d}:${d}") cfg.gpuDevices;
+      ports = [
+        "8096:8096"
+      ];
       environment = {
         PUID = "1000";
         PGID = "1000";

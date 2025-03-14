@@ -98,11 +98,6 @@
         tvVolume = downloads.tvshows;
         movieVolume = downloads.movies;
       };
-      adguard = {
-        enable = false;
-        configVolume = "/mnt/amirani/configs/adgaurd_conf";
-        workVolume = "/mnt/amirani/configs/adgaurd_work";
-      };
       homelab_system_controller = {
         enable = false;
         databaseUrl = "sqlite:/mnt/amirani/homelab_discord_bot.db?mode=rwc";

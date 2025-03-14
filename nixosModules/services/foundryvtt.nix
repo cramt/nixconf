@@ -43,9 +43,8 @@ in {
       volumes = [
         "${cfg.dataVolume}:/data"
       ];
-      extraOptions = [
-        "--network=caddy"
-        "--expose=30000"
+      ports = [
+        "30000:30000"
       ];
       autoStart = true;
     };

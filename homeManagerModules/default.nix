@@ -44,6 +44,11 @@ in {
   nixpkgs = {
     overlays = [
       inputs.nur.overlays.default
+      (final: prev: {
+        docker = prev.docker.override {
+          buildxSupport = true;
+        };
+      })
     ];
     config = {
       allowUnfree = true;

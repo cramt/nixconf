@@ -78,10 +78,9 @@ in {
         "${configFile}:/config/servatrice.ini"
         "${config.sops.secrets."cockatrice/password".path}:/config/password"
       ];
-      extraOptions = [
-        "--network=caddy"
-        "--expose=4747"
-        "--expose=4748"
+      ports = [
+        "4747:4747"
+        "4748:4748"
       ];
       autoStart = true;
     };

@@ -28,9 +28,8 @@ in {
       volumes = [
         "${cfg.configVolume}:/config"
       ];
-      extraOptions = [
-        "--network=caddy"
-        "--expose=9696"
+      ports = [
+        "9696:9696"
       ];
       environment = {
         PUID = "1000";
