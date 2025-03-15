@@ -48,6 +48,7 @@ in {
     };
   };
   config = {
+    networking.firewall.allowedTCPPorts = [80 443];
     services.caddy = {
       enable = true;
       email = "alex.cramt@gmail.com";
@@ -168,6 +169,21 @@ in {
                 import cors
                 reverse_proxy http://localhost:6767
 
+              '';
+            };
+          }
+          else {}
+        )
+        // (
+          if config.myNixOS.services.ollama.enable
+          then {
+            "${cfg.protocol}://ollama.${cfg.domain}" = {
+              extraConfig = ''
+                import cors
+                basic_auth {
+                	main $2a$14$rpbR7vq7QsdKBeP.PqjezOi/fWZbBtcHGkIoocOsi0zBlZOgld6cG
+                }
+                reverse_proxy http://localhost:11434
               '';
             };
           }

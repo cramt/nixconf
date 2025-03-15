@@ -32,6 +32,8 @@ in {
               vim.opt.fillchars = {
                 eob = ' ',
               }
+              vim.opt.shiftwidth = 4;
+              vim.opt.tabstop = 4;
             '';
           globals = {
             neovide_transparency = 0.8;
@@ -405,12 +407,41 @@ in {
           };
 
           assistant = {
+            codecompanion-nvim = {
+              enable = true;
+              setupOpts = {
+                adapters =
+                  lib.generators.mkLuaInline
+                  # lua
+                  ''
+                    {
+                      mistral = function ()
+                        return require("codecompanion.adapters").extend("ollama", {
+                          name = "mistral",
+                          schema = {
+                            model = {
+                              default = "mistral",
+                            }
+                          }
+                        })
+                      end
+                    }
+                  '';
+                strategies = {
+                  chat.adapter = "mistral";
+                  inline.adapter = "mistral";
+                };
+                display.diff.provider = "mini_diff";
+              };
+            };
             chatgpt.enable = false;
             copilot = {
               enable = false;
               cmp.enable = false;
             };
           };
+
+          mini.diff.enable = true;
 
           session = {
             nvim-session-manager.enable = false;

@@ -40,7 +40,8 @@
     };
 
     nvf = {
-      url = "github:notashelf/nvf";
+      #url = "github:notashelf/nvf";
+      url = "github:ArmandoCIII/nvf/feature/codecompanion-nvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

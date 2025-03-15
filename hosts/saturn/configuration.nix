@@ -53,7 +53,6 @@
           tvshows = downloads.tvshows;
           movies = downloads.movies;
         };
-        externalPort = true;
         gpuDevices = [
           "/dev/dri/card1"
           "/dev/dri/renderD128"

@@ -67,6 +67,7 @@ in {
       cursor = {
         package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.bibata-cursors;
         name = "Bibata-Modern-Ice";
+        size = 32;
       };
       fonts = {
         monospace = {
