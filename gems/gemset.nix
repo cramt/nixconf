@@ -138,10 +138,10 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "1zjpv3kw4ciwk0dh43zj17ws318vnirby1clmcy6j9mvr4mbxv40";
+      sha256 = "0v13m0ckd80mbvdbhwn52qqrdx1ii6n0b566h4xh7vgcgikhzfmn";
       type = "gem";
     };
-    version = "1.38.1";
+    version = "1.39.0";
   };
   ruby-lsp = {
     dependencies = ["language_server-protocol" "prism" "rbs" "sorbet-runtime"];

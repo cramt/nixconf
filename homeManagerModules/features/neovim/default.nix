@@ -415,12 +415,12 @@ in {
                   # lua
                   ''
                     {
-                      mistral = function ()
+                      l = function ()
                         return require("codecompanion.adapters").extend("ollama", {
-                          name = "mistral",
+                          name = "l",
                           schema = {
                             model = {
-                              default = "mistral",
+                              default = "qwen2.5-coder:3b",
                             }
                           }
                         })
@@ -428,8 +428,8 @@ in {
                     }
                   '';
                 strategies = {
-                  chat.adapter = "mistral";
-                  inline.adapter = "mistral";
+                  chat.adapter = "l";
+                  inline.adapter = "l";
                 };
                 display.diff.provider = "mini_diff";
               };
