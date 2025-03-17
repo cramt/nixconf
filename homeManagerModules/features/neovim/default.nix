@@ -269,7 +269,10 @@ in {
             nvimBufferline.enable = true;
           };
 
-          treesitter.context.enable = true;
+          treesitter = {
+            grammars = [pkgs.tree-sitter-grammars.tree-sitter-norg-meta];
+            context.enable = true;
+          };
 
           binds = {
             whichKey.enable = true;
