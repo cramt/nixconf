@@ -170,14 +170,14 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:0a8020afc5e3dcad1413ba125a980729a2b16ff0d88d108b3e1779111ef1c896",
+            "imageDigest": "sha256:23677e1cb09bd957796f4521748f0eff9eb65d883949c10442635eabe64b750a",
             "imageName": "linuxserver/radarr",
-            "imageTag": "5.19.3",
+            "imageTag": "5.20.2",
             "os": null,
-            "sha256": "sha256-Wda7O2tYk+7OQstlqGiUyy0V48stJjtgqMtfLzMoTVA=",
+            "sha256": "sha256-hg5ncUrAuPdXQh1W3Omz3wTrFeVaJOSJlCVVzGLdqIg=",
             "tlsVerify": null
         },
-        "version": "5.19.3"
+        "version": "5.20.2"
     },
     "sonarr": {
         "cargoLocks": null,
@@ -190,14 +190,14 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:28d9dcbc846aed74bd47dc90305e016183443ddc3dfa3e8bcac268fc653a6e5e",
+            "imageDigest": "sha256:7fe49f99201de94a277c577dcce5ef8f1789ead1056c8cf758fac7bf4e601d16",
             "imageName": "linuxserver/sonarr",
-            "imageTag": "4.0.13",
+            "imageTag": "4.0.14",
             "os": null,
-            "sha256": "sha256-ok7u+TGf7jm3/uX60FKhCaJjt6F53QxDtztfOQJq9rI=",
+            "sha256": "sha256-tZu4doZN7CZUQo7qeu2Kl4jMGrkvy/52ZNHimFu83f0=",
             "tlsVerify": null
         },
-        "version": "4.0.13"
+        "version": "4.0.14"
     },
     "tor-privoxy": {
         "cargoLocks": null,
