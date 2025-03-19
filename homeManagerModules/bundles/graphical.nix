@@ -28,5 +28,6 @@
     network-manager-applet.enable = true;
     nautilus.enable = true;
     keymapp.enable = true;
+    vscode.enable = true;
   };
 }
