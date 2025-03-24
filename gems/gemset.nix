@@ -106,10 +106,10 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "0drs9n5qn9pifmb752kali7r2sv0laclvchahc670phlv21awdqf";
+      sha256 = "1mgk94ng74k22znq6p0h1spp7cn619dkil55hyxsj53bknnsl6yh";
       type = "gem";
     };
-    version = "3.9.0";
+    version = "3.9.1";
   };
   regexp_parser = {
     groups = ["default"];
