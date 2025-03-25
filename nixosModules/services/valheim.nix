@@ -66,6 +66,9 @@ in {
         AUTO_UPDATE = "0";
         PASSWORD = "12345";
       };
+      capabilities = {
+        SYS_ADMIN = true;
+      };
       volumes = [
         "${cfg.worldVolume}:/home/steam/.config/unity3d/IronGate/Valheim"
         "${cfg.binaryVolume}:/home/steam/valheim"
