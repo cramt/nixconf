@@ -69,7 +69,6 @@ in {
       extraOptions = [
         "--shm-size=2gb"
         "--cpu-shares=10"
-        "--gpus=all"
       ];
       capabilities = {
         SYS_ADMIN = true;

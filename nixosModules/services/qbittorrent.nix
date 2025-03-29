@@ -27,10 +27,20 @@ in {
     };
   };
   config = {
+    systemd.services.docker-create-piracy-network = {
+      serviceConfig.Type = "oneshot";
+      script = let
+        sudo_docker = "${pkgs.sudo}/bin/sudo ${pkgs.docker}/bin/docker";
+      in ''
+        ${sudo_docker} network inspect piracy >/dev/null 2>&1 || ${sudo_docker} network create --driver bridge piracy
+
+      '';
+    };
     virtualisation.oci-containers.containers.qbittorrent = {
       hostname = "qbittorrent";
       imageFile = docker_source;
       image = "${docker_source.imageName}:${docker_source.imageTag}";
+      networks = ["piracy"];
       volumes = [
         "${cfg.configVolume}:/config"
         "${cfg.downloadVolume}:/downloads"

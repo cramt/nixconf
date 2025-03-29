@@ -25,6 +25,7 @@ in {
       hostname = "prowlarr";
       imageFile = docker_source;
       image = "${docker_source.imageName}:${docker_source.imageTag}";
+      networks = ["piracy"];
       volumes = [
         "${cfg.configVolume}:/config"
       ];
