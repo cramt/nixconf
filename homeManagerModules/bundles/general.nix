@@ -74,6 +74,7 @@ in {
       jq
       nix-output-monitor
       julia-bin
+      zig
     ]
     ++ ld_packages;
 
