@@ -17,8 +17,7 @@
 ### server stuff
 
 - setup attic https://github.com/zhaofengli/attic
+- use the binary cache of luna when building for luna
 - update the version of foundry used
-- change caddy to not be in docker and thus having to use port on all the other
-  services
 - setup matrix-synapse
 - setup backups on saturn hybrid drive

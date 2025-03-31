@@ -119,6 +119,7 @@
       sshd.enable = true;
       harmonia = {
         prio = 50;
+        enable = true;
       };
       tor-privoxy = {
         enable = false;
