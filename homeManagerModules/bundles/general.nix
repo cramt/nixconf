@@ -73,7 +73,7 @@ in {
       inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nvfetcher
       jq
       nix-output-monitor
-      julia-bin
+      julia
       zig
     ]
     ++ ld_packages;

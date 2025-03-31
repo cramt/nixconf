@@ -149,17 +149,6 @@ in {
             }
           ];
 
-          formatter.conform-nvim = {
-            enable = true;
-            setupOpts = {
-              formatters_by_ft = {
-                julia = let
-                  formatterJulia = pkgs.julia.withPackages ["JuliaFormatter"];
-                in [''${formatterJulia}/bin/julia --startup-file=no --history-file=no --eval "using JuliaFormatter; println(format_text(join(readlines(stdin), '\n')))"''];
-              };
-            };
-          };
-
           lsp = {
             null-ls.default_timeout = 10000;
             formatOnSave = true;
@@ -200,7 +189,10 @@ in {
             zig.enable = true;
             markdown.enable = true;
             bash.enable = true;
-            julia.enable = true;
+            julia = {
+              enable = true;
+              lsp.package = pkgs.julia;
+            };
             clang.enable = true;
             css.enable = true;
             html.enable = true;
