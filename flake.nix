@@ -75,8 +75,6 @@
       url = "github:abenz1267/walker";
     };
 
-    nixos-cosmic.url = "github:lilyinstarlight/nixos-cosmic";
-
     probe-rs-rules = {
       url = "github:jneem/probe-rs-rules";
       inputs.nixpkgs.follows = "nixpkgs";
