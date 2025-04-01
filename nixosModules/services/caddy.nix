@@ -200,6 +200,17 @@ in {
             };
           }
           else {}
+        )
+        // (
+          if config.myNixOS.services.harmonia.enable
+          then {
+            "${cfg.protocol}://nix-store.${cfg.domain}" = {
+              extraConfig = ''
+                reverse_proxy localhost:5000
+              '';
+            };
+          }
+          else {}
         );
     };
   };

@@ -1,9 +1,10 @@
-{ lib, config, ... }:
-let
-
-  cfg = config.myNixOS.services.harmonia;
-in
 {
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.myNixOS.services.harmonia;
+in {
   options.myNixOS.services.harmonia = {
     prio = lib.mkOption {
       type = lib.types.int;
@@ -21,6 +22,5 @@ in
         priority = cfg.prio;
       };
     };
-    networking.firewall.allowedTCPPorts = [ 5000 ];
   };
 }
