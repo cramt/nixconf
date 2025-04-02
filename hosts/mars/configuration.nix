@@ -69,8 +69,8 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-  #services.xserver.displayManager.gdm.enable = true;
-  services.displayManager.ly.enable = true;
+  services.displayManager.cosmic-greeter.enable = true;
+  services.desktopManager.cosmic.enable = true;
 
   # Configure keymap in X11
   services.xserver = {

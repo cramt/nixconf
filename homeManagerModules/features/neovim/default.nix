@@ -150,7 +150,7 @@ in {
           ];
 
           lsp = {
-            null-ls.default_timeout = 10000;
+            null-ls.setupOpts.default_timeout = 10000;
             formatOnSave = true;
             lspkind.enable = false;
             lightbulb.enable = true;
@@ -178,8 +178,6 @@ in {
             };
           };
 
-          # This section does not include a comprehensive list of available language modules.
-          # To list all available language module options, please visit the nvf manual.
           languages = {
             enableLSP = true;
             enableFormat = true;
@@ -209,7 +207,7 @@ in {
             tailwind.enable = true;
             ts = {
               enable = true;
-              extraDiagnostics.enable = true;
+              extensions.ts-error-translator.enable = true;
             };
             ruby = {
               enable = true;
