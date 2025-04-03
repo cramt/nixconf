@@ -26,6 +26,7 @@ in {
         (
             exit_popup: Some(( code: Char('q'), modifiers: "")),
             quit: Some(( code: Char('Q'), modifiers: "SHIFT")),
+            commit: Some(( code: Char('S'), modifiers: "SHIFT")),
         )
       '';
     };
