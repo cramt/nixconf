@@ -208,6 +208,7 @@ in {
             ts = {
               enable = true;
               extensions.ts-error-translator.enable = true;
+              extraDiagnostics.enable = true;
             };
             ruby = {
               enable = true;

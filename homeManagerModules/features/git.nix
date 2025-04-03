@@ -20,7 +20,15 @@ in {
     };
   };
   config = {
-    programs.gitui.enable = true;
+    programs.gitui = {
+      enable = true;
+      keyConfig = ''
+        (
+            exit_popup: Some(( code: Char('q'), modifiers: "")),
+            quit: Some(( code: Char('Q'), modifiers: "SHIFT")),
+        )
+      '';
+    };
     programs.git = {
       enable = true;
       userName = "Alexandra Østermark";
