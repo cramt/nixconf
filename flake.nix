@@ -6,6 +6,14 @@
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-24.11";
 
+    cosmic-manager = {
+      url = "github:HeitorAugustoLN/cosmic-manager";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
+
     NonSteamLaunchers = {
       url = "github:moraroy/NonSteamLaunchers-On-Steam-Deck/main";
       flake = false;
