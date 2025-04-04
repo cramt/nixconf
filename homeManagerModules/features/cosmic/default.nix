@@ -10,7 +10,7 @@
         show_weekday = true;
       };
       appearance = {
-        dark.gaps = config.lib.cosmic.mkRON "tuple" [
+        theme.dark.gaps = config.lib.cosmic.mkRON "tuple" [
           0
           1
         ];

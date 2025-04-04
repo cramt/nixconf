@@ -7,7 +7,10 @@
   lib,
   ...
 }: {
-  imports = [outputs.homeManagerModules.default];
+  imports = [
+    outputs.homeManagerModules.default
+    inputs.cosmic-manager.homeManagerModules.cosmic-manager
+  ];
 
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
