@@ -17,17 +17,6 @@
   boot.kernelModules = ["kvm-intel"];
   boot.extraModulePackages = [];
 
-  fileSystems."/" = {
-    device = "/dev/disk/by-uuid/07e86795-c810-4ba5-af41-3b8a4f447782";
-    fsType = "ext4";
-  };
-
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/FBC2-92BF";
-    fsType = "vfat";
-    options = ["fmask=0022" "dmask=0022"];
-  };
-
   fileSystems."/mnt/imbrium" = {
     device = "/dev/disk/by-uuid/128b1a4f-d766-4022-a409-7fa9e4f0bcef";
     fsType = "ext4";

@@ -38,6 +38,7 @@ in {
       inputs.nixvim.homeManagerModules.nixvim
       inputs.nvf.homeManagerModules.default
       inputs.walker.homeManagerModules.default
+      inputs.cosmic-manager.homeManagerModules.cosmic-manager
     ]
     ++ features
     ++ bundles;
