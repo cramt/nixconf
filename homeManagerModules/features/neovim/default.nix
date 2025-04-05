@@ -11,11 +11,18 @@
 in {
   config = {
     stylix.targets.nixvim.enable = true;
-    xdg.configFile."neovide/config.toml".source = ./neovide_config.toml;
     home.packages = [
-      pkgs.neovide
       pkgs.obsidian
     ];
+
+    programs.neovide = {
+      enable = true;
+      settings = {
+        fork = true;
+        frame = "none";
+        vsync = false;
+      };
+    };
 
     stylix.targets.nvf = {
       enable = true;
@@ -158,7 +165,6 @@ in {
             trouble.enable = true;
             lspSignature.enable = true;
             otter-nvim.enable = true;
-            lsplines.enable = true;
             nvim-docs-view.enable = true;
             lspconfig.sources.ruby-lsp = ''
               lspconfig.ruby_lsp.setup {
