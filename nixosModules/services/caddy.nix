@@ -169,6 +169,7 @@ in {
     };
     domain = lib.mkOption {
       type = lib.types.str;
+      default = (import ../../secrets.nix).domain;
       description = ''
         tld to use
       '';
@@ -185,7 +186,7 @@ in {
     networking.firewall.allowedTCPPorts = [80 443];
     services.caddy = {
       enable = true;
-      email = "alex.cramt@gmail.com";
+      email = (import ../../secrets.nix).email;
       virtualHosts =
         {
           "(cors)" = {

@@ -1,5 +1,5 @@
 data "cloudflare_zones" "main" {
-  name = "cramt.dk"
+  name = local.secrets.domain
 }
 
 locals {
@@ -9,7 +9,7 @@ locals {
 resource "cloudflare_dns_record" "star" {
   zone_id = local.zone_id
   content = "84.238.86.197"
-  name    = "*.cramt.dk"
+  name    = "*.${local.secrets.domain}"
   proxied = true
   ttl     = 1
   type    = "A"

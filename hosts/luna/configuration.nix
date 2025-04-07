@@ -70,7 +70,6 @@
         staticFileVolumes = {
           books = "/mnt/imbrium/books";
         };
-        domain = "cramt.dk";
       };
       qbittorrent = {
         enable = true;
