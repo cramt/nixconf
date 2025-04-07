@@ -36,7 +36,6 @@
     services = {
       caddy = {
         enable = false;
-        protocol = "http";
         domain = "localhost";
         staticFileVolumes = {};
         cacheVolume = "/tmp/b";

@@ -22,11 +22,6 @@ src.container = "linuxserver/prowlarr"
 src.include_regex = "\\d+\\.\\d+\\.\\d+"
 fetch.docker = "linuxserver/prowlarr"
 
-[caddy]
-src.container = "library/caddy"
-src.include_regex = "\\d+\\.\\d+\\.\\d+"
-fetch.docker = "library/caddy"
-
 [qbittorrent]
 src.container = "linuxserver/qbittorrent"
 src.include_regex = "\\d+\\.\\d+\\.\\d+"

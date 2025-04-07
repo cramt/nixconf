@@ -1,2 +1,5 @@
 result
 homeManagerModules/features/rio.nix
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+infra/.terraform

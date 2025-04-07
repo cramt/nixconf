@@ -5,20 +5,154 @@
   ...
 }: let
   cfg = config.myNixOS.services.caddy;
-  staticFiles =
-    lib.attrsets.mapAttrsToList
-    (name: value: {
-      innerFolder = "/${builtins.hashString "md5" name}";
-      folder = value;
-      subdomain = name;
-    })
-    cfg.staticFileVolumes;
-  docker_source =
-    ((import ../../_sources/generated.nix) {
-      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
-    })
-    .caddy
-    .src;
+  services =
+    (lib.attrsets.mapAttrs' (name: value: {
+        name = "${name}.${cfg.domain}";
+        value = {
+          extraConfig = ''
+            file_server ${value} browse
+          '';
+        };
+      })
+      cfg.staticFileVolumes)
+    // (
+      if config.myNixOS.services.jellyfin.enable
+      then {
+        "jellyfin.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:8096
+          '';
+        };
+      }
+      else {}
+    )
+    // (
+      if config.myNixOS.services.qbittorrent.enable
+      then {
+        "qbit.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:8080
+          '';
+        };
+      }
+      else {}
+    )
+    // (
+      if config.myNixOS.services.foundryvtt.enable
+      then {
+        "foundry-a.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:30000
+          '';
+        };
+      }
+      else {}
+    )
+    // (
+      if config.myNixOS.services.prowlarr.enable
+      then {
+        "prowlarr.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:9696
+          '';
+        };
+      }
+      else {}
+    )
+    // (
+      if config.myNixOS.services.radarr.enable
+      then {
+        "radarr.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:7878
+          '';
+        };
+      }
+      else {}
+    )
+    // (
+      if config.myNixOS.services.sonarr.enable
+      then {
+        "sonarr.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:8989
+          '';
+        };
+      }
+      else {}
+    )
+    // (
+      if config.myNixOS.services.bazarr.enable
+      then {
+        "bazarr.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:6767
+
+          '';
+        };
+      }
+      else {}
+    )
+    // (
+      if config.myNixOS.services.ollama.enable
+      then {
+        "ollama.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            basic_auth {
+            	main $2a$14$rpbR7vq7QsdKBeP.PqjezOi/fWZbBtcHGkIoocOsi0zBlZOgld6cG
+            }
+            reverse_proxy http://localhost:11434
+          '';
+        };
+      }
+      else {}
+    )
+    // (
+      if config.myNixOS.services.servatrice.enable
+      then {
+        "cockatrice.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy localhost:4748
+          '';
+        };
+      }
+      else {}
+    )
+    // (
+      if config.myNixOS.services.harmonia.enable
+      then {
+        "nix-store.${cfg.domain}" = {
+          extraConfig = ''
+            reverse_proxy localhost:5000
+          '';
+        };
+      }
+      else {}
+    );
+  services_with_protocol = builtins.listToAttrs (
+    lib.lists.flatten (
+      builtins.map (
+        {
+          value,
+          name,
+        }:
+          builtins.map (proto: {
+            name = "${proto}://${name}";
+            value = value;
+          })
+          cfg.protocol
+      ) (lib.attrsets.attrsToList services)
+    )
+  );
 in {
   options.myNixOS.services.caddy = {
     cacheVolume = lib.mkOption {
@@ -40,8 +174,8 @@ in {
       '';
     };
     protocol = lib.mkOption {
-      type = lib.types.enum ["http" "https"];
-      default = "https";
+      type = lib.types.listOf (lib.types.enum ["http" "https"]);
+      default = ["https" "http"];
       description = ''
         protocol to use
       '';
@@ -80,138 +214,7 @@ in {
             '';
           };
         }
-        // (lib.attrsets.mapAttrs' (name: value: {
-            name = "${cfg.protocol}://${name}.${cfg.domain}";
-            value = {
-              extraConfig = ''
-                file_server ${value} browse
-              '';
-            };
-          })
-          cfg.staticFileVolumes)
-        // (
-          if config.myNixOS.services.jellyfin.enable
-          then {
-            "${cfg.protocol}://jellyfin.${cfg.domain}" = {
-              extraConfig = ''
-                import cors
-                reverse_proxy http://localhost:8096
-              '';
-            };
-          }
-          else {}
-        )
-        // (
-          if config.myNixOS.services.qbittorrent.enable
-          then {
-            "${cfg.protocol}://qbit.${cfg.domain}" = {
-              extraConfig = ''
-                import cors
-                reverse_proxy http://localhost:8080
-              '';
-            };
-          }
-          else {}
-        )
-        // (
-          if config.myNixOS.services.foundryvtt.enable
-          then {
-            "${cfg.protocol}://foundry-a.${cfg.domain}" = {
-              extraConfig = ''
-                import cors
-                reverse_proxy http://localhost:30000
-              '';
-            };
-          }
-          else {}
-        )
-        // (
-          if config.myNixOS.services.prowlarr.enable
-          then {
-            "${cfg.protocol}://prowlarr.${cfg.domain}" = {
-              extraConfig = ''
-                import cors
-                reverse_proxy http://localhost:9696
-              '';
-            };
-          }
-          else {}
-        )
-        // (
-          if config.myNixOS.services.radarr.enable
-          then {
-            "${cfg.protocol}://radarr.${cfg.domain}" = {
-              extraConfig = ''
-                import cors
-                reverse_proxy http://localhost:7878
-              '';
-            };
-          }
-          else {}
-        )
-        // (
-          if config.myNixOS.services.sonarr.enable
-          then {
-            "${cfg.protocol}://sonarr.${cfg.domain}" = {
-              extraConfig = ''
-                import cors
-                reverse_proxy http://localhost:8989
-              '';
-            };
-          }
-          else {}
-        )
-        // (
-          if config.myNixOS.services.bazarr.enable
-          then {
-            "${cfg.protocol}://bazarr.${cfg.domain}" = {
-              extraConfig = ''
-                import cors
-                reverse_proxy http://localhost:6767
-
-              '';
-            };
-          }
-          else {}
-        )
-        // (
-          if config.myNixOS.services.ollama.enable
-          then {
-            "${cfg.protocol}://ollama.${cfg.domain}" = {
-              extraConfig = ''
-                import cors
-                basic_auth {
-                	main $2a$14$rpbR7vq7QsdKBeP.PqjezOi/fWZbBtcHGkIoocOsi0zBlZOgld6cG
-                }
-                reverse_proxy http://localhost:11434
-              '';
-            };
-          }
-          else {}
-        )
-        // (
-          if config.myNixOS.services.servatrice.enable
-          then {
-            "${cfg.protocol}://cockatrice.${cfg.domain}" = {
-              extraConfig = ''
-                import cors
-                reverse_proxy localhost:4748
-              '';
-            };
-          }
-          else {}
-        )
-        // (
-          if config.myNixOS.services.harmonia.enable
-          then {
-            "${cfg.protocol}://nix-store.${cfg.domain}" = {
-              extraConfig = ''
-                reverse_proxy localhost:5000
-              '';
-            };
-          }
-          else {}
-        );
+        // services_with_protocol;
     };
   };
 }

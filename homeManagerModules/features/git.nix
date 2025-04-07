@@ -89,6 +89,7 @@ in {
     home.packages = with pkgs; [
       git-town
       gitu
+      git-crypt
     ];
   };
 }

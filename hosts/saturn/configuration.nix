@@ -63,7 +63,6 @@
         cacheVolume = "/mnt/amirani/configs/caddy-cache";
         staticFileVolumes = {};
         domain = "localhost";
-        protocol = "http";
       };
       qbittorrent = {
         enable = false;

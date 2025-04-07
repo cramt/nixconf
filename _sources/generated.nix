@@ -21,24 +21,14 @@
       finalImageTag = "1.5.1";
     };
   };
-  caddy = {
-    pname = "caddy";
-    version = "2.9.1";
-    src = dockerTools.pullImage {
-      imageName = "library/caddy";
-      imageDigest = "sha256:2c136eb7e4daa97deed8738aab21994ea88dc0ced06aa44e30a949ba3d60e213";
-      sha256 = "sha256-BjLwNrXPZFwZs7Fau/pxhUPSImBT8ms+nUVBs1PO4H8=";
-      finalImageTag = "2.9.1";
-    };
-  };
   jellyfin = {
     pname = "jellyfin";
-    version = "2025033105";
+    version = "2025040705";
     src = dockerTools.pullImage {
       imageName = "jellyfin/jellyfin";
-      imageDigest = "sha256:37a84192bd282672a90fce5afde55adc69e6d8c2fbbb28842bbe9672cec1fe31";
-      sha256 = "sha256-Hc9Qus1EVrCDolq5ElvtOUOFBrQ4xEIBJfBG6qJ7RvA=";
-      finalImageTag = "2025033105";
+      imageDigest = "sha256:ebd18514de989b84a9a32301084d68cfdd582cbcbcc3214c8431452c9cbb78eb";
+      sha256 = "sha256-BrFdPqlmubS/N2rSb9KTZxpAhoUYgN+ZNGPYP9gmEf8=";
+      finalImageTag = "2025040705";
     };
   };
   minecraft-server = {
