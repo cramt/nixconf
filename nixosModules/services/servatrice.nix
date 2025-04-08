@@ -9,10 +9,7 @@
     cmakeFlags = ["-DWITH_SERVER=1" "-DWITH_CLIENT=0" "-DWITH_ORACLE=0" "-DWITH_DBCONVERTER=0"];
   });
   starter = pkgs.writeShellScriptBin "servatrice_starter" ''
-    export PASSWORD=$(${pkgs.coreutils}/bin/cat /config/password)
-    ${pkgs.coreutils}/bin/mkdir -p /tmp/
-    ${pkgs.envsubst}/bin/envsubst < /config/servatrice.ini > /tmp/servatrice.ini
-    ${servatricePkg}/bin/servatrice --config /tmp/servatrice.ini --log-to-console
+    ${servatricePkg}/bin/servatrice --config /config/servatrice.ini --log-to-console
   '';
   dockerImage = pkgs.dockerTools.buildLayeredImage {
     name = "servatrice";
@@ -55,7 +52,7 @@
     };
     authentication = {
       method = "password";
-      password = "$PASSWORD"; # TODO do real password thats in secrets
+      password = (import ../../secrets.nix).cockatrice_password;
       regonly = true;
     };
     database = {
@@ -76,7 +73,6 @@ in {
       image = "servatrice:1";
       volumes = [
         "${configFile}:/config/servatrice.ini"
-        "${config.sops.secrets."cockatrice/password".path}:/config/password"
       ];
       ports = [
         "4747:4747"

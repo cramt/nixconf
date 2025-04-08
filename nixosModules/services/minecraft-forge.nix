@@ -40,10 +40,8 @@ in {
         TYPE = "AUTO_CURSEFORGE";
         CF_PAGE_URL = cfg.url;
         EULA = "TRUE";
+        CF_API_KEY = (import ../../secrets.nix).curse_forge_api_key;
       };
-      environmentFiles = [
-        config.sops.secrets."minecraft_server".path
-      ];
       autoStart = false;
     };
   };

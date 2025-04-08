@@ -110,9 +110,6 @@ in {
         };
       };
     };
-    environment.etc = {
-      "ppp/pap-secrets".source = config.sops.secrets."valheim/secrets".path;
-    };
     services.avahi = {
       enable = true;
       reflector = true;

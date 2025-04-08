@@ -6,6 +6,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.homelab_system_controller;
+  secrets = (import ../../secrets.nix).homelab_system_controller;
 in {
   options.myNixOS.services.homelab_system_controller = {
     databaseUrl = lib.mkOption {
@@ -18,17 +19,14 @@ in {
   config = {
     systemd.services.homelab_system_controller = {
       enable = true;
-      script = let
-        envs = {
-          DATABASE_URL = cfg.databaseUrl;
-          LISTEN_PORT = "1622";
-          DISCORD_TOKEN = "$(cat ${config.sops.secrets."homelab_system_controller/discord_token".path})";
-          ALLOWED_GUILD = "$(cat ${config.sops.secrets."homelab_system_controller/allowed_guild".path})";
-          SYSTEMCTL_PATH = "${pkgs.systemd}/bin/systemctl";
-        };
-        envCommand = lib.strings.concatStringsSep " " (lib.attrsets.mapAttrsToList (name: value: "${name}=${value}") envs);
-        binary = "${inputs.homelab_system_controller.packages.${pkgs.system}.host}/bin/host";
-      in "${envCommand} ${binary}";
+      script = "${inputs.homelab_system_controller.packages.${pkgs.system}.host}/bin/host";
+      environment = {
+        DATABASE_URL = cfg.databaseUrl;
+        DISCORD_TOKEN = secrets.discord_token;
+        ALLOWED_GUILD = secrets.allowed_guild;
+        LISTEN_PORT = "1622";
+        SYSTEMCTL_PATH = "${pkgs.systemd}/bin/systemctl";
+      };
       description = "Runs homelab system controller host";
       wantedBy = ["network-online.target"];
       serviceConfig = {

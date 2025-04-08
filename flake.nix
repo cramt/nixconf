@@ -69,11 +69,6 @@
       flake = false;
     };
 
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     homelab_system_controller = {
       url = "github:cramt/homelab_system_controller";
       inputs.nixpkgs.follows = "nixpkgs";

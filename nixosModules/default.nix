@@ -48,28 +48,12 @@ in {
     [
       inputs.home-manager.nixosModules.home-manager
       inputs.stylix.nixosModules.stylix
-      inputs.sops-nix.nixosModules.sops
     ]
     ++ features
     ++ bundles
     ++ services;
 
   config = {
-    sops = {
-      defaultSopsFile = ../secrets/secrets.yaml;
-      defaultSopsFormat = "yaml";
-      age = {
-        keyFile = "/home/cramt/.config/sops/age/keys.txt";
-      };
-      secrets = {
-        "homelab_system_controller/discord_token" = {};
-        "homelab_system_controller/allowed_guild" = {};
-        "cockatrice/password" = {};
-        "valheim/secrets" = {};
-        "pap_secrets" = {};
-        "minecraft_server" = {};
-      };
-    };
     stylix.enable = true;
     nix.settings = {
       experimental-features = ["nix-command" "flakes" "pipe-operators"];
