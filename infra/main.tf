@@ -10,7 +10,7 @@ resource "cloudflare_dns_record" "star" {
   zone_id = local.zone_id
   content = "84.238.86.197"
   name    = "*.${local.secrets.domain}"
-  proxied = true
+  proxied = false
   ttl     = 1
   type    = "A"
 }
