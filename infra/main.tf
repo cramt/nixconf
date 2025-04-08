@@ -6,11 +6,23 @@ locals {
   zone_id = element(data.cloudflare_zones.main.result, 0).id
 }
 
-resource "cloudflare_dns_record" "star" {
-  zone_id = local.zone_id
-  content = "84.238.86.197"
-  name    = "*.${local.secrets.domain}"
-  proxied = false
-  ttl     = 1
-  type    = "A"
+resource "cloudflare_dns_record" "luna" {
+  for_each = toset(["jellyfin", "qbit", "foundry-a", "prowlarr", "radarr", "sonarr", "bazarr", "ollama", "cockatrice", "nix-store"])
+  zone_id  = local.zone_id
+  content  = local.secrets.ip
+  name     = "${each.key}.${local.secrets.domain}"
+  proxied  = true
+  ttl      = 1
+  type     = "A"
+}
+
+
+resource "cloudflare_dns_record" "luna_raw" {
+  for_each = toset(["valheim"])
+  zone_id  = local.zone_id
+  content  = local.secrets.ip
+  name     = "${each.key}.${local.secrets.domain}"
+  proxied  = false
+  ttl      = 1
+  type     = "A"
 }

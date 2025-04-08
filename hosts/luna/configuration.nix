@@ -140,6 +140,11 @@
 
   networking.networkmanager.enable = true;
 
+  networking.interfaces.enp3s0.wakeOnLan = {
+    policy = "phy";
+    enable = true;
+  };
+
   programs.nix-ld.enable = true;
 
   # Configure keymap in X11

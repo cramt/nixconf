@@ -43,7 +43,7 @@ in {
               vim.opt.tabstop = 4;
             '';
           globals = {
-            neovide_transparency = 0.8;
+            neovide_opacity = 0.8;
             guifont = "Iosevka Nerd Font";
           };
           viAlias = true;
