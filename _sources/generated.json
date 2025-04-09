@@ -10,14 +10,14 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:56b07ee1cf5a7cdfc0137b4d544666f2df7784b41c30589b4c8232ba8eddd500",
+            "imageDigest": "sha256:27b8bdb27de0e56bfa88dbffc5a84d39735bf77854278c8cdd9fd4531dc27821",
             "imageName": "adguard/adguardhome",
-            "imageTag": "v0.108.0-b.65",
+            "imageTag": "v0.108.0-b.66",
             "os": null,
-            "sha256": "sha256-HvJxyijfUqrJkZHqylYU3hSAOTqroxGjgXSOnsid98I=",
+            "sha256": "sha256-fxuAHwemXpXzZt01v2V/SRTkVXNbx1Mzp/e1ztNJDkE=",
             "tlsVerify": null
         },
-        "version": "v0.108.0-b.65"
+        "version": "v0.108.0-b.66"
     },
     "bazarr": {
         "cargoLocks": null,
