@@ -64,7 +64,7 @@ in {
         WORLD = cfg.worldName;
         PUBLIC = "0";
         AUTO_UPDATE = "0";
-        PASSWORD = "12345";
+        PASSWORD = (import ../../secrets.nix).valheim_password;
       };
       extraOptions = [
         "--shm-size=2gb"

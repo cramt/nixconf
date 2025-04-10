@@ -26,3 +26,12 @@ resource "cloudflare_dns_record" "luna_raw" {
   ttl      = 1
   type     = "A"
 }
+
+resource "cloudflare_dns_record" "atproto" {
+  zone_id = local.zone_id
+  content = local.secrets.atproto_domain_value
+  name    = "_atproto.${local.secrets.domain}"
+  proxied = false
+  ttl     = 1
+  type    = "TXT"
+}

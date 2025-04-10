@@ -141,7 +141,7 @@
   networking.networkmanager.enable = true;
 
   networking.interfaces.enp3s0.wakeOnLan = {
-    policy = ["phy"];
+    policy = ["magic"];
     enable = true;
   };
 

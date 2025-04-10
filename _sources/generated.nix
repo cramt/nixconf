@@ -53,12 +53,12 @@
   };
   prowlarr = {
     pname = "prowlarr";
-    version = "1.32.2";
+    version = "1.33.3";
     src = dockerTools.pullImage {
       imageName = "linuxserver/prowlarr";
-      imageDigest = "sha256:18e9801e4509e45873c1adb03adf0bf718743ff5147e19b4cdf7626f8bd2f752";
-      sha256 = "sha256-pgHkerlaKRSjfrni9xIGgIKlXIoi2swESjKXP1DkVPc=";
-      finalImageTag = "1.32.2";
+      imageDigest = "sha256:af8eaaa96684a4d83c73684a39ef0abcdc3ee2c0e9ba7b4c90b1523d28327b04";
+      sha256 = "sha256-uiJJRziaDjT99fJDTjJ9inhBDD0EfylksQp2xvdvWFs=";
+      finalImageTag = "1.33.3";
     };
   };
   qbittorrent = {
