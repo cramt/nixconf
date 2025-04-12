@@ -13,6 +13,9 @@
 - lazygit + gpgsign https://github.com/jesseduffield/lazygit/issues/1146
 - lemurs as login manager once it works on nix
 - obsidian :eyes:
+- setup terraform remote backend
+  https://developers.cloudflare.com/terraform/advanced-topics/remote-backend/
+  need to figure out how to do it with an API KEY instead of API TOKEN
 
 ### server stuff
 

@@ -1,14 +1,13 @@
 data "external" "waker_build" {
-  program = ["sh", "-c", "pnpm i &> /dev/null && npx wrangler deploy --dry-run --outdir dist --minify &> /dev/null && echo '{}'"]
+  program = ["sh", "-c", "pnpm i &> /dev/null && npx wrangler deploy --dry-run --outdir dist --minify &> /dev/null && echo '{\"path\": \"root/dist/index.js\"}'"]
 
   working_dir = "${path.module}/root"
 }
 
 resource "cloudflare_workers_script" "root" {
   account_id          = local.account.id
-  depends_on          = [data.external.waker_build]
   script_name         = "root"
-  content             = file("${path.module}/root/dist/index.js")
+  content             = file("${path.module}/${data.external.waker_build.result["path"]}")
   compatibility_date  = "2025-04-08"
   compatibility_flags = ["nodejs_compat_v2"]
   main_module         = "worker.js"

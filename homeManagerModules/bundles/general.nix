@@ -38,6 +38,7 @@ in {
 
   home.packages = with pkgs;
     [
+      element-desktop
       git
       gnupg
       nushell

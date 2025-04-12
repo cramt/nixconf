@@ -7,7 +7,7 @@ locals {
 }
 
 resource "cloudflare_dns_record" "luna" {
-  for_each = toset(["jellyfin", "qbit", "foundry-a", "prowlarr", "radarr", "sonarr", "bazarr", "ollama", "cockatrice", "nix-store"])
+  for_each = toset(["jellyfin", "qbit", "foundry-a", "prowlarr", "radarr", "sonarr", "bazarr", "ollama", "cockatrice", "nix-store", "matrix"])
   zone_id  = local.zone_id
   content  = local.secrets.ip
   name     = "${each.key}.${local.secrets.domain}"
@@ -18,7 +18,7 @@ resource "cloudflare_dns_record" "luna" {
 
 
 resource "cloudflare_dns_record" "luna_raw" {
-  for_each = toset(["valheim"])
+  for_each = toset(["valheim", "turn"])
   zone_id  = local.zone_id
   content  = local.secrets.ip
   name     = "${each.key}.${local.secrets.domain}"
