@@ -18,7 +18,7 @@ resource "cloudflare_dns_record" "luna" {
 
 
 resource "cloudflare_dns_record" "luna_raw" {
-  for_each = toset(["valheim", "turn"])
+  for_each = toset(["valheim", "turn", "postgres"])
   zone_id  = local.zone_id
   content  = local.secrets.ip
   name     = "${each.key}.${local.secrets.domain}"

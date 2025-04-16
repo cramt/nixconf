@@ -114,6 +114,11 @@
         enable = true;
         databaseUrl = "sqlite:/mnt/imbrium/homelab_discord_bot.db?mode=rwc";
       };
+      postgres = {
+        dataDir = "/mnt/imbrium/pgsql";
+      };
+      synapse.enable = true;
+      terraform_remote_backend.enable = true;
       servatrice.enable = true;
       sshd.enable = true;
       harmonia = {

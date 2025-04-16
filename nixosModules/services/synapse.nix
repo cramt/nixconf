@@ -14,6 +14,14 @@
   '';
 in {
   config = {
+    myNixOS.services.postgres = {
+      enable = true;
+      applicationUsers = [
+        {
+          name = "matrix-synapse";
+        }
+      ];
+    };
     # tls
     security.acme.acceptTerms = true;
     security.acme.certs.${turnDomain} = {
@@ -36,16 +44,6 @@ in {
       allowedTCPPorts = [3478 5349];
     };
     services = {
-      postgresql = {
-        enable = true;
-        initialScript = pkgs.writeText "synapse-init.sql" ''
-          CREATE ROLE "matrix-synapse" WITH LOGIN PASSWORD '${shared_secret}';
-          CREATE DATABASE "matrix-synapse" WITH OWNER "matrix-synapse"
-            TEMPLATE template0
-            LC_COLLATE = "C"
-            LC_CTYPE = "C";
-        '';
-      };
       matrix-synapse = {
         enable = true;
         withJemalloc = true;

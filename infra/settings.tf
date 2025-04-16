@@ -8,6 +8,9 @@ terraform {
       source = "hashicorp/external"
     }
   }
+  backend "pg" {
+    conn_str = "postgres://terraformremotestate:${local.secrets.terraform_remote_state_password}@postgres.${local.secrets.domain}:6432"
+  }
 }
 
 locals {

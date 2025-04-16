@@ -1,5 +1,5 @@
 {
-  DP-1 = {
+  HDMI-A-1 = {
     res = {
       width = 1920;
       height = 1080;
