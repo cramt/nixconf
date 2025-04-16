@@ -10,22 +10,6 @@
     version = version;
   };
   cfg = config.myNixOS.services.foundryvtt;
-  dockerImage = pkgs.dockerTools.buildLayeredImage {
-    name = "foundryvtt";
-    tag = "12";
-    contents = with pkgs; [
-      cacert
-      foundryvttPkg
-    ];
-    config = {
-      Cmd = [
-        "${foundryvttPkg}/bin/foundryvtt"
-        "--headless"
-        "--dataPath=/data"
-      ];
-      Env = ["SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"];
-    };
-  };
 in {
   options.myNixOS.services.foundryvtt = {
     dataVolume = lib.mkOption {
@@ -36,17 +20,16 @@ in {
     };
   };
   config = {
-    virtualisation.oci-containers.containers.foundryvtt = {
-      hostname = "foundryvtt";
-      imageFile = dockerImage;
-      image = "foundryvtt:12";
-      volumes = [
-        "${cfg.dataVolume}:/data"
-      ];
-      ports = [
-        "30000:30000"
-      ];
-      autoStart = true;
+    services.foundryvtt = {
+      enable = true;
+      port = 30000;
+      dataDir = cfg.dataVolume;
+      world = "magy-mage";
+      hostName = "foundry-a.${(import ../../secrets.nix).domain}";
+      minifyStaticFiles = true;
+      proxyPort = 443;
+      proxySSL = true;
+      package = foundryvttPkg;
     };
   };
 }
