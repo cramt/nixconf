@@ -65,6 +65,16 @@ in {
         PUBLIC = "0";
         AUTO_UPDATE = "0";
         PASSWORD = (import ../../secrets.nix).valheim_password;
+        TYPE = "BepInEx";
+        MODS = ''
+          denikson-BepInExPack_Valheim-5.4.2202
+          Advize-PlantEverything-1.19.0
+          ValheimModding-Jotunn-2.24.3
+          RustyMods-Seasonality-3.5.5
+          Valphi-BetterLaddersContinued-0.217.24
+          Pineapple-TorchesEternal-0.3.0
+          N3xus-FarmGrid-0.2.0
+        '';
       };
       extraOptions = [
         "--shm-size=2gb"
