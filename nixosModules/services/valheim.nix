@@ -56,7 +56,7 @@ in {
         "2458:2458/udp"
       ];
       environment = {
-        PUID = "1000";
+        PUID = "111";
         PGID = "1000";
         TZ = "Europe/Copenhagen";
         PORT = "2456";
