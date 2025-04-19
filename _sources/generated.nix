@@ -43,12 +43,12 @@
   };
   odin = {
     pname = "odin";
-    version = "3.1.0";
+    version = "3.1.2";
     src = dockerTools.pullImage {
       imageName = "mbround18/valheim";
-      imageDigest = "sha256:70bd4da591cd50290454a9cc1511e640700c2e2f82ea4d5a8b2ee44629988936";
-      sha256 = "sha256-MOcnbV1juj9UBsg9haORH9X9DzoutGrp99kfFRe6IfE=";
-      finalImageTag = "3.1.0";
+      imageDigest = "sha256:44c2ab93f34c63765b0fbab8f5ec5f67a35f315d995760bf8d4af6ba2f766860";
+      sha256 = "sha256-hy818wdfk2bnksBulNhrEUZve+gFRNVczBo/Wr6PL+0=";
+      finalImageTag = "3.1.2";
     };
   };
   prowlarr = {
