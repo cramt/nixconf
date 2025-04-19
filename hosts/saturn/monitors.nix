@@ -13,10 +13,10 @@
   };
   DP-2 = {
     res = {
-      width = 1680;
-      height = 1050;
+      width = 1920;
+      height = 1080;
     };
-    refresh_rate = "59.954";
+    refresh_rate = "144.001";
     sway_conf = {
       pos = "1920 0";
       workspace = "2";
