@@ -174,7 +174,7 @@ in {
           {
             "print" = "exec grimshot --notify copy area";
             "${mod}+q" = "kill";
-            "${mod}+shift+d" = "exec ${inputs.walker.packages.${pkgs.system}.default}/bin/walker";
+            "${mod}+shift+d" = "exec ${inputs.sherlock.packages.${pkgs.system}.default}/bin/sherlock";
             "${mod}+x" = "exec ${pkgs.sway-easyfocus}/bin/sway-easyfocus";
             "${mod}+z" = "exec ${pkgs.alsa-utils}/bin/amixer set Capture toggle";
             "${mod}+f1" = "exec ${lockCommand}";
@@ -205,7 +205,7 @@ in {
 
     myHomeManager.rofi.enable = true;
     myHomeManager.waybar.enable = true;
-    myHomeManager.walker.enable = true;
+    myHomeManager.sherlock.enable = true;
     home.packages = with pkgs; [
       sway-easyfocus
       sway-contrib.grimshot
