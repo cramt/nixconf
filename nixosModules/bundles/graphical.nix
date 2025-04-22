@@ -25,7 +25,10 @@
     enable = false;
   };
   myNixOS.services.udisks.enable = true;
-  services.pulseaudio.enable = false;
+  services = {
+    pulseaudio.enable = false;
+    ddccontrol.enable = true;
+  };
   myNixOS = {
     keymapp.enable = true;
   };
