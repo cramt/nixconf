@@ -34,7 +34,7 @@
       enable = false;
     };
     services = {
-      synapse.enable = true;
+      synapse.enable = false;
       caddy = {
         enable = false;
         domain = "localhost";
