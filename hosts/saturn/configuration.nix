@@ -21,7 +21,7 @@
 
   myNixOS = {
     gnupg.enable = true;
-    qemu.enable = true;
+    qemu.enable = false;
     docker.enable = true;
     bundles.general.enable = true;
     bundles.general.stylixAssetVideo = ../../media/cosmere.mp4;

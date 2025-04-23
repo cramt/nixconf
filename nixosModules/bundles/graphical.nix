@@ -1,6 +1,7 @@
 {
   pkgs,
   inputs,
+  config,
   ...
 }: {
   # Enable sound with pipewire.
@@ -21,16 +22,18 @@
       package = pkgs.wireplumber;
     };
   };
-  boot.plymouth = {
-    enable = false;
+  boot = {
+    plymouth = {
+      enable = false;
+    };
   };
   myNixOS.services.udisks.enable = true;
   services = {
     pulseaudio.enable = false;
-    ddccontrol.enable = true;
   };
   myNixOS = {
     keymapp.enable = true;
+    external-monitor-control.enable = true;
   };
   fonts = {
     packages = with pkgs; [

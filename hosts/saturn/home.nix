@@ -39,6 +39,7 @@
         })
       (import ./monitors.nix);
     sway.backgroundVideo = ../../media/cosmere.mp4;
+    waybar.monitors = ["DP-2"];
   };
 
   home.stateVersion = "24.05";

@@ -1,8 +1,15 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.myHomeManager.waybar;
   mainWaybarConfig = {
     layer = "top";
-    position = "top";
-    height = 15;
+    position = "right";
+    output = cfg.monitors;
+    width = 15;
     spacing = 8;
 
     modules-left = [
@@ -45,6 +52,10 @@
       on-click = "activate";
     };
 
+    "sway/window" = {
+      rotate = 270;
+    };
+
     "sway/mode" = {
       format = "<span style=\"italic\">{}</span>";
     };
@@ -70,8 +81,8 @@
     };
 
     clock = {
+      rotate = 270;
       tooltip-format = "{:%A %B %d %Y | %H:%M}";
-      format-alt = " {:%a %d %b  %I:%M %p}";
       format = " {:%d/%m/%Y  %H:%M:%S}";
       interval = 1;
     };
@@ -103,11 +114,11 @@
     };
 
     network = {
+      rotate = 270;
       format = "⚠ Disabled";
-      format-wifi = " {essid}";
-      format-ethernet = " {ifname}: {ipaddr}/{cidr}";
+      format-wifi = " {ipaddr}";
+      format-ethernet = " {ipaddr}";
       format-disconnected = "⚠ Disconnected";
-      on-click = "nm-connection-editor";
     };
 
     pulseaudio = {
@@ -135,6 +146,15 @@
     };
   };
 in {
+  options.myHomeManager.waybar = {
+    monitors = lib.mkOption {
+      type = lib.types.nullOr (lib.types.listOf lib.types.str);
+      default = null;
+      description = ''
+        specific monitors to put the bar on
+      '';
+    };
+  };
   config = {
     stylix.targets.waybar = {
       enableLeftBackColors = false;
