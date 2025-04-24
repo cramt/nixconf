@@ -112,6 +112,8 @@
       DP-8 = dp;
     };
 
+    waybar.monitors = ["eDP-1"];
+
     sway.backgroundVideo = ../../media/cosmere.mp4;
   };
 
