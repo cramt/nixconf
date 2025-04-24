@@ -1,25 +1,13 @@
 {
-  HDMI-A-1 = {
+  DP-2 = {
     res = {
-      width = 1920;
-      height = 1080;
+      width = 5120;
+      height = 1440;
     };
-    refresh_rate = "119.982";
+    refresh_rate = "240.490";
     sway_conf = {
       pos = "0 0";
       workspace = "1";
-      transform = 0;
-    };
-  };
-  DP-2 = {
-    res = {
-      width = 1920;
-      height = 1080;
-    };
-    refresh_rate = "144.001";
-    sway_conf = {
-      pos = "1920 0";
-      workspace = "2";
       transform = 0;
     };
   };
