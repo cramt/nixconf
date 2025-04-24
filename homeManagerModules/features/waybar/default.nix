@@ -81,7 +81,6 @@
     };
 
     clock = {
-      #rotate = 270;
       tooltip-format = "{:%A %B %d %Y | %H:%M:%S}";
       format = "\n{:%d\n%m\n%y\n\n%H\n%M}";
       interval = 1;
@@ -114,11 +113,11 @@
     };
 
     network = {
-      rotate = 270;
-      format = "⚠ Disabled";
-      format-wifi = " {ipaddr}";
-      format-ethernet = " {ipaddr}";
-      format-disconnected = "⚠ Disconnected";
+      tooltip-format = "{ipaddr}";
+      format = "⚠ ";
+      format-wifi = " ";
+      format-ethernet = " ";
+      format-disconnected = "⛔";
     };
 
     pulseaudio = {
