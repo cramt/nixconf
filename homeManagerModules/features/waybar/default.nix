@@ -81,24 +81,24 @@
     };
 
     clock = {
-      rotate = 270;
-      tooltip-format = "{:%A %B %d %Y | %H:%M}";
-      format = " {:%d/%m/%Y  %H:%M:%S}";
+      #rotate = 270;
+      tooltip-format = "{:%A %B %d %Y | %H:%M:%S}";
+      format = "\n{:%d\n%m\n%y\n\n%H\n%M}";
       interval = 1;
     };
 
     cpu = {
-      format = "﬙ {usage}%";
+      format = "﬙\n{usage}%";
       on-click = "alacritty -e btop";
     };
 
     memory = {
-      format = " {}%";
+      format = "\n{}%";
       on-click = "alacritty -e btop";
     };
 
     backlight = {
-      format = "{icon} {percent}%";
+      format = "{icon}\n{percent}%";
       format-icons = ["" ""];
       on-scroll-down = "${pkgs.brightnessctl}/bin/brightnessctl -c backlight set 1%-";
       on-scroll-up = "${pkgs.brightnessctl}/bin/brightnessctl -c backlight set +1%";
@@ -109,7 +109,7 @@
         warning = 30;
         critical = 15;
       };
-      format = "{icon} {capacity}%";
+      format = "{icon}\n{capacity}%";
       format-icons = ["" "" "" "" ""];
     };
 
@@ -125,8 +125,8 @@
       scroll-step = 1;
       format-source = "";
       format-source-muted = "";
-      format = "{icon} {volume}% {format_source}";
-      format-muted = "muted  {format_source}";
+      format = "{icon}\n{format_source}\n{volume}%";
+      format-muted = "\n{format_source}";
       format-icons = {
         headphones = "";
         handsfree = "";

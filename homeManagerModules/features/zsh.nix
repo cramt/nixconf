@@ -12,7 +12,7 @@
       enableCompletion = true;
       autosuggestion.enable = true;
 
-      initExtra = ''
+      initContent = ''
         bios_reboot() {
           systemctl reboot --firmware-setup
         }
