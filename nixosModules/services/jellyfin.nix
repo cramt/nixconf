@@ -5,12 +5,21 @@
   ...
 }: let
   cfg = config.myNixOS.services.jellyfin;
-  docker_source =
-    ((import ../../_sources/generated.nix) {
-      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
-    })
-    .jellyfin
-    .src;
+  /*
+    docker_source =
+      ((import ../../_sources/generated.nix) {
+        inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
+      })
+      .jellyfin
+      .src;
+  downgrade jellyfin until it work again
+  */
+  docker_source = pkgs.dockerTools.pullImage {
+    imageName = "jellyfin/jellyfin";
+    imageDigest = "sha256:b8ce983c7cac30f168a8064a5a1f99fa60b8d131ce0480e8e1b4471039ff1546";
+    sha256 = "sha256-vb/rKF0UQNSfA8bG7AWXL7d0OUykduMIzz5mNfJMzaI=";
+    finalImageTag = "2025041517";
+  };
 in {
   options.myNixOS.services.jellyfin = {
     mediaVolumes = lib.mkOption {
