@@ -78,17 +78,7 @@
         };
       };
     };
-    sway.monitors = let
-      dp = {
-        pos = "-4880 -1500";
-        res = {
-          width = 2560;
-          height = 1440;
-        };
-        transform = 270;
-        workspace = "3";
-      };
-    in {
+    sway.monitors = {
       eDP-1 = {
         pos = "0 0";
         res = {
@@ -98,7 +88,7 @@
         transform = 0;
         workspace = "1";
       };
-      HDMI-A-1 = {
+      "Samsung Electric Company S34J55x H4LT901725" = {
         pos = "-3440 -900";
         res = {
           width = 3440;
@@ -107,9 +97,15 @@
         transform = 0;
         workspace = "2";
       };
-      DP-6 = dp;
-      DP-7 = dp;
-      DP-8 = dp;
+      "Samsung Electric Company LS27A80 HNMT900266" = {
+        pos = "-4880 -1500";
+        res = {
+          width = 2560;
+          height = 1440;
+        };
+        transform = 270;
+        workspace = "3";
+      };
     };
 
     waybar.monitors = ["eDP-1"];

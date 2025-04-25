@@ -1,8 +1,13 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  lib,
+  ...
+}: {
   config = {
-    stylix.targets.vesktop = {
+    programs.vesktop = {
       enable = true;
-      extraCss = ''
+      vencord.themes.stylix = lib.mkAfter ''
+
         :root {
             --custom-app-top-bar-height: 0;
         }
@@ -12,7 +17,6 @@
       '';
     };
     home.packages = with pkgs; [
-      vesktop
       ((import ../../scripts/kill_vesktop.nix) {
         inherit pkgs;
       })

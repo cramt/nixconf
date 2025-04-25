@@ -38,6 +38,7 @@ in {
       inputs.nixvim.homeManagerModules.nixvim
       inputs.nvf.homeManagerModules.default
       inputs.cosmic-manager.homeManagerModules.cosmic-manager
+      inputs.zen-browser.homeModules.beta
     ]
     ++ features
     ++ bundles;
