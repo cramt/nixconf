@@ -136,6 +136,10 @@ in {
           border = 2;
           titlebar = false;
         };
+        floating = {
+          border = 2;
+          titlebar = false;
+        };
         input = {
           "*" = {
             xkb_layout = "dk";
