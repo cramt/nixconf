@@ -135,6 +135,14 @@ in {
         window = {
           border = 2;
           titlebar = false;
+          commands = [
+            {
+              command = "floating disable";
+              criteria = {
+                class = ".*";
+              };
+            }
+          ];
         };
         floating = {
           border = 2;
@@ -146,6 +154,7 @@ in {
             xkb_variant = "nodeadkeys";
           };
         };
+
         startup = [
           {
             command = "${setBackground}/bin/set_background";

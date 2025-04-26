@@ -80,7 +80,7 @@ in {
     ++ ld_packages;
 
   home.sessionVariables = {
-    FLAKE = "${config.home.homeDirectory}/nixconf";
+    NH_FLAKE = "${config.home.homeDirectory}/nixconf";
     LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
     LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
     EDITOR = "nvim";
