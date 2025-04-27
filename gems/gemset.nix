@@ -169,10 +169,10 @@
     platforms = [];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "0r0bxkaa4qf9cha2b6xjn3gdq1bgpyq8hjczxc5ggbrqjwrb2v3v";
+      sha256 = "0mqrc5i0apcc65n203qdkpmvb4k8j0wacihb9g1xcjsarm6m3vdw";
       type = "gem";
     };
-    version = "0.5.12041";
+    version = "0.5.12042";
   };
   unicode-display_width = {
     dependencies = ["unicode-emoji"];
