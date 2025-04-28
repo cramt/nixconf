@@ -88,6 +88,15 @@
         transform = 0;
         workspace = "1";
       };
+      "Philips Consumer Electronics Company 49M2C8900 AU42447000108" = {
+        pos = "1920 0";
+        res = {
+          width = 5120;
+          height = 1440;
+        };
+        workspace = "2";
+        transform = 0;
+      };
       "Samsung Electric Company S34J55x H4LT901725" = {
         pos = "-3440 -900";
         res = {
