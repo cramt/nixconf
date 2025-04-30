@@ -3,11 +3,11 @@
     "NonSteamLaunchers": {
       "flake": false,
       "locked": {
-        "lastModified": 1745925976,
-        "narHash": "sha256-OlrbW1A4pEzZcbapbneZHccGsqXqP3NDXcx2lA52dWs=",
+        "lastModified": 1746012617,
+        "narHash": "sha256-65LbacokOgaet8F/ZVCP7hxsGLM1Xqvw8M5wlG5r2VA=",
         "owner": "moraroy",
         "repo": "NonSteamLaunchers-On-Steam-Deck",
-        "rev": "a0d09eb796e752d2005ae53c9896ff1f63416350",
+        "rev": "2259c59a03fc7dafd5d47eede73d9042974a3872",
         "type": "github"
       },
       "original": {
@@ -1065,11 +1065,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1745986472,
-        "narHash": "sha256-jZyOMJpDqsAuveYfqWWsxSOG2+B+cG8HsCc+K8WWQyc=",
+        "lastModified": 1746008811,
+        "narHash": "sha256-R6AVrTpAbezoI60kfg2IB3JvPfxENB+CDQ3OX9OjVH8=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "4b943be2ca40d999b76fb9c7cd5c5e7b77fe683e",
+        "rev": "20b1f8b216d0ffbabb99e8f1c9625844bdaf3e86",
         "type": "github"
       },
       "original": {
@@ -1136,11 +1136,11 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1745819184,
-        "narHash": "sha256-+v+MOVFYDQCJdP67gLrIdrLGKqBUp37KGhvcqd9ZFqA=",
+        "lastModified": 1746010885,
+        "narHash": "sha256-/Wwmjxwk+zYS8qyWxFw4Ap5iOyitPCz60LceqAYsrBQ=",
         "owner": "notashelf",
         "repo": "nvf",
-        "rev": "efa859381f60132db976d2501bfdb4e6f8d5a8c5",
+        "rev": "099907591a98163283b8d89afe9a342216d454da",
         "type": "github"
       },
       "original": {
