@@ -117,7 +117,7 @@
       postgres = {
         dataDir = "/mnt/imbrium/pgsql";
       };
-      synapse.enable = true;
+      conduit.enable = true;
       terraform_remote_backend.enable = true;
       servatrice.enable = true;
       sshd.enable = true;

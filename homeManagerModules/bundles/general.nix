@@ -8,7 +8,6 @@
   ld_packages = with pkgs; [
     libyaml.dev
     stdenv.cc.cc
-    linuxPackages.nvidia_x11
   ];
 in {
   imports = [

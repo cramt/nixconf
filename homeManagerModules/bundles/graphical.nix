@@ -12,6 +12,7 @@
     adwaita-qt
     gimp
     inputs.zen-browser.packages."${pkgs.system}".default
+    anytype
   ];
 
   xdg.enable = true;

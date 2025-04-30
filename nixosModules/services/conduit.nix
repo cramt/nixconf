@@ -43,7 +43,9 @@ in {
           turn_uris = ["turn:${turnDomain}:3478?transport=udp" "turn:${turnDomain}:3478?transport=tcp"];
           turn_secret = shared_secret;
           allow_check_for_updates = false;
+          allow_registration = true;
           database_backend = "rocksdb";
+          registration_token = "yelliv";
         };
       };
 

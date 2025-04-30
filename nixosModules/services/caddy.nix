@@ -101,6 +101,18 @@
       else {}
     )
     // (
+      if config.myNixOS.services.conduit.enable
+      then {
+        "matrix.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:6167
+          '';
+        };
+      }
+      else {}
+    )
+    // (
       if config.myNixOS.services.ollama.enable
       then {
         "ollama.${cfg.domain}" = {
@@ -197,6 +209,7 @@ in {
               header {
                 ?Access-Control-Allow-Origin "*"
                 ?Access-Control-Expose-Headers "Authorization"
+                ?Access-Control-Allow-Headers *
                 ?Access-Control-Allow-Credentials "true"
                 ?Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
                 ?Access-Control-Max-Age "3600"
@@ -206,6 +219,7 @@ in {
                 header {
                   ?Access-Control-Allow-Origin "*"
                   Access-Control-Expose-Headers "Authorization"
+                  Access-Control-Allow-Headers *
                   Access-Control-Allow-Credentials "true"
                   Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
                   Access-Control-Max-Age "3600"
