@@ -79,6 +79,11 @@ in {
           '';
         })
         (final: prev: {
+          cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
+            patches = (old.patches or []) ++ [../patches/no_ssd.patch];
+          });
+        })
+        (final: prev: {
           julia = prev.julia.withPackages ["JuliaFormatter" "LanguageServer"];
         })
         (final: prev: {

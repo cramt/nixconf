@@ -1,0 +1,13 @@
+diff --git a/src/shell/element/window.rs b/src/shell/element/window.rs
+index bce8471..d83f3a5 100644
+--- a/src/shell/element/window.rs
++++ b/src/shell/element/window.rs
+@@ -57,7 +57,7 @@ use wayland_backend::server::ObjectId;
+ 
+ use super::CosmicSurface;
+ 
+-pub const SSD_HEIGHT: i32 = 36;
++pub const SSD_HEIGHT: i32 = 0;
+ pub const RESIZE_BORDER: i32 = 10;
+ 
+ #[derive(Clone, PartialEq, Eq, Hash)]
