@@ -38,6 +38,33 @@ in {
         show_seconds = true;
         show_weekday = true;
       };
+      shortcuts = [
+        {
+          action = config.lib.cosmic.mkRON "enum" "Disable";
+          key = "Super+y";
+        }
+        {
+          action = config.lib.cosmic.mkRON "enum" "Disable";
+          key = "Super+slash";
+        }
+        {
+          action = config.lib.cosmic.mkRON "enum" "Disable";
+          key = "Super+f";
+        }
+        {
+          action = config.lib.cosmic.mkRON "enum" "Disable";
+          key = "Super+b";
+        }
+        {
+          action = config.lib.cosmic.mkRON "enum" {
+            value = [
+              (config.lib.cosmic.mkRON "enum" "PlayPause")
+            ];
+            variant = "System";
+          };
+          key = "Super+Shift+space";
+        }
+      ];
       appearance = {
         theme.dark.gaps = config.lib.cosmic.mkRON "tuple" [
           0
