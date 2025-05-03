@@ -38,6 +38,14 @@ in {
         show_seconds = true;
         show_weekday = true;
       };
+      panels = [
+        {
+          name = "Panel";
+          expand_to_edges = false;
+          anchor = config.lib.cosmic.mkRON "enum" "Bottom";
+          opacity = 0.8;
+        }
+      ];
       shortcuts = [
         {
           action = config.lib.cosmic.mkRON "enum" "Disable";
