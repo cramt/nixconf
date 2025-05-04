@@ -78,7 +78,7 @@
         };
       };
     };
-    sway.monitors = {
+    monitors = {
       eDP-1 = {
         pos = "0 0";
         res = {
@@ -119,7 +119,7 @@
 
     waybar.monitors = ["eDP-1"];
 
-    sway.backgroundVideo = ../../media/cosmere.mp4;
+    mpvpaper.backgroundVideo = ../../media/cosmere.mp4;
   };
 
   home.stateVersion = "24.05";

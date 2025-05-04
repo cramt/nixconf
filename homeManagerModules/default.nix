@@ -39,6 +39,14 @@ in {
       inputs.nvf.homeManagerModules.default
       inputs.cosmic-manager.homeManagerModules.cosmic-manager
       inputs.zen-browser.homeModules.beta
+      {
+        options.myHomeManager.monitors = lib.mkOption {
+          default = {};
+          description = ''
+            monitor setup
+          '';
+        };
+      }
     ]
     ++ features
     ++ bundles;

@@ -29,7 +29,7 @@
       enable = true;
       signingKey = "C2B9D34D979B6063";
     };
-    sway.monitors =
+    monitors =
       lib.attrsets.mapAttrs
       (_: value:
         value.sway_conf
@@ -38,7 +38,7 @@
           mode = "${toString value.res.width}x${toString value.res.height}@${value.refresh_rate}Hz";
         })
       (import ./monitors.nix);
-    sway.backgroundVideo = ../../media/cosmere.mp4;
+    mpvpaper.backgroundVideo = ../../media/cosmere.mp4;
     waybar.monitors = ["DP-2"];
   };
 

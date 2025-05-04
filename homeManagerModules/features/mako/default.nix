@@ -3,10 +3,12 @@
 in {
   services.mako = {
     enable = true;
-    anchor = "bottom-right";
-    margin = "0,20,20";
-    padding = "10";
-    groupBy = "summary";
-    format = "<b>%s</b>\\n%b";
+    settings = {
+      anchor = "bottom-right";
+      margin = "0,20,20";
+      padding = "10";
+      groupBy = "summary";
+      format = "<b>%s</b>\\n%b";
+    };
   };
 }

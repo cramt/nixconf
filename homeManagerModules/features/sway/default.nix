@@ -5,35 +5,13 @@
   inputs,
   ...
 }: let
-  cfg = config.myHomeManager.sway;
+  cfg = config.myHomeManager;
   mod = "Mod4";
-  screenSpecificVideos =
-    builtins.mapAttrs
-    (
-      name: value: let
-        res = "${toString value.res.width}:${toString value.res.height}";
-        rotation = lib.concatMapStrings (_: ",transpose=2") (lib.range 1 (value.transform / 90));
-      in (pkgs.runCommand "screen_specific_videos" {} ''
-        mkdir -p $out
-
-        ${pkgs.ffmpeg}/bin/ffmpeg -i ${cfg.backgroundVideo} -filter:v "scale=${res}:force_original_aspect_ratio=increase,crop=${res}${rotation}" $out/output.mp4
-      '')
-    )
-    cfg.monitors;
   killVesktop = (import ../../../scripts/kill_vesktop.nix) {
     inherit pkgs;
   };
-  setBackground = pkgs.writeShellScriptBin "set_background" ''
-    pkill mpvpaper
-    ${lib.strings.concatStringsSep "\n" (lib.attrsets.mapAttrsToList (
-        name: value: "${pkgs.mpvpaper}/bin/mpvpaper -o \"--loop\" -f '${name}' ${value}/output.mp4"
-      )
-      screenSpecificVideos)}
-    sleep 1
-    pkill swaybg #stylix sets the wallpapir like a dumbdumb
-  '';
   mkRunIfNoMedia = name: cmd: "${pkgs.writeShellScriptBin name ''
-    if [[ "$(${pkgs.playerctl}/bin/playerctl status)" != "Playing" ]]; then
+    if [[ "$(${pkgs.playerctl}/bin/playerctl status)" != "Playing" ]] && [[ "$XDG_CURRENT_DESKTOP" == "sway" ]]; then
       ${killVesktop}/bin/kill_vesktop
       ${cmd}
     fi
@@ -42,17 +20,6 @@
   swayrCommand = "${pkgs.swayr}/bin/swayr";
   execSwayr = "exec ${swayrCommand}";
 in {
-  options.myHomeManager.sway = {
-    monitors = lib.mkOption {
-      default = {};
-      description = ''
-        sway monitor setup
-      '';
-    };
-    backgroundVideo = lib.mkOption {
-      type = lib.types.path;
-    };
-  };
   config = {
     stylix.targets.hyprpaper.enable = false;
     stylix.targets.hyprland.enable = false;
@@ -157,10 +124,6 @@ in {
 
         startup = [
           {
-            command = "${setBackground}/bin/set_background";
-            always = true;
-          }
-          {
             command = "${pkgs.autotiling}/bin/autotiling";
             always = true;
           }
@@ -211,6 +174,7 @@ in {
     myHomeManager.rofi.enable = true;
     myHomeManager.waybar.enable = true;
     myHomeManager.sherlock.enable = true;
+    myHomeManager.mpvpaper.enable = true;
     home.packages = with pkgs; [
       sway-easyfocus
       sway-contrib.grimshot
