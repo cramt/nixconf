@@ -1,11 +1,3 @@
-data "cloudflare_zones" "main" {
-  name = local.secrets.domain
-}
-
-locals {
-  zone_id = element(data.cloudflare_zones.main.result, 0).id
-}
-
 resource "cloudflare_dns_record" "luna" {
   for_each = toset(["jellyfin", "qbit", "foundry-a", "prowlarr", "radarr", "sonarr", "bazarr", "ollama", "cockatrice", "nix-store", "matrix"])
   zone_id  = local.zone_id
