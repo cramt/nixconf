@@ -19,15 +19,6 @@
       '')
     )
     monitors;
-  setBackground = pkgs.writeShellScript "set_background" ''
-    ${pkgs.busybox}/bin/pkill mpvpaper
-    ${lib.strings.concatStringsSep "\n" (lib.attrsets.mapAttrsToList (
-        name: value: "${pkgs.mpvpaper}/bin/mpvpaper -o \"--loop\" -f '${name}' ${value}/output.mp4"
-      )
-      screenSpecificVideos)}
-    ${pkgs.busybox}/bin/sleep 1
-    ${pkgs.busybox}/bin/pkill swaybg
-  '';
 in {
   options.myHomeManager.mpvpaper = {
     backgroundVideo = lib.mkOption {
@@ -35,19 +26,26 @@ in {
     };
   };
   config = {
-    systemd.user.services.mpvpaper = {
-      Unit = {
-        Description = "Start animated background on boot";
-        After = ["graphical.target"];
-      };
-      Install = {
-        WantedBy = ["default.target"];
-      };
-      Service = {
-        ExecStart = setBackground;
-        RemainAfterExit = false;
-        Type = "oneshot";
-      };
-    };
+    systemd.user.services =
+      lib.mapAttrs' (name: value: {
+        name = "mpvpaper_${builtins.hashString "md5" name}";
+        value = {
+          Unit = {
+            Description = "Start animated background on boot";
+            After = ["graphical.target"];
+          };
+          Install = {
+            WantedBy = ["default.target"];
+          };
+          Service = {
+            ExecStart = pkgs.writeShellScript "set_background" ''
+              ${pkgs.mpvpaper}/bin/mpvpaper -o "--loop" "${name}" ${value}/output.mp4 || true
+            '';
+            RemainAfterExit = false;
+            Type = "oneshot";
+          };
+        };
+      })
+      screenSpecificVideos;
   };
 }
