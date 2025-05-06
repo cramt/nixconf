@@ -41,8 +41,6 @@ in {
             ExecStart = pkgs.writeShellScript "set_background" ''
               ${pkgs.mpvpaper}/bin/mpvpaper -o "--loop" "${name}" ${value}/output.mp4 || true
             '';
-            RemainAfterExit = false;
-            Type = "oneshot";
           };
         };
       })

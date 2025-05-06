@@ -157,6 +157,7 @@ in {
           ];
 
           lsp = {
+            enable = true;
             null-ls.setupOpts.default_timeout = 10000;
             formatOnSave = true;
             lspkind.enable = false;
@@ -185,7 +186,6 @@ in {
           };
 
           languages = {
-            enableLSP = true;
             enableFormat = true;
             enableTreesitter = true;
             enableExtraDiagnostics = true;
