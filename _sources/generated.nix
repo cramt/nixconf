@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.68";
+    version = "v0.108.0-b.69";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:1717f13e89902c9308d352afe99be8a7a4cd10ed78833737e040a999bcbc62dc";
-      sha256 = "sha256-V6x/8fWMQZDi0Ppc0RZ6VN0IcTyfiFl2FUDKHDQQpg4=";
-      finalImageTag = "v0.108.0-b.68";
+      imageDigest = "sha256:58457158baa8daa4af157bd1ada0c21ffa1c26b9d9e46de749cc4dd0ff361fff";
+      sha256 = "sha256-tHChIWA9WiGpgsmKm1zM9ig78cMBUJLsv6rD/aoxYG4=";
+      finalImageTag = "v0.108.0-b.69";
     };
   };
   bazarr = {
@@ -16,8 +16,8 @@
     version = "1.5.1";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:8415caab20c3642adb281ea066e82a58b8011b6e12bec5339db66599b700f805";
-      sha256 = "sha256-7mABS8PqgYktqyhr4I2gnLqF0wMwm/WLYH8MQf3UR4Q=";
+      imageDigest = "sha256:ac9fe56bee9133bcb9e27fe48faaf83c57b83d75bacc277d9b2619136632b1fe";
+      sha256 = "sha256-xSr7YKWSHB1Ma7o1eEInGF4yD8g097kqRUUCNVxVCvc=";
       finalImageTag = "1.5.1";
     };
   };
@@ -36,8 +36,8 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:b70787a42a14867669d66c900b5c42bbaf9d2a21c7e0edd29b9c0e050c95b6ea";
-      sha256 = "sha256-V1M5cd2IoxZcm+xOle+CdCCFN0E+uujRMbTbT5fIqWA=";
+      imageDigest = "sha256:40083af30bd9d75358ba14a825f3c1d3620875be0c055b212c9aed76420a9d54";
+      sha256 = "sha256-ve8kNL+OKdwuONuN+SWRha6T4G5g5amjg+idFi4+2Wo=";
       finalImageTag = "java8";
     };
   };
