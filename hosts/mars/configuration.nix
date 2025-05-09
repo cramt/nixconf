@@ -26,7 +26,7 @@
     docker.enable = true;
     bluetooth.enable = true;
     bundles.general.enable = true;
-    bundles.general.stylixAssetVideo = ../../media/cosmere.mp4;
+    bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
     bundles.graphical.enable = true;
     bundles.users.enable = true;
 

@@ -5,7 +5,6 @@
   ...
 }: {
   config = {
-    myHomeManager.mpvpaper.enable = true;
     wayland.desktopManager.cosmic = {
       enable = true;
       applets.time.settings = {

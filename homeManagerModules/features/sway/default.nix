@@ -174,7 +174,6 @@ in {
     myHomeManager.rofi.enable = true;
     myHomeManager.waybar.enable = true;
     myHomeManager.sherlock.enable = true;
-    myHomeManager.mpvpaper.enable = true;
     home.packages = with pkgs; [
       sway-easyfocus
       sway-contrib.grimshot

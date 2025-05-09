@@ -24,7 +24,7 @@
     qemu.enable = false;
     docker.enable = true;
     bundles.general.enable = true;
-    bundles.general.stylixAssetVideo = ../../media/cosmere.mp4;
+    bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
     bundles.graphical.enable = true;
     steam = {
       enable = true;

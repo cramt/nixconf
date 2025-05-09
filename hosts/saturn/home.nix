@@ -38,7 +38,6 @@
           mode = "${toString value.res.width}x${toString value.res.height}@${value.refresh_rate}Hz";
         })
       (import ./monitors.nix);
-    mpvpaper.backgroundVideo = ../../media/cosmere.mp4;
     waybar.monitors = ["DP-2"];
   };
 

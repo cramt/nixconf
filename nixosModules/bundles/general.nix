@@ -6,14 +6,19 @@
   ...
 }: let
   cfg = config.myNixOS.bundles.general;
-  stylixAssetFirstFrame = pkgs.runCommand "stylix_asset_first_frame" {} ''
-    mkdir -p $out
-    ${pkgs.ffmpeg}/bin/ffmpeg -i ${cfg.stylixAssetVideo} -vf "select=eq(n\,0)" $out/output-%03d.png
-    mv $out/output-*.png $out/output.png
-  '';
+  stylixImage =
+    if lib.hasSuffix ".mp4" cfg.stylixAsset
+    then let
+      stylixAssetFirstFrame = pkgs.runCommand "stylix_asset_first_frame" {} ''
+        mkdir -p $out
+        ${pkgs.ffmpeg}/bin/ffmpeg -i ${cfg.stylixAsset} -vf "select=eq(n\,0)" $out/output-%03d.png
+        mv $out/output-*.png $out/output.png
+      '';
+    in "${stylixAssetFirstFrame}/output.png"
+    else cfg.stylixAsset;
 in {
   options.myNixOS.bundles.general = {
-    stylixAssetVideo = lib.mkOption {
+    stylixAsset = lib.mkOption {
       type = lib.types.path;
     };
   };
@@ -57,7 +62,7 @@ in {
 
     stylix = {
       polarity = "dark";
-      image = "${stylixAssetFirstFrame}/output.png";
+      image = stylixImage;
       opacity = {
         terminal = 0.8;
         applications = 0.8;
