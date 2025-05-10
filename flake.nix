@@ -6,6 +6,8 @@
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-24.11";
 
+    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";

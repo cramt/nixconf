@@ -35,6 +35,7 @@
 in {
   imports =
     [
+      inputs.chaotic.homeManagerModules.default
       inputs.nixvim.homeManagerModules.nixvim
       inputs.nvf.homeManagerModules.default
       inputs.cosmic-manager.homeManagerModules.cosmic-manager

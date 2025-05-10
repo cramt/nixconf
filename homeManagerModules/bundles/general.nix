@@ -75,6 +75,7 @@ in {
       nix-output-monitor
       julia
       zig
+      futhark
     ]
     ++ ld_packages;
 

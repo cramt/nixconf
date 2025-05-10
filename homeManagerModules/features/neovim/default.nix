@@ -167,10 +167,17 @@ in {
             lspSignature.enable = true;
             otter-nvim.enable = true;
             nvim-docs-view.enable = true;
+            lspconfig.sources.futhark_lsp = ''
+              lspconfig.futhark_lsp.setup {
+                capabilities = capabilities,
+                on_attach = default_on_attach,
+                cmd = { "${pkgs.futhark}/bin/futhark", "lsp", "--stdio" }
+              }
+            '';
             lspconfig.sources.ruby-lsp = ''
               lspconfig.ruby_lsp.setup {
                 capabilities = capabilities,
-                on_attach = attach_keymaps,
+                on_attach = default_on_attach,
                 cmd = { "${rubyGems.ruby-lsp}/bin/ruby-lsp" }
               }
             '';

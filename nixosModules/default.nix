@@ -47,6 +47,7 @@ in {
   imports =
     [
       inputs.home-manager.nixosModules.home-manager
+      inputs.chaotic.nixosModules.default
       inputs.stylix.nixosModules.stylix
       inputs.foundryvtt.nixosModules.foundryvtt
     ]
