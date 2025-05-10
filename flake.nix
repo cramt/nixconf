@@ -8,6 +8,8 @@
 
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 
+    nh.url = "github:nix-community/nh";
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
