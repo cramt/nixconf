@@ -59,7 +59,7 @@ in {
     stylix.enable = true;
     nix.package = pkgs.lix;
     nix.settings = {
-      experimental-features = ["nix-command" "flakes"];
+      experimental-features = ["nix-command" "flakes" "repl-flake"];
       trusted-users = ["cramt" "root"];
       substituters = [
         "https://nix-gaming.cachix.org"
