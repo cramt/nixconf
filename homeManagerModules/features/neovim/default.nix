@@ -15,6 +15,11 @@ in {
       pkgs.obsidian
     ];
 
+    home.file."empty-obsidian-workspace" = {
+      source = ../../../empty_obsidian_workspace;
+      recursive = true;
+    };
+
     programs.neovide = {
       enable = true;
       settings = {
@@ -347,7 +352,7 @@ in {
                 workspaces = [
                   {
                     name = "_default";
-                    path = ../../../empty_obsidian_workspace;
+                    path = "~/empty-obsidian-workspace";
                   }
                 ];
               };
