@@ -29,7 +29,7 @@
       httpPort = 2375;
     };
     bundles.general.enable = true;
-    bundles.general.stylixAssetVideo = ../../media/cosmere.mp4;
+    bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
     bundles.users.enable = true;
 
     services = let
