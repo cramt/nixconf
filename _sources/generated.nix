@@ -13,22 +13,22 @@
   };
   bazarr = {
     pname = "bazarr";
-    version = "1.5.1";
+    version = "1.5.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:ac9fe56bee9133bcb9e27fe48faaf83c57b83d75bacc277d9b2619136632b1fe";
-      sha256 = "sha256-xSr7YKWSHB1Ma7o1eEInGF4yD8g097kqRUUCNVxVCvc=";
-      finalImageTag = "1.5.1";
+      imageDigest = "sha256:558d6ddf36cd87bac5d4fb2ee8488730c4f65718961ef4ca7073062378aa7641";
+      sha256 = "sha256-K6WVC2jTJ6WBLXgH/pPBPW4KX3PsWnH6Fh9rlYAML64=";
+      finalImageTag = "1.5.2";
     };
   };
   jellyfin = {
     pname = "jellyfin";
-    version = "2025050505";
+    version = "2025051205";
     src = dockerTools.pullImage {
       imageName = "jellyfin/jellyfin";
-      imageDigest = "sha256:97a86ccc28c09a34cfc1fda65c227006c497968df00a9c12ecf1d7c5df5dadb0";
-      sha256 = "sha256-frrLAMCB5gw1r7hgfFAhAn8R4pM+molUOIKa4TKlwWg=";
-      finalImageTag = "2025050505";
+      imageDigest = "sha256:a705b68b3e146da968a67c8732c54e93e95ae1522513ee98992a5f9a45b84a11";
+      sha256 = "sha256-WQ5mpMwRUNtga67LamiHDURBg8RjXWz0yT5siTSV2Po=";
+      finalImageTag = "2025051205";
     };
   };
   minecraft-server = {
@@ -36,8 +36,8 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:40083af30bd9d75358ba14a825f3c1d3620875be0c055b212c9aed76420a9d54";
-      sha256 = "sha256-ve8kNL+OKdwuONuN+SWRha6T4G5g5amjg+idFi4+2Wo=";
+      imageDigest = "sha256:b70787a42a14867669d66c900b5c42bbaf9d2a21c7e0edd29b9c0e050c95b6ea";
+      sha256 = "sha256-V1M5cd2IoxZcm+xOle+CdCCFN0E+uujRMbTbT5fIqWA=";
       finalImageTag = "java8";
     };
   };
