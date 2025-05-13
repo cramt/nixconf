@@ -55,7 +55,10 @@ in {
           vimAlias = true;
           lineNumberMode = "number";
 
-          useSystemClipboard = true;
+          clipboard = {
+            enable = true;
+            registers = "unnamedplus";
+          };
 
           debugMode = {
             enable = false;
