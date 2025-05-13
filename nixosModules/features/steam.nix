@@ -1,10 +1,11 @@
-{ pkgs, lib, config, ... }:
-let
-
-  cfg = config.myNixOS.steam;
-in
 {
-
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
+  cfg = config.myNixOS.steam;
+in {
   options.myNixOS.steam = {
     swayGamingPackage = lib.mkOption {
       type = lib.types.nullOr lib.types.package;
@@ -15,6 +16,10 @@ in
     };
   };
   config = {
+    programs.gamescope = {
+      enable = true;
+      package = pkgs.gamescope_git;
+    };
     programs.steam = {
       enable = true;
       gamescopeSession.enable = true;
@@ -33,16 +38,18 @@ in
       enable = true;
       settings = {
         custom =
-          if cfg.swayGamingPackage != null then {
+          if cfg.swayGamingPackage != null
+          then {
             start = "${cfg.swayGamingPackage}/bin/sway_gaming true";
             end = "${cfg.swayGamingPackage}/bin/sway_gaming false";
-          } else { };
+          }
+          else {};
       };
     };
     systemd.user.services.steam_background = {
       enable = true;
       description = "Open Steam in the background at boot";
-      wantedBy = [ "graphical-session.target" ];
+      wantedBy = ["graphical-session.target"];
       serviceConfig = {
         ExecStart = "${pkgs.steam}/bin/steam -nochatui -nofriendsui -silent %U";
         Restart = "on-failure";
