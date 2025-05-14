@@ -36,8 +36,8 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:40083af30bd9d75358ba14a825f3c1d3620875be0c055b212c9aed76420a9d54";
-      sha256 = "sha256-ve8kNL+OKdwuONuN+SWRha6T4G5g5amjg+idFi4+2Wo=";
+      imageDigest = "sha256:b70787a42a14867669d66c900b5c42bbaf9d2a21c7e0edd29b9c0e050c95b6ea";
+      sha256 = "sha256-V1M5cd2IoxZcm+xOle+CdCCFN0E+uujRMbTbT5fIqWA=";
       finalImageTag = "java8";
     };
   };
