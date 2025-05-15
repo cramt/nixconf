@@ -118,10 +118,8 @@
         "ollama.${cfg.domain}" = {
           extraConfig = ''
             import cors
-            basic_auth {
-            	main $2a$14$rpbR7vq7QsdKBeP.PqjezOi/fWZbBtcHGkIoocOsi0zBlZOgld6cG
-            }
-            reverse_proxy http://localhost:11434
+            @bearer header Authorization "Bearer ${(import ../../secrets.nix).ollama_secret}"
+            reverse_proxy @bearer http://localhost:11434
           '';
         };
       }

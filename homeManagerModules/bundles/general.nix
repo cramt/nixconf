@@ -17,6 +17,10 @@ in {
   programs.home-manager.enable = true;
   programs.go.enable = true;
 
+  nix.settings = {
+    access-tokens = ["github.com=${(import ../../secrets.nix).github_read_token}"];
+  };
+
   myHomeManager = {
     yazi.enable = true;
     zoxide.enable = true;

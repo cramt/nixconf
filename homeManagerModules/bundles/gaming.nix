@@ -5,7 +5,6 @@
 }: {
   home.packages = with pkgs; [
     xorg.libxcb
-    protonup-ng
     gamemode
     dxvk
     gamescope

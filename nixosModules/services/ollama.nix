@@ -25,7 +25,10 @@ in {
       enable = true;
       loadModels = [
         "mistral"
+        "qwen2.5-coder:7b"
+        "qwen2.5-coder:3b"
       ];
+      host = "0.0.0.0";
       acceleration = cfg.gpu;
       environmentVariables = {
         HCC_AMDGPU_TARGET = lib.mkIf (cfg.rocmVersion != "") "gfx${builtins.replaceStrings ["."] [""] cfg.rocmVersion}";

@@ -38,6 +38,37 @@ in {
       enable = true;
       settings = {
         vim = {
+          assistant = {
+            avante-nvim = {
+              enable = true;
+              setupOpts = {
+                provider = "qwen7";
+                auto_suggestions_provider = "qwen3";
+                behaviour = {
+                  auto_suggestions = true;
+                };
+                vendors = let
+                  base = {
+                    __inherited_from = "ollama";
+                    endpoint = "http://127.0.0.1:11434";
+                    api_key_name = "cmd:echo ${(import ../../../secrets.nix).ollama_secret}";
+                  };
+                in {
+                  qwen7 =
+                    {
+                      model = "qwen2.5-coder:7b";
+                    }
+                    // base;
+                  qwen3 =
+                    {
+                      model = "qwen2.5-coder:3b";
+                    }
+                    // base;
+                };
+              };
+            };
+          };
+
           luaConfigRC.no_fill_chars =
             # lua
             ''

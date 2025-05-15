@@ -43,7 +43,7 @@
       };
     in {
       ollama = {
-        enable = false;
+        enable = true;
         gpu = "rocm";
         rocmVersion = "11.0.1";
       };

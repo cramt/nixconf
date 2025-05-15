@@ -62,7 +62,8 @@
     };
 
     nvf = {
-      url = "github:notashelf/nvf";
+      #url = "github:notashelf/nvf";
+      url = "github:cramt/nvf/avante";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

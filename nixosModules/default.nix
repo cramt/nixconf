@@ -93,7 +93,7 @@ in {
           };
         })
         (final: prev: {
-          rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rocmPackages;
+          #rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rocmPackages;
         })
       ];
       config = {

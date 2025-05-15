@@ -28,7 +28,6 @@ in {
     };
     environment.systemPackages = with pkgs; [
       mangohud
-      protonup
       steamcmd
     ];
     environment.sessionVariables = {
