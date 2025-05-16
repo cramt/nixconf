@@ -116,10 +116,17 @@
       if config.myNixOS.services.ollama.enable
       then {
         "ollama.${cfg.domain}" = {
+          logFormat = lib.mkForce ''
+            output stdout
+            level DEBUG
+          '';
           extraConfig = ''
             import cors
             @bearer header Authorization "Bearer ${(import ../../secrets.nix).ollama_secret}"
-            reverse_proxy @bearer http://localhost:11434
+            reverse_proxy @bearer http://192.168.0.130:11434 http://localhost:11434 {
+              health_uri /
+              lb_policy first
+            }
           '';
         };
       }
@@ -197,6 +204,11 @@ in {
     services.caddy = {
       enable = true;
       email = (import ../../secrets.nix).email;
+      globalConfig = ''
+        servers {
+          log_credentials
+        }
+      '';
       virtualHosts =
         {
           "(cors)" = {

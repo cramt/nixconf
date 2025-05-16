@@ -21,6 +21,7 @@ in {
     };
   };
   config = {
+    networking.firewall.allowedTCPPorts = [11434];
     services.ollama = {
       enable = true;
       loadModels = [

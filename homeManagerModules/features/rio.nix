@@ -1,15 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}: let
-  zellij_smart_start = (import ../../scripts/zellij_smart_start.nix) {
-    inherit pkgs;
-  };
-  start = pkgs.writers.writeBash "start" ''
-    ${pkgs.zsh}/bin/zsh -l -c ${zellij_smart_start}/bin/zellij_smart_start
-  '';
-in {
+{lib, ...}: {
   programs.rio = {
     enable = true;
     settings = {
@@ -21,9 +10,6 @@ in {
       navigation.mode = "Plain";
       draw-bold-text-with-light-colors = true;
       hide-mouse-cursor-when-typing = true;
-      shell = {
-        program = start;
-      };
     };
   };
 }

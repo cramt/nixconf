@@ -42,6 +42,15 @@
         {
           action = config.lib.cosmic.mkRON "enum" {
             value = [
+              "${pkgs.rio}/bin/rio"
+            ];
+            variant = "Spawn";
+          };
+          key = "Super+t";
+        }
+        {
+          action = config.lib.cosmic.mkRON "enum" {
+            value = [
               (config.lib.cosmic.mkRON "enum" "PlayPause")
             ];
             variant = "System";

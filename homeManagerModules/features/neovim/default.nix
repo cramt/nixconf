@@ -34,6 +34,10 @@ in {
       transparentBackground = true;
     };
 
+    home.sessionVariables = {
+      OPENAI_API_KEY = (import ../../../secrets.nix).ollama_secret;
+    };
+
     programs.nvf = {
       enable = true;
       settings = {
@@ -49,9 +53,9 @@ in {
                 };
                 vendors = let
                   base = {
-                    __inherited_from = "ollama";
-                    endpoint = "http://127.0.0.1:11434";
-                    api_key_name = "cmd:echo ${(import ../../../secrets.nix).ollama_secret}";
+                    __inherited_from = "openai";
+                    endpoint = "https://ollama.${(import ../../../secrets.nix).domain}/v1";
+                    disable_tools = true;
                   };
                 in {
                   qwen7 =
