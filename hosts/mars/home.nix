@@ -122,5 +122,5 @@
     mpvpaper.backgroundVideo = ../../media/cosmere.mp4;
   };
 
-  home.stateVersion = "24.05";
+  home.stateVersion = "25.05";
 }
