@@ -44,7 +44,7 @@ in {
         vim = {
           assistant = {
             avante-nvim = {
-              enable = true;
+              enable = false;
               setupOpts = {
                 provider = "qwen7";
                 auto_suggestions_provider = "qwen3";
@@ -396,7 +396,7 @@ in {
               };
             };
             neorg = {
-              enable = true;
+              enable = false;
               setupOpts.load = {
                 "core.defaults".enable = true;
                 "core.concealer".enable = true;
