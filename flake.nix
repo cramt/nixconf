@@ -10,6 +10,8 @@
 
     nh.url = "github:nix-community/nh";
 
+    niri.url = "github:sodiboo/niri-flake";
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";

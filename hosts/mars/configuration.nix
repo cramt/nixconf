@@ -22,6 +22,7 @@
   networking.firewall.allowedTCPPorts = [3600];
 
   myNixOS = {
+    niri.enable = true;
     gnupg.enable = true;
     qemu.enable = true;
     docker.enable = true;
@@ -30,6 +31,9 @@
     bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
     bundles.graphical.enable = true;
     bundles.users.enable = true;
+    steam = {
+      enable = true;
+    };
 
     services.tor-privoxy = {
       enable = false;

@@ -14,9 +14,11 @@
   home.homeDirectory = "/home/cramt";
 
   myHomeManager = {
+    niri.enable = true;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.work.enable = true;
+    bundles.gaming.enable = true;
     git.signingKey = "2FB7AC531E930F27";
     blueman.enable = true;
     cockatrice.enable = true;
