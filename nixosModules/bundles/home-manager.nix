@@ -35,6 +35,8 @@ in {
   config = {
     programs.zsh.enable = true;
     programs.sway.enable = true;
+    programs.hyprland.enable = true;
+    programs.hyprland.package = null;
     programs.sway.package = null;
 
     services = {
