@@ -22,7 +22,6 @@
   networking.firewall.allowedTCPPorts = [3600];
 
   myNixOS = {
-    niri.enable = false;
     gnupg.enable = true;
     qemu.enable = true;
     docker.enable = true;

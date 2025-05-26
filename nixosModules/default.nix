@@ -50,7 +50,6 @@ in {
       inputs.chaotic.nixosModules.default
       inputs.stylix.nixosModules.stylix
       inputs.foundryvtt.nixosModules.foundryvtt
-      inputs.niri.nixosModules.niri
     ]
     ++ features
     ++ bundles

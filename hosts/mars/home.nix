@@ -15,7 +15,6 @@
 
   myHomeManager = {
     hyprland.enable = true;
-    niri.enable = false;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.work.enable = true;

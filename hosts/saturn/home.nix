@@ -21,6 +21,7 @@
   ];
 
   myHomeManager = {
+    hyprland.enable = true;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.gaming.enable = true;
