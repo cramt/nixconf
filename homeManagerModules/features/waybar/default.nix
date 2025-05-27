@@ -14,8 +14,11 @@
 
     modules-left = [
       "sway/workspaces"
+      "hyprland/workspaces"
       "sway/mode"
+      "hyprland/submap"
       "sway/window"
+      "hyprland/window"
       "sway/scratchpad"
     ];
     modules-right = [
@@ -66,7 +69,6 @@
         "9" = "9";
         "10" = "10";
       };
-      disable-scroll = true;
       all-outputs = true;
       on-click = "activate";
     };

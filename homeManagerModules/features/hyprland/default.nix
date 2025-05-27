@@ -10,6 +10,48 @@ in {
   config = {
     myHomeManager.rofi.enable = true;
     myHomeManager.waybar.enable = true;
+    stylix.targets.hyprlock.useWallpaper = false;
+    programs.hyprlock = {
+      enable = true;
+      settings = {
+        animations = {
+          enabled = "true";
+        };
+        background = {
+          path = "screenshot";
+          blur_passes = 3;
+        };
+        label = [
+          {
+            text = "$TIME";
+            font_size = "90";
+            halign = "left";
+            valighn = "top";
+          }
+        ];
+      };
+    };
+    services.hypridle = {
+      enable = true;
+      settings = {
+        general = {
+          lock_cmd = "pidof ${pkgs.hyprlock}/bin/hyprlock || ${pkgs.hyprlock}/bin/hyprlock";
+          before_sleep_cmd = "${pkgs.systemd}/bin/loginctl lock-session";
+          after_sleep_cmd = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
+        };
+        listener = [
+          {
+            timeout = 330;
+            on-timeout = "${pkgs.systemd}/bin/loginctl lock-session";
+          }
+          {
+            timeout = 300;
+            on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
+            on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
+          }
+        ];
+      };
+    };
     wayland.windowManager.hyprland = {
       enable = true;
       settings = {
@@ -19,7 +61,7 @@ in {
         };
 
         exec-once = [
-          "${pkgs.waybar}/bin/waybar"
+          "${pkgs.waybar}/bin/waybar -b hyprland"
           "${pkgs.hyprswitch}/bin/hyprswitch init &"
         ];
 

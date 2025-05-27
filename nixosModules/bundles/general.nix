@@ -23,6 +23,8 @@ in {
     };
   };
   config = {
+    security.pam.services.hyprlock = {};
+
     nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
 
     time.timeZone = "Europe/Copenhagen";
