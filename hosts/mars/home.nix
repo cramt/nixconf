@@ -90,7 +90,7 @@
         transform = 0;
         workspace = "1";
       };
-      "Philips Consumer Electronics Company - 49M2C8900 - DP-3" = {
+      "Philips Consumer Electronics Company 49M2C8900 AU42447000108" = {
         pos = "1920 0";
         res = {
           width = 5120;
