@@ -56,8 +56,10 @@ in {
       enable = true;
       settings = {
         general = {
+          "col.inactive_border" = lib.mkForce "rgba(00000000)";
           gaps_in = 0;
           gaps_out = 0;
+          border_size = 2;
         };
 
         exec-once = [
@@ -72,6 +74,14 @@ in {
 
         animations = {
           enabled = "yes";
+        };
+
+        group = {
+          groupbar = {
+            font_size = "20";
+            keep_upper_gap = false;
+            indicator_height = 0;
+          };
         };
 
         monitor = builtins.concatLists (lib.attrsets.mapAttrsToList (
@@ -112,10 +122,14 @@ in {
             "${mod}, mouse_up, workspace, e-1"
             "${mod}, G, togglefloating,"
             "${mod}, Tab, exec, ${pkgs.hyprswitch}/bin/hyprswitch gui --mod-key super --key Tab --show-workspaces-on-all-monitors --close mod-key-release"
+            "${mod}, Y, changegroupactive, f"
+            "${mod}, O, changegroupactive, b"
+            "${mod}, F, fullscreen, 1"
+            ", Print, exec, exec ${pkgs.sway-contrib.grimshot}/bin/grimshot --notify copy area"
           ]
           ++ (builtins.concatLists (lib.attrsets.mapAttrsToList (bind: dir: [
               "${mod}, ${bind}, movefocus, ${dir}"
-              "${mod} SHIFT, ${bind}, movewindow, ${dir}"
+              "${mod} SHIFT, ${bind}, movewindoworgroup, ${dir}"
             ]) {
               H = "l";
               left = "l";

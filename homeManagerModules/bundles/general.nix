@@ -74,7 +74,7 @@ in {
       sops
       gcc-arm-embedded
       openocd
-      inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nvfetcher
+      inputs.nixpkgs-ancient.legacyPackages.${pkgs.system}.nvfetcher
       jq
       nix-output-monitor
       julia
