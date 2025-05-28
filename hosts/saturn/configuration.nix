@@ -144,9 +144,14 @@
   };
 
   boot.kernelParams =
-    lib.attrsets.mapAttrsToList
+    builtins.map
     (
-      name: value: "video=${name}:${toString value.res.width}x${toString value.res.height}@${value.refresh_rate}"
+      {
+        port,
+        res,
+        refresh_rate,
+        ...
+      }: "video=${port}:${toString res.width}x${toString res.height}@${refresh_rate}"
     )
     (import ./monitors.nix);
 

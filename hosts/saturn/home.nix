@@ -30,15 +30,7 @@
       enable = true;
       signingKey = "C2B9D34D979B6063";
     };
-    monitors =
-      lib.attrsets.mapAttrs
-      (_: value:
-        value.sway_conf
-        // {
-          res = value.res;
-          mode = "${toString value.res.width}x${toString value.res.height}@${value.refresh_rate}Hz";
-        })
-      (import ./monitors.nix);
+    monitors = import ./monitors.nix;
     waybar.monitors = ["DP-2"];
   };
 

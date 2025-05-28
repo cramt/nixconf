@@ -84,20 +84,28 @@ in {
           };
         };
 
-        monitor = builtins.concatLists (lib.attrsets.mapAttrsToList (
-            name: options: let
-              res = "${builtins.toString options.res.width}x${builtins.toString options.res.height}";
-              pos = "${builtins.replaceStrings [" "] ["x"] options.pos}";
+        monitor = builtins.concatLists (builtins.map (
+            {
+              res,
+              pos,
+              name,
+              ...
+            }: let
+              r = "${builtins.toString res.width}x${builtins.toString res.height}";
+              p = "${builtins.toString pos.x}x${builtins.toString pos.y}";
             in [
-              "desc:${name}, ${res}, ${pos}, 1"
-              "${name}, ${res}, ${pos}, 1"
+              "desc:${name}, ${r}, ${p}, 1"
             ]
           )
           cfg.monitors);
 
         workspace =
-          lib.attrsets.mapAttrsToList (
-            name: options: "${options.workspace}, monitor:desc:${name}"
+          builtins.map (
+            {
+              port,
+              workspace,
+              ...
+            }: "${builtins.toString workspace}, monitor:${port}"
           )
           cfg.monitors;
 

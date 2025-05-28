@@ -70,28 +70,39 @@ in {
       '';
       wrapperFeatures.gtk = true;
       config = {
-        output =
-          builtins.mapAttrs
+        output = builtins.listToAttrs (builtins.map
           (
-            name: value: ((builtins.removeAttrs value ["workspace"])
-              // {
-                res = "${toString value.res.width}x${toString value.res.height}";
-                transform = toString value.transform;
-              })
+            {
+              res,
+              transform,
+              pos,
+              refresh_rate,
+              name,
+              ...
+            }: {
+              name = name;
+              value = {
+                res = "${toString res.width}x${toString res.height}";
+                transform = toString transform;
+                pos = "${toString pos.x} ${toString pos.y}";
+                #refresh_rate = refresh_rate;
+              };
+            }
+          )
+          cfg.monitors);
+        workspaceOutputAssign =
+          builtins.map
+          (
+            {
+              name,
+              workspace,
+              ...
+            }: {
+              output = name;
+              workspace = builtins.toString workspace;
+            }
           )
           cfg.monitors;
-        workspaceOutputAssign =
-          builtins.attrValues
-          (
-            builtins.mapAttrs
-            (
-              name: value: {
-                output = name;
-                workspace = value.workspace;
-              }
-            )
-            cfg.monitors
-          );
 
         modifier = mod;
         terminal = "rio";

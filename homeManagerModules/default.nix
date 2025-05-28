@@ -42,10 +42,52 @@ in {
       inputs.zen-browser.homeModules.beta
       {
         options.myHomeManager.monitors = lib.mkOption {
-          default = {};
-          description = ''
-            monitor setup
-          '';
+          type = lib.types.listOf (
+            lib.types.submodule {
+              options = {
+                workspace = lib.mkOption {
+                  type = lib.types.ints.unsigned;
+                };
+                transform = lib.mkOption {
+                  type = lib.types.ints.unsigned;
+                };
+                refresh_rate = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                };
+                port = lib.mkOption {
+                  type = lib.types.str;
+                };
+                name = lib.mkOption {
+                  type = lib.types.str;
+                };
+                pos = lib.mkOption {
+                  type = lib.types.submodule {
+                    options = {
+                      x = lib.mkOption {
+                        type = lib.types.ints.unsigned;
+                      };
+                      y = lib.mkOption {
+                        type = lib.types.ints.unsigned;
+                      };
+                    };
+                  };
+                };
+                res = lib.mkOption {
+                  type = lib.types.submodule {
+                    options = {
+                      width = lib.mkOption {
+                        type = lib.types.ints.unsigned;
+                      };
+                      height = lib.mkOption {
+                        type = lib.types.ints.unsigned;
+                      };
+                    };
+                  };
+                };
+              };
+            }
+          );
         };
       }
     ]
