@@ -107,7 +107,7 @@ in {
         ];
 
         windowrule = [
-          "tile, class:.*"
+          #"tile, class:.*"
           "suppressevent maximize, class:.*"
           "nomaxsize, class:.*"
         ];
@@ -116,6 +116,7 @@ in {
           [
             "${mod}, Q, killactive,"
             "${mod}, S, togglegroup"
+            "${mod}, Esc, exec, ${pkgs.systemd}/bin/loginctl lock-session"
             "${mod}, T, exec, ${pkgs.rio}/bin/rio"
             "${mod}, D, exec, ${pkgs.tofi}/bin/tofi-drun | xargs ${pkgs.hyprland}/bin/hyprctl dispatch exec --"
             "${mod}, mouse_down, workspace, e+1"
@@ -125,7 +126,8 @@ in {
             "${mod}, Y, changegroupactive, f"
             "${mod}, O, changegroupactive, b"
             "${mod}, F, fullscreen, 1"
-            ", Print, exec, exec ${pkgs.sway-contrib.grimshot}/bin/grimshot --notify copy area"
+            "${mod} ALT, F, fullscreen, 0"
+            ", Print, exec, ${pkgs.sway-contrib.grimshot}/bin/grimshot --notify copy area"
           ]
           ++ (builtins.concatLists (lib.attrsets.mapAttrsToList (bind: dir: [
               "${mod}, ${bind}, movefocus, ${dir}"
