@@ -12,6 +12,6 @@
     };
     workspace = 1;
     transform = 0;
-    refresh_rate = "240.490";
+    refresh_rate = 240.49;
   }
 ]

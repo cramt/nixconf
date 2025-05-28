@@ -151,7 +151,7 @@
         res,
         refresh_rate,
         ...
-      }: "video=${port}:${toString res.width}x${toString res.height}@${refresh_rate}"
+      }: "video=${port}:${toString res.width}x${toString res.height}@${toString refresh_rate}"
     )
     (import ./monitors.nix);
 

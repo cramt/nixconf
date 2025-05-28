@@ -76,7 +76,6 @@ in {
               res,
               transform,
               pos,
-              refresh_rate,
               name,
               ...
             }: {
@@ -85,7 +84,6 @@ in {
                 res = "${toString res.width}x${toString res.height}";
                 transform = toString transform;
                 pos = "${toString pos.x} ${toString pos.y}";
-                #refresh_rate = refresh_rate;
               };
             }
           )

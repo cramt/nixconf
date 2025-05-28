@@ -89,12 +89,19 @@ in {
               res,
               pos,
               name,
+              transform,
+              refresh_rate,
               ...
             }: let
               r = "${builtins.toString res.width}x${builtins.toString res.height}";
               p = "${builtins.toString pos.x}x${builtins.toString pos.y}";
+              t = builtins.toString (transform / 90);
+              rr =
+                if builtins.isNull refresh_rate
+                then r
+                else "${r}@${builtins.toString refresh_rate}";
             in [
-              "desc:${name}, ${r}, ${p}, 1"
+              "desc:${name}, ${rr}, ${p}, 1, transform, ${t}"
             ]
           )
           cfg.monitors);
@@ -124,17 +131,18 @@ in {
           [
             "${mod}, Q, killactive,"
             "${mod}, S, togglegroup"
-            "${mod}, Esc, exec, ${pkgs.systemd}/bin/loginctl lock-session"
+            "${mod}, escape, exec, ${pkgs.systemd}/bin/loginctl lock-session"
+            "${mod} SHIFT, escape, exec, ${pkgs.systemd}/bin/loginctl terminate-session self"
             "${mod}, T, exec, ${pkgs.rio}/bin/rio"
             "${mod}, D, exec, ${pkgs.tofi}/bin/tofi-drun | xargs ${pkgs.hyprland}/bin/hyprctl dispatch exec --"
             "${mod}, mouse_down, workspace, e+1"
             "${mod}, mouse_up, workspace, e-1"
             "${mod}, G, togglefloating,"
-            "${mod}, Tab, exec, ${pkgs.hyprswitch}/bin/hyprswitch gui --mod-key super --key Tab --show-workspaces-on-all-monitors --close mod-key-release"
+            "${mod}, Tab, exec, ${pkgs.hyprswitch}/bin/hyprswitch gui --mod-key super --key Tab --show-workspaces-on-all-monitors --close mod-key-release --sort-recent"
             "${mod}, Y, changegroupactive, f"
             "${mod}, O, changegroupactive, b"
             "${mod}, F, fullscreen, 1"
-            "${mod} ALT, F, fullscreen, 0"
+            "${mod} SHIFT, F, fullscreen, 0"
             ", Print, exec, ${pkgs.sway-contrib.grimshot}/bin/grimshot --notify copy area"
           ]
           ++ (builtins.concatLists (lib.attrsets.mapAttrsToList (bind: dir: [

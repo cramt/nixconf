@@ -32,6 +32,11 @@
       configExtension = config: (lib.mkIf cfg.bundles.${name}.enable config);
     })
     (myLib.filesIn ./bundles);
+
+  types_float = lib.mkOptionType {
+    name = "float";
+    check = builtins.isFloat;
+  };
 in {
   imports =
     [
@@ -52,7 +57,7 @@ in {
                   type = lib.types.ints.unsigned;
                 };
                 refresh_rate = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
+                  type = lib.types.nullOr types_float;
                   default = null;
                 };
                 port = lib.mkOption {
