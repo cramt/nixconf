@@ -49,6 +49,10 @@ in {
             on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
             on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
           }
+          {
+            timeout = 600;
+            on-timeout = "${pkgs.systemd}/bin/systemctl suspend";
+          }
         ];
       };
     };
@@ -121,11 +125,17 @@ in {
           "${mod}, mouse:273, resizewindow"
         ];
 
-        windowrule = [
-          #"tile, class:.*"
-          "suppressevent maximize, class:.*"
-          "nomaxsize, class:.*"
-        ];
+        windowrule =
+          [
+            #"tile, class:.*"
+            "suppressevent maximize, class:.*"
+            "nomaxsize, class:.*"
+          ]
+          ++ builtins.map (title: "tile, title:${title}") [
+            "MTGA"
+            "Monster Train 2"
+            "MonsterTrain2"
+          ];
 
         bind =
           [
