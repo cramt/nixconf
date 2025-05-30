@@ -70,10 +70,10 @@ in {
                   type = lib.types.submodule {
                     options = {
                       x = lib.mkOption {
-                        type = lib.types.ints.unsigned;
+                        type = lib.types.int;
                       };
                       y = lib.mkOption {
-                        type = lib.types.ints.unsigned;
+                        type = lib.types.int;
                       };
                     };
                   };

@@ -80,44 +80,64 @@
         };
       };
     };
-    monitors = {
-      eDP-1 = {
-        pos = "0 0";
+    monitors = [
+      {
+        port = "eDP-1";
+        name = "BOE 0x094C";
+        pos = {
+          x = 0;
+          y = 0;
+        };
         res = {
           width = 1920;
           height = 1200;
         };
         transform = 0;
-        workspace = "1";
-      };
-      "Philips Consumer Electronics Company 49M2C8900 AU42447000108" = {
-        pos = "1920 0";
+        workspace = 1;
+      }
+      {
+        name = "Philips Consumer Electronics Company 49M2C8900 AU42447000108";
+        port = "DP-3";
+        pos = {
+          x = -5120;
+          y = 0;
+        };
         res = {
           width = 5120;
           height = 1440;
         };
-        workspace = "2";
+        workspace = 2;
         transform = 0;
-      };
-      "Samsung Electric Company S34J55x H4LT901725" = {
-        pos = "-3440 -900";
+      }
+      {
+        name = "Samsung Electric Company S34J55x H4LT901725";
+        port = "TODO";
+        pos = {
+          x = -3440;
+          y = -900;
+        };
         res = {
           width = 3440;
           height = 1440;
         };
         transform = 0;
-        workspace = "2";
-      };
-      "Samsung Electric Company LS27A80 HNMT900266" = {
-        pos = "-4880 -1500";
+        workspace = 2;
+      }
+      {
+        name = "Samsung Electric Company LS27A80 HNMT900266";
+        port = "TODO";
+        pos = {
+          x = -4880;
+          y = -1500;
+        };
         res = {
           width = 2560;
           height = 1440;
         };
         transform = 270;
-        workspace = "3";
-      };
-    };
+        workspace = 3;
+      }
+    ];
 
     waybar.monitors = ["eDP-1"];
 
