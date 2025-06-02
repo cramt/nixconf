@@ -111,7 +111,7 @@
       }
       {
         name = "Samsung Electric Company S34J55x H4LT901725";
-        port = "TODO";
+        port = "HDMI-A-1";
         pos = {
           x = -3440;
           y = -900;
@@ -125,7 +125,7 @@
       }
       {
         name = "Samsung Electric Company LS27A80 HNMT900266";
-        port = "TODO";
+        port = "DP-6";
         pos = {
           x = -4880;
           y = -1500;
@@ -134,7 +134,7 @@
           width = 2560;
           height = 1440;
         };
-        transform = 270;
+        transform = 90;
         workspace = 3;
       }
     ];

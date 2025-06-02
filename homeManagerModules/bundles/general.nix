@@ -8,6 +8,7 @@
   ld_packages = with pkgs; [
     libyaml.dev
     stdenv.cc.cc
+    openssl.dev
   ];
 in {
   imports = [
@@ -41,6 +42,7 @@ in {
 
   home.packages = with pkgs;
     [
+      pkg-config
       element-desktop
       git
       gnupg
@@ -87,6 +89,7 @@ in {
     NH_FLAKE = "${config.home.homeDirectory}/nixconf";
     LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
     LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+    PKG_CONFIG_PATH = lib.strings.concatStringsSep ":" (builtins.map (x: "${x}/lib/pkgconfig") ld_packages);
     EDITOR = "nvim";
     BROWSER = "zen";
     TERMINAL = "alacritty";
