@@ -10,6 +10,7 @@ in {
   config = {
     myHomeManager.rofi.enable = true;
     myHomeManager.waybar.enable = true;
+    programs.waybar.systemd.enable = true;
     stylix.targets.hyprlock.useWallpaper = false;
     programs.hyprlock = {
       enable = true;
@@ -41,13 +42,18 @@ in {
         };
         listener = [
           {
-            timeout = 330;
-            on-timeout = "${pkgs.systemd}/bin/loginctl lock-session";
-          }
-          {
             timeout = 300;
             on-timeout = "${pkgs.hyprland}/bin/hyprctl dispatch dpms off";
             on-resume = "${pkgs.hyprland}/bin/hyprctl dispatch dpms on";
+          }
+          {
+            timeout = 330;
+            on-timeout = "${pkgs.systemd}/bin/loginctl lock-session";
+          }
+
+          {
+            timeout = 1800;
+            on-timeout = "${pkgs.systemd}/bin/systemctl suspend";
           }
         ];
       };
@@ -63,7 +69,6 @@ in {
         };
 
         exec-once = [
-          "${pkgs.waybar}/bin/waybar -b hyprland"
           "${pkgs.hyprswitch}/bin/hyprswitch init &"
         ];
 
