@@ -1309,16 +1309,15 @@
         "systems": "systems_6"
       },
       "locked": {
-        "lastModified": 1748978029,
-        "narHash": "sha256-fZwmtK/VObNPbSC1hEeCUR0rXZynBH04nVcBFZwJeMU=",
-        "owner": "cramt",
+        "lastModified": 1749033605,
+        "narHash": "sha256-OkrBJNnD9/Qe2tn3/21rjbiVLlRvaNMdqzfFqUkpbHo=",
+        "owner": "notashelf",
         "repo": "nvf",
-        "rev": "48d5fbfa32f3675fa6d8175ff109ed546645809c",
+        "rev": "cb4d8340a172e95069b05f8e62f1c93e9ded859b",
         "type": "github"
       },
       "original": {
-        "owner": "cramt",
-        "ref": "avante",
+        "owner": "notashelf",
         "repo": "nvf",
         "type": "github"
       }
