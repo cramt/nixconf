@@ -16,8 +16,8 @@
     version = "1.5.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:2458b13b6bdb9beee13acd2c70172140e9f9362488914d9f7cd95a473c3742b7";
-      sha256 = "sha256-bL/bWq3sQJJlaFpzi2bpWqZMEQmi7So5OuMszIKQJ/I=";
+      imageDigest = "sha256:81d76b6c13a7a9481440402f0fa0ff1dc6027d003447da28eb1ed150e1846af7";
+      sha256 = "sha256-XmCQo1o2NpyGVRyr8dhUHP59eD6NmEUBVccegaj1z7w=";
       finalImageTag = "1.5.2";
     };
   };
@@ -36,8 +36,8 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:89d061b3953d2ba5852f43dd6818462e8b6ac64887593ec4539782a60f6f8e81";
-      sha256 = "sha256-/u+uBMquXRhzufAnqtyq3UeOuwUw7O2uawWF8G4IV2M=";
+      imageDigest = "sha256:26d2b09333fc17d4306a57beb9cc632dc0e63093e4c0062b084ebc37e9b1763e";
+      sha256 = "sha256-N1sxOaBm8/0/1TSYt7SbXnL2ghk4ftATlU0KkprItAg=";
       finalImageTag = "java8";
     };
   };
@@ -53,12 +53,12 @@
   };
   prowlarr = {
     pname = "prowlarr";
-    version = "1.36.3";
+    version = "1.37.0";
     src = dockerTools.pullImage {
       imageName = "linuxserver/prowlarr";
-      imageDigest = "sha256:1a6cdd0cc2350f8527dab39bc8467c9a2553bbbcf75a2c66f882fc53d73d5deb";
-      sha256 = "sha256-HiiNVhx7naLtjmcvAgiN1kPTNGatNGOE10U6yN8O5jM=";
-      finalImageTag = "1.36.3";
+      imageDigest = "sha256:68d16fa1a692ec26c4340a23f50b5980899c5630ce881fd0015dac849cbb9b53";
+      sha256 = "sha256-AZR4wkNeuW6xn8svbGsLf+olcinHViAZXXc6pUjw324=";
+      finalImageTag = "1.37.0";
     };
   };
   qbittorrent = {
