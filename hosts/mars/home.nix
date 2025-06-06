@@ -99,7 +99,7 @@
         name = "Philips Consumer Electronics Company 49M2C8900 AU42447000108";
         port = "DP-3";
         pos = {
-          x = -5120;
+          x = 1920;
           y = 0;
         };
         res = {
