@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  pkgs,
   ...
 }: let
   cfg = config.myNixOS.docker;
@@ -21,6 +22,9 @@ in {
     virtualisation.docker = {
       enable = true;
       daemon.settings = {
+        runtimes = {
+          runsc.path = "${pkgs.gvisor}/bin/runsc";
+        };
         hosts =
           [
             "unix:///var/run/docker.sock"
