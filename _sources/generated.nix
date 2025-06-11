@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.70";
+    version = "v0.108.0-b.71";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:79c5ba0dfd07b2be88976872fb66fbef94cabb67167045a74947b11a08f2bb93";
-      sha256 = "sha256-0wDrF7Ty5l3o8eYesSvSf2mgKUoSsJEZbjpZO6BF3O0=";
-      finalImageTag = "v0.108.0-b.70";
+      imageDigest = "sha256:3c49b214ca9264f85c488d000cf817eee2795af8e60c9a109f5afc187c01e063";
+      sha256 = "sha256-1mB8uA7Bt/H/XPjG1qyiBhkVdEn97s6GMDjfadB7l2w=";
+      finalImageTag = "v0.108.0-b.71";
     };
   };
   bazarr = {
@@ -16,19 +16,19 @@
     version = "1.5.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:81d76b6c13a7a9481440402f0fa0ff1dc6027d003447da28eb1ed150e1846af7";
-      sha256 = "sha256-XmCQo1o2NpyGVRyr8dhUHP59eD6NmEUBVccegaj1z7w=";
+      imageDigest = "sha256:2458b13b6bdb9beee13acd2c70172140e9f9362488914d9f7cd95a473c3742b7";
+      sha256 = "sha256-bL/bWq3sQJJlaFpzi2bpWqZMEQmi7So5OuMszIKQJ/I=";
       finalImageTag = "1.5.2";
     };
   };
   jellyfin = {
     pname = "jellyfin";
-    version = "2025060205";
+    version = "2025060905";
     src = dockerTools.pullImage {
       imageName = "jellyfin/jellyfin";
-      imageDigest = "sha256:dcc4b02c7697ffc99ac71176ba3e844dbc142bc056da337bffc47717f1a6435b";
-      sha256 = "sha256-oHeiMyzuiX6jyOvDex08jPmWe1q+sEcGNMPbWgzPdpw=";
-      finalImageTag = "2025060205";
+      imageDigest = "sha256:a40bb806582317ac772d6e3bcb3d5de698b96afb89894040eeb7efb40df910a4";
+      sha256 = "sha256-iTY5t+yhLq1hj33OX9lvWCd+MS6EhaB8NExN9NqRGxA=";
+      finalImageTag = "2025060905";
     };
   };
   minecraft-server = {
@@ -36,8 +36,8 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:26d2b09333fc17d4306a57beb9cc632dc0e63093e4c0062b084ebc37e9b1763e";
-      sha256 = "sha256-N1sxOaBm8/0/1TSYt7SbXnL2ghk4ftATlU0KkprItAg=";
+      imageDigest = "sha256:89d061b3953d2ba5852f43dd6818462e8b6ac64887593ec4539782a60f6f8e81";
+      sha256 = "sha256-/u+uBMquXRhzufAnqtyq3UeOuwUw7O2uawWF8G4IV2M=";
       finalImageTag = "java8";
     };
   };
