@@ -22,7 +22,7 @@
     git_update_notifier.enable = true;
     thunderbird.enable = false;
     sway.enable = true;
-    cosmic.enable = true;
+    cosmic.enable = false;
     alacritty.enable = true;
     rio.enable = true;
     mako.enable = true;
