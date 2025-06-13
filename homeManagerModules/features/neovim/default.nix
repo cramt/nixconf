@@ -88,99 +88,105 @@ in {
             enable = true;
           };
 
-          keymaps = [
-            {
-              key = "<leader>w";
-              mode = "n";
-              action = "<Cmd>w<CR>";
-              desc = "Save";
-            }
-            {
-              key = "<leader>q";
-              mode = "n";
-              action = "<Cmd>confirm q<CR>";
-              desc = "Quit";
-            }
-            {
-              key = "<leader>Q";
-              mode = "n";
-              action = "<Cmd>confirm qall<CR>";
-              desc = "Quit all";
-            }
-            {
-              key = "<leader>c";
-              mode = "n";
-              action = ''
-                function()
-                  require("bufdelete").bufdelete(vim.api.nvim_get_current_buf(), false)
-                end
-              '';
-              lua = true;
-              desc = "Close buffer";
-            }
-            {
-              key = "<leader>C";
-              mode = "n";
-              action = ''
-                function()
-                  require("bufdelete").bufdelete(vim.api.nvim_get_current_buf(), true)
-                end
-              '';
-              lua = true;
-              desc = "Force close buffer";
-            }
-            {
-              key = "L";
-              mode = "n";
-              action = "<Cmd>bnext<CR>";
-              desc = "Next Buffer";
-            }
-            {
-              key = "H";
-              mode = "n";
-              action = "<Cmd>bprev<CR>";
-              desc = "Prev Buffer";
-            }
-            {
-              key = "<C-Left>";
-              mode = "n";
-              action = ":vertical resize -5<CR>";
-              desc = "Resize Left";
-            }
-            {
-              key = "<C-Right>";
-              mode = "n";
-              action = ":vertical resize +5<CR>";
-              desc = "Resize Right";
-            }
-            {
-              key = "<leader>e";
-              mode = "n";
-              action = ''
-                function()
-                  if vim.bo.filetype == "neo-tree" then
-                    vim.cmd.wincmd "p"
-                  else
-                    vim.cmd.Neotree "focus"
+          keymaps =
+            [
+              {
+                key = "<leader>w";
+                mode = "n";
+                action = "<Cmd>w<CR>";
+                desc = "Save";
+              }
+              {
+                key = "<leader>q";
+                mode = "n";
+                action = "<Cmd>confirm q<CR>";
+                desc = "Quit";
+              }
+              {
+                key = "<leader>Q";
+                mode = "n";
+                action = "<Cmd>confirm qall<CR>";
+                desc = "Quit all";
+              }
+              {
+                key = "<leader>c";
+                mode = "n";
+                action = ''
+                  function()
+                    require("bufdelete").bufdelete(vim.api.nvim_get_current_buf(), false)
                   end
-                end
-              '';
-              lua = true;
-              desc = "Open exlorer";
-            }
-            {
-              key = "<Tab>";
-              mode = "v";
-              action = ">gv";
-              desc = "Indent";
-            }
-            {
-              key = "<S-Tab>";
-              mode = "v";
-              action = "<gv";
-              desc = "Unindent";
-            }
-          ];
+                '';
+                lua = true;
+                desc = "Close buffer";
+              }
+              {
+                key = "<leader>C";
+                mode = "n";
+                action = ''
+                  function()
+                    require("bufdelete").bufdelete(vim.api.nvim_get_current_buf(), true)
+                  end
+                '';
+                lua = true;
+                desc = "Force close buffer";
+              }
+              {
+                key = "L";
+                mode = "n";
+                action = "<Cmd>bnext<CR>";
+                desc = "Next Buffer";
+              }
+              {
+                key = "H";
+                mode = "n";
+                action = "<Cmd>bprev<CR>";
+                desc = "Prev Buffer";
+              }
+              {
+                key = "<C-Left>";
+                mode = "n";
+                action = ":vertical resize -5<CR>";
+                desc = "Resize Left";
+              }
+              {
+                key = "<C-Right>";
+                mode = "n";
+                action = ":vertical resize +5<CR>";
+                desc = "Resize Right";
+              }
+              {
+                key = "<leader>e";
+                mode = "n";
+                action = ''
+                  function()
+                    if vim.bo.filetype == "neo-tree" then
+                      vim.cmd.wincmd "p"
+                    else
+                      vim.cmd.Neotree "focus"
+                    end
+                  end
+                '';
+                lua = true;
+                desc = "Open exlorer";
+              }
+              {
+                key = "<Tab>";
+                mode = "v";
+                action = ">gv";
+                desc = "Indent";
+              }
+              {
+                key = "<S-Tab>";
+                mode = "v";
+                action = "<gv";
+                desc = "Unindent";
+              }
+            ]
+            ++ (builtins.map (x: {
+              key = "<C-${lib.strings.toUpper x}>";
+              mode = "n";
+              action = "<C-W>${x}";
+            }) ["h" "j" "k" "l"]);
 
           lsp = {
             enable = true;
