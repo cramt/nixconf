@@ -35,7 +35,7 @@ in {
     };
 
     home.sessionVariables = {
-      OPENAI_API_KEY = (import ../../../secrets.nix).ollama_secret;
+      GEMINI_API_KEY = (import ../../../secrets.nix).gemini_api_key;
     };
 
     programs.nvf = {
@@ -44,30 +44,13 @@ in {
         vim = {
           assistant = {
             avante-nvim = {
-              enable = false;
+              enable = true;
               setupOpts = {
-                provider = "qwen7";
-                auto_suggestions_provider = "qwen3";
-                behaviour = {
-                  auto_suggestions = true;
-                };
-                vendors = let
-                  base = {
-                    __inherited_from = "openai";
-                    endpoint = "https://ollama.${(import ../../../secrets.nix).domain}/v1";
-                    disable_tools = true;
+                provider = "gemini";
+                providers = {
+                  gemini = {
+                    model = "gemini-2.0-flash";
                   };
-                in {
-                  qwen7 =
-                    {
-                      model = "qwen2.5-coder:7b";
-                    }
-                    // base;
-                  qwen3 =
-                    {
-                      model = "qwen2.5-coder:3b";
-                    }
-                    // base;
                 };
               };
             };
