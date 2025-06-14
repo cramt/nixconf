@@ -82,6 +82,8 @@ in {
       julia
       zig
       futhark
+      swift
+      swiftPackages.swiftpm
     ]
     ++ ld_packages;
 
@@ -89,6 +91,7 @@ in {
     NH_FLAKE = "${config.home.homeDirectory}/nixconf";
     LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
     LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+    CC = "${pkgs.clang}/bin/clang";
     PKG_CONFIG_PATH = lib.strings.concatStringsSep ":" (builtins.map (x: "${x}/lib/pkgconfig") ld_packages);
     EDITOR = "nvim";
     BROWSER = "zen";

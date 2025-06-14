@@ -45,6 +45,7 @@ in {
       inputs.nvf.homeManagerModules.default
       inputs.cosmic-manager.homeManagerModules.cosmic-manager
       inputs.zen-browser.homeModules.beta
+      inputs.hyprshell.homeModules.hyprshell
       {
         options.myHomeManager.monitors = lib.mkOption {
           type = lib.types.listOf (

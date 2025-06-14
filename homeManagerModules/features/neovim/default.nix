@@ -199,6 +199,13 @@ in {
             lspSignature.enable = true;
             otter-nvim.enable = true;
             nvim-docs-view.enable = true;
+            lspconfig.sources.sourcekit = ''
+              lspconfig.sourcekit.setup {
+                capabilities = capabilities,
+                on_attach = default_on_attach,
+                cmd = { "${pkgs.sourcekit-lsp}/bin/sourcekit-lsp" }
+              }
+            '';
             lspconfig.sources.futhark_lsp = ''
               lspconfig.futhark_lsp.setup {
                 capabilities = capabilities,

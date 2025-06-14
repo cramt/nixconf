@@ -10,26 +10,44 @@ in {
   config = {
     myHomeManager.rofi.enable = true;
     myHomeManager.waybar.enable = true;
-    programs.waybar.systemd.enable = true;
     stylix.targets.hyprlock.useWallpaper = false;
-    programs.hyprlock = {
-      enable = true;
-      settings = {
-        animations = {
-          enabled = "true";
+    programs = {
+      waybar.systemd.enable = true;
+      hyprlock = {
+        enable = true;
+        settings = {
+          animations = {
+            enabled = "true";
+          };
+          background = {
+            path = "screenshot";
+            blur_passes = 3;
+          };
+          label = [
+            {
+              text = "$TIME";
+              font_size = "90";
+              halign = "left";
+              valighn = "top";
+            }
+          ];
         };
-        background = {
-          path = "screenshot";
-          blur_passes = 3;
+      };
+      hyprshell = {
+        enable = true;
+        systemd.args = "-v";
+        settings = {
+          launcher = {
+            max_items = 6;
+          };
+          windows.switch = {
+            navigate = {
+              forward = "tab";
+              reverse.mod = "shift";
+            };
+            open.modifier = "super";
+          };
         };
-        label = [
-          {
-            text = "$TIME";
-            font_size = "90";
-            halign = "left";
-            valighn = "top";
-          }
-        ];
       };
     };
     services.hypridle = {
@@ -67,10 +85,6 @@ in {
           gaps_out = 0;
           border_size = 2;
         };
-
-        exec-once = [
-          "${pkgs.hyprswitch}/bin/hyprswitch init &"
-        ];
 
         input = {
           kb_layout = "dk";
@@ -149,7 +163,6 @@ in {
             "${mod}, mouse_down, workspace, e+1"
             "${mod}, mouse_up, workspace, e-1"
             "${mod}, G, togglefloating,"
-            "${mod}, Tab, exec, ${pkgs.hyprswitch}/bin/hyprswitch gui --mod-key super --key Tab --show-workspaces-on-all-monitors --close mod-key-release --sort-recent"
             "${mod}, Y, changegroupactive, f"
             "${mod}, O, changegroupactive, b"
             "${mod}, F, fullscreen, 1"

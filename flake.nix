@@ -16,6 +16,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hyprshell = {
+      url = "github:H3rmt/hyprshell?ref=hyprshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     cosmic-manager = {
       url = "github:HeitorAugustoLN/cosmic-manager";
       inputs = {
