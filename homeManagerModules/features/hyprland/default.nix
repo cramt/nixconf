@@ -34,7 +34,7 @@ in {
         };
       };
       hyprshell = {
-        enable = true;
+        enable = false;
         systemd.args = "-v";
         settings = {
           launcher = {
