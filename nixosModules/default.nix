@@ -57,6 +57,7 @@ in {
 
   config = {
     stylix.enable = true;
+    services.gnome.gcr-ssh-agent.enable = false;
     nix.package = pkgs.lix;
     nix.settings = {
       experimental-features = ["nix-command" "flakes" "repl-flake"];
