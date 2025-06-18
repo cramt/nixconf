@@ -21,6 +21,7 @@
   services.scx.enable = true;
 
   myNixOS = {
+    waydroid.enable = true;
     gnupg.enable = true;
     qemu.enable = false;
     docker.enable = true;
