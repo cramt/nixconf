@@ -21,7 +21,7 @@
   services.scx.enable = true;
 
   myNixOS = {
-    waydroid.enable = true;
+    waydroid.enable = false;
     gnupg.enable = true;
     qemu.enable = false;
     docker.enable = true;
@@ -44,7 +44,7 @@
       };
     in {
       ollama = {
-        enable = true;
+        enable = false;
         gpu = "rocm";
         rocmVersion = "11.0.1";
       };
@@ -120,7 +120,8 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-  services.displayManager.cosmic-greeter.enable = true;
+  #services.displayManager.cosmic-greeter.enable = true;
+  services.displayManager.gdm.enable = true;
   services.desktopManager.cosmic.enable = true;
 
   # Configure keymap in X11

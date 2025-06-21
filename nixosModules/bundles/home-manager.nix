@@ -44,7 +44,7 @@ in {
 
     services = {
       displayManager = {
-        defaultSession = "sway";
+        defaultSession = "hyprland";
       };
     };
 

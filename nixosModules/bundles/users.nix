@@ -29,12 +29,6 @@ in {
     programs.sway.enable = true;
     programs.hyprland.enable = true;
 
-    services = {
-      displayManager = {
-        defaultSession = "sway";
-      };
-    };
-
     home-manager = {
       extraSpecialArgs = {
         inherit inputs;
