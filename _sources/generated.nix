@@ -83,12 +83,12 @@
   };
   sonarr = {
     pname = "sonarr";
-    version = "4.0.14";
+    version = "4.0.15";
     src = dockerTools.pullImage {
       imageName = "linuxserver/sonarr";
-      imageDigest = "sha256:cdf5eb3cfa207d46b066bfbb41b03576c67a1f6ecc8aba19146d0f7349ec79dc";
-      sha256 = "sha256-RvBpfZrU4J9vCHByxKxOzqef+J3WXk+LzEM9wRh0o3o=";
-      finalImageTag = "4.0.14";
+      imageDigest = "sha256:1156329d544b38bd1483add75c9b72c559f20e1ca043fd2d6376c2589d38951f";
+      sha256 = "sha256-7+ggXjaEzH14UgTzwsOHSRIUKNYJ+oADHklz38ORRCA=";
+      finalImageTag = "4.0.15";
     };
   };
   tor-privoxy = {

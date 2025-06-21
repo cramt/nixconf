@@ -36,6 +36,7 @@ in {
       hyprshell = {
         enable = false;
         systemd.args = "-v";
+        /*
         settings = {
           launcher = {
             max_items = 6;
@@ -48,6 +49,7 @@ in {
             open.modifier = "super";
           };
         };
+        */
       };
     };
     services.hypridle = {
