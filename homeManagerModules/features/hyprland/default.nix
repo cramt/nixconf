@@ -34,7 +34,7 @@ in {
         };
       };
       hyprshell = {
-        enable = false;
+        enable = true;
         systemd.args = "-v";
         /*
         settings = {
