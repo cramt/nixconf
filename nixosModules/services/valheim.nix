@@ -68,13 +68,15 @@ in {
         TYPE = "BepInEx";
         MODS = ''
           denikson-BepInExPack_Valheim-5.4.2202
+          Azumatt-Official_BepInEx_ConfigurationManager-18.4.0
           Advize-PlantEverything-1.19.1
-          ValheimModding-Jotunn-2.24.3
-          RustyMods-Seasonality-3.5.6
+          ValheimModding-Jotunn-2.25.0
+          RustyMods-Seasonality-3.5.7
           Valphi-BetterLaddersContinued-0.217.24
           Pineapple-TorchesEternal-0.3.0
           N3xus-FarmGrid-0.2.0
           blacks7ar-FeatherCollector-1.1.8
+          Azumatt-AzuClock-1.0.5
         '';
       };
       extraOptions = [

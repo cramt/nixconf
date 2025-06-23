@@ -8,8 +8,8 @@
   gtnh_static_raw = pkgs.stdenv.mkDerivation {
     name = "gtnh-static-raw";
     src = pkgs.fetchurl {
-      url = "https://downloads.gtnewhorizons.com/ServerPacks/GT_New_Horizons_2.7.2_Server_Java_17-21.zip";
-      sha256 = "sha256-IDf53ScNurrewUBbAw5McmzXXuCyRbLs+F0ObY3wUlg=";
+      url = "https://downloads.gtnewhorizons.com/ServerPacks/GT_New_Horizons_2.7.4_Server_Java_17-21.zip";
+      sha256 = "sha256-cPDC7AJTudRFF/vlp9THqmMep3AAe4zqKJUf74Ppizg=";
     };
     phases = ["installPhase"];
     nativeBuildInputs = [pkgs.unzip];
