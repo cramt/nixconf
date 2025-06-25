@@ -36,20 +36,14 @@ in {
       hyprshell = {
         enable = true;
         systemd.args = "-v";
-        /*
         settings = {
-          launcher = {
-            max_items = 6;
-          };
-          windows.switch = {
-            navigate = {
-              forward = "tab";
-              reverse.mod = "shift";
+          windows = {
+            switch = {
+              enable = true;
+              modifier = "super";
             };
-            open.modifier = "super";
           };
         };
-        */
       };
     };
     services.hypridle = {
