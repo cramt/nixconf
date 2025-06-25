@@ -63,7 +63,8 @@
     };
 
     stylix = {
-      url = "github:danth/stylix";
+      #url = "github:nix-community/stylix";
+      url = "github:Hobr/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
