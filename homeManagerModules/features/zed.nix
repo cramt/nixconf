@@ -7,7 +7,7 @@
     enable = true;
 
     ## This populates the userSettings "auto_install_extensions"
-    extensions = ["nix" "toml" "elixir" "make"];
+    extensions = ["nix" "toml" "elixir" "make" "ruby"];
 
     ## everything inside of these brackets are Zed options.
     userSettings = {
@@ -110,7 +110,7 @@
       vim_mode = true;
       ## tell zed to use direnv and direnv can use a flake.nix enviroment.
       load_direnv = "shell_hook";
-      base_keymap = "VSCode";
+      base_keymap = "None";
       show_whitespaces = "all";
     };
   };
