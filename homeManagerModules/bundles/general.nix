@@ -38,6 +38,7 @@ in {
     zellij.enable = true;
     btop.enable = true;
     lazygit.enable = true;
+    zed.enable = true;
   };
 
   home.packages = with pkgs;
