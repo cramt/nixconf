@@ -30,11 +30,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:2458b13b6bdb9beee13acd2c70172140e9f9362488914d9f7cd95a473c3742b7",
+            "imageDigest": "sha256:81d76b6c13a7a9481440402f0fa0ff1dc6027d003447da28eb1ed150e1846af7",
             "imageName": "linuxserver/bazarr",
             "imageTag": "1.5.2",
             "os": null,
-            "sha256": "sha256-bL/bWq3sQJJlaFpzi2bpWqZMEQmi7So5OuMszIKQJ/I=",
+            "sha256": "sha256-XmCQo1o2NpyGVRyr8dhUHP59eD6NmEUBVccegaj1z7w=",
             "tlsVerify": null
         },
         "version": "1.5.2"
@@ -70,11 +70,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:89d061b3953d2ba5852f43dd6818462e8b6ac64887593ec4539782a60f6f8e81",
+            "imageDigest": "sha256:26d2b09333fc17d4306a57beb9cc632dc0e63093e4c0062b084ebc37e9b1763e",
             "imageName": "itzg/minecraft-server",
             "imageTag": "java8",
             "os": null,
-            "sha256": "sha256-/u+uBMquXRhzufAnqtyq3UeOuwUw7O2uawWF8G4IV2M=",
+            "sha256": "sha256-N1sxOaBm8/0/1TSYt7SbXnL2ghk4ftATlU0KkprItAg=",
             "tlsVerify": null
         },
         "version": "java8"

@@ -65,10 +65,12 @@ in {
       substituters = [
         "https://nix-gaming.cachix.org"
         "https://yazi.cachix.org"
+        "https://nvf.cachix.org"
       ];
       trusted-public-keys = [
         "nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4="
         "yazi.cachix.org-1:Dcdz63NZKfvUCbDGngQDAZq6kOroIrFoyO064uvLh8k="
+        "nvf.cachix.org-1:GMQWiUhZ6ux9D5CvFFMwnc2nFrUHTeGaXRlVBXo+naI="
       ];
     };
     programs.nix-ld.enable = true;
