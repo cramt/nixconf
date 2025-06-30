@@ -13,6 +13,7 @@
     gimp
     inputs.zen-browser.packages."${pkgs.system}".default
     anytype
+    vlc
   ];
 
   xdg.enable = true;

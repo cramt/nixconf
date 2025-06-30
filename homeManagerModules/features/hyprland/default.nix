@@ -2,12 +2,14 @@
   pkgs,
   lib,
   config,
+  inputs,
   ...
 }: let
   mod = "SUPER";
   cfg = config.myHomeManager;
 in {
   config = {
+    home.packages = [inputs.astal.packages.${pkgs.system}.default];
     myHomeManager.rofi.enable = true;
     myHomeManager.waybar.enable = true;
     stylix.targets.hyprlock.useWallpaper = false;
