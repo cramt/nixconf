@@ -14,12 +14,6 @@
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
 
-  home.packages = [
-    ((import ./sway_gaming.nix) {
-      inherit pkgs;
-    })
-  ];
-
   myHomeManager = {
     hyprland.enable = true;
     bundles.general.enable = true;

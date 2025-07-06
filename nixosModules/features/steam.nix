@@ -1,20 +1,4 @@
-{
-  pkgs,
-  lib,
-  config,
-  ...
-}: let
-  cfg = config.myNixOS.steam;
-in {
-  options.myNixOS.steam = {
-    swayGamingPackage = lib.mkOption {
-      type = lib.types.nullOr lib.types.package;
-      default = null;
-      description = ''
-        destination for adguards work volume
-      '';
-    };
-  };
+{pkgs, ...}: {
   config = {
     programs.gamescope = {
       enable = true;
@@ -35,15 +19,6 @@ in {
     };
     programs.gamemode = {
       enable = true;
-      settings = {
-        custom =
-          if cfg.swayGamingPackage != null
-          then {
-            start = "${cfg.swayGamingPackage}/bin/sway_gaming true";
-            end = "${cfg.swayGamingPackage}/bin/sway_gaming false";
-          }
-          else {};
-      };
     };
     systemd.user.services.steam_background = {
       enable = true;

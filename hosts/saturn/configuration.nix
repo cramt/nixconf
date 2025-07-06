@@ -28,12 +28,7 @@
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
     bundles.graphical.enable = true;
-    steam = {
-      enable = true;
-      swayGamingPackage = (import ./sway_gaming.nix) {
-        inherit pkgs;
-      };
-    };
+    steam.enable = true;
     amd.enable = true;
     bundles.users.enable = true;
     services = let

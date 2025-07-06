@@ -16,8 +16,8 @@
     version = "1.5.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:81d76b6c13a7a9481440402f0fa0ff1dc6027d003447da28eb1ed150e1846af7";
-      sha256 = "sha256-XmCQo1o2NpyGVRyr8dhUHP59eD6NmEUBVccegaj1z7w=";
+      imageDigest = "sha256:2458b13b6bdb9beee13acd2c70172140e9f9362488914d9f7cd95a473c3742b7";
+      sha256 = "sha256-bL/bWq3sQJJlaFpzi2bpWqZMEQmi7So5OuMszIKQJ/I=";
       finalImageTag = "1.5.2";
     };
   };
@@ -36,8 +36,8 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:26d2b09333fc17d4306a57beb9cc632dc0e63093e4c0062b084ebc37e9b1763e";
-      sha256 = "sha256-N1sxOaBm8/0/1TSYt7SbXnL2ghk4ftATlU0KkprItAg=";
+      imageDigest = "sha256:89d061b3953d2ba5852f43dd6818462e8b6ac64887593ec4539782a60f6f8e81";
+      sha256 = "sha256-/u+uBMquXRhzufAnqtyq3UeOuwUw7O2uawWF8G4IV2M=";
       finalImageTag = "java8";
     };
   };
