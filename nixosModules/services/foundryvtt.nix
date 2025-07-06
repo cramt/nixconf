@@ -6,7 +6,7 @@
   ...
 }: let
   version = "12.0.0+331";
-  foundryvttPkg = inputs.foundryvtt.packages.${pkgs.system}.foundryvtt.overrideAttrs {
+  foundryvttPkg = inputs.foundryvtt.packages.${pkgs.system}.foundryvtt_12.overrideAttrs {
     version = version;
   };
   cfg = config.myNixOS.services.foundryvtt;
