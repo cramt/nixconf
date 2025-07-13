@@ -83,8 +83,9 @@ in {
       julia
       zig
       futhark
-      swift
-      swiftPackages.swiftpm
+      devenv
+      gemini-cli
+      geminicommit
     ]
     ++ ld_packages;
 
