@@ -49,6 +49,7 @@ in {
     networking.firewall.allowedTCPPorts = [5432];
     services.postgresql = {
       enable = true;
+      package = pkgs.postgresql_15;
       ensureDatabases = builtins.map (x: x.name) cfg.applicationUsers;
       initialScript = initialScript;
       enableTCPIP = true;

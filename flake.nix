@@ -28,7 +28,7 @@
     };
 
     hyprshell = {
-      url = "github:H3rmt/hyprshell?ref=hyprshell";
+      url = "github:H3rmt/hyprshell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

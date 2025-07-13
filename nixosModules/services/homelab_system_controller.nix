@@ -26,6 +26,7 @@ in {
         ALLOWED_GUILD = secrets.allowed_guild;
         LISTEN_PORT = "1622";
         SYSTEMCTL_PATH = "${pkgs.systemd}/bin/systemctl";
+        RTSP_STREAM = "dummy";
       };
       description = "Runs homelab system controller host";
       wantedBy = ["network-online.target"];
