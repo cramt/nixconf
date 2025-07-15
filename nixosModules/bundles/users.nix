@@ -60,6 +60,7 @@ in {
               "libvirtd"
               "networkmanager"
               "wheel"
+              "pipewire"
               "docker"
               "storage"
               "gamemode"

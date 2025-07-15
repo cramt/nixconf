@@ -11,16 +11,13 @@
     wlr.enable = true;
   };
   services.pipewire = {
-    package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.pipewire;
+    #package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.pipewire;
     enable = true;
     alsa.enable = true;
-    alsa.support32Bit = true;
     pulse.enable = true;
     jack.enable = true;
-    wireplumber = {
-      enable = true;
-      package = pkgs.wireplumber;
-    };
+    wireplumber.enable = true;
+    systemWide = true;
   };
   boot = {
     plymouth = {
@@ -33,7 +30,7 @@
   };
   myNixOS = {
     keymapp.enable = true;
-    external-monitor-control.enable = true;
+    external-monitor-control.enable = false;
   };
   fonts = {
     packages = with pkgs; [

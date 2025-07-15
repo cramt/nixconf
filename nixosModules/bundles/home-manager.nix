@@ -73,6 +73,7 @@ in {
           "libvirtd"
           "networkmanager"
           "wheel"
+          "pipewire"
           "plugdev"
           "dailout"
         ];
