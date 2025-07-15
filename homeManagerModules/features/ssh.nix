@@ -19,6 +19,7 @@ in {
   programs.ssh = {
     enable = true;
     addKeysToAgent = "yes";
+    controlPath = "~/.ssh/control-%C";
   };
 
   home.packages = (builtins.attrValues sshTargetPackages) ++ (builtins.attrValues sshTargetDesktops);

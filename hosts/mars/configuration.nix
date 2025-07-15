@@ -38,6 +38,7 @@
       enable = false;
     };
     services = {
+      tailscale.enable = true;
       synapse.enable = false;
       caddy = {
         enable = false;
