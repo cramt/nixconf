@@ -14,7 +14,6 @@ update_flake:
 
 update_gems:
     (cd gems && bundle lock --update)
-    (cd gems && bundix)
 
 update:
     just update_flake
