@@ -49,7 +49,6 @@ in {
     networking.firewall.allowedTCPPorts = [5432];
     services.postgresql = {
       enable = true;
-      package = pkgs.postgresql_15;
       ensureDatabases = builtins.map (x: x.name) cfg.applicationUsers;
       initialScript = initialScript;
       enableTCPIP = true;
@@ -75,7 +74,7 @@ in {
       dataDir = cfg.dataDir;
     };
     systemd.services.postgresql = {
-      preStart = lib.mkBefore ''
+      preStart = lib.mkAfter ''
         mkdir -p ${cfg.dataDir}
         if ! test -e ${cfg.dataDir}/server.key; then
             ${pkgs.openssl}/bin/openssl req -new -x509 -days 365 -nodes -text -out ${cfg.dataDir}/server.crt -keyout ${cfg.dataDir}/server.key -subj "/CN=postgres.${secrets.domain}"
@@ -83,7 +82,7 @@ in {
         fi
       '';
       postStart = lib.mkAfter ''
-        $PSQL -f "${upsertScript}" -d postgres
+        ${config.services.postgresql.package}/bin/psql -f "${upsertScript}" -d postgres
       '';
     };
   };
