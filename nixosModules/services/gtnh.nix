@@ -36,7 +36,7 @@
       java -Xms12G -Xmx12G -Dfml.readTimeout=180 @java9args.txt -jar lwjgl3ify-forgePatches.jar nogui
     '';
   };
-  dockerImage = pkgs.dockerTools.buildLayeredImage {
+  dockerImage = pkgs.dockerTools.streamLayeredImage {
     name = "gtnh";
     tag = "1";
     contents = with pkgs; [
@@ -65,7 +65,7 @@ in {
   config = {
     virtualisation.oci-containers.containers.gtnh = {
       hostname = "gtnh";
-      imageFile = dockerImage;
+      imageStream = dockerImage;
       image = "gtnh:1";
       volumes = [
         "${cfg.dataVolume}:/data"

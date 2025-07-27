@@ -11,7 +11,7 @@
   starter = pkgs.writeShellScriptBin "servatrice_starter" ''
     ${servatricePkg}/bin/servatrice --config /config/servatrice.ini --log-to-console
   '';
-  dockerImage = pkgs.dockerTools.buildLayeredImage {
+  dockerImage = pkgs.dockerTools.streamLayeredImage {
     name = "servatrice";
     tag = "1";
     contents = with pkgs; [
@@ -69,7 +69,7 @@ in {
   config = {
     virtualisation.oci-containers.containers.servatrice = {
       hostname = "servatrice";
-      imageFile = dockerImage;
+      imageStream = dockerImage;
       image = "servatrice:1";
       volumes = [
         "${configFile}:/config/servatrice.ini"
