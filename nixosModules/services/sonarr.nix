@@ -33,6 +33,9 @@ in {
     };
   };
   config = {
+    myNixOS.services.caddy.serviceMap = {
+      sonarr = 8989;
+    };
     virtualisation.oci-containers.containers.sonarr = {
       hostname = "sonarr";
       imageFile = docker_source;

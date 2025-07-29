@@ -27,6 +27,9 @@ in {
     };
   };
   config = {
+    myNixOS.services.caddy.serviceMap = {
+      qbit = 8080;
+    };
     systemd.services.docker-create-piracy-network = {
       serviceConfig.Type = "oneshot";
       script = let

@@ -39,6 +39,9 @@ in {
     };
   };
   config = {
+    myNixOS.services.caddy.serviceMap = {
+      bazarr = 6767;
+    };
     virtualisation.oci-containers.containers.bazarr = {
       hostname = "bazarr";
       imageFile = docker_source;

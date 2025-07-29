@@ -43,6 +43,7 @@
         gpu = "rocm";
         rocmVersion = "11.0.1";
       };
+      nixarr.enable = true;
       jellyfin = {
         enable = false;
         configVolume = "/mnt/amirani/configs/jellyfin";

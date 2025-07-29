@@ -6,6 +6,7 @@
     nixpkgs-ancient.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixarr.url = "git+file:///home/cramt/code/nixarr";
 
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 

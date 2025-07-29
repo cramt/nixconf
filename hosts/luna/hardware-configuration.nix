@@ -36,6 +36,15 @@
       "nofail"
     ];
   };
+  environment.systemPackages = with pkgs; [
+    mergerfs
+  ];
+
+  fileSystems."/storage" = {
+    fsType = "fuse.mergerfs";
+    device = "/mnt/*";
+    options = ["cache.files=partial" "dropcacheonclose=true" "category.create=mfs"];
+  };
 
   swapDevices = [];
 

@@ -15,48 +15,16 @@
         };
       })
       cfg.staticFileVolumes)
-    // (
-      if config.myNixOS.services.jellyfin.enable
-      then {
-        "jellyfin.${cfg.domain}" = {
+    // (lib.attrsets.mapAttrs' (name: value: {
+        name = "${name}.${cfg.domain}";
+        value = {
           extraConfig = ''
             import cors
-            reverse_proxy http://localhost:8096
+            reverse_proxy http://localhost:${builtins.toString value}
           '';
         };
-      }
-      else {}
-    )
-    // (
-      if config.myNixOS.services.qbittorrent.enable
-      then {
-        "qbit.${cfg.domain}" = {
-          extraConfig = ''
-            import cors
-            reverse_proxy http://localhost:8080
-          '';
-        };
-      }
-      else {}
-    )
-    // (
-      if config.myNixOS.services.minio.enable
-      then {
-        "bucketapi.${cfg.domain}" = {
-          extraConfig = ''
-            import cors
-            reverse_proxy http://localhost:9000
-          '';
-        };
-        "bucket.${cfg.domain}" = {
-          extraConfig = ''
-            import cors
-            reverse_proxy http://localhost:9001
-          '';
-        };
-      }
-      else {}
-    )
+      })
+      cfg.serviceMap)
     // (
       if config.myNixOS.services.foundryvtt.enable
       then {
@@ -64,55 +32,6 @@
           extraConfig = ''
             import cors
             reverse_proxy http://localhost:30000
-          '';
-        };
-      }
-      else {}
-    )
-    // (
-      if config.myNixOS.services.prowlarr.enable
-      then {
-        "prowlarr.${cfg.domain}" = {
-          extraConfig = ''
-            import cors
-            reverse_proxy http://localhost:9696
-          '';
-        };
-      }
-      else {}
-    )
-    // (
-      if config.myNixOS.services.radarr.enable
-      then {
-        "radarr.${cfg.domain}" = {
-          extraConfig = ''
-            import cors
-            reverse_proxy http://localhost:7878
-          '';
-        };
-      }
-      else {}
-    )
-    // (
-      if config.myNixOS.services.sonarr.enable
-      then {
-        "sonarr.${cfg.domain}" = {
-          extraConfig = ''
-            import cors
-            reverse_proxy http://localhost:8989
-          '';
-        };
-      }
-      else {}
-    )
-    // (
-      if config.myNixOS.services.bazarr.enable
-      then {
-        "bazarr.${cfg.domain}" = {
-          extraConfig = ''
-            import cors
-            reverse_proxy http://localhost:6767
-
           '';
         };
       }
@@ -216,6 +135,13 @@ in {
         protocol to use
       '';
     };
+    serviceMap = lib.mkOption {
+      type = lib.types.attrsOf lib.types.int;
+      default = {};
+      description = ''
+        destinations for the caddy to mount static files
+      '';
+    };
   };
   config = {
     networking.firewall.allowedTCPPorts = [80 443];
@@ -223,9 +149,7 @@ in {
       enable = true;
       email = (import ../../secrets.nix).email;
       globalConfig = ''
-        servers {
-          log_credentials
-        }
+        debug
       '';
       virtualHosts =
         {
