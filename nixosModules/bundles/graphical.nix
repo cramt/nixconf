@@ -30,7 +30,7 @@
   };
   myNixOS = {
     keymapp.enable = true;
-    external-monitor-control.enable = false;
+    external-monitor-control.enable = true;
   };
   fonts = {
     packages = with pkgs; [
