@@ -213,13 +213,6 @@ in {
                 cmd = { "${pkgs.futhark}/bin/futhark", "lsp", "--stdio" }
               }
             '';
-            lspconfig.sources.ruby-lsp = ''
-              lspconfig.ruby_lsp.setup {
-                capabilities = capabilities,
-                on_attach = default_on_attach,
-                cmd = { "${rubyGems.ruby-lsp}/bin/ruby-lsp" }
-              }
-            '';
           };
 
           fzf-lua.profile = "fzf-native";
@@ -264,7 +257,9 @@ in {
             };
             ruby = {
               enable = true;
-              lsp.enable = false;
+              lsp.server = "rubylsp";
+              lsp.package = rubyGems.ruby-lsp;
+              format.package = rubyGems.rubocop;
             };
           };
 
