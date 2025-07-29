@@ -43,6 +43,7 @@
         enable = true;
         gpu = "cuda";
       };
+      minio.enable = true;
       minecraft-forge = {
         enable = true;
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";

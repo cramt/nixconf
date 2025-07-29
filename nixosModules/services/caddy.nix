@@ -40,6 +40,24 @@
       else {}
     )
     // (
+      if config.myNixOS.services.minio.enable
+      then {
+        "bucketapi.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:9000
+          '';
+        };
+        "bucket.${cfg.domain}" = {
+          extraConfig = ''
+            import cors
+            reverse_proxy http://localhost:9001
+          '';
+        };
+      }
+      else {}
+    )
+    // (
       if config.myNixOS.services.foundryvtt.enable
       then {
         "foundry-a.${cfg.domain}" = {
