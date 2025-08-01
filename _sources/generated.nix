@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.72";
+    version = "v0.108.0-b.73";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:85ff4c3e4344d8ac40c0e9dacd15ac79a5eac220f94255ab3066ed67655a5f42";
-      sha256 = "sha256-mheJqQTRmT5m0mr4KXU7m+W4jOW3tVNneMuJUYetfRA=";
-      finalImageTag = "v0.108.0-b.72";
+      imageDigest = "sha256:ab4746d1678802c202a076c28751da446dc14d72ac075537b09ba20f9414f20f";
+      sha256 = "sha256-bMuKPPz11QG2B8QYkQ9eu3WKSMxy7GI1/u6OYRVdsu4=";
+      finalImageTag = "v0.108.0-b.73";
     };
   };
   bazarr = {
@@ -23,12 +23,12 @@
   };
   jellyfin = {
     pname = "jellyfin";
-    version = "2025072105";
+    version = "2025072805";
     src = dockerTools.pullImage {
       imageName = "jellyfin/jellyfin";
-      imageDigest = "sha256:ba8630eb28cc311729c2a4122efe29d44254afb721a21d4ceb5972d4349bc2ef";
-      sha256 = "sha256-nLo6QhNZG5IutINFuTO71QhElSsvZMuBKqZi4e2PuR0=";
-      finalImageTag = "2025072105";
+      imageDigest = "sha256:2a7e99ccde6d587df3dbfef9396e4bb76a66c271b9c4cab6f187e1c054d99a8b";
+      sha256 = "sha256-P8A/mnnU15afNbaSZI2Gg1kCEO7WM2gVm2Irj28tymE=";
+      finalImageTag = "2025072805";
     };
   };
   minecraft-server = {

@@ -23,7 +23,7 @@ in {
       enable = true;
       port = 30000;
       dataDir = cfg.dataVolume;
-      world = "magy-mage";
+      #world = "magy-mage";
       hostName = "foundry-a.${(import ../../secrets.nix).domain}";
       minifyStaticFiles = true;
       proxyPort = 443;
