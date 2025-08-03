@@ -41,11 +41,6 @@
       };
     };
 
-    sherlock = {
-      url = "github:Skxxtz/sherlock";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     NonSteamLaunchers = {
       url = "github:moraroy/NonSteamLaunchers-On-Steam-Deck/main";
       flake = false;
