@@ -20,6 +20,9 @@
         value = {
           extraConfig = ''
             import cors
+            request_body {
+                max_size 5GB
+            }
             reverse_proxy http://localhost:${builtins.toString value}
           '';
         };
