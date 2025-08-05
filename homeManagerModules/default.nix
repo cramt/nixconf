@@ -41,7 +41,7 @@ in {
   imports =
     [
       inputs.chaotic.homeManagerModules.default
-      inputs.nixvim.homeManagerModules.nixvim
+      inputs.nixvim.homeModules.nixvim
       inputs.nvf.homeManagerModules.default
       inputs.cosmic-manager.homeManagerModules.cosmic-manager
       inputs.zen-browser.homeModules.beta

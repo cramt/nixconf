@@ -22,7 +22,9 @@ in {
   };
   config = {
     myNixOS.services.caddy.serviceMap = {
-      prowlarr = 9696;
+      prowlarr = {
+        port = 9696;
+      };
     };
     virtualisation.oci-containers.containers.prowlarr = {
       hostname = "prowlarr";

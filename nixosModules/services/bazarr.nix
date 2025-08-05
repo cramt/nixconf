@@ -40,7 +40,9 @@ in {
   };
   config = {
     myNixOS.services.caddy.serviceMap = {
-      bazarr = 6767;
+      bazarr = {
+        port = 6767;
+      };
     };
     virtualisation.oci-containers.containers.bazarr = {
       hostname = "bazarr";

@@ -34,7 +34,9 @@ in {
   };
   config = {
     myNixOS.services.caddy.serviceMap = {
-      radarr = 7878;
+      radarr = {
+        port = 7878;
+      };
     };
     virtualisation.oci-containers.containers.radarr = {
       hostname = "radarr";

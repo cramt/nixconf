@@ -35,7 +35,9 @@ in {
   };
   config = {
     myNixOS.services.caddy.serviceMap = {
-      jellyfin = 8096;
+      jellyfin = {
+        port = 8096;
+      };
     };
     virtualisation.oci-containers.backend = "docker";
     virtualisation.oci-containers.containers.jellyfin = {

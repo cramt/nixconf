@@ -34,7 +34,9 @@ in {
   };
   config = {
     myNixOS.services.caddy.serviceMap = {
-      sonarr = 8989;
+      sonarr = {
+        port = 8989;
+      };
     };
     virtualisation.oci-containers.containers.sonarr = {
       hostname = "sonarr";

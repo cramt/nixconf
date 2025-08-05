@@ -101,6 +101,79 @@ in {
         (final: prev: {
           rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rocmPackages;
         })
+        (final: prev: {
+          ttyd = prev.ttyd.overrideAttrs (final: prev: {
+            nativeBuildInputs =
+              (prev.nativeBuildInputs or [])
+              ++ [
+                pkgs.nodejs
+                pkgs.yarn-berry_3
+              ];
+            updateAutotoolsGnuConfigScriptsPhase =
+              ''
+                cd html
+                export HOME=$(mktemp -d)
+                rm -rf ./.yarn/cache
+                mkdir -p ./.yarn
+                cp -r --reflink=auto ${pkgs.yarn-berry_3.fetchYarnBerryDeps {
+                  src = "${final.src}/html";
+                  hash = "sha256-2VhypFRl195JJ9+AYDC/yZhLpFjKZcSLA1sZ25IYh1g=";
+                }}/cache ./.yarn/cache
+                chmod u+w -R ./.yarn/cache
+                yarn config set enableTelemetry false
+                yarn config set enableGlobalCache false
+                yarn install --mode=skip-build --inline-builds
+                yarn run build
+                cd ..
+              ''
+              + (prev.updateAutotoolsGnuConfigScriptsPhase or "");
+            patches =
+              (prev.patches or [])
+              ++ [
+                (pkgs.writeText
+                  "main.patch"
+                  ''
+
+                    diff --git a/html/src/style/index.scss b/html/src/style/index.scss
+                    index 0f9244b..9bf0dda 100644
+                    --- a/html/src/style/index.scss
+                    +++ b/html/src/style/index.scss
+                    @@ -11,8 +11,16 @@ body {
+                       height: 100%;
+                       margin: 0 auto;
+                       padding: 0;
+                    +
+                       .terminal {
+                         padding: 5px;
+                         height: calc(100% - 10px);
+                       }
+                     }
+                    +
+                    +@font-face {
+                    +  font-family: 'Iosevka';
+                    +  font-style: normal;
+                    +  font-weight: normal;
+                    +  src: url('${pkgs.iosevka}/share/fonts/truetype/Iosevka-Regular.ttf');
+                    +}
+                    diff --git a/html/webpack.config.js b/html/webpack.config.js
+                    index 18bfcf3..94e0b33 100644
+                    --- a/html/webpack.config.js
+                    +++ b/html/webpack.config.js
+                    @@ -29,6 +29,10 @@ const baseConfig = {
+                                     test: /\.s?[ac]ss$/,
+                                     use: [devMode ? 'style-loader' : MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+                                 },
+                    +            {
+                    +                test: /\.(ttf|otf|eot|woff|woff2)$/,
+                    +                type: 'asset/inline',
+                    +            },
+                             ],
+                         },
+                         resolve: {
+                  '')
+              ];
+          });
+        })
       ];
       config = {
         allowUnfree = true;

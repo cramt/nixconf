@@ -15,7 +15,11 @@
         };
       })
       cfg.staticFileVolumes)
-    // (lib.attrsets.mapAttrs' (name: value: {
+    // (lib.attrsets.mapAttrs' (name: {
+        port,
+        basic-auth,
+        ...
+      }: {
         name = "${name}.${cfg.domain}";
         value = {
           extraConfig = ''
@@ -23,7 +27,16 @@
             request_body {
                 max_size 5GB
             }
-            reverse_proxy http://localhost:${builtins.toString value}
+            ${
+              if basic-auth == null
+              then ""
+              else ''
+                basic_auth {
+                  ${basic-auth.username} ${basic-auth.hashed-password}
+                }
+              ''
+            }
+            reverse_proxy http://localhost:${builtins.toString port}
           '';
         };
       })
@@ -139,10 +152,29 @@ in {
       '';
     };
     serviceMap = lib.mkOption {
-      type = lib.types.attrsOf lib.types.int;
+      type = lib.types.attrsOf (lib.types.submodule {
+        options = {
+          port = lib.mkOption {
+            type = lib.types.int;
+          };
+          basic-auth = lib.mkOption {
+            default = null;
+            type = lib.types.nullOr (lib.types.submodule {
+              options = {
+                username = lib.mkOption {
+                  type = lib.types.str;
+                };
+                hashed-password = lib.mkOption {
+                  type = lib.types.str;
+                };
+              };
+            });
+          };
+        };
+      });
       default = {};
       description = ''
-        destinations for the caddy to mount static files
+        services to map
       '';
     };
   };

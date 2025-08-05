@@ -8,8 +8,12 @@
 in {
   config = {
     myNixOS.services.caddy.serviceMap = {
-      bucketapi = 9000;
-      bucket = 9001;
+      bucketapi = {
+        port = 9000;
+      };
+      bucket = {
+        port = 9001;
+      };
     };
     services.minio = {
       secretKey = secrets.secret_key;
