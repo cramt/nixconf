@@ -23,6 +23,7 @@ in {
   };
 
   myHomeManager = {
+    opencode.enable = true;
     yazi.enable = true;
     zoxide.enable = true;
     neovim.enable = true;
