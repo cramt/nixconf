@@ -31,7 +31,7 @@ in {
   config = {
     networking.firewall.allowedTCPPorts = [11434];
     services.ollama = {
-      package = master_pkgs.ollama;
+      #package = master_pkgs.ollama;
       enable = true;
       loadModels = [
         "gpt-oss:20b"
