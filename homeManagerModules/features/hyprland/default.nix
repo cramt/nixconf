@@ -145,6 +145,7 @@ in {
             "nomaxsize, class:.*"
           ]
           ++ builtins.map (title: "tile, title:${title}") [
+            "Warframe"
             "MTGA"
             "Monster Train 2"
             "MonsterTrain2"

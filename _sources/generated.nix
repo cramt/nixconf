@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.73";
+    version = "v0.108.0-b.74";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:ab4746d1678802c202a076c28751da446dc14d72ac075537b09ba20f9414f20f";
-      sha256 = "sha256-bMuKPPz11QG2B8QYkQ9eu3WKSMxy7GI1/u6OYRVdsu4=";
-      finalImageTag = "v0.108.0-b.73";
+      imageDigest = "sha256:141182e694ae8acb744be6d83ce2f67596da3f7dfd90be66980c219fcaf236bb";
+      sha256 = "sha256-OEwah3iT6gE7khlcnH370rL3HVmcJ7PiqwYKN1JUbts=";
+      finalImageTag = "v0.108.0-b.74";
     };
   };
   bazarr = {
@@ -43,12 +43,12 @@
   };
   odin = {
     pname = "odin";
-    version = "3.1.2";
+    version = "3.2.0";
     src = dockerTools.pullImage {
       imageName = "mbround18/valheim";
-      imageDigest = "sha256:44c2ab93f34c63765b0fbab8f5ec5f67a35f315d995760bf8d4af6ba2f766860";
-      sha256 = "sha256-hy818wdfk2bnksBulNhrEUZve+gFRNVczBo/Wr6PL+0=";
-      finalImageTag = "3.1.2";
+      imageDigest = "sha256:cc9752db399b93086af5ada0d726c31152b29e1381d54c254eb89a41f6a8f337";
+      sha256 = "sha256-4shss6nVhrM9gxISP0A300v6er9lhDOmQDFG/1/I+Yk=";
+      finalImageTag = "3.2.0";
     };
   };
   prowlarr = {
