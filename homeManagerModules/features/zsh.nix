@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   config = {
+    programs.fzf.enableZshIntegration = true;
     programs.zsh = {
       enable = true;
 

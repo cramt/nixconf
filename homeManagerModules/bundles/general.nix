@@ -40,6 +40,7 @@ in {
     btop.enable = true;
     lazygit.enable = true;
     zed.enable = true;
+    fzf.enable = true;
   };
 
   home.packages = with pkgs;
