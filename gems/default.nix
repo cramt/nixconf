@@ -1,8 +1,9 @@
 {pkgs}: let
-  gemset = builtins.fromJSON (builtins.readFile (pkgs.runCommand "gemset-generate" {buildInputs = [pkgs.ruby];} ''
+  gemsetFull = builtins.fromJSON (builtins.readFile (pkgs.runCommand "gemset-generate" {buildInputs = [pkgs.ruby];} ''
     cd ${./.}
     ruby ${./gemset_generator.rb} > $out
   ''));
+  gemset = gemsetFull.${pkgs.system} // gemsetFull.ruby;
 in
   builtins.listToAttrs (builtins.map
     (x: {

@@ -1,23 +1,41 @@
+# frozen_string_literal: true
+
 require 'bundler'
 require 'json'
 
 lock = Bundler::LockfileParser.new(File.read('./Gemfile.lock'))
-puts(lock.specs.to_h do |x|
-  raise('unsupported for now') unless x.source.is_a? Bundler::Source::Rubygems
+platforms = lock.platforms.map(&:to_s)
 
-  [x.name, {
-    version: x.version,
-    platform: x.platform,
-    source: {
+def make_source_def(source)
+  {
+    platform: source.platform,
+    sha256: [[Bundler::Checksum.from_lock(
+      source.source.checksum_store.to_lock(
+        source
+      ),
+      './Gemfile.lock'
+    ).digest].pack('H*')].pack('m0'),
 
-      sha256: [[Bundler::Checksum.from_lock(
-        x.source.checksum_store.to_lock(
-          x
-        ),
-        './Gemfile.lock'
-      ).digest].pack('H*')].pack('m0'),
-      remotes: x.source.remotes.map { |remote| remote.to_s.sub(%r{/+$}, '') },
-      type: 'gem'
-    }
-  }]
+    remotes: source.source.remotes.map { |remote| remote.to_s.sub(%r{/+$}, '') },
+    type: 'gem'
+  }
+end
+
+puts(platforms.to_h do |platform|
+  [platform, lock.specs.filter_map do |x|
+    if x.platform.to_s == platform
+
+      case x.source
+      when Bundler::Source::Rubygems
+        [x.name, {
+          version: x.version,
+          platforms: [],
+          source: make_source_def(x)
+        }]
+      else
+        pp spec
+        throw 'unsupported bundler source'
+      end
+    end
+  end.to_h]
 end.to_json)
