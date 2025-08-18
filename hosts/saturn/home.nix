@@ -19,6 +19,7 @@
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.gaming.enable = true;
+    obs.enable = true;
     git.signingKey = "C2B9D34D979B6063";
     jujutsu = {
       enable = true;
