@@ -59,6 +59,8 @@ in {
     services.udev = {
       extraRules = ''
         ENV{ID_VENDOR_ID}=="6969", ENV{ID_MODEL_ID}=="b00b", MODE="7777"
+        ACTION=="add|change", SUBSYSTEM=="usb|tty|hidraw", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="27dd", MODE="660", GROUP="plugdev", TAG+="uaccess"
+        SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="0003", MODE="0666"
       '';
       packages = [inputs.probe-rs-rules.packages.${pkgs.system}.default];
     };
