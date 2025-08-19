@@ -46,34 +46,36 @@ in {
         })
         (config.myNixOS.home-users);
     };
-
-    users.users =
-      (
-        builtins.mapAttrs
+    users = {
+      groups.plugdev.name = "plugdev";
+      users =
         (
-          name: user: {
-            isNormalUser = true;
-            initialPassword = "12345";
-            description = "";
-            shell = pkgs.zsh;
-            extraGroups = [
-              "libvirtd"
-              "networkmanager"
-              "wheel"
-              "pipewire"
-              "docker"
-              "storage"
-              "gamemode"
-              "plugdev"
-              "dailout"
-            ];
-            openssh.authorizedKeys.keys = user.authorizedKeys;
-          }
+          builtins.mapAttrs
+          (
+            name: user: {
+              isNormalUser = true;
+              initialPassword = "12345";
+              description = "";
+              shell = pkgs.zsh;
+              extraGroups = [
+                "libvirtd"
+                "networkmanager"
+                "wheel"
+                "pipewire"
+                "docker"
+                "storage"
+                "gamemode"
+                "plugdev"
+                "dailout"
+              ];
+              openssh.authorizedKeys.keys = user.authorizedKeys;
+            }
+          )
+          (config.myNixOS.home-users)
         )
-        (config.myNixOS.home-users)
-      )
-      // {
-        root.openssh.authorizedKeys.keys = lib.lists.flatten (lib.attrsets.mapAttrsToList (name: user: user.authorizedKeys) config.myNixOS.home-users);
-      };
+        // {
+          root.openssh.authorizedKeys.keys = lib.lists.flatten (lib.attrsets.mapAttrsToList (name: user: user.authorizedKeys) config.myNixOS.home-users);
+        };
+    };
   };
 }

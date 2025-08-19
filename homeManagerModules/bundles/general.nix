@@ -45,6 +45,7 @@ in {
 
   home.packages = with pkgs;
     [
+      gh
       pkg-config
       element-desktop
       git
