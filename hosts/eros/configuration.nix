@@ -8,42 +8,11 @@
     inputs.nixos-generators.nixosModules.all-formats
   ];
 
-  # Use the extlinux boot loader. (NixOS wants to enable GRUB by default)
   boot.loader.grub.enable = false;
-  # Enables the generation of /boot/extlinux/extlinux.conf
   boot.loader.generic-extlinux-compatible.enable = true;
 
-  # networking config. important for ssh!
-  networking = {
-    hostName = "pi";
-    interfaces.end0 = {
-      ipv4.addresses = [
-        {
-          address = "192.168.1.42";
-          prefixLength = 24;
-        }
-      ];
-    };
-    defaultGateway = {
-      address = "192.168.1.1"; # or whichever IP your router is
-      interface = "end0";
-    };
-    nameservers = [
-      "192.168.1.1" # or whichever DNS server you want to use
-    ];
-  };
+  networking.hostName = "eros";
 
-  # the user account on the machine
-  users.users.admin = {
-    isNormalUser = true;
-    extraGroups = ["wheel"];
-    initialPassword = "12345";
-  };
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-
-  # I use neovim as my text editor, replace with whatever you like
   environment.systemPackages = with pkgs; [
     neovim
     wget
@@ -53,6 +22,15 @@
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
     services.sshd.enable = true;
+    home-users = {
+      "cramt" = {
+        userConfig = ./home.nix;
+        authorizedKeys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
+        ];
+      };
+    };
   };
 
   nix.extraOptions = ''
@@ -61,14 +39,5 @@
     experimental-features = nix-command flakes
   '';
 
-  # this allows you to run `nixos-rebuild --target-host admin@this-machine` from
-  # a different host. not used in this tutorial, but handy later.
-  nix.settings.trusted-users = ["admin"];
-
-  # ergonomics, just in case I need to ssh into
-  programs.zsh.enable = true;
-  environment.variables = {
-    SHELL = "zsh";
-    EDITOR = "neovim";
-  };
+  system.stateVersion = "25.11";
 }
