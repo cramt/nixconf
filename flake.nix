@@ -59,8 +59,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    openwrt-imagebuilder.url = "github:cramt/nix-openwrt-imagebuilder/fix_some_imagebuilder_files_not_including_variant";
-
     nix-colors.url = "github:misterio77/nix-colors";
 
     nur.url = "github:nix-community/NUR";
@@ -109,9 +107,14 @@
     };
 
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
+
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = {...} @ inputs: let
+  outputs = {nixos-generators, ...} @ inputs: let
     # super simple boilerplate-reducing
     # lib with a bunch of functions
     myLib = import ./myLib/default.nix {inherit inputs;};
@@ -122,29 +125,10 @@
         saturn = mkSystem ./hosts/saturn/configuration.nix;
         mars = mkSystem ./hosts/mars/configuration.nix;
         luna = mkSystem ./hosts/luna/configuration.nix;
+        eros = mkSystem ./hosts/eros/configuration.nix;
       };
 
       homeManagerModules.default = ./homeManagerModules;
       nixosModules.default = ./nixosModules;
-      packages.x86_64-linux.sol = let
-        pkgs = import inputs.nixpkgs {
-          system = "x86_64-linux";
-          config = {
-            permittedInsecurePackages = [
-              "python-2.7.18.8"
-            ];
-          };
-        };
-        config = {
-          # TODO: ssh https://openwrt.org/docs/guide-user/additional-software/imagebuilder#restricting_root_access
-          # TODO: make wrapper around `files` thingy so it isnt hell
-          inherit pkgs;
-          release = "19.07.10";
-          target = "bcm53xx";
-          profile = "tplink-archer-c5-v2";
-          packages = ["dockerd"];
-        };
-      in
-        inputs.openwrt-imagebuilder.lib.build config;
     };
 }

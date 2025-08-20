@@ -20,6 +20,20 @@
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
   services.scx.enable = true;
 
+  boot.binfmt.emulatedSystems = ["aarch64-linux"];
+  nix = {
+    settings = let
+      caches = ["https://cache.nixos.org/" "http://192.168.0.103:5000/" "http://192.168.0.106:5000/"];
+    in {
+      # this doesnt work when the hosts arent available https://github.com/NixOS/nix/issues/6901
+      # should only be using this strategy on the server
+      #trusted-substituters = caches;
+      #substituters = caches;
+      experimental-features = ["nix-command" "flakes"];
+      extra-platforms = config.boot.binfmt.emulatedSystems;
+    };
+  };
+
   myNixOS = {
     waydroid.enable = false;
     gnupg.enable = true;
@@ -130,16 +144,6 @@
 
   # Configure console keymap
   console.keyMap = "dk-latin1";
-
-  nix.settings = let
-    caches = ["https://cache.nixos.org/" "http://192.168.0.103:5000/" "http://192.168.0.106:5000/"];
-  in {
-    # this doesnt work when the hosts arent available https://github.com/NixOS/nix/issues/6901
-    # should only be using this strategy on the server
-    #trusted-substituters = caches;
-    #substituters = caches;
-    experimental-features = ["nix-command" "flakes"];
-  };
 
   boot.kernelParams =
     builtins.map
