@@ -97,6 +97,7 @@ in {
 
     myNixOS = {
       ssh.enable = true;
+      fwupd.enable = true;
     };
 
     nix = {
