@@ -9,6 +9,11 @@
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.05";
     nixarr.url = "git+file:///home/cramt/code/nixarr";
 
+    winapps = {
+      url = "github:winapps-org/winapps";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     flake-utils.url = "github:numtide/flake-utils";
 
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
