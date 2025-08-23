@@ -973,11 +973,11 @@
         "website-builder": "website-builder"
       },
       "locked": {
-        "lastModified": 1755722532,
+        "lastModified": 1755722501,
         "narHash": "sha256-UUuiweZEv/07BtZl+NzxX9rbEc82AP2A8qreZ/n9Qc4=",
-        "ref": "refs/heads/main",
-        "rev": "b4a3679058ec978a4b34b1e405d32b6324097fd0",
-        "revCount": 335,
+        "ref": "refs/heads/add_autosync",
+        "rev": "54d4f6e03b08f2f7cb28e7d548efaf0bc6af4d2c",
+        "revCount": 334,
         "type": "git",
         "url": "file:///home/cramt/code/nixarr"
       },
