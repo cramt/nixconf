@@ -48,6 +48,8 @@ in {
             builtins.map
             (v: {${v} = "town ${v}";})
             [
+              "delete"
+              "rename"
               "hack"
               "sync"
               "propose"
