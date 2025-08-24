@@ -14,6 +14,7 @@
     inputs.zen-browser.packages."${pkgs.system}".default
     anytype
     vlc
+    element-desktop
   ];
 
   xdg.enable = true;
@@ -28,6 +29,8 @@
     rio.enable = true;
     mako.enable = true;
     zathura.enable = true;
+    vesktop.enable = true;
+    zed.enable = true;
     network-manager-applet.enable = true;
     nautilus.enable = true;
     keymapp.enable = true;

@@ -17,6 +17,8 @@
   myHomeManager = {
     hyprland.enable = true;
     bundles.general.enable = true;
+    bundles.development.enable = true;
+    btop.hardware-accel = "rocm";
     bundles.graphical.enable = true;
     bundles.gaming.enable = true;
     obs.enable = true;

@@ -23,6 +23,7 @@
     bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
     bundles.users.enable = true;
     services.sshd.enable = true;
+    services.hotspot.enable = true;
     home-users = {
       "cramt" = {
         userConfig = ./home.nix;
@@ -34,11 +35,13 @@
     };
   };
 
+  networking.networkmanager.enable = true;
+
   nix.extraOptions = ''
     keep-outputs = true
     keep-derivations = true
     experimental-features = nix-command flakes
   '';
 
-  system.stateVersion = "25.11";
+  system.stateVersion = "25.05";
 }
