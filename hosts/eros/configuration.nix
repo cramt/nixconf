@@ -21,6 +21,7 @@
   myNixOS = {
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
+    bundles.users.enable = true;
     services.sshd.enable = true;
     home-users = {
       "cramt" = {

@@ -149,9 +149,7 @@
     in {
       packages = {
         eros-img = pkgs.runCommand "eros-img" {} ''
-          ls ${self.nixosConfigurations.eros.config.formats.sd-aarch64}
-          echo "hello" > $out
-          # TODO: uncompress with unzstd -d
+          ${pkgs.zstd}/bin/unzstd -d $(${pkgs.toybox}/bin/readlink -f ${self.nixosConfigurations.eros.config.formats.sd-aarch64}/*) -o $out
         '';
       };
     }));
