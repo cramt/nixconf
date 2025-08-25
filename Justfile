@@ -16,7 +16,7 @@ update_gems:
     (cd gems && bundle lock --update)
 
 update:
-    fwupdmgr update -y
+    fwupdmgr update -y || true
     just update_flake
     just update_gems
     nvfetcher

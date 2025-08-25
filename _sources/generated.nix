@@ -16,19 +16,19 @@
     version = "1.5.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:81d76b6c13a7a9481440402f0fa0ff1dc6027d003447da28eb1ed150e1846af7";
-      sha256 = "sha256-XmCQo1o2NpyGVRyr8dhUHP59eD6NmEUBVccegaj1z7w=";
+      imageDigest = "sha256:2458b13b6bdb9beee13acd2c70172140e9f9362488914d9f7cd95a473c3742b7";
+      sha256 = "sha256-bL/bWq3sQJJlaFpzi2bpWqZMEQmi7So5OuMszIKQJ/I=";
       finalImageTag = "1.5.2";
     };
   };
   jellyfin = {
     pname = "jellyfin";
-    version = "2025081805";
+    version = "2025082505";
     src = dockerTools.pullImage {
       imageName = "jellyfin/jellyfin";
-      imageDigest = "sha256:4985b1579fb7abf2d83a43ce8a6a679d358562096434a7c0a4a0337afff578c7";
-      sha256 = "sha256-ehbWV5wG3h7/S1splEl8AxLuvc337gW1cRZXlNusHn0=";
-      finalImageTag = "2025081805";
+      imageDigest = "sha256:3842fe14b60d19b7f66650d970fb561423c9a3e4835b4e44284c1214cb3e7d61";
+      sha256 = "sha256-erowhyUzFDKIol/l67q25hFcTeEO25XFqh0F2WTxfxQ=";
+      finalImageTag = "2025082505";
     };
   };
   minecraft-server = {
@@ -36,8 +36,8 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:26d2b09333fc17d4306a57beb9cc632dc0e63093e4c0062b084ebc37e9b1763e";
-      sha256 = "sha256-N1sxOaBm8/0/1TSYt7SbXnL2ghk4ftATlU0KkprItAg=";
+      imageDigest = "sha256:89d061b3953d2ba5852f43dd6818462e8b6ac64887593ec4539782a60f6f8e81";
+      sha256 = "sha256-/u+uBMquXRhzufAnqtyq3UeOuwUw7O2uawWF8G4IV2M=";
       finalImageTag = "java8";
     };
   };
@@ -53,12 +53,12 @@
   };
   prowlarr = {
     pname = "prowlarr";
-    version = "1.37.0";
+    version = "2.0.5";
     src = dockerTools.pullImage {
       imageName = "linuxserver/prowlarr";
-      imageDigest = "sha256:68d16fa1a692ec26c4340a23f50b5980899c5630ce881fd0015dac849cbb9b53";
-      sha256 = "sha256-AZR4wkNeuW6xn8svbGsLf+olcinHViAZXXc6pUjw324=";
-      finalImageTag = "1.37.0";
+      imageDigest = "sha256:4f2a6d597845b2f3e19284b1d982b3e0b4bd7c22472c2979c956aa198b83f472";
+      sha256 = "sha256-09jFUvZpCeNw3u8s+jfvhA3u2nrCK8TVn4VqtdUQX7k=";
+      finalImageTag = "2.0.5";
     };
   };
   qbittorrent = {
