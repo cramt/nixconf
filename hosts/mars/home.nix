@@ -104,8 +104,8 @@
           y = 0;
         };
         res = {
-          width = 5120;
-          height = 1440;
+          width = 3840;
+          height = 1080;
         };
         workspace = 2;
         transform = 0;
