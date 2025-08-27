@@ -62,7 +62,7 @@
           movies = downloads.movies;
         };
         gpuDevices = [
-          "/dev/dri/card0"
+          "/dev/dri/card1"
           "/dev/dri/renderD128"
         ];
       };

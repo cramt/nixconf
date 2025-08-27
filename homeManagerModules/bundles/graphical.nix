@@ -23,7 +23,7 @@
     ghostty.enable = true;
     git_update_notifier.enable = true;
     thunderbird.enable = false;
-    sway.enable = true;
+    hyprland.enable = true;
     cosmic.enable = false;
     alacritty.enable = true;
     rio.enable = true;
