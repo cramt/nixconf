@@ -12,6 +12,7 @@ in {
     home.packages = [inputs.astal.packages.${pkgs.system}.default];
     myHomeManager.rofi.enable = true;
     myHomeManager.waybar.enable = true;
+    myHomeManager.tofi.enable = true;
     stylix.targets.hyprlock.useWallpaper = false;
     programs = {
       waybar.systemd.enable = true;
