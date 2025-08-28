@@ -41,7 +41,7 @@ in {
       };
       clipboard = {
         providers.wl-copy.enable = true;
-        register = "unnamedplus";
+        register = "unnamed,unnamedplus";
       };
       extraPlugins = with pkgs.vimPlugins; [
         # we wanna setup this manually

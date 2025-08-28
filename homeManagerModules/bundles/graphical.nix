@@ -5,6 +5,7 @@
   ...
 }: {
   home.packages = with pkgs; [
+    wl-clipboard
     alacritty
     kitty
     brightnessctl
