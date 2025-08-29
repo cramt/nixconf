@@ -6,32 +6,79 @@
   programs.zed-editor = {
     enable = true;
 
-    ## This populates the userSettings "auto_install_extensions"
-    extensions = ["nix" "toml" "elixir" "make" "ruby"];
+    extensions = ["nix" "toml" "ruby"];
 
-    ## everything inside of these brackets are Zed options.
-    userSettings = {
-      assistant = {
-        enabled = false;
-        version = "2";
-        default_open_ai_model = null;
-        ### PROVIDER OPTIONS
-        ### zed.dev models { claude-3-5-sonnet-latest } requires github connected
-        ### anthropic models { claude-3-5-sonnet-latest claude-3-haiku-latest claude-3-opus-latest  } requires API_KEY
-        ### copilot_chat models { gpt-4o gpt-4 gpt-3.5-turbo o1-preview } requires github connected
-        default_model = {
-          provider = "zed.dev";
-          model = "claude-3-5-sonnet-latest";
+    userKeymaps = [
+      {
+        context = "GitPanel && ChangesList";
+        bindings = {
+          "space g s" = "git::ToggleStaged";
+          "space g u" = "git::Restore";
         };
+      }
+      {
+        bindings = {
+          "space e" = "project_panel::ToggleFocus";
+          "space g" = "git_panel::ToggleFocus";
+        };
+      }
+      {
+        context = "vim_mode == visual";
+        bindings = {
+          "space c" = "vim::ToggleComments";
+        };
+      }
+      {
+        context = "VimControl && !menu";
+        bindings = {
+          "down" = "vim::Down";
+          "j" = "vim::Down";
+          "left" = "vim::Left";
+          "h" = "vim::Left";
+          "right" = "vim::Right";
+          "l" = "vim::Right";
+          "up" = "vim::Up";
+          "k" = "vim::Up";
+        };
+      }
+      {
+        context = "VimControl";
+        bindings = {
+          "space q" = "zed::Quit";
+          "space l d" = "editor::GoToDefinition";
+          "space l h" = "editor::Hover";
+          "space s" = "workspace::Save";
+          "space l a" = "editor::ToggleCodeActions";
+          "space l shift-i" = "editor::GoToImplementation";
+          "space l n" = "editor::Rename";
+          "space l shift-a" = "editor::FindAllReferences";
+          "space f s" = "outline::Toggle";
+          "space f shift-s" = "project_symbols::Toggle";
+          "space l y" = "editor::GoToTypeDefinition";
+          "space l shift-d" = "editor::GoToDeclaration";
+          "space c" = "pane::CloseActiveItem";
+          "space shift-c" = "workspace::CloseInactiveTabsAndPanes";
+          "shift h" = "workspace::ActivatePreviousPane";
+          "shift l" = "workspace::ActivateNextPane";
+          "f" = [
+            "vim::PushFindForward"
+            {
+              before = false;
+              multiline = true;
+            }
+          ];
+          "shift-f" = [
+            "vim::PushFindBackward"
+            {
+              after = false;
+              multiline = true;
+            }
+          ];
+        };
+      }
+    ];
 
-        #                inline_alternatives = [
-        #                    {
-        #                        provider = "copilot_chat";
-        #                        model = "gpt-3.5-turbo";
-        #                    }
-        #                ];
-      };
-
+    userSettings = {
       node = {
         path = lib.getExe pkgs.nodejs;
         npm_path = lib.getExe' pkgs.nodejs "npm";
@@ -51,67 +98,32 @@
           };
         };
         env = {
-          TERM = "alacritty";
+          TERM = "rio";
         };
         line_height = "comfortable";
         option_as_meta = false;
         button = false;
         shell = "system";
-        toolbar = {
-          title = true;
-        };
         working_directory = "current_project_directory";
       };
 
       lsp = {
         rust-analyzer = {
           binary = {
-            #                        path = lib.getExe pkgs.rust-analyzer;
-            path_lookup = true;
+            path = lib.getExe pkgs.rust-analyzer;
           };
         };
         nix = {
           binary = {
-            path_lookup = true;
-          };
-        };
-
-        elixir-ls = {
-          binary = {
-            path_lookup = true;
-          };
-          settings = {
-            dialyzerEnabled = true;
-          };
-        };
-      };
-
-      languages = {
-        "Elixir" = {
-          language_servers = ["!lexical" "elixir-ls" "!next-ls"];
-          format_on_save = {
-            external = {
-              command = "mix";
-              arguments = ["format" "--stdin-filename" "{buffer_path}" "-"];
-            };
-          };
-        };
-        "HEEX" = {
-          language_servers = ["!lexical" "elixir-ls" "!next-ls"];
-          format_on_save = {
-            external = {
-              command = "mix";
-              arguments = ["format" "--stdin-filename" "{buffer_path}" "-"];
-            };
+            path = lib.getExe pkgs.nil;
           };
         };
       };
 
       vim_mode = true;
-      ## tell zed to use direnv and direnv can use a flake.nix enviroment.
       load_direnv = "shell_hook";
-      base_keymap = "None";
-      show_whitespaces = "all";
+      base_keymap = "VSCode";
+      show_whitespaces = "none";
     };
   };
 }
