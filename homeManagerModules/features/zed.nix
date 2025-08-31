@@ -1,12 +1,17 @@
 {
   pkgs,
   lib,
+  inputs,
   ...
-}: {
+}: let
+  rubyGems = (import ../../gems/default.nix) {
+    pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system};
+  };
+in {
   programs.zed-editor = {
     enable = true;
 
-    extensions = ["nix" "toml" "ruby"];
+    extensions = ["toml" "ruby" "rust" "nix" "terraform"];
 
     userKeymaps = [
       {
@@ -17,15 +22,32 @@
         };
       }
       {
+        context = "!GitPanel";
         bindings = {
-          "space e" = "project_panel::ToggleFocus";
           "space g" = "git_panel::ToggleFocus";
+        };
+      }
+      {
+        bindings = {
+          "space w" = null;
+          "ctrl-t" = "terminal_panel::ToggleFocus";
         };
       }
       {
         context = "vim_mode == visual";
         bindings = {
           "space c" = "vim::ToggleComments";
+          "tab" = "vim::Indent";
+          "shift-tab" = "vim::Outdent";
+        };
+      }
+      {
+        context = "showing_code_actions || showing_completions";
+        bindings = {
+          "down" = "editor::ContextMenuNext";
+          "j" = "editor::ContextMenuNext";
+          "up" = "editor::ContextMenuPrevious";
+          "k" = "editor::ContextMenuPrevious";
         };
       }
       {
@@ -44,7 +66,15 @@
       {
         context = "VimControl";
         bindings = {
+          "shift h" = "workspace::ActivatePreviousPane";
+          "shift l" = "workspace::ActivateNextPane";
+        };
+      }
+      {
+        context = "VimControl && vim_mode == normal";
+        bindings = {
           "space q" = "zed::Quit";
+          "space w" = "workspace::Save";
           "space l d" = "editor::GoToDefinition";
           "space l h" = "editor::Hover";
           "space s" = "workspace::Save";
@@ -58,8 +88,7 @@
           "space l shift-d" = "editor::GoToDeclaration";
           "space c" = "pane::CloseActiveItem";
           "space shift-c" = "workspace::CloseInactiveTabsAndPanes";
-          "shift h" = "workspace::ActivatePreviousPane";
-          "shift l" = "workspace::ActivateNextPane";
+          "space e" = "project_panel::ToggleFocus";
           "f" = [
             "vim::PushFindForward"
             {
@@ -83,8 +112,8 @@
         path = lib.getExe pkgs.nodejs;
         npm_path = lib.getExe' pkgs.nodejs "npm";
       };
-
-      hour_format = "hour24";
+      show_edit_predictions = false;
+      journal.hour_format = "hour24";
       auto_update = false;
       terminal = {
         alternate_scroll = "off";
@@ -106,18 +135,18 @@
         shell = "system";
         working_directory = "current_project_directory";
       };
-
+      languages = {
+        Nix.language_servers = ["nil"];
+        Ruby.language_servers = ["ruby-lsp" "rubocop"];
+      };
       lsp = {
-        rust-analyzer = {
-          binary = {
-            path = lib.getExe pkgs.rust-analyzer;
-          };
+        rust-analyzer.binary.path = lib.getExe pkgs.rust-analyzer;
+        nil = {
+          initialization_options.formatting.command = [(lib.getExe pkgs.alejandra) "--quiet" "--"];
+          binary.path = lib.getExe pkgs.nil;
         };
-        nix = {
-          binary = {
-            path = lib.getExe pkgs.nil;
-          };
-        };
+        ruby-lsp.binary.path = lib.getExe rubyGems.ruby-lsp;
+        rubocop.binary.path = lib.getExe rubyGems.rubocop;
       };
 
       vim_mode = true;
