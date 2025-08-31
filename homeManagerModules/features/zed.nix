@@ -22,14 +22,13 @@ in {
         };
       }
       {
-        context = "!GitPanel";
+        context = "!GitPanel && vim_mode == normal";
         bindings = {
           "space g" = "git_panel::ToggleFocus";
         };
       }
       {
         bindings = {
-          "space w" = null;
           "ctrl-t" = "terminal_panel::ToggleFocus";
         };
       }
@@ -76,6 +75,7 @@ in {
           "space q" = "zed::Quit";
           "space w" = "workspace::Save";
           "space l d" = "editor::GoToDefinition";
+          "space f f" = "file_finder::Toggle";
           "space l h" = "editor::Hover";
           "space s" = "workspace::Save";
           "space l a" = "editor::ToggleCodeActions";
