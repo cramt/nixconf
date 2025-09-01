@@ -44,9 +44,9 @@ in {
         context = "showing_code_actions || showing_completions";
         bindings = {
           "down" = "editor::ContextMenuNext";
-          "j" = "editor::ContextMenuNext";
+          "tab" = "editor::ContextMenuNext";
           "up" = "editor::ContextMenuPrevious";
-          "k" = "editor::ContextMenuPrevious";
+          "shift-tab" = "editor::ContextMenuPrevious";
         };
       }
       {
@@ -142,7 +142,10 @@ in {
       lsp = {
         rust-analyzer.binary.path = lib.getExe pkgs.rust-analyzer;
         nil = {
-          initialization_options.formatting.command = [(lib.getExe pkgs.alejandra) "--quiet" "--"];
+          initialization_options = {
+            nix.flake.autoArchive = true;
+            formatting.command = [(lib.getExe pkgs.alejandra) "--quiet" "--"];
+          };
           binary.path = lib.getExe pkgs.nil;
         };
         ruby-lsp.binary.path = lib.getExe rubyGems.ruby-lsp;
