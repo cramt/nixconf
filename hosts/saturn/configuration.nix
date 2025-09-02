@@ -37,7 +37,7 @@
   myNixOS = {
     waydroid.enable = false;
     gnupg.enable = true;
-    qemu.enable = false;
+    qemu.enable = true;
     docker.enable = true;
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
