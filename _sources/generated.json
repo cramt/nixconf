@@ -30,11 +30,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:2458b13b6bdb9beee13acd2c70172140e9f9362488914d9f7cd95a473c3742b7",
+            "imageDigest": "sha256:f9cb78eaec1d77017f5c3e5b7aa07106fe4433a77fd902d01e91213f7c991499",
             "imageName": "linuxserver/bazarr",
             "imageTag": "1.5.2",
             "os": null,
-            "sha256": "sha256-bL/bWq3sQJJlaFpzi2bpWqZMEQmi7So5OuMszIKQJ/I=",
+            "sha256": "sha256-W+F6PzdFu9H/mkikfbIUkRhfS+8E2jk2dRG7PBdY77c=",
             "tlsVerify": null
         },
         "version": "1.5.2"
@@ -70,11 +70,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:89d061b3953d2ba5852f43dd6818462e8b6ac64887593ec4539782a60f6f8e81",
+            "imageDigest": "sha256:5684c55191d84a3ff2406c8c559452e79571bfcbb4cb609aabf55925d737260a",
             "imageName": "itzg/minecraft-server",
             "imageTag": "java8",
             "os": null,
-            "sha256": "sha256-/u+uBMquXRhzufAnqtyq3UeOuwUw7O2uawWF8G4IV2M=",
+            "sha256": "sha256-dPUAPfk4I0qsN9bh4T2ivQLGeszEdUV9soC2isostxA=",
             "tlsVerify": null
         },
         "version": "java8"
@@ -90,14 +90,14 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:cc9752db399b93086af5ada0d726c31152b29e1381d54c254eb89a41f6a8f337",
+            "imageDigest": "sha256:99b1f4f90a1ff3cb95b6f4f1701afaa4fba9bed35fd614f88f885f7e647a4536",
             "imageName": "mbround18/valheim",
-            "imageTag": "3.2.0",
+            "imageTag": "3.3.0",
             "os": null,
-            "sha256": "sha256-4shss6nVhrM9gxISP0A300v6er9lhDOmQDFG/1/I+Yk=",
+            "sha256": "sha256-w/D7yM2qCF0MgliDeFVWI/6MAfbzuT0Y2DOSLrzwQg4=",
             "tlsVerify": null
         },
-        "version": "3.2.0"
+        "version": "3.3.0"
     },
     "prowlarr": {
         "cargoLocks": null,
@@ -150,11 +150,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:07a474b61394553e047ad43a1a78c1047fc99be0144c509dd91e3877f402ebcb",
+            "imageDigest": "sha256:7eb64f5af8bbe48e79bc55c0c37ca8db89b2f073a9ff0094f603916ae1df9de8",
             "imageName": "linuxserver/radarr",
             "imageTag": "5.26.2",
             "os": null,
-            "sha256": "sha256-/nCMiUF0IegcSST1duJ2Gad8dAh2UWDFrl0qC9UjNSo=",
+            "sha256": "sha256-HA+OuyjCjgOvH9zQ/RKLCY3A1Ls3VEBM5U1OeF0Ut3I=",
             "tlsVerify": null
         },
         "version": "5.26.2"
@@ -170,11 +170,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:1156329d544b38bd1483add75c9b72c559f20e1ca043fd2d6376c2589d38951f",
+            "imageDigest": "sha256:e00e87e0e7c24fdc992093756f120a6ab292790b6a637ff3641bf813091cd726",
             "imageName": "linuxserver/sonarr",
             "imageTag": "4.0.15",
             "os": null,
-            "sha256": "sha256-7+ggXjaEzH14UgTzwsOHSRIUKNYJ+oADHklz38ORRCA=",
+            "sha256": "sha256-4vcNec53fOwPQFsjg9Eii11NDF3Mx+gfA49+jOCRluQ=",
             "tlsVerify": null
         },
         "version": "4.0.15"

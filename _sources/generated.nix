@@ -16,8 +16,8 @@
     version = "1.5.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:2458b13b6bdb9beee13acd2c70172140e9f9362488914d9f7cd95a473c3742b7";
-      sha256 = "sha256-bL/bWq3sQJJlaFpzi2bpWqZMEQmi7So5OuMszIKQJ/I=";
+      imageDigest = "sha256:f9cb78eaec1d77017f5c3e5b7aa07106fe4433a77fd902d01e91213f7c991499";
+      sha256 = "sha256-W+F6PzdFu9H/mkikfbIUkRhfS+8E2jk2dRG7PBdY77c=";
       finalImageTag = "1.5.2";
     };
   };
@@ -36,19 +36,19 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:89d061b3953d2ba5852f43dd6818462e8b6ac64887593ec4539782a60f6f8e81";
-      sha256 = "sha256-/u+uBMquXRhzufAnqtyq3UeOuwUw7O2uawWF8G4IV2M=";
+      imageDigest = "sha256:5684c55191d84a3ff2406c8c559452e79571bfcbb4cb609aabf55925d737260a";
+      sha256 = "sha256-dPUAPfk4I0qsN9bh4T2ivQLGeszEdUV9soC2isostxA=";
       finalImageTag = "java8";
     };
   };
   odin = {
     pname = "odin";
-    version = "3.2.0";
+    version = "3.3.0";
     src = dockerTools.pullImage {
       imageName = "mbround18/valheim";
-      imageDigest = "sha256:cc9752db399b93086af5ada0d726c31152b29e1381d54c254eb89a41f6a8f337";
-      sha256 = "sha256-4shss6nVhrM9gxISP0A300v6er9lhDOmQDFG/1/I+Yk=";
-      finalImageTag = "3.2.0";
+      imageDigest = "sha256:99b1f4f90a1ff3cb95b6f4f1701afaa4fba9bed35fd614f88f885f7e647a4536";
+      sha256 = "sha256-w/D7yM2qCF0MgliDeFVWI/6MAfbzuT0Y2DOSLrzwQg4=";
+      finalImageTag = "3.3.0";
     };
   };
   prowlarr = {
@@ -76,8 +76,8 @@
     version = "5.26.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/radarr";
-      imageDigest = "sha256:07a474b61394553e047ad43a1a78c1047fc99be0144c509dd91e3877f402ebcb";
-      sha256 = "sha256-/nCMiUF0IegcSST1duJ2Gad8dAh2UWDFrl0qC9UjNSo=";
+      imageDigest = "sha256:7eb64f5af8bbe48e79bc55c0c37ca8db89b2f073a9ff0094f603916ae1df9de8";
+      sha256 = "sha256-HA+OuyjCjgOvH9zQ/RKLCY3A1Ls3VEBM5U1OeF0Ut3I=";
       finalImageTag = "5.26.2";
     };
   };
@@ -86,8 +86,8 @@
     version = "4.0.15";
     src = dockerTools.pullImage {
       imageName = "linuxserver/sonarr";
-      imageDigest = "sha256:1156329d544b38bd1483add75c9b72c559f20e1ca043fd2d6376c2589d38951f";
-      sha256 = "sha256-7+ggXjaEzH14UgTzwsOHSRIUKNYJ+oADHklz38ORRCA=";
+      imageDigest = "sha256:e00e87e0e7c24fdc992093756f120a6ab292790b6a637ff3641bf813091cd726";
+      sha256 = "sha256-4vcNec53fOwPQFsjg9Eii11NDF3Mx+gfA49+jOCRluQ=";
       finalImageTag = "4.0.15";
     };
   };
