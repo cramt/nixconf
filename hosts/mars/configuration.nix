@@ -31,7 +31,7 @@
     bundles.graphical.enable = true;
     bundles.users.enable = true;
     steam = {
-      enable = true;
+      enable = false;
     };
 
     services.tor-privoxy = {
