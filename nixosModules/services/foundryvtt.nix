@@ -19,9 +19,10 @@ in {
     };
   };
   config = {
+    port-selector.services.foundry = {};
     services.foundryvtt = {
       enable = true;
-      port = 30000;
+      port = config.port-selector.ports.foundry.port;
       dataDir = cfg.dataVolume;
       #world = "magy-mage";
       hostName = "foundry-a.${(import ../../secrets.nix).domain}";

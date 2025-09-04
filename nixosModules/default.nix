@@ -51,6 +51,7 @@ in {
       inputs.stylix.nixosModules.stylix
       inputs.foundryvtt.nixosModules.foundryvtt
       inputs.nixarr.nixosModules.default
+      ../portselector.nix
     ]
     ++ features
     ++ bundles
