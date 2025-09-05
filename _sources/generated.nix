@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.74";
+    version = "v0.108.0-b.75";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:141182e694ae8acb744be6d83ce2f67596da3f7dfd90be66980c219fcaf236bb";
-      sha256 = "sha256-OEwah3iT6gE7khlcnH370rL3HVmcJ7PiqwYKN1JUbts=";
-      finalImageTag = "v0.108.0-b.74";
+      imageDigest = "sha256:ba4352279c063dabd8301f855fc0daab1e3f5c3beefd968d90d37459e62cbc03";
+      sha256 = "sha256-bww4vNNodF9S7DU6EVuxBldPeCzP52Z72FnBajOYIoA=";
+      finalImageTag = "v0.108.0-b.75";
     };
   };
   bazarr = {
@@ -73,12 +73,12 @@
   };
   radarr = {
     pname = "radarr";
-    version = "5.26.2";
+    version = "5.27.5";
     src = dockerTools.pullImage {
       imageName = "linuxserver/radarr";
-      imageDigest = "sha256:7eb64f5af8bbe48e79bc55c0c37ca8db89b2f073a9ff0094f603916ae1df9de8";
-      sha256 = "sha256-HA+OuyjCjgOvH9zQ/RKLCY3A1Ls3VEBM5U1OeF0Ut3I=";
-      finalImageTag = "5.26.2";
+      imageDigest = "sha256:3ebb31bce86870dbcc15a5db3fba8864e302310cb2adb70476b0b64c1b3dc6dc";
+      sha256 = "sha256-+DSYH5JzDxo4m12+H04LmUI7zQk0bITPFQpgRwet6/w=";
+      finalImageTag = "5.27.5";
     };
   };
   sonarr = {
