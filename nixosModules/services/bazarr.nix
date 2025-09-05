@@ -11,6 +11,8 @@
     })
     .bazarr
     .src;
+
+  port = config.port-selector.ports.bazarr;
 in {
   options.myNixOS.services.bazarr = {
     configVolume = lib.mkOption {
@@ -39,11 +41,8 @@ in {
     };
   };
   config = {
-    myNixOS.services.caddy.serviceMap = {
-      bazarr = {
-        port = 6767;
-      };
-    };
+    myNixOS.services.caddy.serviceMap.bazarr.port = port;
+    port-selector.set-ports."6767" = "bazarr";
     virtualisation.oci-containers.containers.bazarr = {
       hostname = "bazarr";
       imageFile = docker_source;
@@ -56,7 +55,7 @@ in {
         "${cfg.downloadVolume}:/downloads"
       ];
       ports = [
-        "6767:6767"
+        "${builtins.toString port}:6767"
       ];
       environment = {
         PUID = "1000";

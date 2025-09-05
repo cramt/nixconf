@@ -42,18 +42,6 @@
       })
       cfg.serviceMap)
     // (
-      if config.myNixOS.services.foundryvtt.enable
-      then {
-        "foundry-a.${cfg.domain}" = {
-          extraConfig = ''
-            import cors
-            reverse_proxy http://localhost:30000
-          '';
-        };
-      }
-      else {}
-    )
-    // (
       if config.myNixOS.services.conduit.enable
       then {
         "matrix.${cfg.domain}" = {
@@ -73,10 +61,12 @@
             output stdout
             level DEBUG
           '';
-          extraConfig = ''
+          extraConfig = let
+            port = builtins.toString config.port-selector.ports.ollama;
+          in ''
             import cors
             @bearer header Authorization "Bearer ${(import ../../secrets.nix).ollama_secret}"
-            reverse_proxy @bearer http://192.168.0.130:11434 http://localhost:11434 {
+            reverse_proxy @bearer http://192.168.0.130:${port} http://localhost:${port} {
               health_uri /
               lb_policy first
             }
@@ -92,17 +82,6 @@
           extraConfig = ''
             import cors
             reverse_proxy localhost:4748
-          '';
-        };
-      }
-      else {}
-    )
-    // (
-      if config.myNixOS.services.harmonia.enable
-      then {
-        "nix-store.${cfg.domain}" = {
-          extraConfig = ''
-            reverse_proxy localhost:5000
           '';
         };
       }

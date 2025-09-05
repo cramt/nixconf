@@ -9,6 +9,7 @@
     build = "331";
   };
   cfg = config.myNixOS.services.foundryvtt;
+  port = config.port-selector.ports.foundry;
 in {
   options.myNixOS.services.foundryvtt = {
     dataVolume = lib.mkOption {
@@ -19,10 +20,11 @@ in {
     };
   };
   config = {
-    port-selector.services.foundry = {};
+    myNixOS.services.caddy.serviceMap.foundry-a.port = port;
+    port-selector.auto-assign = ["foundry"];
     services.foundryvtt = {
       enable = true;
-      port = config.port-selector.ports.foundry.port;
+      port = port;
       dataDir = cfg.dataVolume;
       #world = "magy-mage";
       hostName = "foundry-a.${(import ../../secrets.nix).domain}";

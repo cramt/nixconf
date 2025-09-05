@@ -11,6 +11,7 @@
     })
     .radarr
     .src;
+  port = config.port-selector.ports.radarr;
 in {
   options.myNixOS.services.radarr = {
     configVolume = lib.mkOption {
@@ -35,9 +36,10 @@ in {
   config = {
     myNixOS.services.caddy.serviceMap = {
       radarr = {
-        port = 7878;
+        port = port;
       };
     };
+    port-selector.set-ports."7878" = "radarr";
     virtualisation.oci-containers.containers.radarr = {
       hostname = "radarr";
       imageFile = docker_source;
@@ -48,7 +50,7 @@ in {
         "${cfg.movieVolume}:/movies"
         "${cfg.downloadVolume}:/downloads"
       ];
-      ports = ["7878:7878"];
+      ports = ["${builtins.toString port}:7878"];
       environment = {
         PUID = "1000";
         PGID = "1000";

@@ -14,6 +14,8 @@
     then ""
     else ''alter user "${x.name}" with password '${x.password}';'')
   cfg.applicationUsers);
+
+  port = config.port-selector.ports.postgresql;
 in {
   options.myNixOS.services.postgres = {
     applicationUsers = lib.mkOption {
@@ -46,7 +48,8 @@ in {
     };
   };
   config = {
-    networking.firewall.allowedTCPPorts = [5432];
+    port-selector.set-ports."5432" = "postgresql";
+    networking.firewall.allowedTCPPorts = [port];
     services.postgresql = {
       enable = true;
       ensureDatabases = builtins.map (x: x.name) cfg.applicationUsers;
@@ -55,6 +58,7 @@ in {
       settings = {
         ssl = true;
       };
+      settings.port = port;
       ensureUsers =
         builtins.map (x: {
           name = x.name;

@@ -11,6 +11,7 @@
     })
     .prowlarr
     .src;
+  port = config.port-selector.ports.prowlarr;
 in {
   options.myNixOS.services.prowlarr = {
     configVolume = lib.mkOption {
@@ -23,9 +24,10 @@ in {
   config = {
     myNixOS.services.caddy.serviceMap = {
       prowlarr = {
-        port = 9696;
+        port = port;
       };
     };
+    port-selector.set-ports."9696" = "prowlarr";
     virtualisation.oci-containers.containers.prowlarr = {
       hostname = "prowlarr";
       imageFile = docker_source;
@@ -35,7 +37,7 @@ in {
         "${cfg.configVolume}:/config"
       ];
       ports = [
-        "9696:9696"
+        "${builtins.toString port}:9696"
       ];
       environment = {
         PUID = "1000";

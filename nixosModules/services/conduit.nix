@@ -35,6 +35,15 @@ in {
       allowedTCPPortRanges = [];
       allowedTCPPorts = [3478 5349];
     };
+    port-selector = {
+      "3478" = "matrix_turn_udp";
+      additional-blocked-port-ranges = [
+        {
+          from = turnMin;
+          to = turnMax;
+        }
+      ];
+    };
     services = {
       matrix-conduit = {
         enable = true;

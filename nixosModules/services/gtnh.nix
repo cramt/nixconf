@@ -53,6 +53,7 @@
       Env = ["SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"];
     };
   };
+  port = config.port-selector.ports.gtnh;
 in {
   options.myNixOS.services.gtnh = {
     dataVolume = lib.mkOption {
@@ -62,7 +63,9 @@ in {
       '';
     };
   };
+
   config = {
+    port-selector.set-ports."25565" = "gtnh";
     virtualisation.oci-containers.containers.gtnh = {
       hostname = "gtnh";
       imageStream = dockerImage;
@@ -71,7 +74,7 @@ in {
         "${cfg.dataVolume}:/data"
       ];
       ports = [
-        "25565:25565"
+        "${builtins.toString port}:25565"
       ];
       environment = {
         GTNH_FOLDER = "/data";

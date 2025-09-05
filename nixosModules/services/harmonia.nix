@@ -4,6 +4,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.harmonia;
+  port = config.port-selector.ports.harmonia;
 in {
   options.myNixOS.services.harmonia = {
     prio = lib.mkOption {
@@ -15,10 +16,12 @@ in {
     };
   };
   config = {
+    port-selector.auto-assign = ["harmonia"];
+    myNixOS.services.caddy.serviceMap.nix-store.port = port;
     services.harmonia = {
       enable = true;
       settings = {
-        bind = "0.0.0.0:5000";
+        bind = "0.0.0.0:${builtins.toString port}";
         priority = cfg.prio;
       };
     };

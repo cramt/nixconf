@@ -11,6 +11,8 @@
     })
     .qbittorrent
     .src;
+  port = config.port-selector.ports.qbit;
+  udp_port = config.port-selector.ports.qbit_udp;
 in {
   options.myNixOS.services.qbittorrent = {
     downloadVolume = lib.mkOption {
@@ -29,8 +31,12 @@ in {
   config = {
     myNixOS.services.caddy.serviceMap = {
       qbit = {
-        port = 8080;
+        port = port;
       };
+    };
+    port-selector.set-ports = {
+      "6881" = "qbit_udp";
+      "8080" = "qbit";
     };
     systemd.services.docker-create-piracy-network = {
       serviceConfig.Type = "oneshot";
@@ -51,9 +57,9 @@ in {
         "${cfg.downloadVolume}:/downloads"
       ];
       ports = [
-        "6881:6881"
-        "6881:6881/udp"
-        "8080:8080"
+        "${builtins.toString udp_port}:6881"
+        "${builtins.toString udp_port}:6881/udp"
+        "${builtins.toString port}:8080"
       ];
       environment = {
         PUID = "1000";

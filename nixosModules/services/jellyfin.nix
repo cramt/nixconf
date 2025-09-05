@@ -11,6 +11,7 @@
     })
       .jellyfin
       .src;
+  port = config.port-selector.ports.jellyfin;
 in {
   options.myNixOS.services.jellyfin = {
     mediaVolumes = lib.mkOption {
@@ -36,9 +37,10 @@ in {
   config = {
     myNixOS.services.caddy.serviceMap = {
       jellyfin = {
-        port = 8096;
+        port = port;
       };
     };
+    port-selector.set-ports."8096" = "jellyfin";
     virtualisation.oci-containers.backend = "docker";
     virtualisation.oci-containers.containers.jellyfin = {
       hostname = "jellyfin";
@@ -55,7 +57,7 @@ in {
         ++ ["${cfg.configVolume}:/config"];
       extraOptions = builtins.map (d: "--device=${d}:${d}") cfg.gpuDevices;
       ports = [
-        "8096:8096"
+        "${builtins.toString port}:8096"
       ];
       environment = {
         PUID = "1000";
