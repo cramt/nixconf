@@ -50,14 +50,14 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:6a558cad78edc505db4b8d30951312d617242f70a53a83076d288ce90672ed4a",
+            "imageDigest": "sha256:7bccb878ddcd99a9797f88e2d72c8a389310cb01a03bcb804da98910eac830af",
             "imageName": "jellyfin/jellyfin",
-            "imageTag": "2025090105",
+            "imageTag": "2025090805",
             "os": null,
-            "sha256": "sha256-bkwzy0zw/JkN+RHLpJT+lF6iwRsM3yZdAJM/ISpqe/A=",
+            "sha256": "sha256-ShduJw/ndHbbyrxbT/1fILrUHX++0UOe1CWLXVGCaqw=",
             "tlsVerify": null
         },
-        "version": "2025090105"
+        "version": "2025090805"
     },
     "minecraft-server": {
         "cargoLocks": null,
