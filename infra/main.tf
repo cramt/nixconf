@@ -27,3 +27,12 @@ resource "cloudflare_dns_record" "atproto" {
   ttl     = 1
   type    = "TXT"
 }
+
+resource "cloudflare_dns_record" "atproto_hannah" {
+  zone_id = local.zone_id
+  content = local.secrets.hannah_atproto_domain_value
+  name    = "_atproto.hannah.${local.secrets.domain}"
+  proxied = false
+  ttl     = 1
+  type    = "TXT"
+}

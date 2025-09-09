@@ -34,6 +34,8 @@
     };
   };
 
+  networking.firewall.enable = false;
+
   myNixOS = {
     waydroid.enable = false;
     gnupg.enable = true;
