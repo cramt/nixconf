@@ -1,17 +1,19 @@
-{ pkgs, lib, ... }:
-let
+{
+  pkgs,
+  lib,
+  ...
+}: let
   rofiShowCalc = pkgs.writeShellScriptBin "rofi_show_calc" ''
     if [[ -z "$1" ]]; then
         echo "Show calculator"
-    
+
     else
-        kill `pidof rofi` 
+        kill `pidof rofi`
         # so rofi doesn't complain "can't launch rofi inside rofi"
         rofi -show calc
     fi
   '';
-in
-{
+in {
   programs.rofi = rec {
     enable = true;
     extraConfig = {
@@ -28,12 +30,9 @@ in
         rofi-calc
         rofi-emoji
         rofi-top
-      ]) ++ [
+      ])
+      ++ [
         pkgs.rofi-power-menu
       ];
-
-    package = pkgs.rofi-wayland.override {
-      plugins = plugins;
-    };
   };
 }
