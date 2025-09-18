@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.75";
+    version = "v0.108.0-b.76";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:ba4352279c063dabd8301f855fc0daab1e3f5c3beefd968d90d37459e62cbc03";
-      sha256 = "sha256-bww4vNNodF9S7DU6EVuxBldPeCzP52Z72FnBajOYIoA=";
-      finalImageTag = "v0.108.0-b.75";
+      imageDigest = "sha256:e86d7e16956970e158d5282f80ba5e2aa9d1a387c5acc80d35518ae2fcad0507";
+      sha256 = "sha256-mMHqT9uPqnljGvMb4v1E5cu8/hGsoqnfQyrGtW5RvrI=";
+      finalImageTag = "v0.108.0-b.76";
     };
   };
   bazarr = {
@@ -16,8 +16,8 @@
     version = "1.5.2";
     src = dockerTools.pullImage {
       imageName = "linuxserver/bazarr";
-      imageDigest = "sha256:2458b13b6bdb9beee13acd2c70172140e9f9362488914d9f7cd95a473c3742b7";
-      sha256 = "sha256-bL/bWq3sQJJlaFpzi2bpWqZMEQmi7So5OuMszIKQJ/I=";
+      imageDigest = "sha256:f9cb78eaec1d77017f5c3e5b7aa07106fe4433a77fd902d01e91213f7c991499";
+      sha256 = "sha256-W+F6PzdFu9H/mkikfbIUkRhfS+8E2jk2dRG7PBdY77c=";
       finalImageTag = "1.5.2";
     };
   };
@@ -36,8 +36,8 @@
     version = "java8";
     src = dockerTools.pullImage {
       imageName = "itzg/minecraft-server";
-      imageDigest = "sha256:89d061b3953d2ba5852f43dd6818462e8b6ac64887593ec4539782a60f6f8e81";
-      sha256 = "sha256-/u+uBMquXRhzufAnqtyq3UeOuwUw7O2uawWF8G4IV2M=";
+      imageDigest = "sha256:5684c55191d84a3ff2406c8c559452e79571bfcbb4cb609aabf55925d737260a";
+      sha256 = "sha256-dPUAPfk4I0qsN9bh4T2ivQLGeszEdUV9soC2isostxA=";
       finalImageTag = "java8";
     };
   };
@@ -86,8 +86,8 @@
     version = "4.0.15";
     src = dockerTools.pullImage {
       imageName = "linuxserver/sonarr";
-      imageDigest = "sha256:1156329d544b38bd1483add75c9b72c559f20e1ca043fd2d6376c2589d38951f";
-      sha256 = "sha256-7+ggXjaEzH14UgTzwsOHSRIUKNYJ+oADHklz38ORRCA=";
+      imageDigest = "sha256:e00e87e0e7c24fdc992093756f120a6ab292790b6a637ff3641bf813091cd726";
+      sha256 = "sha256-4vcNec53fOwPQFsjg9Eii11NDF3Mx+gfA49+jOCRluQ=";
       finalImageTag = "4.0.15";
     };
   };
