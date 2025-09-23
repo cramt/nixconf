@@ -70,11 +70,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:5684c55191d84a3ff2406c8c559452e79571bfcbb4cb609aabf55925d737260a",
+            "imageDigest": "sha256:89d061b3953d2ba5852f43dd6818462e8b6ac64887593ec4539782a60f6f8e81",
             "imageName": "itzg/minecraft-server",
             "imageTag": "java8",
             "os": null,
-            "sha256": "sha256-dPUAPfk4I0qsN9bh4T2ivQLGeszEdUV9soC2isostxA=",
+            "sha256": "sha256-/u+uBMquXRhzufAnqtyq3UeOuwUw7O2uawWF8G4IV2M=",
             "tlsVerify": null
         },
         "version": "java8"
@@ -170,11 +170,11 @@
             "arch": null,
             "finalImageName": null,
             "finalImageTag": null,
-            "imageDigest": "sha256:e00e87e0e7c24fdc992093756f120a6ab292790b6a637ff3641bf813091cd726",
+            "imageDigest": "sha256:1156329d544b38bd1483add75c9b72c559f20e1ca043fd2d6376c2589d38951f",
             "imageName": "linuxserver/sonarr",
             "imageTag": "4.0.15",
             "os": null,
-            "sha256": "sha256-4vcNec53fOwPQFsjg9Eii11NDF3Mx+gfA49+jOCRluQ=",
+            "sha256": "sha256-7+ggXjaEzH14UgTzwsOHSRIUKNYJ+oADHklz38ORRCA=",
             "tlsVerify": null
         },
         "version": "4.0.15"
