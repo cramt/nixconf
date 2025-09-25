@@ -1,7 +1,7 @@
 {pkgs, ...}: let
   secrets = import ../../secrets.nix;
   sshTargets = {
-    luna = "-t cramt@192.168.0.103 -A";
+    luna = "-t cramt@${secrets.luna_internal_address} -A";
     remote_luna = "-t cramt@${secrets.ip} -p 2269 -A";
     jump = "ao@161.35.219.109 -A";
   };

@@ -3,7 +3,7 @@ resource "cloudflare_dns_record" "luna" {
   zone_id  = local.zone_id
   content  = local.secrets.ip
   name     = "${each.key}.${local.secrets.domain}"
-  proxied  = true
+  proxied  = false
   ttl      = 1
   type     = "A"
 }
