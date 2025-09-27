@@ -46,9 +46,13 @@
       minio.enable = true;
       btopttyd.enable = true;
       minecraft-forge = {
-        enable = true;
+        enable = false;
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
         dataDir = "/mnt/imbrium/minecraft-forge";
+      };
+      minecraft-homestead = {
+        enable = true;
+        dataDir = "/mnt/imbrium/minecraft-homestead";
       };
       gtnh = {
         enable = true;
