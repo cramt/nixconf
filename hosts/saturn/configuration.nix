@@ -37,7 +37,7 @@
   networking.firewall.enable = false;
 
   myNixOS = {
-    waydroid.enable = false;
+    waydroid.enable = true;
     gnupg.enable = true;
     qemu.enable = true;
     docker.enable = true;
