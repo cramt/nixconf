@@ -23,12 +23,12 @@
   };
   jellyfin = {
     pname = "jellyfin";
-    version = "2025092905";
+    version = "2025100605";
     src = dockerTools.pullImage {
       imageName = "jellyfin/jellyfin";
-      imageDigest = "sha256:fbbb628f0afe61d38a4a84d95063e9fb16752cb6b6ada0f8528dc535fecdd2b1";
-      sha256 = "sha256-oH3EcpEnweNXQm1c9+3MSMstEnmi7bCt4slACyAuj/k=";
-      finalImageTag = "2025092905";
+      imageDigest = "sha256:d1dcfec7c550d5253b711ec69ad0983d18954776f93086548e6481f587fec872";
+      sha256 = "sha256-EQLtrOHbFwF9p7K/fcW1tzy/rUlRPUjOsL5ARbDRav8=";
+      finalImageTag = "2025100605";
     };
   };
   minecraft-server = {
