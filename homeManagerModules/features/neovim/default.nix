@@ -190,7 +190,6 @@ in {
 
           lsp = {
             enable = true;
-            null-ls.setupOpts.default_timeout = 10000;
             formatOnSave = true;
             lspkind.enable = false;
             lightbulb.enable = true;
@@ -462,7 +461,7 @@ in {
 
           assistant = {
             codecompanion-nvim = {
-              enable = true;
+              enable = false;
               setupOpts = {
                 adapters =
                   lib.generators.mkLuaInline
