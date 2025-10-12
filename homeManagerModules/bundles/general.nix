@@ -47,7 +47,6 @@
     unzip
     dnsutils
     nix-output-monitor
-    inputs.nixpkgs-ancient.legacyPackages.${pkgs.system}.nvfetcher
     jq
   ];
 

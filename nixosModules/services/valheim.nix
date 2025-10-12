@@ -5,12 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.valheim;
-  docker_source =
-    ((import ../../_sources/generated.nix) {
-      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
-    })
-    .odin
-    .src;
+  docker_source = pkgs.npins."mbround18/valheim";
 in {
   options.myNixOS.services.valheim = {
     worldVolume = lib.mkOption {
@@ -49,7 +44,7 @@ in {
     virtualisation.oci-containers.containers.valheim = {
       hostname = "valheim";
       imageFile = docker_source;
-      image = "${docker_source.imageName}:${docker_source.imageTag}";
+      image = "${docker_source.image_name}:${docker_source.image_tag}";
       ports = [
         "2456:2456/udp"
         "2457:2457/udp"

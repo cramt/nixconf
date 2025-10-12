@@ -5,12 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.minecraft-forge;
-  docker_source =
-    ((import ../../_sources/generated.nix) {
-      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
-    })
-    .minecraft-server
-    .src;
+  docker_source = pkgs.npins."itzg/minecraft-server";
 in {
   options.myNixOS.services.minecraft-forge = {
     url = lib.mkOption {
@@ -30,7 +25,7 @@ in {
     virtualisation.oci-containers.containers.minecraft-forge = {
       hostname = "minecraft-forge";
       imageFile = docker_source;
-      image = "${docker_source.imageName}:${docker_source.imageTag}";
+      image = "${docker_source.image_name}:${docker_source.image_tag}";
       ports = ["25565:25565"];
       volumes = ["${cfg.dataDir}:/data"];
       environment = {

@@ -19,5 +19,5 @@ update:
     fwupdmgr update -y || true
     just update_flake
     just update_gems
-    nvfetcher
+    nix shell -f https://github.com/andir/npins/archive/master.tar.gz --command npins update
     nh os switch

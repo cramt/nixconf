@@ -5,12 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.radarr;
-  docker_source =
-    ((import ../../_sources/generated.nix) {
-      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
-    })
-    .radarr
-    .src;
+  docker_source = pkgs.npins."linuxserver/radarr";
   port = config.port-selector.ports.radarr;
 in {
   options.myNixOS.services.radarr = {
@@ -43,7 +38,7 @@ in {
     virtualisation.oci-containers.containers.radarr = {
       hostname = "radarr";
       imageFile = docker_source;
-      image = "${docker_source.imageName}:${docker_source.imageTag}";
+      image = "${docker_source.image_name}:${docker_source.image_tag}";
       networks = ["piracy"];
       volumes = [
         "${cfg.configVolume}:/config"

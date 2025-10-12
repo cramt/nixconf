@@ -1,0 +1,67 @@
+{
+  "pins": {
+    "itzg/minecraft-server": {
+      "type": "Container",
+      "image_name": "itzg/minecraft-server",
+      "image_tag": "java8",
+      "image_digest": "sha256:9aaa08e93b682b52bd9b41378b8d8627b3b69b6db3da399f87b516ddca665151",
+      "hash": "sha256-fcu9+mvKjK4m+nZkfwiBO2yPO+hOKOXHTHp/YTcv40k="
+    },
+    "jellyfin/jellyfin": {
+      "type": "Container",
+      "image_name": "jellyfin/jellyfin",
+      "image_tag": "latest",
+      "image_digest": "sha256:7ae36aab93ef9b6aaff02b37f8bb23df84bb2d7a3f6054ec8fc466072a648ce2",
+      "hash": "sha256-WrVDtCho1R0HEWKcoqsKvGE+R4BJjS1qIrFxAnYvVqA="
+    },
+    "linuxserver/bazarr": {
+      "type": "Container",
+      "image_name": "linuxserver/bazarr",
+      "image_tag": "latest",
+      "image_digest": "sha256:005f97fcab0fd7402cd7ff3c09f5ff4da4c63ca51be487e90d5c4dc8a8f85a45",
+      "hash": "sha256-BGpIo1zj8m8VsTOGsTCJXAnUmx+ox744Eh0CVoOyR5A="
+    },
+    "linuxserver/prowlarr": {
+      "type": "Container",
+      "image_name": "linuxserver/prowlarr",
+      "image_tag": "latest",
+      "image_digest": "sha256:964485823771c102427a0c1cd896cf6b576add6f21bd041498b92cb040ee7270",
+      "hash": "sha256-4gUpPgZs/nQq1WxWhoFDPxgriPV+fa9h7m+UAMYwa1o="
+    },
+    "linuxserver/qbittorrent": {
+      "type": "Container",
+      "image_name": "linuxserver/qbittorrent",
+      "image_tag": "latest",
+      "image_digest": "sha256:884b9b6e9c6467d9c1fb16551e03cb1f66ad32c412ce4bb492e206e0bd0f55b5",
+      "hash": "sha256-djExZ6swJZa2WPbKW4sBFAk4AJFSSPpJKwmQCW2dXMQ="
+    },
+    "linuxserver/radarr": {
+      "type": "Container",
+      "image_name": "linuxserver/radarr",
+      "image_tag": "latest",
+      "image_digest": "sha256:af03fa6a993ee7efb65f6121ebd8c89de4a47aa1181cec03832e292a1446111f",
+      "hash": "sha256-4ZuQvDe0aLi/FvOaZoLSfLQkDYUATwRwhlUl2QUgGmM="
+    },
+    "linuxserver/sonarr": {
+      "type": "Container",
+      "image_name": "linuxserver/sonarr",
+      "image_tag": "latest",
+      "image_digest": "sha256:f3a7fda30a0133b24b04857a21e7a81b97ed2722e147503a47ad0b4fbc7c7694",
+      "hash": "sha256-XeuCj6LhZjogFQN9FW0v67Tfpa/EXPiNUP0jWgADOPI="
+    },
+    "mbround18/valheim": {
+      "type": "Container",
+      "image_name": "mbround18/valheim",
+      "image_tag": "latest",
+      "image_digest": "sha256:99b1f4f90a1ff3cb95b6f4f1701afaa4fba9bed35fd614f88f885f7e647a4536",
+      "hash": "sha256-lCP+wSfbqrBMwgs/RsTbQPn2BPTq3YUBE4zZSsLe+1Y="
+    },
+    "nixpkgs": {
+      "type": "Channel",
+      "name": "nixpkgs-unstable",
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre875978.362791944032/nixexprs.tar.xz",
+      "hash": "sha256-WZP8n/Fbi2CkESizt2DoKDmWYD9Yr5+smqYrZnflVig="
+    }
+  },
+  "version": 7
+}

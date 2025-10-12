@@ -131,9 +131,6 @@
         prio = 50;
         enable = true;
       };
-      tor-privoxy = {
-        enable = false;
-      };
     };
 
     home-users = {

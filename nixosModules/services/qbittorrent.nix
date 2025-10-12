@@ -5,12 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.qbittorrent;
-  docker_source =
-    ((import ../../_sources/generated.nix) {
-      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
-    })
-    .qbittorrent
-    .src;
+  docker_source = pkgs.npins."linuxserver/qbittorrent";
   port = config.port-selector.ports.qbit;
   udp_port = config.port-selector.ports.qbit_udp;
 in {
@@ -50,7 +45,7 @@ in {
     virtualisation.oci-containers.containers.qbittorrent = {
       hostname = "qbittorrent";
       imageFile = docker_source;
-      image = "${docker_source.imageName}:${docker_source.imageTag}";
+      image = "${docker_source.image_name}:${docker_source.image_tag}";
       networks = ["piracy"];
       volumes = [
         "${cfg.configVolume}:/config"

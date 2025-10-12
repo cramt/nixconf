@@ -5,12 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.bazarr;
-  docker_source =
-    ((import ../../_sources/generated.nix) {
-      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
-    })
-    .bazarr
-    .src;
+  docker_source = pkgs.npins."linuxserver/bazarr";
 
   port = config.port-selector.ports.bazarr;
 in {
@@ -46,7 +41,7 @@ in {
     virtualisation.oci-containers.containers.bazarr = {
       hostname = "bazarr";
       imageFile = docker_source;
-      image = "${docker_source.imageName}:${docker_source.imageTag}";
+      image = "${docker_source.image_name}:${docker_source.image_tag}";
       networks = ["piracy"];
       volumes = [
         "${cfg.configVolume}:/config"

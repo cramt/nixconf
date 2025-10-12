@@ -5,12 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.prowlarr;
-  docker_source =
-    ((import ../../_sources/generated.nix) {
-      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
-    })
-    .prowlarr
-    .src;
+  docker_source = pkgs.npins."linuxserver/prowlarr";
   port = config.port-selector.ports.prowlarr;
 in {
   options.myNixOS.services.prowlarr = {
@@ -31,7 +26,7 @@ in {
     virtualisation.oci-containers.containers.prowlarr = {
       hostname = "prowlarr";
       imageFile = docker_source;
-      image = "${docker_source.imageName}:${docker_source.imageTag}";
+      image = "${docker_source.image_name}:${docker_source.image_tag}";
       networks = ["piracy"];
       volumes = [
         "${cfg.configVolume}:/config"

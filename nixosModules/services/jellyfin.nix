@@ -5,12 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.jellyfin;
-  docker_source =
-    ((import ../../_sources/generated.nix) {
-      inherit (pkgs) fetchurl fetchgit fetchFromGitHub dockerTools;
-    })
-      .jellyfin
-      .src;
+  docker_source = pkgs.npins."jellyfin/jellyfin";
   port = config.port-selector.ports.jellyfin;
 in {
   options.myNixOS.services.jellyfin = {
@@ -45,7 +40,7 @@ in {
     virtualisation.oci-containers.containers.jellyfin = {
       hostname = "jellyfin";
       imageFile = docker_source;
-      image = "${docker_source.imageName}:${docker_source.imageTag}";
+      image = "${docker_source.image_name}:${docker_source.image_tag}";
       volumes =
         (
           lib.attrsets.mapAttrsToList

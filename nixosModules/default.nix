@@ -79,6 +79,16 @@ in {
     nixpkgs = {
       overlays = [
         inputs.nur.overlays.default
+        (final: prev: let
+          sources = import ../npins;
+          system = pkgs.system;
+          npinspkgs = import sources.nixpkgs {
+            inherit system;
+          };
+          rest = builtins.removeAttrs sources ["nixpkgs"];
+        in {
+          npins = builtins.mapAttrs (_: x: x {pkgs = npinspkgs;}) rest;
+        })
         (final: prev: {
           lazygit = prev.writeScriptBin "lazygit" ''
             echo 'a' | ${prev.gnupg}/bin/gpg --sign -u alex.cramt@gmail.com > /dev/null && ${prev.lazygit}/bin/lazygit
