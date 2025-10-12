@@ -3,12 +3,12 @@
 {
   adguard = {
     pname = "adguard";
-    version = "v0.108.0-b.76";
+    version = "v0.108.0-b.77";
     src = dockerTools.pullImage {
       imageName = "adguard/adguardhome";
-      imageDigest = "sha256:e86d7e16956970e158d5282f80ba5e2aa9d1a387c5acc80d35518ae2fcad0507";
-      sha256 = "sha256-mMHqT9uPqnljGvMb4v1E5cu8/hGsoqnfQyrGtW5RvrI=";
-      finalImageTag = "v0.108.0-b.76";
+      imageDigest = "sha256:daf7c3a4d53e3566a1fd927fb277329077d649b29626ab19dda12b35520f8706";
+      sha256 = "sha256-8qY0k54tpNeHdxgS+8Qhxa/+1RVrfCgAmYy9euc4R/M=";
+      finalImageTag = "v0.108.0-b.77";
     };
   };
   bazarr = {

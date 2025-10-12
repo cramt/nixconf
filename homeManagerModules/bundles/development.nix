@@ -37,10 +37,10 @@ in {
       terraform
       opentofu
       tflint
-      awscli2
+      inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.awscli2
       ssm-session-manager-plugin
       gcc-arm-embedded
-      julia
+      #julia TODO: reenable when build doesnt fail
       zig
       futhark
       devenv

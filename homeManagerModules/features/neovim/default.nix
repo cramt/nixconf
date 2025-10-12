@@ -198,6 +198,7 @@ in {
             lspSignature.enable = true;
             otter-nvim.enable = true;
             nvim-docs-view.enable = true;
+            /*
             lspconfig.sources.sourcekit = ''
               lspconfig.sourcekit.setup {
                 capabilities = capabilities,
@@ -205,6 +206,7 @@ in {
                 cmd = { "${pkgs.sourcekit-lsp}/bin/sourcekit-lsp" }
               }
             '';
+            */
             lspconfig.sources.futhark_lsp = ''
               lspconfig.futhark_lsp.setup {
                 capabilities = capabilities,
@@ -232,7 +234,7 @@ in {
             markdown.enable = true;
             bash.enable = true;
             julia = {
-              enable = true;
+              enable = false; # TODO: enable when build aint failing anymore
               lsp.package = pkgs.julia;
             };
             clang.enable = true;

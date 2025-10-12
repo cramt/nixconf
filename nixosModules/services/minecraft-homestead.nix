@@ -25,7 +25,7 @@ in {
         PGID = "1000";
         TZ = "Europe/Copenhagen";
       };
-      autoStart = false;
+      autoStart = true;
     };
   };
 }
