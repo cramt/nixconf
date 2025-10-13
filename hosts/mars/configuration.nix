@@ -34,9 +34,6 @@
       enable = false;
     };
 
-    services.tor-privoxy = {
-      enable = false;
-    };
     services = {
       tailscale.enable = true;
       synapse.enable = false;
