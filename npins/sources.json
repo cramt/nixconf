@@ -4,8 +4,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:a50057c68fa0f5b9ae6fa1459d5240889347ce3b9ce2641722e39b9367522d70",
-      "hash": "sha256-mZxnxmrArjAVJF3wzxiv3+5phKk20bhCiPe1Xq5tmBc="
+      "image_digest": "sha256:21fe6bda4448c70df37241469681ec9611e18d96fccb1a5927ef63b8f8165ec4",
+      "hash": "sha256-h4jv02Sj7IkMWKpJeG01s2uLevJtG+Rxyg5iNDkZ1ZM="
     },
     "jellyfin/jellyfin": {
       "type": "Container",
@@ -32,22 +32,22 @@
       "type": "Container",
       "image_name": "linuxserver/qbittorrent",
       "image_tag": "latest",
-      "image_digest": "sha256:884b9b6e9c6467d9c1fb16551e03cb1f66ad32c412ce4bb492e206e0bd0f55b5",
-      "hash": "sha256-djExZ6swJZa2WPbKW4sBFAk4AJFSSPpJKwmQCW2dXMQ="
+      "image_digest": "sha256:51dd497bd9b1de06fc1f9c9753297fae1e7445ad817e4528ee3f84c9c3122c7d",
+      "hash": "sha256-t1WBI0BLecH4s8y8I+6Z/4XbV2GR0aRXvS8SlvBJXkE="
     },
     "linuxserver/radarr": {
       "type": "Container",
       "image_name": "linuxserver/radarr",
       "image_tag": "latest",
-      "image_digest": "sha256:af03fa6a993ee7efb65f6121ebd8c89de4a47aa1181cec03832e292a1446111f",
-      "hash": "sha256-4ZuQvDe0aLi/FvOaZoLSfLQkDYUATwRwhlUl2QUgGmM="
+      "image_digest": "sha256:fae2aafa6ecace3524fc79d102f5bfd25fb151caed6a454cee46479236ac33bf",
+      "hash": "sha256-QyMew/9oO9CLRfSl5zfuS65wmwI1iOsvEYPdnnQDIqU="
     },
     "linuxserver/sonarr": {
       "type": "Container",
       "image_name": "linuxserver/sonarr",
       "image_tag": "latest",
-      "image_digest": "sha256:f3a7fda30a0133b24b04857a21e7a81b97ed2722e147503a47ad0b4fbc7c7694",
-      "hash": "sha256-XeuCj6LhZjogFQN9FW0v67Tfpa/EXPiNUP0jWgADOPI="
+      "image_digest": "sha256:69d72f525bc181728c8f4788992a28ae1cd797ddd978f48bc2e271c7acd02e9b",
+      "hash": "sha256-qTiluBaKD5z0WacN0mUudfKULizokuZKgrcBcGxvLvE="
     },
     "mbround18/valheim": {
       "type": "Container",
