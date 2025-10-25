@@ -25,7 +25,7 @@
     git_update_notifier.enable = true;
     thunderbird.enable = false;
     hyprland.enable = true;
-    cosmic.enable = false;
+    cosmic.enable = true;
     alacritty.enable = true;
     rio.enable = true;
     mako.enable = true;

@@ -42,7 +42,7 @@ in {
 
     services = {
       displayManager = {
-        defaultSession = "hyprland";
+        defaultSession = "COSMIC";
       };
     };
 

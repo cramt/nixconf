@@ -46,8 +46,8 @@
       "type": "Container",
       "image_name": "linuxserver/sonarr",
       "image_tag": "latest",
-      "image_digest": "sha256:69d72f525bc181728c8f4788992a28ae1cd797ddd978f48bc2e271c7acd02e9b",
-      "hash": "sha256-qTiluBaKD5z0WacN0mUudfKULizokuZKgrcBcGxvLvE="
+      "image_digest": "sha256:fbe67c25693dc5f3de220c5691f374576ae265df782c16918cc071b630490bd7",
+      "hash": "sha256-QaWI6jnoW7Jp6vhp4oGh0mpL1BdorpdL+Ten3v6r8qA="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -59,8 +59,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre880602.cb82756ecc37/nixexprs.tar.xz",
-      "hash": "sha256-Zk4ebRwxwsWjR20i15LsNk13uVhgubF44pJQddcCt4w="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre882962.d5faa84122bc/nixexprs.tar.xz",
+      "hash": "sha256-SZz0rBxQMdd1qUh1ZAIRAJ2N2AF5fhPG7WYTna2ZTsk="
     }
   },
   "version": 7
