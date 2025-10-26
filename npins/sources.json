@@ -4,8 +4,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:21fe6bda4448c70df37241469681ec9611e18d96fccb1a5927ef63b8f8165ec4",
-      "hash": "sha256-h4jv02Sj7IkMWKpJeG01s2uLevJtG+Rxyg5iNDkZ1ZM="
+      "image_digest": "sha256:e2aa27c06f57b424864fc540fe5921134b62b9e35b4fc6ff40ffc1a99497b30e",
+      "hash": "sha256-GQSyau9vIuw4BAXseDChCvET3BZ2AAghVV8UpZlcqkk="
     },
     "jellyfin/jellyfin": {
       "type": "Container",
@@ -25,15 +25,15 @@
       "type": "Container",
       "image_name": "linuxserver/prowlarr",
       "image_tag": "latest",
-      "image_digest": "sha256:608935c38763920b25622a3d404bb14ea08fcaa7c2a9b1c93ce9bac61ad4b11d",
-      "hash": "sha256-Jwpk//aj9gErsZMF5eX9fVN2NqS+jwNujjIwbNeBphc="
+      "image_digest": "sha256:643220338204525524db787ff38a607261597f49d1f550694acdb3e908e2b43e",
+      "hash": "sha256-QS8mqlhySZM2RrOyGZJ1y4HbfY+HVnlWRkb51g4UzjA="
     },
     "linuxserver/qbittorrent": {
       "type": "Container",
       "image_name": "linuxserver/qbittorrent",
       "image_tag": "latest",
-      "image_digest": "sha256:51dd497bd9b1de06fc1f9c9753297fae1e7445ad817e4528ee3f84c9c3122c7d",
-      "hash": "sha256-t1WBI0BLecH4s8y8I+6Z/4XbV2GR0aRXvS8SlvBJXkE="
+      "image_digest": "sha256:098d4340c0709a9ddbc7010ca21900238388454e20182d52b9723b40a2a44293",
+      "hash": "sha256-DmSOYQta8+UbVBLdtZ0V66H1Fj398R5o3hFRHO1Tkgc="
     },
     "linuxserver/radarr": {
       "type": "Container",
@@ -59,8 +59,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre882962.d5faa84122bc/nixexprs.tar.xz",
-      "hash": "sha256-SZz0rBxQMdd1qUh1ZAIRAJ2N2AF5fhPG7WYTna2ZTsk="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre883899.02f2cb8e0feb/nixexprs.tar.xz",
+      "hash": "sha256-qNyzW18856v70IXxHNF79M0wvpmMG+dq0JSocZAzlkw="
     }
   },
   "version": 7
