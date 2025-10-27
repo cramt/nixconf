@@ -11,8 +11,8 @@
       "type": "Container",
       "image_name": "jellyfin/jellyfin",
       "image_tag": "latest",
-      "image_digest": "sha256:59417f441213e236a9f907d4e71a13472042409d85f9e9310dbdd87ee33d7bd4",
-      "hash": "sha256-igoGSHK7E7X4UJIqNIV7LAMPjDtvLtssJSZz2IGkL/8="
+      "image_digest": "sha256:c7dd335d455c95ad3fe7550824d93ceb911914bf4210e7899e11f9611ae53a92",
+      "hash": "sha256-pyuscU9jNrEMhUCDvrBEmC6xUlaUknigNbzFcSuA6lo="
     },
     "linuxserver/bazarr": {
       "type": "Container",
@@ -39,8 +39,8 @@
       "type": "Container",
       "image_name": "linuxserver/radarr",
       "image_tag": "latest",
-      "image_digest": "sha256:fae2aafa6ecace3524fc79d102f5bfd25fb151caed6a454cee46479236ac33bf",
-      "hash": "sha256-QyMew/9oO9CLRfSl5zfuS65wmwI1iOsvEYPdnnQDIqU="
+      "image_digest": "sha256:c984533510abe0219a70e80d15bd0d212b7df21baa0913759c4ce6cc9092240b",
+      "hash": "sha256-9AEtcLKC0s+9qAIWEsfPVgsHZ5/CoihfN3GF3zCwG0A="
     },
     "linuxserver/sonarr": {
       "type": "Container",
