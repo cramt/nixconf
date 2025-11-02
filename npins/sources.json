@@ -4,8 +4,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:e2aa27c06f57b424864fc540fe5921134b62b9e35b4fc6ff40ffc1a99497b30e",
-      "hash": "sha256-GQSyau9vIuw4BAXseDChCvET3BZ2AAghVV8UpZlcqkk="
+      "image_digest": "sha256:b78249b5040483dcb7c98441d0816b164cca2903c686f427d84025a026c973a1",
+      "hash": "sha256-lbS5BISIClQu96fd1vl5965Bcuk7I6ujsTgbOqtjzMI="
     },
     "jellyfin/jellyfin": {
       "type": "Container",
@@ -18,8 +18,8 @@
       "type": "Container",
       "image_name": "linuxserver/bazarr",
       "image_tag": "latest",
-      "image_digest": "sha256:a93c3595410f5c5791a126d7705cd8a29f3ce882338eef304cb8bece3ef2580b",
-      "hash": "sha256-175/SRpXF2lY2/rsS55E6SxedObrTp7aeVn7GsK9Yr8="
+      "image_digest": "sha256:a42fef2a5ffa1dca8714e12892ba0b8de5c6c513f1bcdb1ffe4143e715cffb45",
+      "hash": "sha256-bkRyuC7nWpQZaS7vLHuT+eMYWRbzAwrv+H7uOXddQjc="
     },
     "linuxserver/prowlarr": {
       "type": "Container",
@@ -32,8 +32,8 @@
       "type": "Container",
       "image_name": "linuxserver/qbittorrent",
       "image_tag": "latest",
-      "image_digest": "sha256:098d4340c0709a9ddbc7010ca21900238388454e20182d52b9723b40a2a44293",
-      "hash": "sha256-DmSOYQta8+UbVBLdtZ0V66H1Fj398R5o3hFRHO1Tkgc="
+      "image_digest": "sha256:3908cec5685242ab49b4842124df38c7ff09f82e543c17e0f81e883788f6a611",
+      "hash": "sha256-8/m0zPC/McKqlz1tgfj3LGMp1qxBZ9+60Q7MnEMBNEA="
     },
     "linuxserver/radarr": {
       "type": "Container",
@@ -53,14 +53,14 @@
       "type": "Container",
       "image_name": "mbround18/valheim",
       "image_tag": "latest",
-      "image_digest": "sha256:99b1f4f90a1ff3cb95b6f4f1701afaa4fba9bed35fd614f88f885f7e647a4536",
-      "hash": "sha256-lCP+wSfbqrBMwgs/RsTbQPn2BPTq3YUBE4zZSsLe+1Y="
+      "image_digest": "sha256:f66304ce43c2e4b9f96616aa9c9e95dfa0d36a0f2846acc5aba64e7aa78efbc8",
+      "hash": "sha256-jPj5wqZfjL/JUmLqIxbF1CifLZnBx2OEV6CM8Y0zQ30="
     },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre883899.02f2cb8e0feb/nixexprs.tar.xz",
-      "hash": "sha256-qNyzW18856v70IXxHNF79M0wvpmMG+dq0JSocZAzlkw="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre887438.a7fc11be66bd/nixexprs.tar.xz",
+      "hash": "sha256-LDT9wuUZtjPfmviCcVWif5+7j4kBI2mWaZwjNNeg4eg="
     }
   },
   "version": 7

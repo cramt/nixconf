@@ -39,12 +39,11 @@
       corefonts
       noto-fonts
       noto-fonts-cjk-sans
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       font-awesome
       source-han-sans
-      source-han-sans-japanese
-      source-han-serif-japanese
-      ubuntu_font_family
+      source-han-serif
+      ubuntu-classic
       powerline-fonts
       powerline-symbols
       corefonts

@@ -66,7 +66,7 @@
           in ''
             import cors
             @bearer header Authorization "Bearer ${(import ../../secrets.nix).ollama_secret}"
-            reverse_proxy @bearer http://192.168.0.130:${port} http://localhost:${port} {
+            reverse_proxy @bearer http://192.168.178.23:${port} http://localhost:${port} {
               health_uri /
               lb_policy first
             }

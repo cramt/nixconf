@@ -22,7 +22,7 @@
 
   myHomeManager = {
     ghostty.enable = true;
-    git_update_notifier.enable = true;
+    git_update_notifier.enable = false;
     thunderbird.enable = false;
     hyprland.enable = true;
     cosmic.enable = true;
