@@ -11,8 +11,8 @@
       "type": "Container",
       "image_name": "jellyfin/jellyfin",
       "image_tag": "latest",
-      "image_digest": "sha256:c7dd335d455c95ad3fe7550824d93ceb911914bf4210e7899e11f9611ae53a92",
-      "hash": "sha256-pyuscU9jNrEMhUCDvrBEmC6xUlaUknigNbzFcSuA6lo="
+      "image_digest": "sha256:d43a8878689311f841a1967f899f54db56877bf6b426fd7ff870ac1a6fd1dce4",
+      "hash": "sha256-9Chr2pRT/QOYFY125yRKSDxo3BYtEL3fsyM83A9XVGE="
     },
     "linuxserver/bazarr": {
       "type": "Container",
@@ -59,8 +59,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre887438.a7fc11be66bd/nixexprs.tar.xz",
-      "hash": "sha256-LDT9wuUZtjPfmviCcVWif5+7j4kBI2mWaZwjNNeg4eg="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre888688.7241bcbb4f09/nixexprs.tar.xz",
+      "hash": "sha256-V4RaAKo7vdHu9CQNUs6AZpW2jLQr2DuZiiIfZ++YJqI="
     }
   },
   "version": 7
