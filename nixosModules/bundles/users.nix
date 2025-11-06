@@ -26,8 +26,6 @@ in {
 
   config = {
     programs.zsh.enable = true;
-    programs.hyprland.enable = true;
-
     home-manager = {
       extraSpecialArgs = {
         inherit inputs;

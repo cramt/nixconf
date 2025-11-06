@@ -15,7 +15,7 @@
   home.homeDirectory = "/home/cramt";
 
   myHomeManager = {
-    hyprland.enable = true;
+    hyprland.enable = false;
     bundles.general.enable = true;
     bundles.development.enable = true;
     btop.hardware-accel = "rocm";

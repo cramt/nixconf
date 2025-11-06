@@ -18,6 +18,9 @@
 
   boot.kernelPackages = pkgs.linuxPackages_cachyos;
   services.scx.enable = true;
+  boot.extraModprobeConfig = ''
+    options usbhid mousepoll=2
+  '';
 
   networking.firewall.allowedTCPPorts = [3600];
 

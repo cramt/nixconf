@@ -19,6 +19,9 @@
 
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
   services.scx.enable = true;
+  boot.extraModprobeConfig = ''
+    options usbhid mousepoll=2
+  '';
 
   boot.binfmt.emulatedSystems = ["aarch64-linux"];
   nix = {

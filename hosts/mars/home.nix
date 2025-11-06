@@ -14,7 +14,7 @@
   home.homeDirectory = "/home/cramt";
 
   myHomeManager = {
-    hyprland.enable = true;
+    hyprland.enable = false;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.development.enable = true;
