@@ -20,6 +20,7 @@
           expand_to_edges = false;
           anchor = config.lib.cosmic.mkRON "enum" "Bottom";
           opacity = 0.8;
+          margin = 0;
         }
       ];
       shortcuts = [

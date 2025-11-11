@@ -16,7 +16,6 @@
     inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.melonDS
     prismlauncher
     heroic
-    bottles
   ];
 
   myHomeManager = {
