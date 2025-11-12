@@ -4,8 +4,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:8cdbfa50ef2ab4218d68ba4384c0a666857f92dcb922213f6aae1c73821f28b8",
-      "hash": "sha256-vW/Sx7wcIR8MCMPhofnBEvnRX8L5ZLMc3yCmomlQQoI="
+      "image_digest": "sha256:bdba0a08e6abcae1135b4ddffe7c706cfb26953800a4f1aaabfe643c2511ae99",
+      "hash": "sha256-+NCQmdLZmMev2vDBYAMcdjBGtpU4V5VGbljZ7PkFxe8="
     },
     "jellyfin/jellyfin": {
       "type": "Container",

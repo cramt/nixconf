@@ -97,6 +97,7 @@ in {
         (final: prev: {
           cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
             patches = (old.patches or []) ++ [../patches/no_ssd.patch];
+            check = false;
           });
         })
         (final: prev: {
