@@ -3,7 +3,14 @@
   config,
   inputs,
   ...
-}: {
+}: let
+  master_pkgs = import inputs.nixpkgs-master {
+    system = pkgs.system;
+    config = {
+      allowUnfree = true;
+    };
+  };
+in {
   home.packages = with pkgs; [
     wl-clipboard
     alacritty
@@ -15,7 +22,7 @@
     inputs.zen-browser.packages."${pkgs.system}".default
     anytype
     vlc
-    element-desktop
+    master_pkgs.element-desktop
   ];
 
   xdg.enable = true;

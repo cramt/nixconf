@@ -33,7 +33,7 @@ in {
     networking.firewall.allowedTCPPorts = [port];
     port-selector.set-ports."11434" = "ollama";
     services.ollama = {
-      package = master_pkgs.ollama;
+      #package = master_pkgs.ollama;
       enable = true;
       loadModels = [
         "qwen3:8b"
