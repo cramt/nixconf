@@ -3,11 +3,11 @@
     "NonSteamLaunchers": {
       "flake": false,
       "locked": {
-        "lastModified": 1762826777,
-        "narHash": "sha256-0TODWyvtzmmLbuadyuOzTp7q1SN3uwOQf5kT9RdHRho=",
+        "lastModified": 1762953660,
+        "narHash": "sha256-iSBSEmWn8NedVBLKsd48LF2PikAPptx9zow8Qk/EDQ8=",
         "owner": "moraroy",
         "repo": "NonSteamLaunchers-On-Steam-Deck",
-        "rev": "482982a51b026a4d714196b824ee203c07f361de",
+        "rev": "6f295a4b3afff6b7894a43bf47a927c1814f4366",
         "type": "github"
       },
       "original": {
@@ -1390,11 +1390,11 @@
         "website-builder": "website-builder"
       },
       "locked": {
-        "lastModified": 1755722532,
-        "narHash": "sha256-UUuiweZEv/07BtZl+NzxX9rbEc82AP2A8qreZ/n9Qc4=",
+        "lastModified": 1762329494,
+        "narHash": "sha256-Cww1bU7xX3i6rSLUidM6mAW6srkPN2YH//YWrGt/yFc=",
         "ref": "refs/heads/main",
-        "rev": "b4a3679058ec978a4b34b1e405d32b6324097fd0",
-        "revCount": 335,
+        "rev": "837562b51943aec6459348a4cee1735c38067c80",
+        "revCount": 364,
         "type": "git",
         "url": "file:///home/cramt/code/nixarr"
       },
@@ -1472,11 +1472,11 @@
     },
     "nixpkgs-master": {
       "locked": {
-        "lastModified": 1762932042,
-        "narHash": "sha256-kPG2BF3MumQiautOVqFx+qRRjhaprygluOJ2q/V+KZ8=",
+        "lastModified": 1762956788,
+        "narHash": "sha256-R1KnQ/sNJjmNXjs/IJRI2BPmLZz0wYSyeI7Ca/ZbbGo=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "a22570f97ed775fe397005cb418daabc435b5fe0",
+        "rev": "dc7661e4a02e41d473455a00a11f68d73cf7d9f7",
         "type": "github"
       },
       "original": {
@@ -1567,27 +1567,27 @@
     },
     "nixpkgs_5": {
       "locked": {
-        "lastModified": 1748662220,
-        "narHash": "sha256-7gGa49iB9nCnFk4h/g9zwjlQAyjtpgcFkODjcOQS0Es=",
+        "lastModified": 1761016216,
+        "narHash": "sha256-G/iC4t/9j/52i/nm+0/4ybBmAF4hzR8CNHC75qEhjHo=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "59138c7667b7970d205d6a05a8bfa2d78caa3643",
+        "rev": "481cf557888e05d3128a76f14c76397b7d7cc869",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixpkgs-unstable",
+        "ref": "nixos-25.05",
         "repo": "nixpkgs",
         "type": "github"
       }
     },
     "nixpkgs_6": {
       "locked": {
-        "lastModified": 1762596750,
-        "narHash": "sha256-rXXuz51Bq7DHBlfIjN7jO8Bu3du5TV+3DSADBX7/9YQ=",
+        "lastModified": 1762844143,
+        "narHash": "sha256-SlybxLZ1/e4T2lb1czEtWVzDCVSTvk9WLwGhmxFmBxI=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "b6a8526db03f735b89dd5ff348f53f752e7ddc8e",
+        "rev": "9da7f1cf7f8a6e2a7cb3001b048546c92a8258b4",
         "type": "github"
       },
       "original": {
@@ -1599,11 +1599,11 @@
     },
     "nixpkgs_7": {
       "locked": {
-        "lastModified": 1762596750,
-        "narHash": "sha256-rXXuz51Bq7DHBlfIjN7jO8Bu3du5TV+3DSADBX7/9YQ=",
+        "lastModified": 1762844143,
+        "narHash": "sha256-SlybxLZ1/e4T2lb1czEtWVzDCVSTvk9WLwGhmxFmBxI=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "b6a8526db03f735b89dd5ff348f53f752e7ddc8e",
+        "rev": "9da7f1cf7f8a6e2a7cb3001b048546c92a8258b4",
         "type": "github"
       },
       "original": {
@@ -1674,11 +1674,11 @@
         "nixpkgs": "nixpkgs_7"
       },
       "locked": {
-        "lastModified": 1762927664,
-        "narHash": "sha256-7Hn7uy8Kd7H3H3fch3mtgELHgPKq+K5tcNiaSSnvzLA=",
+        "lastModified": 1762956913,
+        "narHash": "sha256-yOf7lHwe/wqSpb+WPMEHa/roqk4Q3erlQIuXb1x/Z5c=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "850d207e1adb623add7cb312e4a7b133633816df",
+        "rev": "c32b5dea1f1e8a8b40f2b293896677f3a1c00e32",
         "type": "github"
       },
       "original": {
@@ -2205,11 +2205,11 @@
     },
     "vpnconfinement": {
       "locked": {
-        "lastModified": 1743810720,
-        "narHash": "sha256-kbv/W4gizUSa6qH2rUQdgPj9AJaeN9k2XSWUYqj7IMU=",
+        "lastModified": 1759956062,
+        "narHash": "sha256-NUZu0Rb0fwUjfdp51zMm0xM3lcK8Kw4c97LLog7+JjA=",
         "owner": "Maroka-chan",
         "repo": "VPN-Confinement",
-        "rev": "74ae51e6d18b972ecc918ab43e8bde60c21a65d8",
+        "rev": "fabe7247b720b5eb4c3c053e24a2b3b70e64c52b",
         "type": "github"
       },
       "original": {
@@ -2226,11 +2226,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1750317638,
-        "narHash": "sha256-B4RWcXXOLO6gMeYyV+K4olu+kGGsYamKH+JAm0cIXqI=",
+        "lastModified": 1753958235,
+        "narHash": "sha256-Rd27XQJKv8Z4BCr3gdbaHFd0TmumiGxdjGRzsEf/mOg=",
         "owner": "rasmus-kirk",
         "repo": "website-builder",
-        "rev": "b54192000a00e865947f45bacf3184d56363ee38",
+        "rev": "00a14b7ae7baef2197978ba7c3fe72dfca7bc475",
         "type": "github"
       },
       "original": {

@@ -14,7 +14,6 @@
     ];
     services.flaresolverr.enable = true;
     nixarr = {
-      autosync = true;
       enable = true;
       jellyfin.enable = true;
       jellyseerr.enable = true;
