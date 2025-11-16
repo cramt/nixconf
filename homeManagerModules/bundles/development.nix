@@ -30,6 +30,7 @@ in {
       inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nodejs_24
       nodePackages.pnpm
       cargo
+      rustfmt
       rustc
       just
       clang
