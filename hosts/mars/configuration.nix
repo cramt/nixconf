@@ -16,7 +16,8 @@
 
   security.polkit.enable = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_cachyos;
+  #boot.kernelPackages = pkgs.linuxPackages_cachyos;
+  boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
   services.scx.enable = true;
   boot.extraModprobeConfig = ''
     options usbhid mousepoll=2

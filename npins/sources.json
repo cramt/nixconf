@@ -4,15 +4,15 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:bdba0a08e6abcae1135b4ddffe7c706cfb26953800a4f1aaabfe643c2511ae99",
-      "hash": "sha256-+NCQmdLZmMev2vDBYAMcdjBGtpU4V5VGbljZ7PkFxe8="
+      "image_digest": "sha256:63b6aa8b742154cad6909bfc1c3a3093c067f2e07d81363b53293b50134ab6de",
+      "hash": "sha256-2OQ55BffTFyqgr7JQCEDdBiTPoMLJammN4PAsuwMiiQ="
     },
     "jellyfin/jellyfin": {
       "type": "Container",
       "image_name": "jellyfin/jellyfin",
       "image_tag": "latest",
-      "image_digest": "sha256:d43a8878689311f841a1967f899f54db56877bf6b426fd7ff870ac1a6fd1dce4",
-      "hash": "sha256-9Chr2pRT/QOYFY125yRKSDxo3BYtEL3fsyM83A9XVGE="
+      "image_digest": "sha256:1edf3f17997acbe139718f252a7d2ded2706762390d787a34204668498dbc5f6",
+      "hash": "sha256-7LoYWwr5+BVgoQTwxtNgyBjWDzfKFuNGec4iTmtzu0c="
     },
     "linuxserver/bazarr": {
       "type": "Container",
@@ -25,22 +25,22 @@
       "type": "Container",
       "image_name": "linuxserver/prowlarr",
       "image_tag": "latest",
-      "image_digest": "sha256:643220338204525524db787ff38a607261597f49d1f550694acdb3e908e2b43e",
-      "hash": "sha256-QS8mqlhySZM2RrOyGZJ1y4HbfY+HVnlWRkb51g4UzjA="
+      "image_digest": "sha256:484784daaf4c081e55c608de256870184d283762e1b64e8105af487b1510fc4a",
+      "hash": "sha256-HuLcgwehXFi+7wuTGeYojc+mu18s8whUhhRpnYHyjq0="
     },
     "linuxserver/qbittorrent": {
       "type": "Container",
       "image_name": "linuxserver/qbittorrent",
       "image_tag": "latest",
-      "image_digest": "sha256:029c00d12f493a15530f7ac6bb0dede12e490a8cf4357d2616f78e68dcab2fdd",
-      "hash": "sha256-egkQdIMbO7GdeZMARz7okFncrCvG77oWeGQztJAuFZI="
+      "image_digest": "sha256:7034f73a3c6fa4ea40fd67df462939d1665d765231b572523921c98c2db5362e",
+      "hash": "sha256-5NU+wUVdbnFyIasJu5IDYw2NogqABo9EL+gSHXmJp2g="
     },
     "linuxserver/radarr": {
       "type": "Container",
       "image_name": "linuxserver/radarr",
       "image_tag": "latest",
-      "image_digest": "sha256:c984533510abe0219a70e80d15bd0d212b7df21baa0913759c4ce6cc9092240b",
-      "hash": "sha256-9AEtcLKC0s+9qAIWEsfPVgsHZ5/CoihfN3GF3zCwG0A="
+      "image_digest": "sha256:e26fbfd3782520c0bb820666f041ca056acfe187a8b95214ee1f47512cc05a29",
+      "hash": "sha256-/DAcf0adb+EygGAaYKu8m3bsPqCfgJ50xLHSai76Poc="
     },
     "linuxserver/sonarr": {
       "type": "Container",
@@ -59,8 +59,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre891648.f6b44b240152/nixexprs.tar.xz",
-      "hash": "sha256-5CwQ80ucRHiqVbMEEbTFnjz70/axSJ0aliyzSaFSkmY="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.11pre897164.85a6c4a07faa/nixexprs.tar.xz",
+      "hash": "sha256-uuJnccye1O5FHnnHYBge1lN2Pq4Z2lp1E3+rc2zsUr4="
     }
   },
   "version": 7
