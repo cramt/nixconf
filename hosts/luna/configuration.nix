@@ -39,6 +39,7 @@
         tvshows = "/mnt/imbrium/downloads/tvshows";
       };
     in {
+      tor.enable = true;
       ollama = {
         enable = true;
         gpu = "cuda";
@@ -120,7 +121,7 @@
         enable = true;
         databaseUrl = "sqlite:/mnt/imbrium/homelab_discord_bot.db?mode=rwc";
       };
-      open-webui.enable = true;
+      open-webui.enable = false;
       postgres = {
         dataDir = "/mnt/imbrium/pgsql";
       };
