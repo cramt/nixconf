@@ -18,9 +18,18 @@
       jellyfin.enable = true;
       jellyseerr.enable = true;
       bazarr.enable = true;
-      sonarr.enable = true;
-      radarr.enable = true;
-      prowlarr.enable = true;
+      sonarr = {
+        enable = true;
+        settings-sync.transmission.enable = true;
+      };
+      radarr = {
+        enable = true;
+        settings-sync.transmission.enable = true;
+      };
+      prowlarr = {
+        enable = true;
+        settings-sync.apps.enable = true;
+      };
 
       transmission = {
         enable = true;

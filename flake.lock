@@ -1371,11 +1371,10 @@
         "website-builder": "website-builder"
       },
       "locked": {
-        "lastModified": 1762329494,
-        "narHash": "sha256-Cww1bU7xX3i6rSLUidM6mAW6srkPN2YH//YWrGt/yFc=",
-        "ref": "refs/heads/main",
-        "rev": "837562b51943aec6459348a4cee1735c38067c80",
-        "revCount": 364,
+        "dirtyRev": "034135757f85c2584e3455f1fcd0df68b65cd141-dirty",
+        "dirtyShortRev": "0341357-dirty",
+        "lastModified": 1763274129,
+        "narHash": "sha256-mJ3D896dZutT1Ag7SdopNHghVCQcnfW2djifMKCUkUg=",
         "type": "git",
         "url": "file:///home/cramt/code/nixarr"
       },
