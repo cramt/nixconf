@@ -22,7 +22,8 @@ in {
     inputs.zen-browser.packages."${pkgs.system}".default
     anytype
     vlc
-    master_pkgs.element-desktop
+    element-desktop
+    master_pkgs.antigravity
   ];
 
   xdg.enable = true;
