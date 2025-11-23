@@ -11,7 +11,6 @@
     wlr.enable = true;
   };
   services.pipewire = {
-    #package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.pipewire;
     enable = true;
     alsa.enable = true;
     pulse.enable = true;
@@ -27,6 +26,7 @@
   myNixOS.services.udisks.enable = true;
   services = {
     pulseaudio.enable = false;
+    flatpak.enable = true;
   };
   myNixOS = {
     keymapp.enable = true;

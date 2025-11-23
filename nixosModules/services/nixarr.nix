@@ -15,7 +15,9 @@
     services.flaresolverr.enable = true;
     nixarr = {
       enable = true;
-      jellyfin.enable = true;
+      jellyfin = {
+        enable = true;
+      };
       jellyseerr.enable = true;
       bazarr.enable = true;
       sonarr = {

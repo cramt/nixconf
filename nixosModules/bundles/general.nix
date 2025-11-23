@@ -49,7 +49,7 @@ in {
       clean.enable = true;
       clean.extraArgs = "--keep-since 4d --keep 3";
       flake = "/home/cramt/nixconf";
-      package = inputs.nh.packages.${pkgs.system}.nh;
+      #package = inputs.nh.packages.${pkgs.system}.nh;
     };
 
     environment.sessionVariables = {};

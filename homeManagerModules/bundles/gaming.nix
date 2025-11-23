@@ -3,6 +3,9 @@
   inputs,
   ...
 }: {
+  imports = [
+    inputs.nix-flatpak.homeManagerModules.nix-flatpak
+  ];
   home.packages = with pkgs; [
     xorg.libxcb
     gamemode
@@ -17,6 +20,13 @@
     prismlauncher
     heroic
   ];
+
+  services.flatpak = {
+    enable = true;
+    packages = [
+      "com.usebottles.bottles"
+    ];
+  };
 
   myHomeManager = {
     wowup.enable = true;

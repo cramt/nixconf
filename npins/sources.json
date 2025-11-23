@@ -32,8 +32,8 @@
       "type": "Container",
       "image_name": "linuxserver/qbittorrent",
       "image_tag": "latest",
-      "image_digest": "sha256:7034f73a3c6fa4ea40fd67df462939d1665d765231b572523921c98c2db5362e",
-      "hash": "sha256-5NU+wUVdbnFyIasJu5IDYw2NogqABo9EL+gSHXmJp2g="
+      "image_digest": "sha256:26a08cd60d81e632aba8947b2c64dfd5f870a5f4a837ec4abedf2e1d174df891",
+      "hash": "sha256-RU0YlFd7qGF5rGYgEFp2n+KK3noq3WlqnN2SzXorsc0="
     },
     "linuxserver/radarr": {
       "type": "Container",
@@ -46,8 +46,8 @@
       "type": "Container",
       "image_name": "linuxserver/sonarr",
       "image_tag": "latest",
-      "image_digest": "sha256:4b8a853b76337cd5de5f69961e23b7d0792ce7bf0a8be083dd7202ef670bfc34",
-      "hash": "sha256-bRWK80zpq6YvKgohD24JoYFxo/qTuikM5HOlzliSIAE="
+      "image_digest": "sha256:2fc9c36769a3f50ab529e7ccc37687d118ab42199b01588573f03b3393cc3223",
+      "hash": "sha256-315SMuw3uDWBFEdMWaRNIorpnpji4SCUl5623VvH3j4="
     },
     "mbround18/valheim": {
       "type": "Container",
