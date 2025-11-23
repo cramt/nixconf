@@ -18,13 +18,13 @@
     winetricks
     inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.melonDS
     prismlauncher
+    lutris
     heroic
   ];
 
   services.flatpak = {
     enable = true;
     packages = [
-      "com.usebottles.bottles"
     ];
   };
 
