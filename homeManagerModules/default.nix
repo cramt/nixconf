@@ -106,7 +106,7 @@ in {
         julia = prev.julia.withPackages ["JuliaFormatter" "LanguageServer"];
       })
       (final: prev: {
-        cosmic-comp = inputs.nixpkgs-cosmic-downgrade.legacyPackages.${prev.system}.cosmic-comp.overrideAttrs (old: {
+        cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
           patches = (old.patches or []) ++ [../patches/no_ssd.patch];
           doCheck = false;
         });
