@@ -13,6 +13,11 @@ in {
 
     extensions = ["toml" "ruby" "rust" "nix" "terraform"];
 
+    mutableUserSettings = false;
+    mutableUserKeymaps = false;
+    mutableUserTasks = false;
+    mutableUserDebug = false;
+
     userKeymaps = [
       {
         context = "GitPanel && ChangesList";
@@ -150,6 +155,16 @@ in {
         };
         ruby-lsp.binary.path = lib.getExe rubyGems.ruby-lsp;
         rubocop.binary.path = lib.getExe rubyGems.rubocop;
+      };
+      agent = {
+        default_model = {
+          model = "gemini-3-pro";
+          provider = "google";
+        };
+        thread_summary_model = {
+          provider = "google";
+          model = "gemini-2.0-flash";
+        };
       };
 
       vim_mode = true;

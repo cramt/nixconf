@@ -1451,6 +1451,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-cosmic-downgrade": {
+      "locked": {
+        "lastModified": 1763678758,
+        "narHash": "sha256-+hBiJ+kG5IoffUOdlANKFflTT5nO3FrrR2CA3178Y5s=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "117cc7f94e8072499b0a7aa4c52084fa4e11cc9b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "117cc7f94e8072499b0a7aa4c52084fa4e11cc9b",
+        "type": "github"
+      }
+    },
     "nixpkgs-lib": {
       "locked": {
         "lastModified": 1697935651,
@@ -1823,6 +1839,7 @@
         "nixarr": "nixarr",
         "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs_6",
+        "nixpkgs-cosmic-downgrade": "nixpkgs-cosmic-downgrade",
         "nixpkgs-master": "nixpkgs-master",
         "nixpkgs-ruby-downgrade": "nixpkgs-ruby-downgrade",
         "nixpkgs-stable": "nixpkgs-stable",
