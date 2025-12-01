@@ -22,15 +22,15 @@
       bazarr.enable = true;
       sonarr = {
         enable = true;
-        settings-sync.transmission.enable = true;
+        #settings-sync.transmission.enable = true;
       };
       radarr = {
         enable = true;
-        settings-sync.transmission.enable = true;
+        #settings-sync.transmission.enable = true;
       };
       prowlarr = {
         enable = true;
-        settings-sync.apps.enable = true;
+        #settings-sync.apps.enable = true;
       };
 
       transmission = {
