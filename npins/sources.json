@@ -32,8 +32,8 @@
       "type": "Container",
       "image_name": "linuxserver/qbittorrent",
       "image_tag": "latest",
-      "image_digest": "sha256:a2eedc99b4876916943bd33e7c415efc448f6b514aa39b4f98c1e6472a717301",
-      "hash": "sha256-M06EHaBNmI9ZD00d1o5umNVVTePXZ6hVVp7zcUNV6WE="
+      "image_digest": "sha256:f0465dbb2aa14397fd205a0240ee562eb062354c036ccc444084fe46c6c75091",
+      "hash": "sha256-SOpkdRz6dWVdtWE45/rDlGmtjR3wHNwa1Vl7mRBrHY8="
     },
     "linuxserver/radarr": {
       "type": "Container",
@@ -59,8 +59,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre905319.f720de590661/nixexprs.tar.xz",
-      "hash": "sha256-4bdSI51wM5D29KfMM1vu4gNEwZMNsg9WMtZIABmExB4="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre906210.ebc94f855ef2/nixexprs.tar.xz",
+      "hash": "sha256-NpBMT0n9zz8zUoopg54k8+puRHq3Y5uYz9O5z9DoO/w="
     }
   },
   "version": 7

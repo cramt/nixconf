@@ -23,7 +23,7 @@
   ];
 
   services.flatpak = {
-    enable = true;
+    enable = false;
     packages = [
     ];
   };

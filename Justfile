@@ -4,7 +4,7 @@ add_foundry_zips:
     null
 
 build_luna: add_foundry_zips
-    nh os switch --target-host root@192.168.178.24 -H luna
+    nh os switch --target-host root@192.168.178.24 -H luna -- --fallback
 
 clean_ruby:
     rm -rf ~/.local/share/gem/

@@ -5,6 +5,17 @@
   ...
 }: {
   config = {
+    xdg = {
+      portal = {
+        enable = true;
+        xdgOpenUsePortal = true;
+        extraPortals = [pkgs.xdg-desktop-portal-cosmic pkgs.xdg-desktop-portal-gtk];
+        config.common = {
+          default = ["cosmic"];
+          "org.freedesktop.portal.OpenURI" = ["gtk"];
+        };
+      };
+    };
     wayland.desktopManager.cosmic = {
       enable = true;
       applets.time.settings = {

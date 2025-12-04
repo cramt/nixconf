@@ -7,7 +7,7 @@
     nixpkgs-master.url = "github:nixos/nixpkgs";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.05";
-    nixarr.url = "git+file:///home/cramt/code/nixarr";
+    nixarr.url = "github:rasmus-kirk/nixarr";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
     winapps = {
