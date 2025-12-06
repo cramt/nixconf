@@ -60,7 +60,7 @@ in {
   config = {
     # https://github.com/pop-os/cosmic-session/issues/166#issuecomment-3613536888
     systemd.user.extraConfig = ''
-      DefaultEnvironment="PATH=/run/current-system/sw/bin"
+      DefaultEnvironment="PATH=/run/wrappers/bin:/etc/profiles/per-user/%u/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"
     '';
     stylix.enable = true;
     services.gnome.gcr-ssh-agent.enable = false;

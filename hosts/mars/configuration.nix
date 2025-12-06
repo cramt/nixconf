@@ -35,7 +35,7 @@
     bundles.graphical.enable = true;
     bundles.users.enable = true;
     steam = {
-      enable = false;
+      enable = true;
     };
 
     services = {
