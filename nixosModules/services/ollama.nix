@@ -33,13 +33,18 @@ in {
     networking.firewall.allowedTCPPorts = [port];
     port-selector.set-ports."11434" = "ollama";
     services.ollama = {
-      #package = master_pkgs.ollama;
+      package = let
+        options = {
+          rocm = pkgs.ollama-rocm;
+          cuda = pkgs.ollama-cuda;
+        };
+      in
+        options.${cfg.gpu};
       enable = true;
       loadModels = [
         "qwen3:8b"
       ];
       host = "0.0.0.0";
-      acceleration = cfg.gpu;
       port = port;
       rocmOverrideGfx = lib.mkIf (cfg.rocmVersion != "") cfg.rocmVersion;
     };
