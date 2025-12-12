@@ -198,22 +198,16 @@ in {
             lspSignature.enable = true;
             otter-nvim.enable = true;
             nvim-docs-view.enable = true;
-            /*
-            lspconfig.sources.sourcekit = ''
-              lspconfig.sourcekit.setup {
-                capabilities = capabilities,
-                on_attach = default_on_attach,
-                cmd = { "${pkgs.sourcekit-lsp}/bin/sourcekit-lsp" }
-              }
-            '';
-            */
-            lspconfig.sources.futhark_lsp = ''
-              lspconfig.futhark_lsp.setup {
-                capabilities = capabilities,
-                on_attach = default_on_attach,
-                cmd = { "${pkgs.futhark}/bin/futhark", "lsp", "--stdio" }
-              }
-            '';
+            servers = {
+              ruby_lsp = {
+                enable = true;
+                package = rubyGems.ruby-lsp;
+              };
+              rubocop = {
+                enable = true;
+                package = rubyGems.rubocop;
+              };
+            };
           };
 
           fzf-lua.profile = "fzf-native";
@@ -226,17 +220,12 @@ in {
           };
 
           languages = {
-            enableFormat = true;
             enableTreesitter = true;
             enableExtraDiagnostics = true;
             nix.enable = true;
             zig.enable = true;
             markdown.enable = true;
             bash.enable = true;
-            julia = {
-              enable = false; # TODO: enable when build aint failing anymore
-              lsp.package = pkgs.julia;
-            };
             clang.enable = true;
             css.enable = true;
             html.enable = true;
@@ -246,7 +235,6 @@ in {
             terraform.enable = true;
             rust = {
               enable = true;
-              crates.enable = true;
             };
             astro.enable = true;
             nu.enable = true;
@@ -255,12 +243,6 @@ in {
               enable = true;
               extensions.ts-error-translator.enable = true;
               extraDiagnostics.enable = true;
-            };
-            ruby = {
-              enable = true;
-              lsp.server = "rubylsp";
-              lsp.package = rubyGems.ruby-lsp;
-              format.package = rubyGems.rubocop;
             };
           };
 
