@@ -10,6 +10,8 @@
     nixarr.url = "github:rasmus-kirk/nixarr";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
+    claude-code.url = "github:sadjow/claude-code-nix";
+
     winapps = {
       url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";

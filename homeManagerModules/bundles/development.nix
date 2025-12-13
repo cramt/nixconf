@@ -47,6 +47,7 @@ in {
       devenv
       gemini-cli
       geminicommit
+      inputs.claude-code.packages.${pkgs.system}.claude-code
     ]
     ++ ld_packages;
 
