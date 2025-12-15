@@ -4,13 +4,15 @@
   inputs,
   lib,
   ...
-}: let
+}:
+let
   ld_packages = with pkgs; [
     libyaml.dev
     stdenv.cc.cc
     openssl.dev
   ];
-in {
+in
+{
   programs.go.enable = true;
 
   myHomeManager = {
@@ -20,7 +22,8 @@ in {
     codex.enable = true;
   };
 
-  home.packages = with pkgs;
+  home.packages =
+    with pkgs;
     [
       gh
       pkg-config
@@ -48,6 +51,7 @@ in {
       gemini-cli
       geminicommit
       inputs.claude-code.packages.${pkgs.system}.claude-code
+      spade
     ]
     ++ ld_packages;
 
@@ -55,6 +59,8 @@ in {
     LD_LIBRARY_PATH = "${lib.makeLibraryPath ld_packages}";
     LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
     CC = "${pkgs.clang}/bin/clang";
-    PKG_CONFIG_PATH = lib.strings.concatStringsSep ":" (builtins.map (x: "${x}/lib/pkgconfig") ld_packages);
+    PKG_CONFIG_PATH = lib.strings.concatStringsSep ":" (
+      builtins.map (x: "${x}/lib/pkgconfig") ld_packages
+    );
   };
 }
