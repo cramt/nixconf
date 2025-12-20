@@ -18,15 +18,15 @@
       "type": "Container",
       "image_name": "linuxserver/bazarr",
       "image_tag": "latest",
-      "image_digest": "sha256:4aa1e82d1e96ae712095d881b7e3840e6db6ca862c335be5b00001f31156650b",
-      "hash": "sha256-gHh/H7H+Y10CcrJVz0LXH2p0KhSt72PtzlyjxlUrPAE="
+      "image_digest": "sha256:648f694532a3a53d8cf78bc888919ef538659bad41af4c680b0427ad1047d171",
+      "hash": "sha256-WhjGSQheKFpluhf60v7hNAhH936MwO4N+5d6JHLT9Zc="
     },
     "linuxserver/prowlarr": {
       "type": "Container",
       "image_name": "linuxserver/prowlarr",
       "image_tag": "latest",
-      "image_digest": "sha256:475853535de3de8441b87c1457c30f2e695f4831228b12b6b7274e9da409d874",
-      "hash": "sha256-SqiJPcc1bY4AvLYV9mrUDvDBgxo1cmtmKfxn9u25QsA="
+      "image_digest": "sha256:67a8aaedcfd6989f3030b937a6a07007310b1dfc7ee8df16d2cbfa48d1c1158c",
+      "hash": "sha256-FJkAXsCH90IILh+4mRflNpRRvAVKWXnbZdBGzY/8skc="
     },
     "linuxserver/qbittorrent": {
       "type": "Container",
@@ -46,8 +46,8 @@
       "type": "Container",
       "image_name": "linuxserver/sonarr",
       "image_tag": "latest",
-      "image_digest": "sha256:60e5edcac39172294ad22d55d1b08c2c0a9fe658cad2f2c4d742ae017d7874de",
-      "hash": "sha256-1xDXfZpOqawMPQKVGaCplZ8C55sovXwCVBvxvuX7PD0="
+      "image_digest": "sha256:8b9f2138ec50fc9e521960868f79d2ad0d529bc610aef19031ea8ff80b54c5e0",
+      "hash": "sha256-erkGHb3NRWlNHMpj31+MprSL4Sb5boCpspNSXeEzbPw="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -59,8 +59,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre911985.09b8fda8959d/nixexprs.tar.xz",
-      "hash": "sha256-I715zWsdVZ+CipmLtoCAeNG0etQywiWRE5PaWntnaYk="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre913981.7d853e518814/nixexprs.tar.xz",
+      "hash": "sha256-jDwX0bMG6mAuxCuwcNrimeHoNgx/zQJ4LsJ4+kco77I="
     }
   },
   "version": 7

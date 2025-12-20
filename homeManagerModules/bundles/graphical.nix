@@ -3,14 +3,8 @@
   config,
   inputs,
   ...
-}: let
-  master_pkgs = import inputs.nixpkgs-master {
-    system = pkgs.system;
-    config = {
-      allowUnfree = true;
-    };
-  };
-in {
+}:
+{
   home.packages = with pkgs; [
     wl-clipboard
     alacritty
@@ -23,7 +17,8 @@ in {
     anytype
     vlc
     element-desktop
-    master_pkgs.antigravity
+    antigravity
+    orca-slicer
   ];
 
   xdg.enable = true;
