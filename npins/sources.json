@@ -4,8 +4,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:21d03c00a5c1e2def69508bb9887f18f5c3791d9cb52a2dfd6d939d421011e51",
-      "hash": "sha256-T83yCGwlpCryyVpPdAOxBrWwo5/Dfrp7yEpBnfgQJBk="
+      "image_digest": "sha256:5e1f081251a30ac30444180fabf21e7024f85e31386c2522752c0779bf8deeef",
+      "hash": "sha256-n8TexQXKA7S5OTYYVGTQi4Cy25sUDNMd1CQcLtoBEEo="
     },
     "jellyfin/jellyfin": {
       "type": "Container",
@@ -32,8 +32,8 @@
       "type": "Container",
       "image_name": "linuxserver/qbittorrent",
       "image_tag": "latest",
-      "image_digest": "sha256:043498de39c3dd63eec94360c5ad966a51271d1581070f42cb73ab0cf4776f29",
-      "hash": "sha256-RThT3OMKJ+ughIuhSpMZEEDw4u/XTnCgzHQKZo2rRHQ="
+      "image_digest": "sha256:a68c4cfb7b07c39cf3f13e7f1d23d333c1e4a60304d37bc1eec7af3eacfe12d5",
+      "hash": "sha256-P1zvqC8+EcUct3/zAe7yW7PUz/0OiUi1fc6/1XpMK1g="
     },
     "linuxserver/radarr": {
       "type": "Container",
