@@ -4,8 +4,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:5e1f081251a30ac30444180fabf21e7024f85e31386c2522752c0779bf8deeef",
-      "hash": "sha256-n8TexQXKA7S5OTYYVGTQi4Cy25sUDNMd1CQcLtoBEEo="
+      "image_digest": "sha256:92ab72b6dbd1df335185749df9e6fb4b9fe1363c465630fe1a32e6e94baf6587",
+      "hash": "sha256-gSVUCtIWxhI25nYYuWN2pjzLJSIv4ciW+3YJ8+iR3ck="
     },
     "jellyfin/jellyfin": {
       "type": "Container",
@@ -53,14 +53,14 @@
       "type": "Container",
       "image_name": "mbround18/valheim",
       "image_tag": "latest",
-      "image_digest": "sha256:f66304ce43c2e4b9f96616aa9c9e95dfa0d36a0f2846acc5aba64e7aa78efbc8",
-      "hash": "sha256-jPj5wqZfjL/JUmLqIxbF1CifLZnBx2OEV6CM8Y0zQ30="
+      "image_digest": "sha256:4e4c209455150200baa0f2237271bd0d196f9b32ae11130f6129ec1ca5f2fa5d",
+      "hash": "sha256-hxoSh1UBHfpmO8Ck2nPagmnSHqpK1y8lzRDNIUoyWcM="
     },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre913981.7d853e518814/nixexprs.tar.xz",
-      "hash": "sha256-jDwX0bMG6mAuxCuwcNrimeHoNgx/zQJ4LsJ4+kco77I="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre915325.3a7affa77a5a/nixexprs.tar.xz",
+      "hash": "sha256-U7dmoZ67f+Xi70kIbfWNy1jzlmR3D215330OIJ3Td6Y="
     }
   },
   "version": 7
