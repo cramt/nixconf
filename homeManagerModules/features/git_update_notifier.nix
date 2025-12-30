@@ -16,7 +16,7 @@
       }
     );
     envCommand = "CONFIG_FILE=${configFile}";
-    binary = "${inputs.git_update_notifier.packages.${pkgs.system}.default}/bin/git_update_notifier";
+    binary = "${inputs.git_update_notifier.packages.${pkgs.stdenv.hostPlatform.system}.default}/bin/git_update_notifier";
   in {
     Service = {
       Environment = envCommand;

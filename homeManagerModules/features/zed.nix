@@ -5,7 +5,7 @@
   ...
 }: let
   rubyGems = (import ../../gems/default.nix) {
-    pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.system};
+    pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.stdenv.hostPlatform.system};
   };
 in {
   programs.zed-editor = {

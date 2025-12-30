@@ -83,7 +83,7 @@ in {
         inputs.nur.overlays.default
         (final: prev: let
           sources = import ../npins;
-          system = pkgs.system;
+          system = pkgs.stdenv.hostPlatform.system;
           npinspkgs = import sources.nixpkgs {
             inherit system;
           };
@@ -111,7 +111,7 @@ in {
           };
         })
         (final: prev: {
-          rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.rocmPackages;
+          rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.rocmPackages;
         })
         (final: prev: {
           ttyd = prev.ttyd.overrideAttrs (final: prev: {

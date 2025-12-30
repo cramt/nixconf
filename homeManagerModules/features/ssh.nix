@@ -18,6 +18,7 @@
 in {
   programs.ssh = {
     enable = true;
+    enableDefaultConfig = false;
     matchBlocks."*" = {
       addKeysToAgent = "yes";
       controlPath = "~/.ssh/control-%C";

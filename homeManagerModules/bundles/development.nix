@@ -28,9 +28,9 @@ in
       gh
       pkg-config
       gnumake
-      (hiPrio gcc)
+      (lib.hiPrio gcc)
       yarn
-      inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.nodejs_24
+      inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nodejs_24
       nodePackages.pnpm
       cargo
       rustfmt
@@ -41,7 +41,7 @@ in
       terraform
       opentofu
       tflint
-      inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.awscli2
+      inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.awscli2
       ssm-session-manager-plugin
       gcc-arm-embedded
       #julia TODO: reenable when build doesnt fail
@@ -50,7 +50,7 @@ in
       devenv
       gemini-cli
       geminicommit
-      inputs.claude-code.packages.${pkgs.system}.claude-code
+      inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
       spade
     ]
     ++ ld_packages;

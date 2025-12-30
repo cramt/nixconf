@@ -1,8 +1,9 @@
-{pkgs, ...}: {
+{pkgs, config, ...}: {
   config = {
     programs.fzf.enableZshIntegration = true;
     programs.zsh = {
       enable = true;
+      dotDir = "${config.xdg.configHome}/zsh";
 
       shellAliases = {
         ls = "${pkgs.eza}/bin/eza --icons -a --group-directories-first";

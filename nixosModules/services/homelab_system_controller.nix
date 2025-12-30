@@ -19,7 +19,7 @@ in {
   config = {
     systemd.services.homelab_system_controller = {
       enable = true;
-      script = "${inputs.homelab_system_controller.packages.${pkgs.system}.host}/bin/host";
+      script = "${inputs.homelab_system_controller.packages.${pkgs.stdenv.hostPlatform.system}.host}/bin/host";
       environment = {
         DATABASE_URL = cfg.databaseUrl;
         DISCORD_TOKEN = secrets.discord_token;

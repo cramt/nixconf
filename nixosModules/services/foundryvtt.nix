@@ -5,7 +5,7 @@
   lib,
   ...
 }: let
-  foundryvttPkg = inputs.foundryvtt.packages.${pkgs.system}.foundryvtt_12.overrideAttrs {
+  foundryvttPkg = inputs.foundryvtt.packages.${pkgs.stdenv.hostPlatform.system}.foundryvtt_12.overrideAttrs {
     build = "331";
   };
   cfg = config.myNixOS.services.foundryvtt;

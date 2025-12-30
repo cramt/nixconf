@@ -3,7 +3,7 @@
     cd ${./.}
     ruby ${./gemset_generator.rb} > $out
   ''));
-  gemset = gemsetFull.${pkgs.system} // gemsetFull.ruby;
+  gemset = gemsetFull.${pkgs.stdenv.hostPlatform.system} // gemsetFull.ruby;
 in
   builtins.listToAttrs (builtins.map
     (x: {

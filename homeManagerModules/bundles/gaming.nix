@@ -16,7 +16,7 @@
       mingwSupport = true;
     })
     winetricks
-    inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.melonDS
+    inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.melonDS
     prismlauncher
     lutris
     heroic

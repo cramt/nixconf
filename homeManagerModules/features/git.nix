@@ -32,48 +32,48 @@ in {
     };
     programs.git = {
       enable = true;
-      userName = "Alexandra Østermark";
-      userEmail = "alex.cramt@gmail.com";
       lfs.enable = true;
-      aliases =
-        lib.mkMerge
-        (
-          [
-            {
-              cmp = "!${cmpScript}/bin/git_cmp";
-              tswitch = "town switch";
-            }
-          ]
-          ++ (
-            builtins.map
-            (v: {${v} = "town ${v}";})
-            [
-              "delete"
-              "rename"
-              "hack"
-              "sync"
-              "propose"
-              "continue"
-              "skip"
-              "status"
-              "undo"
-              "append"
-              "prepend"
-              "set-parent"
-              "diff-parent"
-              "contribute"
-              "observe"
-              "park"
-              "compress"
-              "repo"
-              "ship"
-            ]
-          )
-        );
-      extraConfig = {
+      settings = {
         user = {
+          name = "Alexandra Østermark";
+          email = "alex.cramt@gmail.com";
           signingKey = cfg.signingKey;
         };
+        alias =
+          lib.mkMerge
+          (
+            [
+              {
+                cmp = "!${cmpScript}/bin/git_cmp";
+                tswitch = "town switch";
+              }
+            ]
+            ++ (
+              builtins.map
+              (v: {${v} = "town ${v}";})
+              [
+                "delete"
+                "rename"
+                "hack"
+                "sync"
+                "propose"
+                "continue"
+                "skip"
+                "status"
+                "undo"
+                "append"
+                "prepend"
+                "set-parent"
+                "diff-parent"
+                "contribute"
+                "observe"
+                "park"
+                "compress"
+                "repo"
+                "ship"
+              ]
+            )
+          );
         commit = {
           gpgsign = true;
         };

@@ -62,7 +62,7 @@ in {
         SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="0003", MODE="0666"
         ACTION=="add|change", SUBSYSTEM=="usb|tty|hidraw", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="27dd", MODE="0666", GROUP="plugdev", TAG+="uaccess"
       '';
-      packages = [inputs.probe-rs-rules.packages.${pkgs.system}.default];
+      packages = [inputs.probe-rs-rules.packages.${pkgs.stdenv.hostPlatform.system}.default];
     };
 
     stylix = {
@@ -75,7 +75,7 @@ in {
         popups = 0.8;
       };
       cursor = {
-        package = inputs.nixpkgs-stable.legacyPackages.${pkgs.system}.bibata-cursors;
+        package = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.bibata-cursors;
         name = "Bibata-Modern-Ice";
         size = 32;
       };

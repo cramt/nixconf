@@ -7,7 +7,7 @@
 }: let
   cfg = config.myNixOS.services.ollama;
   master_pkgs = import inputs.nixpkgs-master {
-    system = pkgs.system;
+    system = pkgs.stdenv.hostPlatform.system;
     config = {
       allowUnfree = true;
     };
