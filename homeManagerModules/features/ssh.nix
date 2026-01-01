@@ -1,4 +1,4 @@
-{pkgs, ...}: let
+{pkgs, config, ...}: let
   secrets = import ../../secrets.nix;
   sshTargets = {
     luna = "-t cramt@${secrets.luna_internal_address} -A";
@@ -24,6 +24,10 @@ in {
       controlPath = "~/.ssh/control-%C";
     };
   };
+
+  # Override SSH_AUTH_SOCK to use GPG agent instead of GNOME keyring
+  # (PAM sets it to keyring path, but we disabled the keyring SSH agent)
+  home.sessionVariables.SSH_AUTH_SOCK = "\${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh";
 
   home.packages = (builtins.attrValues sshTargetPackages) ++ (builtins.attrValues sshTargetDesktops);
 }

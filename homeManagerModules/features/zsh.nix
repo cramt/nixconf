@@ -1,4 +1,8 @@
-{pkgs, config, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
   config = {
     programs.fzf.enableZshIntegration = true;
     programs.zsh = {
@@ -22,6 +26,11 @@
         windows_reboot() {
           systemctl reboot --boot-loader-entry=auto-windows
         }
+
+        autoload -Uz edit-command-line
+        zle -N edit-command-line
+        bindkey '^x^e' edit-command-line
+        autoload zmv
       '';
     };
   };
