@@ -122,6 +122,7 @@
         databaseUrl = "sqlite:/mnt/imbrium/homelab_discord_bot.db?mode=rwc";
       };
       open-webui.enable = false;
+      opencode-server.enable = true;
       postgres = {
         dataDir = "/mnt/imbrium/pgsql";
       };

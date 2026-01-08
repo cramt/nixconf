@@ -16,7 +16,7 @@ in
   programs.go.enable = true;
 
   myHomeManager = {
-    opencode.enable = false;
+    opencode.enable = true;
     java.enable = true;
     ruby.enable = true;
     codex.enable = true;
