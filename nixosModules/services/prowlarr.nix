@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.prowlarr;
-  docker_source = pkgs.npins."linuxserver/prowlarr";
+  docker_source = pkgs.npinsSources."linuxserver/prowlarr";
   port = config.port-selector.ports.prowlarr;
 in {
   options.myNixOS.services.prowlarr = {

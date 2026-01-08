@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.bazarr;
-  docker_source = pkgs.npins."linuxserver/bazarr";
+  docker_source = pkgs.npinsSources."linuxserver/bazarr";
 
   port = config.port-selector.ports.bazarr;
 in {

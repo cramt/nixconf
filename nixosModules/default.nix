@@ -87,9 +87,9 @@ in {
           npinspkgs = import sources.nixpkgs {
             inherit system;
           };
-          rest = builtins.removeAttrs sources ["nixpkgs"];
+          rest = builtins.removeAttrs sources ["nixpkgs" "__functor"];
         in {
-          npins = builtins.mapAttrs (_: x: x {pkgs = npinspkgs;}) rest;
+          npinsSources = builtins.mapAttrs (_: x: x {pkgs = npinspkgs;}) rest;
         })
         (final: prev: {
           lazygit = prev.writeScriptBin "lazygit" ''

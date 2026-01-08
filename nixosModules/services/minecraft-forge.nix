@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.minecraft-forge;
-  docker_source = pkgs.npins."itzg/minecraft-server";
+  docker_source = pkgs.npinsSources."itzg/minecraft-server";
 in {
   options.myNixOS.services.minecraft-forge = {
     url = lib.mkOption {

@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.jellyfin;
-  docker_source = pkgs.npins."jellyfin/jellyfin";
+  docker_source = pkgs.npinsSources."jellyfin/jellyfin";
   port = config.port-selector.ports.jellyfin;
 in {
   options.myNixOS.services.jellyfin = {

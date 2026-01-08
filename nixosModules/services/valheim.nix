@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.valheim;
-  docker_source = pkgs.npins."mbround18/valheim";
+  docker_source = pkgs.npinsSources."mbround18/valheim";
 in {
   options.myNixOS.services.valheim = {
     worldVolume = lib.mkOption {

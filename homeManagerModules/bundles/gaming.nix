@@ -20,10 +20,11 @@
     prismlauncher
     lutris
     heroic
+    (bottles.override {removeWarningPopup = true;})
   ];
 
   services.flatpak = {
-    enable = false;
+    enable = true;
     packages = [
     ];
   };

@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.sonarr;
-  docker_source = pkgs.npins."linuxserver/sonarr";
+  docker_source = pkgs.npinsSources."linuxserver/sonarr";
 in {
   options.myNixOS.services.sonarr = {
     configVolume = lib.mkOption {

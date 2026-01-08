@@ -51,6 +51,8 @@ in
       geminicommit
       inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
       spade
+      npins
+      nix-prefetch-docker
     ]
     ++ ld_packages;
 

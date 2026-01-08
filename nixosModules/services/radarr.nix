@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.radarr;
-  docker_source = pkgs.npins."linuxserver/radarr";
+  docker_source = pkgs.npinsSources."linuxserver/radarr";
   port = config.port-selector.ports.radarr;
 in {
   options.myNixOS.services.radarr = {

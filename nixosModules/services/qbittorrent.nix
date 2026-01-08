@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.qbittorrent;
-  docker_source = pkgs.npins."linuxserver/qbittorrent";
+  docker_source = pkgs.npinsSources."linuxserver/qbittorrent";
   port = config.port-selector.ports.qbit;
   udp_port = config.port-selector.ports.qbit_udp;
 in {
