@@ -1,0 +1,262 @@
+{
+  "schema_version": "v2.2",
+  "name_for_human": "Titan VM Controller",
+  "namespace": "TitanVM",
+  "description_for_human": "Control the Titan VM - execute commands, transfer files, and interact with the desktop",
+  "description_for_model": "Plugin for controlling the Titan VM, a NixOS virtual machine designed for running LLM agents. Use this plugin to execute shell commands via SSH, upload and download files, take screenshots of the desktop, and send keyboard/mouse input. This is useful for automating tasks, running code, managing files, and interacting with graphical applications on the VM.",
+  "logo_url": "http://localhost:3000/logo.png",
+  "contact_email": "alex.cramt@gmail.com",
+  "legal_info_url": "http://localhost:3000/legal",
+  "privacy_policy_url": "http://localhost:3000/privacy",
+  "capabilities": {
+    "conversation_starters": [
+      {
+        "title": "Execute command",
+        "text": "Run 'ls -la' on the Titan VM"
+      },
+      {
+        "title": "Check VM status",
+        "text": "What's the status of the Titan VM?"
+      },
+      {
+        "title": "Take screenshot",
+        "text": "Take a screenshot of the Titan VM desktop"
+      },
+      {
+        "title": "Upload file",
+        "text": "Upload a script to the Titan VM"
+      }
+    ]
+  },
+  "functions": [
+    {
+      "name": "executeCommand",
+      "description": "Execute a shell command on the Titan VM via SSH and return the output",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "The shell command to execute on the VM"
+          },
+          "workingDirectory": {
+            "type": "string",
+            "description": "The working directory to execute the command in"
+          },
+          "timeout": {
+            "type": "integer",
+            "description": "Timeout in milliseconds (default 30000)"
+          }
+        },
+        "required": ["command"]
+      },
+      "returns": {
+        "type": "string",
+        "description": "JSON object containing success status, exit code, stdout, stderr, and duration"
+      },
+      "states": {
+        "reasoning": {
+          "description": "Use executeCommand to run shell commands on the Titan VM",
+          "instructions": [
+            "Use this function to execute any shell command on the Linux VM",
+            "Common uses include: running scripts, checking system status, installing packages, managing files",
+            "The command runs as the 'cramt' user with sudo access",
+            "Check the exitCode to determine if the command succeeded (0 = success)"
+          ]
+        },
+        "responding": {
+          "instructions": [
+            "Report the exit code and whether the command succeeded",
+            "Include relevant stdout output in your response",
+            "If there's stderr output, mention any errors or warnings",
+            "For long outputs, summarize the key information"
+          ]
+        }
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": ["GetPrivateData", "ResourceStateUpdate"]
+        }
+      }
+    },
+    {
+      "name": "uploadFile",
+      "description": "Upload a file to the Titan VM via SFTP",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "The destination path on the VM"
+          },
+          "content": {
+            "type": "string",
+            "description": "Base64 encoded file content"
+          },
+          "mode": {
+            "type": "string",
+            "description": "File permissions in octal (e.g., '0755')"
+          }
+        },
+        "required": ["path", "content"]
+      },
+      "returns": {
+        "type": "string",
+        "description": "JSON object containing success status, path, and file size"
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": ["DataExport", "ResourceStateUpdate"]
+        }
+      }
+    },
+    {
+      "name": "downloadFile",
+      "description": "Download a file from the Titan VM via SFTP",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "The path of the file to download"
+          }
+        },
+        "required": ["path"]
+      },
+      "returns": {
+        "type": "string",
+        "description": "JSON object containing success status, path, base64 encoded content, and file size"
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": ["GetPrivateData"]
+        }
+      }
+    },
+    {
+      "name": "getScreenshot",
+      "description": "Capture a screenshot of the current VM display via VNC",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "description": "Image format (png or jpeg)",
+            "enum": ["png", "jpeg"]
+          },
+          "quality": {
+            "type": "integer",
+            "description": "JPEG quality (1-100)"
+          }
+        }
+      },
+      "returns": {
+        "type": "string",
+        "description": "JSON object containing success status, base64 encoded image, format, width, and height"
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": ["GetPrivateData"]
+        }
+      }
+    },
+    {
+      "name": "sendKeyboardInput",
+      "description": "Send keyboard input to the VM via VNC",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Text to type (sent as individual keystrokes)"
+          },
+          "keys": {
+            "type": "array",
+            "description": "Special keys or key combinations to send",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "returns": {
+        "type": "string",
+        "description": "JSON object containing success status"
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": ["ResourceStateUpdate"]
+        }
+      }
+    },
+    {
+      "name": "sendMouseInput",
+      "description": "Send mouse input to the VM via VNC",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "description": "X coordinate"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Y coordinate"
+          },
+          "action": {
+            "type": "string",
+            "description": "Mouse action (move, click, doubleclick, rightclick, scroll)",
+            "enum": ["move", "click", "doubleclick", "rightclick", "scroll"]
+          },
+          "scrollDelta": {
+            "type": "integer",
+            "description": "Scroll amount"
+          }
+        },
+        "required": ["x", "y"]
+      },
+      "returns": {
+        "type": "string",
+        "description": "JSON object containing success status"
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": ["ResourceStateUpdate"]
+        }
+      }
+    },
+    {
+      "name": "getVmStatus",
+      "description": "Get the current status of the Titan VM including SSH and VNC connectivity",
+      "returns": {
+        "type": "string",
+        "description": "JSON object containing SSH and VNC connection status, hosts, ports, and VM uptime"
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": ["GetPrivateData"]
+        }
+      }
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "OpenApi",
+      "auth": {
+        "type": "None"
+      },
+      "run_for_functions": [
+        "executeCommand",
+        "uploadFile",
+        "downloadFile",
+        "getScreenshot",
+        "sendKeyboardInput",
+        "sendMouseInput",
+        "getVmStatus"
+      ],
+      "spec": {
+        "url": "http://localhost:3000/openapi.yaml"
+      }
+    }
+  ]
+}

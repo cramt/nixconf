@@ -53,6 +53,7 @@ in
       spade
       npins
       nix-prefetch-docker
+      sshpass
     ]
     ++ ld_packages;
 

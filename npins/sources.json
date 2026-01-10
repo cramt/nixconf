@@ -4,8 +4,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:31b498c805b21fb50ac60cee246437533426918db92cf541af482bb431599d81",
-      "hash": "sha256-BB7x0m1GSF7BacKSjsMwwt+B6qaZY4hb96vWEVTOqpc="
+      "image_digest": "sha256:720de2c184d44500f2ac2806f190f53f40ca5584b339250447d3f152a1ef8b78",
+      "hash": "sha256-0r2bnDRTzWyapH7Bs++NcIO+Swx9RyqXibteB4hyTs4="
     },
     "jellyfin/jellyfin": {
       "type": "Container",
@@ -59,8 +59,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre921317.16c7794d0a28/nixexprs.tar.xz",
-      "hash": "sha256-G6ie+qOCRSV7wzOY+6L1o8GvcH1qDcE/DTzDT4CRdNw="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre925224.45a153068326/nixexprs.tar.xz",
+      "hash": "sha256-Vitz7N/KJ8sIAgEIpCeGoBHBlJkb/RdCweOSXCjKy8w="
     }
   },
   "version": 7

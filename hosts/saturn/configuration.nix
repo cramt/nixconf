@@ -57,6 +57,9 @@
         tvshows = "/mnt/amirani/tvshows";
       };
     in {
+      titan-vm = {
+        enable = true;
+      };
       ollama = {
         enable = true;
         gpu = "rocm";

@@ -126,6 +126,14 @@
       postgres = {
         dataDir = "/mnt/imbrium/pgsql";
       };
+      titan-vm = {
+        enable = true;
+        dataDir = "/mnt/imbrium/titan-vm";
+        memory = "8G";
+        cores = 4;
+        diskSize = "100G";
+        frontend.enable = true;
+      };
       conduit.enable = false;
       terraform_remote_backend.enable = true;
       servatrice.enable = true;
