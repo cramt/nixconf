@@ -1,0 +1,4 @@
+[13:15:12] ERROR: org.freedesktop.DBus.Error.NoReply: Did not receive a reply. Possible causes include: the remote application did not send a reply, the message bus security policy blocked the reply, the reply timeout expired, or the network connection was broken.
+[13:15:12] See also: <https://github.com/waydroid>
+Use '--details-to-stdout' to get more details:
+  /nix/store/giakpq9rsxkwpki37pim1ajhn2963xny-waydroid-1.6.1/lib/waydroid/waydroid.py --details-to-stdout session start

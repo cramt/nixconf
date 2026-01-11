@@ -1,0 +1,27 @@
+[32m>[39m Building NixOS configuration
+[?25l[?2026hfetching git input 'git+file:///home/cramt/nixconf'
+[35;1mwarning:[0m Git tree '[35;1m/home/cramt/nixconf[0m' is dirty
+[1m⏱ 0s[0m[?2026l[?2026h[1G[2K[1m⏱ 1s[0m[?2026l[?2026h[1G[2K[1m⏱ 2s[0m[?2026l[?2026h[1G[2K[1m⏱ 3s[0m[?2026l[?2026h[1G[2K[1m⏱ 3s[0m[?2026l[?2026h[1G[2K[1m⏱ 4s[0m[?2026l[?2026h[1G[2K[1m⏱ 5s[0m[?2026l[?2026h[1G[2K[1m⏱ 6s[0m[?2026l[?2026h[1G[2K[1m⏱ 7s[0m[?2026l[?2026h[1G[2K[1m⏱ 8s[0m[?2026l[?2026h[1G[2K[1m⏱ 9s[0m[?2026l[?2026h[1G[2K[1m⏱ 9s[0m[?2026l[?2026h[1G[2K[1m⏱ 10s[0m[?2026l[?2026h[1G[2K[1m⏱ 11s[0m[?2026l[?2026h[1G[2K[1m⏱ 12s[0m[?2026l[?2026h[1G[2K[1m⏱ 13s[0m[?2026l[?2026h[1G[2K[1m⏱ 14s[0m[?2026l[?2026h[1G[2K[1m⏱ 15s[0m[?2026l[?2026h[1G[2K[1m⏱ 16s[0m[?2026l[?2026h[1G[2K[1m⏱ 17s[0m[?2026l[?2026h[1G[2K[1m⏱ 18s[0m[?2026l[?2026h[1G[2K[1m⏱ 18s[0m[?2026l[?2026h[1G[2K[1m⏱ 19s[0m[?2026l[?2026h[1G[2K[1m⏱ 20s[0m[?2026l[?2026h[1G[2K[1m⏱ 21s[0m[?2026l[?2026h[1G[2K[1m⏱ 22s[0m[?2026l[?2026h[1G[2K[1m⏱ 23s[0m[?2026l[?2026h[1G[2K[1m⏱ 24s[0m[?2026l[?2026h[1G[2K[1m⏱ 25s[0m[?2026l[?2026h[1G[2K[1m⏱ 25s[0m[?2026l[?2026h[1G[2K[1m⏱ 26s[0m[?2026l[?2026h[1G[2K[1m⏱ 27s[0m[?2026l[?2026h[1G[2K[1m⏱ 27s[0m[?2026l[?2026h[1G[2K[1m⏱ 27s[0m[?2026l[?2026h[1G[2K[1m⏱ 27s[0m[?2026l[?2026h[1G[2K[1m⏱ 27s[0m[?2026l[?2026h[1G[2K[1m⏱ 27s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[1G[2K[1m⏱ 28s[0m[?2026l[?2026h[2K[1F[2K[1F[2K[1F[2K[1F[2K[1F[2K┏━ [1mDependency Graph[0m:
+┃    [34m┌─ [0m[32m✔ declaradroid-config.json[0m [90m[0m
+┃ [34m┌─ [0m[32m✔ activate[0m [90m[0m
+┃ [32m✔ nixos-system-saturn-26.05.20260105.9f0c42f[0m [90m[0m[0m
+┣━━━ [1mBuilds         [0m
+┗━ ∑ [33m⏵ 0[0m │ [32m✔ [1m3[0m[0m │ [34m⏸ 0[0m │ [1m[32mFinished at 22:59:54 after 32s[0m[0m[?2026l[?25h
+[1m<<<[0m /run/current-system
+[1m>>>[0m /nix/store/146jy7n6c9vc22ir90q09spmrvl6knvk-nixos-system-saturn-26.05.20260105.9f0c42f
+
+[1mSIZE[0m: [31m48.8 GiB[0m -> [32m48.8 GiB[0m
+[1mDIFF[0m: [32m40 bytes[0m
+[32m>[39m Activating configuration
+Checking switch inhibitors... done
+activating the configuration...
+[22:59:54] WayDroid session is stopped
+[22:59:55] WayDroid session is stopped
+[declaradroid] ERROR: Failed to install com.microsoft.teams - package not found after install
+[23:00:00] Established ADB connection to Waydroid device at 192.168.240.112.
+[declaradroid] ERROR: Failed to install com.riotgames.legendsofruneterra - package not found after install
+reloading user units for cramt...
+restarting sysinit-reactivation.target
+the following new units were started: NetworkManager-dispatcher.service
+[32m>[39m Adding configuration to bootloader
+Not checking switch inhibitors (action = boot)

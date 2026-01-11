@@ -37,10 +37,35 @@
     };
   };
 
-  networking.firewall.enable = false;
+  networking.firewall.enable = true;
 
   myNixOS = {
-    waydroid.enable = true;
+    waydroid = {
+      enable = true;
+      armEmulation = "libhoudini"; # Intel CPU - libhoudini works better
+      properties = {
+        suspend = false; # Keep container running, don't freeze when no UI
+        fake_touch = ["com.riotgames.*"]; # Make mouse act as touch for games
+      };
+      apps.apkpure = [
+        "com.microsoft.teams"
+        "com.riotgames.legendsofruneterra"
+      ];
+      desktopEntries = [
+        {
+          id = "com.microsoft.teams";
+          name = "Microsoft Teams";
+          comment = "Chat and collaboration";
+          categories = ["Network" "Chat" "Office"];
+        }
+        {
+          id = "com.riotgames.legendsofruneterra";
+          name = "Legends of Runeterra";
+          comment = "Strategy card game";
+          categories = ["Game" "CardGame"];
+        }
+      ];
+    };
     gnupg.enable = true;
     qemu.enable = true;
     docker.enable = true;
@@ -58,7 +83,7 @@
       };
     in {
       titan-vm = {
-        enable = true;
+        enable = false;
       };
       ollama = {
         enable = true;

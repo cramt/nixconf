@@ -1,0 +1,12 @@
+{
+  "apps": { "apkpure": [], "fdroid": [] },
+  "armEmulation": true,
+  "extras": {
+    "magisk": false,
+    "microg": false,
+    "smartdock": false,
+    "widevine": false
+  },
+  "gapps": false,
+  "properties": {}
+}

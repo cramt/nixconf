@@ -1,0 +1,14 @@
+{
+  "name": "declaradroid",
+  "version": "1.0.0",
+  "description": "Declarative Android app management for Waydroid",
+  "main": "src/index.js",
+  "bin": {
+    "declaradroid": "src/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {}
+}
