@@ -1,5 +1,21 @@
 {
   "pins": {
+    "CodexBar": {
+      "type": "GitRelease",
+      "repository": {
+        "type": "GitHub",
+        "owner": "steipete",
+        "repo": "CodexBar"
+      },
+      "pre_releases": false,
+      "version_upper_bound": null,
+      "release_prefix": null,
+      "submodules": false,
+      "version": "v0.17.0",
+      "revision": "6bbce72e1902b082c0edf5bd3442b34aeacb7f7c",
+      "url": "https://api.github.com/repos/steipete/CodexBar/tarball/refs/tags/v0.17.0",
+      "hash": "sha256-CyV+nd1bQVXrk8/nroCzyMEXec1seLrA2GkNkeTkJVs="
+    },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",

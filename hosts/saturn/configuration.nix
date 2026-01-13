@@ -160,6 +160,12 @@
 
   programs.nix-ld.enable = true;
 
+  environment.systemPackages = with pkgs; [
+    codexbar
+  ] ++ (config.environment.systemPackages or []);
+
+
+
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 

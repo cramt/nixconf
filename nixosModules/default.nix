@@ -111,6 +111,12 @@ in {
           };
         })
         (final: prev: {
+          codexbar = prev.callPackage ../packages/codexbar/default.nix {
+            src = prev.npinsSources.CodexBar.outPath;
+            version = prev.npinsSources.CodexBar.version;
+          };
+        })
+        (final: prev: {
           rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.rocmPackages;
         })
         (final: prev: {
