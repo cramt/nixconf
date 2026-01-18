@@ -6,7 +6,7 @@
     nixpkgs-master.url = "github:nixos/nixpkgs";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.05";
-    nixarr.url = "github:rasmus-kirk/nixarr";
+    nixarr.url = "github:cramt/nixarr/cramt/jellyfin-users";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
 
     claude-code.url = "github:sadjow/claude-code-nix";

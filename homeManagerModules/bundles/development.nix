@@ -54,6 +54,7 @@ in
       npins
       nix-prefetch-docker
       sshpass
+      codexbar
     ]
     ++ ld_packages;
 
