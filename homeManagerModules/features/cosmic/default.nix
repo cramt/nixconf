@@ -8,7 +8,9 @@
     xdg = {
       portal = {
         enable = true;
-        xdgOpenUsePortal = true;
+        # Disable portal for xdg-open as GTK portal has issues with COSMIC/Wayland
+        # xdg-open will use mimeapps.list directly instead
+        xdgOpenUsePortal = false;
         extraPortals = [pkgs.xdg-desktop-portal-cosmic pkgs.xdg-desktop-portal-gtk];
         config.common = {
           default = ["cosmic"];
