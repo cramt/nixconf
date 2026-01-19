@@ -27,7 +27,7 @@ in {
 
       plugin = [
         "opencode-antigravity-auth@beta"
-        "opencode-anthropic-auth@0.0.8"
+        "opencode-anthropic-auth@0.0.9"
       ];
 
       # Agent configuration - optimized for your subscriptions

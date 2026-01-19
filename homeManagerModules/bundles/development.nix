@@ -4,15 +4,13 @@
   inputs,
   lib,
   ...
-}:
-let
+}: let
   ld_packages = with pkgs; [
     libyaml.dev
     stdenv.cc.cc
     openssl.dev
   ];
-in
-{
+in {
   programs.go.enable = true;
 
   myHomeManager = {
@@ -22,8 +20,7 @@ in
     codex.enable = true;
   };
 
-  home.packages =
-    with pkgs;
+  home.packages = with pkgs;
     [
       gh
       pkg-config

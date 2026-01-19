@@ -111,8 +111,12 @@ in {
           };
         })
         (final: prev: {
+<<<<<<< HEAD
           codexbar = prev.callPackage ../packages/codexbar/default.nix {
           };
+=======
+          codexbar = prev.callPackage ../packages/codexbar/default.nix {};
+>>>>>>> d61ab65 (a)
         })
         (final: prev: {
           rocmPackages = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.rocmPackages;

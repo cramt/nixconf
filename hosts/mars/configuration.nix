@@ -39,7 +39,7 @@
     };
 
     services = {
-      tailscale.enable = true;
+      tailscale.enable = false;
       synapse.enable = false;
       caddy = {
         enable = false;
