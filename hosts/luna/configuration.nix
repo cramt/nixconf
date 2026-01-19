@@ -39,6 +39,7 @@
         tvshows = "/mnt/imbrium/downloads/tvshows";
       };
     in {
+      nixarr.enable = true;
       tor.enable = true;
       ollama = {
         enable = true;
@@ -60,7 +61,7 @@
         dataVolume = "/mnt/imbrium/gtnh";
       };
       jellyfin = {
-        enable = true;
+        enable = false;
         configVolume = "/mnt/imbrium/configs/jellyfin";
         mediaVolumes = {
           tvshows = downloads.tvshows;
@@ -79,7 +80,7 @@
         };
       };
       qbittorrent = {
-        enable = true;
+        enable = false;
         configVolume = "/mnt/imbrium/configs/qbittorrent";
         downloadVolume = downloads.raw;
       };
@@ -88,23 +89,23 @@
         dataVolume = "/mnt/imbrium/configs/foundryvtt_a";
       };
       prowlarr = {
-        enable = true;
+        enable = false;
         configVolume = "/mnt/imbrium/configs/prowlarr";
       };
       radarr = {
-        enable = true;
+        enable = false;
         configVolume = "/mnt/imbrium/configs/radarr";
         downloadVolume = downloads.raw;
         movieVolume = downloads.movies;
       };
       sonarr = {
-        enable = true;
+        enable = false;
         configVolume = "/mnt/imbrium/configs/sonarr";
         downloadVolume = downloads.raw;
         tvVolume = downloads.tvshows;
       };
       bazarr = {
-        enable = true;
+        enable = false;
         configVolume = "/mnt/imbrium/configs/bazarr";
         downloadVolume = downloads.raw;
         tvVolume = downloads.tvshows;
@@ -127,7 +128,7 @@
         dataDir = "/mnt/imbrium/pgsql";
       };
       titan-vm = {
-        enable = true;
+        enable = false;
         dataDir = "/mnt/imbrium/titan-vm";
         memory = "8G";
         cores = 4;

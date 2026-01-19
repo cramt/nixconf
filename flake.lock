@@ -1433,11 +1433,11 @@
         "website-builder": "website-builder"
       },
       "locked": {
-        "lastModified": 1768333992,
-        "narHash": "sha256-gWm32u1QzfgKaD9ltf6Zc+rAh42Grb9XebeXfw16e54=",
+        "lastModified": 1768752891,
+        "narHash": "sha256-uKAxyfDb8OwJqn2bGPbw6lPE2r3pBY+4dU8VQYP+ZYg=",
         "owner": "cramt",
         "repo": "nixarr",
-        "rev": "6bc317da560ba367386c3bd4fe6e41183dddf7c9",
+        "rev": "7f2aeab2453e3e2282f097d5c77e4daf0c8adf73",
         "type": "github"
       },
       "original": {

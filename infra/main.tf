@@ -1,5 +1,5 @@
 resource "cloudflare_dns_record" "luna" {
-  for_each = toset(["titan-frontend", "open-webui", "jellyfin", "btop", "jellyseerr", "qbit", "foundry-a", "prowlarr", "radarr", "sonarr", "bazarr", "cockatrice", "nix-store", "matrix"])
+  for_each = toset(["tdarr", "titan-frontend", "open-webui", "jellyfin", "btop", "jellyseerr", "qbit", "foundry-a", "prowlarr", "radarr", "sonarr", "bazarr", "cockatrice", "nix-store", "matrix"])
   zone_id  = local.zone_id
   content  = local.secrets.ip
   name     = "${each.key}.${local.secrets.domain}"

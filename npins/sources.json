@@ -16,54 +16,19 @@
       "url": "https://api.github.com/repos/steipete/CodexBar/tarball/refs/tags/v0.17.0",
       "hash": "sha256-CyV+nd1bQVXrk8/nroCzyMEXec1seLrA2GkNkeTkJVs="
     },
+    "haveagitgat/tdarr": {
+      "type": "Container",
+      "image_name": "ghcr.io/haveagitgat/tdarr",
+      "image_tag": "latest",
+      "image_digest": "sha256:20a5656c4af4854e1877046294f77113f949d27e35940a9a65f231423d063207",
+      "hash": "sha256-FKz5sn47UlocC8CgVhRYb13vRGqwpVa5KunhhxlAIxI="
+    },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
       "image_digest": "sha256:81bfad963dba637614bca5b5c3e956c22b53f83ce87e6b3d1d48debdf94c20df",
       "hash": "sha256-f8RVYM1VG+qf1VsfBkbdnfGvifAPhl4Zu/FAf5lKS9U="
-    },
-    "jellyfin/jellyfin": {
-      "type": "Container",
-      "image_name": "jellyfin/jellyfin",
-      "image_tag": "latest",
-      "image_digest": "sha256:6d819e9ab067efcf712993b23455cc100ee5585919bb297ea5a109ac00cb626e",
-      "hash": "sha256-kiGWe/RT9Zf8l8t2mXn3UgLyzX3QVAw/b+zoxuPG448="
-    },
-    "linuxserver/bazarr": {
-      "type": "Container",
-      "image_name": "linuxserver/bazarr",
-      "image_tag": "latest",
-      "image_digest": "sha256:7d0a091a63889ce1e4ac4c90595ebd2c50ba5a5df7039a4f4d2be6c2aed6d4ae",
-      "hash": "sha256-BoV3KaE/YBZs0l22j3y9InuelJNwQicYCJE4/1X01VU="
-    },
-    "linuxserver/prowlarr": {
-      "type": "Container",
-      "image_name": "linuxserver/prowlarr",
-      "image_tag": "latest",
-      "image_digest": "sha256:d3e9307b320b6772749a2cf8fc2712e9e824c4930b034680ad4d08a9e2f25884",
-      "hash": "sha256-qxuyfRLBCdr3QBEiIOu/eCM5waxtSww9M6hCrikRP2Y="
-    },
-    "linuxserver/qbittorrent": {
-      "type": "Container",
-      "image_name": "linuxserver/qbittorrent",
-      "image_tag": "latest",
-      "image_digest": "sha256:f430d70c70d1547fded30fbc3181c4750cef354212a5138ab754eba9ba8bd9e1",
-      "hash": "sha256-imN52TuhMXKJCoStH73oTEG8cPD++ZO0QqBfrQ/WSmQ="
-    },
-    "linuxserver/radarr": {
-      "type": "Container",
-      "image_name": "linuxserver/radarr",
-      "image_tag": "latest",
-      "image_digest": "sha256:270f25698624b57b86ca119cc95399d7ff15be8297095b4e1223fd5b549b732c",
-      "hash": "sha256-vlPxQ50wP0i+HWwpK9aYLEmpfBQQtCcwquObvID0MeE="
-    },
-    "linuxserver/sonarr": {
-      "type": "Container",
-      "image_name": "linuxserver/sonarr",
-      "image_tag": "latest",
-      "image_digest": "sha256:02b4d538d351d6e35882a021c08e8600fe95d28860fb1dd724b597166e7221ca",
-      "hash": "sha256-K0UvUCdO06YAL2gb+kzqpIiaHn6RGyDxNq+FvELLPjM="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -75,8 +40,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre928754.be5afa0fcb31/nixexprs.tar.xz",
-      "hash": "sha256-Ky1RD7iduGXlB8/eIGA8lyzx+ckUt3RC7ZSo+ZNiQqc="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre929242.3327b113f2ef/nixexprs.tar.xz",
+      "hash": "sha256-nWVh94hmJAh5iEs5gefyiNOIb0JwG80JmDkOvME+CqA="
     }
   },
   "version": 7
