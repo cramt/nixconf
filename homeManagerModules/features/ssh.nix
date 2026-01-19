@@ -25,9 +25,7 @@ in {
     };
   };
 
-  # Override SSH_AUTH_SOCK to use GPG agent instead of GNOME keyring
-  # (PAM sets it to keyring path, but we disabled the keyring SSH agent)
-  home.sessionVariables.SSH_AUTH_SOCK = "\${XDG_RUNTIME_DIR}/gnupg/S.gpg-agent.ssh";
+  # SSH_AUTH_SOCK is set by Home Manager's services.gpg-agent with enableSshSupport
 
   home.packages = (builtins.attrValues sshTargetPackages) ++ (builtins.attrValues sshTargetDesktops);
 }

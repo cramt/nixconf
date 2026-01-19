@@ -13,7 +13,6 @@
     pavucontrol
     adwaita-qt
     gimp
-    inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default
     anytype
     vlc
     element-desktop
@@ -34,6 +33,7 @@
     zathura.enable = true;
     vesktop.enable = true;
     zed.enable = true;
+    zen.enable = true;
     network-manager-applet.enable = true;
     nautilus.enable = true;
     keymapp.enable = true;

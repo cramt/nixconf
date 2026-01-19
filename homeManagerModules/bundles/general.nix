@@ -21,6 +21,7 @@
     neovim.enable = true;
     zsh.enable = true;
     ssh.enable = true;
+    gpg-agent.enable = true;
     git.enable = true;
     nix-index.enable = true;
     starship.enable = true;

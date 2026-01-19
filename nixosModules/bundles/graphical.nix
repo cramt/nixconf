@@ -6,10 +6,9 @@
 }: {
   # Enable sound with pipewire.
   security.rtkit.enable = true;
-  xdg.portal = {
-    enable = true;
-    wlr.enable = true;
-  };
+  # Portal configuration is handled by Home Manager for desktop-specific setup
+  # (e.g., cosmic/default.nix configures xdg-desktop-portal-cosmic)
+  xdg.portal.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
