@@ -22,6 +22,9 @@
         # Override SSH_AUTH_SOCK to use gpg-agent instead of gnome-keyring
         # (PAM sets it to keyring before shell init)
         export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/gnupg/S.gpg-agent.ssh"
+        
+        # Set GPG_TTY for pinentry to work in terminal
+        export GPG_TTY=$(tty)
 
         bios_reboot() {
           systemctl reboot --firmware-setup
