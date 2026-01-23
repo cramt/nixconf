@@ -7,7 +7,7 @@
   secrets = import ../../secrets.nix;
   tdarr_source = pkgs.npinsSources."haveagitgat/tdarr";
   tdarr_api_key = "tapi_nixos_autoconfig_12345";
-  pythonWithPackages = pkgs.python3.withPackages (ps: with ps; [ requests ]);
+  pythonWithPackages = pkgs.python3.withPackages (ps: with ps; [requests]);
   tdarr_configure_script = pkgs.writeScriptBin "tdarr-configure" ''
     #!${pythonWithPackages}/bin/python3
     """
@@ -48,7 +48,7 @@
     def wait_for_tdarr() -> bool:
         """Wait for Tdarr to be ready."""
         logger.info("Waiting for Tdarr to be ready...")
-        
+
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 response = requests.get(STATUS_URL, timeout=5)
@@ -57,10 +57,10 @@
                     return True
             except requests.exceptions.RequestException:
                 pass
-            
+
             logger.info(f"Tdarr not ready yet, waiting... ({attempt}/{MAX_RETRIES})")
             time.sleep(RETRY_DELAY)
-        
+
         logger.error("❌ Tdarr failed to start within timeout")
         return False
 
@@ -80,13 +80,13 @@
     def library_exists(name: str) -> bool:
         """Check if a library with the given name exists."""
         libraries = get_libraries()
-        
+
         # Check if any library has this name
         for lib_id, lib_data in libraries.items():
             if lib_data.get("name") == name:
                 logger.info(f"📚 Library '{name}' already exists (ID: {lib_id})")
                 return True
-        
+
         return False
 
 
@@ -94,9 +94,9 @@
         """Create a library if it doesn't exist."""
         if library_exists(name):
             return True
-        
+
         logger.info(f"📚 Creating library: {name}")
-        
+
         # Library configuration payload
         payload = {
             "name": name,
@@ -112,20 +112,20 @@
             "output_folder": "",
             "pluginStack": []
         }
-        
+
         try:
             headers = {
                 "Content-Type": "application/json",
                 "x-api-key": API_KEY
             } if API_KEY else {"Content-Type": "application/json"}
-            
+
             response = requests.post(
                 CREATE_LIBRARY_URL,
                 json=payload,
                 headers=headers,
                 timeout=10
             )
-            
+
             if response.status_code in [200, 201]:
                 logger.info(f"✅ Library '{name}' created successfully")
                 return True
@@ -133,7 +133,7 @@
                 logger.warning(f"⚠️  Library creation returned status {response.status_code}")
                 logger.warning(f"Response: {response.text}")
                 return False
-                
+
         except requests.exceptions.RequestException as e:
             logger.error(f"❌ Failed to create library '{name}': {e}")
             return False
@@ -142,37 +142,37 @@
     def main():
         """Main configuration routine."""
         logger.info("🎬 Starting Tdarr auto-configuration (idempotent)...")
-        
+
         if not API_KEY:
             logger.error("❌ TDARR_API_KEY environment variable not set")
             return 1
-        
+
         # Wait for Tdarr to be ready
         if not wait_for_tdarr():
             logger.error("⚠️  Tdarr not ready, will retry on next service start")
             return 1
-        
+
         # Configure libraries
         logger.info("📚 Configuring libraries...")
-        
+
         libraries_to_create = [
             ("Movies", "/media/movies", "/temp/movies"),
             ("TV Shows", "/media/shows", "/temp/shows"),
         ]
-        
+
         success_count = 0
         for name, source, cache in libraries_to_create:
             if create_library(name, source, cache):
                 success_count += 1
             time.sleep(2)  # Brief delay between API calls
-        
+
         logger.info(f"✅ Configuration complete! ({success_count}/{len(libraries_to_create)} libraries configured)")
         logger.info(f"📍 Access Tdarr at: {TDARR_URL}")
         logger.info(f"🔑 API Key: {API_KEY}")
         logger.info("")
         logger.info("ℹ️  Note: Plugin configuration must be done via Web UI")
         logger.info("   This service will check on each boot and only create missing libraries")
-        
+
         return 0
 
 
@@ -317,12 +317,12 @@ in {
       after = ["docker-tdarr.service"];
       wants = ["docker-tdarr.service"];
       wantedBy = ["multi-user.target"];
-      
+
       environment = {
         TDARR_URL = "http://localhost:8265";
         TDARR_API_KEY = tdarr_api_key;
       };
-      
+
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;

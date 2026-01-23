@@ -1332,13 +1332,13 @@
       "locked": {
         "lastModified": 1768835847,
         "narHash": "sha256-Be0wr0EwQ5KFaSqb5u+EnTjLjM1Yjy08G3+B8ip7wks=",
-        "owner": "cramt",
+        "owner": "nix-media-server",
         "repo": "nixarr",
         "rev": "1d031d7dc81881fe8506cc4947acbb4a9f7c0dca",
         "type": "github"
       },
       "original": {
-        "owner": "cramt",
+        "owner": "nix-media-server",
         "ref": "cramt/jellyfin-users",
         "repo": "nixarr",
         "type": "github"
