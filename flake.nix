@@ -118,6 +118,17 @@
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-clawdbot = {
+      url = "github:dominicnunez/clawdbot-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
+    nix-steipete-tools = {
+      url = "github:clawdbot/nix-steipete-tools";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {

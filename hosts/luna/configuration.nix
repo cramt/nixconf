@@ -128,7 +128,7 @@
         dataDir = "/mnt/imbrium/pgsql";
       };
       titan-vm = {
-        enable = false;
+        enable = true;
         dataDir = "/mnt/imbrium/titan-vm";
         memory = "8G";
         cores = 4;

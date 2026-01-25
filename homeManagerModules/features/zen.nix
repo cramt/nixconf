@@ -4,6 +4,8 @@
   ...
 }: {
   config = {
+    stylix.targets.zen-browser.profileNames = ["default"];
+
     programs.zen-browser = {
       enable = true;
       policies = {

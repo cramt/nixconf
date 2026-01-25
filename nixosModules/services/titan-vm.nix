@@ -58,6 +58,10 @@ in {
     environment.systemPackages = [
       titanVm
       pkgs.qemu
+      # SSH helper script
+      (pkgs.writeShellScriptBin "ssh_titan" ''
+        exec ${pkgs.openssh}/bin/ssh -p ${toString sshPort} "$@" 127.0.0.1
+      '')
     ];
 
     # Create data directory for persistent disk

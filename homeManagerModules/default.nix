@@ -96,6 +96,7 @@ in {
         };
       }
     ]
+    ++ (myLib.filesIn ./fixes)
     ++ features
     ++ bundles;
   nixpkgs = {

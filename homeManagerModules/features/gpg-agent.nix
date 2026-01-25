@@ -2,7 +2,7 @@
   services.gpg-agent = {
     enable = true;
     enableSshSupport = true;
-    pinentryPackage = pkgs.pinentry-tty;
+    pinentry.package = pkgs.pinentry-tty;
     defaultCacheTtl = 86400;
     maxCacheTtl = 86400;
   };
