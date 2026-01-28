@@ -31,6 +31,7 @@
           "dom.security.https_only_mode" = true;
           "privacy.trackingprotection.enabled" = true;
           "signon.rememberSignons" = false;
+          "zen.view.compact.show-sidebar-and-toolbar-on-hover" = false;
         };
 
         mods = [
