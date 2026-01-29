@@ -31,6 +31,9 @@
           "dom.security.https_only_mode" = true;
           "privacy.trackingprotection.enabled" = true;
           "signon.rememberSignons" = false;
+          "privacy.userContext.enabled" = true;
+          "privacy.userContext.ui.enabled" = true;
+          "privacy.userContext.newTabContainerOnLeftClick.enabled" = true;
           "zen.view.compact.show-sidebar-and-toolbar-on-hover" = false;
         };
 
