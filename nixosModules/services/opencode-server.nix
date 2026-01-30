@@ -2,8 +2,10 @@
   pkgs,
   lib,
   config,
+  inputs,
   ...
 }: let
+  opencodePkg = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
   cfg = config.myNixOS.services.opencode-server;
   secrets = import ../../secrets.nix;
   port = config.port-selector.ports.opencode-server;
@@ -17,12 +19,12 @@
       cacert
       git
       openssh
-      opencode
+      opencodePkg
       bash
     ];
     config = {
       Cmd = [
-        "${pkgs.opencode}/bin/opencode"
+        "${opencodePkg}/bin/opencode"
         "serve"
         "--port"
         "4096"
