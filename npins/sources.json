@@ -27,8 +27,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:24747907461cb27ca84289f07585f0b56d8216024970f2d7ebf20a103a35dd4a",
-      "hash": "sha256-FSzUIybQerony0JfYruqvm/ASaaFaACYWMtejDg/ol8="
+      "image_digest": "sha256:c419f99963f15c3fa96ee7e57cc3a7dc3fe1bc93fc89fdddaa0428489a23e049",
+      "hash": "sha256-4SqvCG9y5T5udC6G5QNyR+uZMCgxYb4bg4shUOhFLlo="
     },
     "mbround18/valheim": {
       "type": "Container",
