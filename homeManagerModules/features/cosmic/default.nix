@@ -56,7 +56,7 @@
         {
           action = config.lib.cosmic.mkRON "enum" {
             value = [
-              "${pkgs.rio}/bin/rio"
+              "${pkgs.ghostty}/bin/ghostty"
             ];
             variant = "Spawn";
           };

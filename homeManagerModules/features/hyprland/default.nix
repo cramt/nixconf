@@ -158,7 +158,7 @@ in {
             "${mod}, S, togglegroup"
             "${mod}, escape, exec, ${pkgs.systemd}/bin/loginctl lock-session"
             "${mod} SHIFT, escape, exec, ${pkgs.systemd}/bin/loginctl terminate-session self"
-            "${mod}, T, exec, ${pkgs.rio}/bin/rio"
+            "${mod}, T, exec, ${pkgs.ghostty}/bin/ghostty"
             "${mod}, D, exec, ${pkgs.tofi}/bin/tofi-drun | xargs ${pkgs.hyprland}/bin/hyprctl dispatch exec --"
             "${mod}, mouse_down, workspace, e+1"
             "${mod}, mouse_up, workspace, e-1"

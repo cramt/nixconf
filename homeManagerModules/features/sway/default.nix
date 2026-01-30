@@ -103,7 +103,7 @@ in {
           cfg.monitors;
 
         modifier = mod;
-        terminal = "rio";
+        terminal = "ghostty";
         menu = "${pkgs.tofi}/bin/tofi-drun | xargs swaymsg exec --";
         defaultWorkspace = "1";
         window = {
