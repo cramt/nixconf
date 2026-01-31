@@ -1,24 +1,11 @@
 {
   pkgs,
   config,
-  inputs,
   lib,
   ...
-}: let
-  rubyGems = (import ../../../gems/default.nix) {
-    pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.stdenv.hostPlatform.system};
-  };
-in {
+}: {
   config = {
     stylix.targets.nixvim.enable = true;
-    home.packages = [
-      pkgs.obsidian
-    ];
-
-    home.file."empty-obsidian-workspace" = {
-      source = ../../../empty_obsidian_workspace;
-      recursive = true;
-    };
 
     programs.neovide = {
       enable = true;
@@ -34,28 +21,10 @@ in {
       transparentBackground = true;
     };
 
-    home.sessionVariables = {
-      GEMINI_API_KEY = (import ../../../secrets.nix).gemini_api_key;
-    };
-
     programs.nvf = {
       enable = true;
       settings = {
         vim = {
-          assistant = {
-            avante-nvim = {
-              enable = true;
-              setupOpts = {
-                provider = "gemini";
-                providers = {
-                  gemini = {
-                    model = "gemini-2.0-flash";
-                  };
-                };
-              };
-            };
-          };
-
           luaConfigRC.no_fill_chars =
             # lua
             ''
@@ -64,6 +33,21 @@ in {
               }
               vim.opt.shiftwidth = 4;
               vim.opt.tabstop = 4;
+
+              -- Transparent background (let terminal opacity show through)
+              -- Skip in neovide since it handles its own opacity
+              if not vim.g.neovide then
+                local groups = {
+                  "Normal", "NormalFloat", "NormalNC",
+                  "SignColumn", "LineNr", "CursorLineNr",
+                  "EndOfBuffer", "FloatBorder", "WinSeparator",
+                }
+                for _, group in ipairs(groups) do
+                  local hl = vim.api.nvim_get_hl(0, { name = group })
+                  hl.bg = nil
+                  vim.api.nvim_set_hl(0, group, hl)
+                end
+              end
             '';
           globals = {
             neovide_opacity = 0.8;
@@ -188,61 +172,22 @@ in {
               action = "<C-W>${x}";
             }) ["h" "j" "k" "l"]);
 
-          lsp = {
-            enable = true;
-            formatOnSave = true;
-            lspkind.enable = false;
-            lightbulb.enable = true;
-            lspsaga.enable = false;
-            trouble.enable = true;
-            lspSignature.enable = true;
-            otter-nvim.enable = true;
-            nvim-docs-view.enable = true;
-            servers = {
-              ruby_lsp = {
-                enable = true;
-                package = rubyGems.ruby-lsp;
-              };
-              rubocop = {
-                enable = true;
-                package = rubyGems.rubocop;
-              };
-            };
-          };
-
           fzf-lua.profile = "fzf-native";
-
-          debugger = {
-            nvim-dap = {
-              enable = true;
-              ui.enable = true;
-            };
-          };
 
           languages = {
             enableTreesitter = true;
-            enableExtraDiagnostics = true;
-            nix.enable = true;
-            zig.enable = true;
+            enableExtraDiagnostics = false;
             markdown.enable = true;
             bash.enable = true;
-            clang.enable = true;
             css.enable = true;
             html.enable = true;
-            sql.enable = false;
-            go.enable = true;
-            lua.enable = true;
-            terraform.enable = true;
             rust = {
               enable = true;
             };
             astro.enable = true;
-            nu.enable = true;
             tailwind.enable = true;
             ts = {
               enable = true;
-              extensions.ts-error-translator.enable = true;
-              extraDiagnostics.enable = true;
             };
           };
 
@@ -255,9 +200,6 @@ in {
 
             highlight-undo.enable = true;
             indent-blankline.enable = true;
-
-            # Fun
-            cellular-automaton.enable = false;
           };
 
           statusline = {
@@ -268,9 +210,6 @@ in {
           };
 
           autopairs.nvim-autopairs.enable = true;
-
-          autocomplete.nvim-cmp.enable = true;
-          snippets.luasnip.enable = true;
 
           filetree = {
             neo-tree = {
@@ -304,7 +243,6 @@ in {
           };
 
           treesitter = {
-            grammars = [pkgs.tree-sitter-grammars.tree-sitter-norg-meta];
             context.enable = true;
           };
 
@@ -323,7 +261,7 @@ in {
 
           minimap = {
             minimap-vim.enable = false;
-            codewindow.enable = true; # lighter, faster, and uses lua for configuration
+            codewindow.enable = false; # broken: uses removed nvim-treesitter.ts_utils API
           };
 
           dashboard = {
@@ -333,10 +271,6 @@ in {
 
           notify = {
             nvim-notify.enable = true;
-          };
-
-          projects = {
-            project-nvim.enable = true;
           };
 
           utility = {
@@ -357,62 +291,6 @@ in {
             };
           };
 
-          notes = {
-            obsidian = {
-              enable = true;
-              setupOpts = {
-                workspaces = [
-                  {
-                    name = "_default";
-                    path = "~/empty-obsidian-workspace";
-                  }
-                ];
-              };
-            };
-            neorg = {
-              enable = false;
-              setupOpts.load = {
-                "core.defaults".enable = true;
-                "core.concealer".enable = true;
-                "core.export".enable = true;
-                "core.export.markdown" = {
-                  config = {
-                    extensions = ["metadata"];
-                  };
-                };
-                "core.esupports.metagen" = {
-                  config = {
-                    type = "auto";
-                    template = [
-                      ["title"]
-                      ["description" "empty"]
-                      ["authors"]
-                      ["categories" "[]"]
-                      ["created"]
-                      ["updated"]
-                      ["version"]
-                    ];
-                  };
-                };
-                "core.summary".enable = true;
-                "core.keybinds".enable = true;
-                "core.completion" = {
-                  config = {
-                    engine = "nvim-cmp";
-                  };
-                };
-                "core.journal".enable = true;
-                "core.dirman" = {
-                  config = {
-                    workspaces = {
-                      notes = "~/notes";
-                    };
-                  };
-                };
-              };
-            };
-          };
-
           terminal = {
             toggleterm = {
               enable = true;
@@ -424,61 +302,16 @@ in {
             borders.enable = true;
             noice.enable = true;
             colorizer.enable = true;
-            modes-nvim.enable = false; # the theme looks terrible with catppuccin
+            modes-nvim.enable = false;
             illuminate.enable = true;
-            breadcrumbs = {
-              enable = true;
-              navbuddy.enable = true;
-            };
-            smartcolumn = {
-              enable = true;
-              setupOpts.custom_colorcolumn = {
-                # this is a freeform module, it's `buftype = int;` for configuring column position
-                nix = "110";
-                ruby = "120";
-                java = "130";
-                go = ["90" "130"];
-              };
-            };
-            fastaction.enable = true;
           };
 
           assistant = {
-            codecompanion-nvim = {
-              enable = false;
-              setupOpts = {
-                adapters =
-                  lib.generators.mkLuaInline
-                  # lua
-                  ''
-                    {
-                      l = function ()
-                        return require("codecompanion.adapters").extend("ollama", {
-                          name = "l",
-                          schema = {
-                            model = {
-                              default = "qwen2.5-coder:3b",
-                            }
-                          }
-                        })
-                      end
-                    }
-                  '';
-                strategies = {
-                  chat.adapter = "l";
-                  inline.adapter = "l";
-                };
-                display.diff.provider = "mini_diff";
-              };
-            };
-            chatgpt.enable = false;
             copilot = {
               enable = false;
               cmp.enable = false;
             };
           };
-
-          mini.diff.enable = true;
 
           session = {
             nvim-session-manager.enable = false;
