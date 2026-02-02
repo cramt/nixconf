@@ -64,6 +64,8 @@ in {
     stylix.enable = true;
     services.gnome.gcr-ssh-agent.enable = false;
     nix.package = pkgs.lix;
+    nix.daemonCPUSchedPolicy = "idle";
+    nix.daemonIOSchedClass = "idle";
     nix.settings = {
       experimental-features = ["nix-command" "flakes"];
       trusted-users = ["cramt" "root"];

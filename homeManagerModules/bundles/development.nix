@@ -39,7 +39,7 @@ in {
       opentofu
       tflint
       inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.awscli2
-      ssm-session-manager-plugin
+      #ssm-session-manager-plugin
       gcc-arm-embedded
       #julia TODO: reenable when build doesnt fail
       zig
