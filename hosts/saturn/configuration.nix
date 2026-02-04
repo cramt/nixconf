@@ -8,17 +8,23 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    inputs.lanzaboote.nixosModules.lanzaboote
   ];
 
   boot = {
-    loader.systemd-boot.enable = true;
+    loader.systemd-boot.enable = lib.mkForce false;
     loader.efi.canTouchEfiVariables = true;
+    lanzaboote = {
+      enable = true;
+      pkiBundle = "/var/lib/sbctl";
+    };
   };
 
   security.polkit.enable = true;
 
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
   environment.systemPackages = [
+    pkgs.sbctl
   ];
   services.scx.enable = true;
   boot.extraModprobeConfig = ''
