@@ -18,6 +18,8 @@
   security.polkit.enable = true;
 
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+  environment.systemPackages = [
+  ];
   services.scx.enable = true;
   boot.extraModprobeConfig = ''
     options usbhid mousepoll=2
@@ -90,7 +92,7 @@
         gpu = "rocm";
         rocmVersion = "11.0.1";
       };
-      nixarr.enable = true;
+      nixarr.enable = false;
       jellyfin = {
         enable = false;
         configVolume = "/mnt/amirani/configs/jellyfin";
