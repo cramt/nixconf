@@ -31,9 +31,10 @@
         {
           name = "Panel";
           expand_to_edges = false;
-          anchor = config.lib.cosmic.mkRON "enum" "Bottom";
+          anchor = config.lib.cosmic.mkRON "enum" "Left";
           opacity = 0.8;
           margin = 0;
+          autohide = null;
         }
       ];
       shortcuts = [
