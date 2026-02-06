@@ -2,7 +2,9 @@
   pkgs,
   inputs,
   ...
-}: {
+}: let
+  mkZenExtension = import ../../packages/mkZenExtension.nix {inherit pkgs;};
+in {
   config = {
     stylix.targets.zen-browser.profileNames = ["default"];
 
@@ -13,15 +15,31 @@
         DisableTelemetry = true;
       };
       profiles.default = {
-        extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
-          ublock-origin
-          sponsorblock
-          vimium
-          refined-github
-          onepassword-password-manager
-          bitwarden
-          multi-account-containers
-        ];
+        extensions.packages =
+          (with pkgs.nur.repos.rycee.firefox-addons; [
+            ublock-origin
+            sponsorblock
+            vimium
+            refined-github
+            onepassword-password-manager
+            bitwarden
+            multi-account-containers
+          ])
+          ++ [
+            (mkZenExtension {
+              name = "move-tab-to-new-window";
+              shortcut = "Ctrl+Shift+M";
+              description = "Move current tab to a new window";
+              permissions = ["tabs"];
+              js = ''
+                browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+                  if (tabs[0]) {
+                    browser.windows.create({ tabId: tabs[0].id });
+                  }
+                });
+              '';
+            })
+          ];
 
         settings = {
           "browser.disableResetPrompt" = true;
