@@ -118,7 +118,7 @@ in {
     };
     domain = lib.mkOption {
       type = lib.types.str;
-      default = (import ../../secrets.nix).domain;
+      default = (import ../../site.nix).domain;
       description = ''
         tld to use
       '';
@@ -161,7 +161,7 @@ in {
     networking.firewall.allowedTCPPorts = [80 443];
     services.caddy = {
       enable = true;
-      email = (import ../../secrets.nix).email;
+      email = (import ../../site.nix).email;
       environmentFile = config.services.onepassword-secrets.secretPaths.ollamaBearerEnv;
       globalConfig = ''
         debug

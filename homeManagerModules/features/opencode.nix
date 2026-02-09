@@ -3,9 +3,7 @@
   pkgs,
   inputs,
   ...
-}: let
-  secrets = import ../../secrets.nix;
-in {
+}: {
   programs.opencode = {
     enable = true;
     package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;

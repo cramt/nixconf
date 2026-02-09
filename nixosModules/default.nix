@@ -82,11 +82,6 @@ in {
     nixpkgs = {
       overlays = [
         inputs.nur.overlays.default
-        (final: prev: 
-          if inputs ? nix-clawdbot 
-          then inputs.nix-clawdbot.overlays.default final prev 
-          else {}
-        )
         (final: prev: let
           sources = import ../npins;
           system = pkgs.stdenv.hostPlatform.system;

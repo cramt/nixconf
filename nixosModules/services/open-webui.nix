@@ -7,7 +7,7 @@
 }: let
   port = config.port-selector.ports.open-webui;
 
-  secrets = import ../../secrets.nix;
+  site = import ../../site.nix;
   ollama_port = config.port-selector.ports.ollama;
   searxng-port = config.port-selector.ports.searxng;
   tika-port = config.port-selector.ports.tika;
@@ -32,7 +32,7 @@ in {
         CHUNK_OVERLAP = "50";
         RAG_EMBEDDING_ENGINE = "ollama";
         RAG_EMBEDDING_MODEL = "DC1LEX/nomic-embed-text-v1.5-multimodal:latest";
-        WEBUI_URL = "https://open-webui.${secrets.domain}";
+        WEBUI_URL = "https://open-webui.${site.domain}";
         ENABLE_OLLAMA_API = "true";
         OLLAMA_BASE_URLS = "http://192.168.178.23:${builtins.toString ollama_port};http://localhost:${builtins.toString ollama_port}";
         ENABLE_PERSISTENT_CONFIG = "false";

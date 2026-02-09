@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.postgres;
-  secrets = import ../../secrets.nix;
+  site = import ../../site.nix;
 
   port = config.port-selector.ports.postgresql;
 in {
@@ -72,7 +72,7 @@ in {
       preStart = lib.mkAfter ''
         mkdir -p ${cfg.dataDir}
         if ! test -e ${cfg.dataDir}/server.key; then
-            ${pkgs.openssl}/bin/openssl req -new -x509 -days 365 -nodes -text -out ${cfg.dataDir}/server.crt -keyout ${cfg.dataDir}/server.key -subj "/CN=postgres.${secrets.domain}"
+            ${pkgs.openssl}/bin/openssl req -new -x509 -days 365 -nodes -text -out ${cfg.dataDir}/server.crt -keyout ${cfg.dataDir}/server.key -subj "/CN=postgres.${site.domain}"
             chmod 0400 ${cfg.dataDir}/server.key
         fi
       '';

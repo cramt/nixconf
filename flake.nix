@@ -124,17 +124,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-clawdbot = {
-      url = "github:dominicnunez/clawdbot-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
-
-    nix-steipete-tools = {
-      url = "github:clawdbot/nix-steipete-tools";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";

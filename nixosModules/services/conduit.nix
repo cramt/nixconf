@@ -2,8 +2,8 @@
   config,
   ...
 }: let
-  secrets = import ../../secrets.nix;
-  turnDomain = "turn.${secrets.domain}";
+  site = import ../../site.nix;
+  turnDomain = "turn.${site.domain}";
   turnMin = 49000;
   turnMax = 50000;
 in {
@@ -13,7 +13,7 @@ in {
     security.acme.certs.${turnDomain} = {
       reloadServices = ["coturn"];
       group = "turnserver";
-      email = secrets.email;
+      email = site.email;
       dnsProvider = "cloudflare";
       environmentFile = config.services.onepassword-secrets.secretPaths.cloudflareCredsEnv;
     };
@@ -43,7 +43,7 @@ in {
         enable = true;
         secretFile = config.services.onepassword-secrets.secretPaths.conduitSecretEnv;
         settings.global = {
-          server_name = "matrix.${secrets.domain}";
+          server_name = "matrix.${site.domain}";
           turn_uris = ["turn:${turnDomain}:3478?transport=udp" "turn:${turnDomain}:3478?transport=tcp"];
           allow_check_for_updates = false;
           allow_registration = true;

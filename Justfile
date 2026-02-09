@@ -1,12 +1,9 @@
-inject_secrets:
-    op inject -i secrets.json.tpl -o secrets.json
-
 add_foundry_zips:
     #!/usr/bin/env nu
     ls ../nix-static/ | each { |it| nix-store --add-fixed sha256 $it.name }
     null
 
-build_luna: inject_secrets add_foundry_zips
+build_luna: add_foundry_zips
     nh os switch --target-host root@192.168.178.24 -H luna -- --fallback
 
 clean_ruby:
@@ -18,7 +15,7 @@ update_flake:
 update_gems:
     (cd gems && bundle lock --update)
 
-update: inject_secrets
+update:
     fwupdmgr update -y || true
     just update_flake
     just update_gems

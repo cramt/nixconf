@@ -1,12 +1,12 @@
 {config, ...}: let
-  secrets = import ../../secrets.nix;
+  site = import ../../site.nix;
 in {
   services.tailscale = {
     enable = true;
     authKeyFile = config.services.onepassword-secrets.secretPaths.tailscalePreauthKey;
     authKeyParameters = {
       preauthorized = true;
-      baseURL = secrets.tailscale_base_url;
+      baseURL = site.tailscale_base_url;
     };
   };
 }
