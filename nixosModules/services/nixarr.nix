@@ -4,7 +4,6 @@
   config,
   ...
 }: let
-  secrets = import ../../secrets.nix;
   tdarr_source = pkgs.npinsSources."haveagitgat/tdarr";
   tdarr_api_key = "tapi_nixos_autoconfig_12345";
   pythonWithPackages = pkgs.python3.withPackages (ps: with ps; [requests]);
@@ -231,14 +230,18 @@ in {
             enable = true;
           }
         ];
-        users = builtins.map ({
-          name,
-          value,
-        }: {
-          name = name;
-          passwordFile = pkgs.writeText "password" value.password;
-          isAdministrator = value.admin;
-        }) (lib.attrsets.attrsToList secrets.jellyfin_users);
+        users = [
+          {
+            name = "cramt";
+            passwordFile = config.services.onepassword-secrets.secretPaths.jellyfinCramtPassword;
+            isAdministrator = true;
+          }
+          {
+            name = "hannah";
+            passwordFile = config.services.onepassword-secrets.secretPaths.jellyfinHannahPassword;
+            isAdministrator = true;
+          }
+        ];
       };
       jellyseerr.enable = true;
       bazarr.enable = true;

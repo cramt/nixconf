@@ -65,7 +65,7 @@
             port = builtins.toString config.port-selector.ports.ollama;
           in ''
             import cors
-            @bearer header Authorization "Bearer ${(import ../../secrets.nix).ollama_secret}"
+            @bearer header Authorization "Bearer {$OLLAMA_BEARER_SECRET}"
             reverse_proxy @bearer http://192.168.178.23:${port} http://localhost:${port} {
               health_uri /
               lb_policy first
@@ -162,6 +162,7 @@ in {
     services.caddy = {
       enable = true;
       email = (import ../../secrets.nix).email;
+      environmentFile = config.services.onepassword-secrets.secretPaths.ollamaBearerEnv;
       globalConfig = ''
         debug
       '';

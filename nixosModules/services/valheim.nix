@@ -59,7 +59,6 @@ in {
         WORLD = cfg.worldName;
         PUBLIC = "0";
         AUTO_UPDATE = "0";
-        PASSWORD = (import ../../secrets.nix).valheim_password;
         TYPE = "BepInEx";
         MODS = ''
           denikson-BepInExPack_Valheim-5.4.2202
@@ -75,6 +74,9 @@ in {
           JereKuusela-Server_devcommands-1.97.0
         '';
       };
+      environmentFiles = [
+        config.services.onepassword-secrets.secretPaths.valheimEnv
+      ];
       extraOptions = [
         "--shm-size=2gb"
         "--cpu-shares=10"

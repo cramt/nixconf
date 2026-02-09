@@ -11,9 +11,9 @@
 
   programs.home-manager.enable = true;
 
-  nix.settings = {
-    access-tokens = ["github.com=${(import ../../secrets.nix).github_read_token}"];
-  };
+  nix.extraConfig = ''
+    !include /var/lib/opnix/secrets/nixAccessTokensConf
+  '';
 
   myHomeManager = {
     yazi.enable = true;

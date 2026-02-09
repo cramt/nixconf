@@ -1,17 +1,11 @@
 {
-  pkgs,
   config,
   ...
 }: let
   secrets = import ../../secrets.nix;
-  shared_secret = secrets.shared_matrix_secret;
   turnDomain = "turn.${secrets.domain}";
   turnMin = 49000;
   turnMax = 50000;
-  cloudflareCredentials = pkgs.writeText ''cloudflare_creds.env'' ''
-    CLOUDFLARE_EMAIL=${secrets.email}
-    CLOUDFLARE_API_KEY=${secrets.cloudflare_api_key}
-  '';
 in {
   config = {
     # tls
@@ -21,7 +15,7 @@ in {
       group = "turnserver";
       email = secrets.email;
       dnsProvider = "cloudflare";
-      environmentFile = cloudflareCredentials;
+      environmentFile = config.services.onepassword-secrets.secretPaths.cloudflareCredsEnv;
     };
     # turn server notwork config
     networking.firewall = {
@@ -47,10 +41,10 @@ in {
     services = {
       matrix-conduit = {
         enable = true;
+        secretFile = config.services.onepassword-secrets.secretPaths.conduitSecretEnv;
         settings.global = {
           server_name = "matrix.${secrets.domain}";
           turn_uris = ["turn:${turnDomain}:3478?transport=udp" "turn:${turnDomain}:3478?transport=tcp"];
-          turn_secret = shared_secret;
           allow_check_for_updates = false;
           allow_registration = true;
           database_backend = "rocksdb";
@@ -65,7 +59,7 @@ in {
         min-port = turnMin;
         max-port = turnMax;
         use-auth-secret = true;
-        static-auth-secret = shared_secret;
+        static-auth-secret-file = config.services.onepassword-secrets.secretPaths.matrixSharedSecret;
         realm = turnDomain;
         cert = "${config.security.acme.certs.${turnDomain}.directory}/full.pem";
         pkey = "${config.security.acme.certs.${turnDomain}.directory}/key.pem";

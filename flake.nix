@@ -139,6 +139,11 @@
       url = "github:nix-community/lanzaboote/v1.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    opnix = {
+      url = "github:brizzbuzz/opnix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {

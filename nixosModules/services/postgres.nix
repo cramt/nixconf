@@ -6,14 +6,6 @@
 }: let
   cfg = config.myNixOS.services.postgres;
   secrets = import ../../secrets.nix;
-  initialScript = pkgs.writeText "init.sql" ''
-    ALTER USER "postgres" WITH PASSWORD '${secrets.postgres_password}';
-  '';
-  upsertScript = pkgs.writeText "init.sql" (lib.strings.concatMapStrings (x:
-    if x.password == null
-    then ""
-    else ''alter user "${x.name}" with password '${x.password}';'')
-  cfg.applicationUsers);
 
   port = config.port-selector.ports.postgresql;
 in {
@@ -26,10 +18,10 @@ in {
               type = lib.types.str;
               description = "name";
             };
-            password = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
+            passwordFile = lib.mkOption {
+              type = lib.types.nullOr lib.types.path;
               default = null;
-              description = "password";
+              description = "path to file containing the password";
             };
             open = lib.mkOption {
               type = lib.types.bool;
@@ -53,7 +45,6 @@ in {
     services.postgresql = {
       enable = true;
       ensureDatabases = builtins.map (x: x.name) cfg.applicationUsers;
-      initialScript = initialScript;
       enableTCPIP = true;
       settings = {
         ssl = true;
@@ -86,7 +77,16 @@ in {
         fi
       '';
       postStart = lib.mkAfter ''
-        ${config.services.postgresql.package}/bin/psql -f "${upsertScript}" -d postgres
+        POSTGRES_PASSWORD=$(cat ${config.services.onepassword-secrets.secretPaths.postgresPassword})
+        ${config.services.postgresql.package}/bin/psql -c "ALTER USER \"postgres\" WITH PASSWORD '$POSTGRES_PASSWORD';" -d postgres
+        ${lib.strings.concatMapStrings (x:
+          if x.passwordFile == null
+          then ""
+          else ''
+            USER_PASSWORD=$(cat ${x.passwordFile})
+            ${config.services.postgresql.package}/bin/psql -c "ALTER USER \"${x.name}\" WITH PASSWORD '$USER_PASSWORD';" -d postgres
+          '')
+        cfg.applicationUsers}
       '';
     };
   };

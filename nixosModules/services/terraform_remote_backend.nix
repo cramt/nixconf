@@ -1,12 +1,10 @@
-{...}: let
-  terraform_remote_state_password = (import ../../secrets.nix).terraform_remote_state_password;
-in {
+{config, ...}: {
   myNixOS.services.postgres = {
     enable = true;
     applicationUsers = [
       {
         name = "terraformremotestate";
-        password = terraform_remote_state_password;
+        passwordFile = config.services.onepassword-secrets.secretPaths.terraformRemotePassword;
       }
     ];
   };

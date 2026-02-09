@@ -9,6 +9,7 @@
     cmakeFlags = ["-DWITH_SERVER=1" "-DWITH_CLIENT=0" "-DWITH_ORACLE=0" "-DWITH_DBCONVERTER=0"];
   });
   starter = pkgs.writeShellScriptBin "servatrice_starter" ''
+    ${pkgs.envsubst}/bin/envsubst < /config/servatrice.ini.tpl > /config/servatrice.ini
     ${servatricePkg}/bin/servatrice --config /config/servatrice.ini --log-to-console
   '';
   dockerImage = pkgs.dockerTools.streamLayeredImage {
@@ -29,7 +30,7 @@
     };
   };
 
-  configFile = pkgs.writeText "servatrice.ini" (lib.generators.toINI {} {
+  configTemplate = pkgs.writeText "servatrice.ini.tpl" (lib.generators.toINI {} {
     server = {
       name = "Luna Cockatrice Server";
       id = 1;
@@ -52,7 +53,7 @@
     };
     authentication = {
       method = "password";
-      password = (import ../../secrets.nix).cockatrice_password;
+      password = "\${COCKATRICE_PASSWORD}";
       regonly = true;
     };
     database = {
@@ -72,7 +73,10 @@ in {
       imageStream = dockerImage;
       image = "servatrice:1";
       volumes = [
-        "${configFile}:/config/servatrice.ini"
+        "${configTemplate}:/config/servatrice.ini.tpl"
+      ];
+      environmentFiles = [
+        config.services.onepassword-secrets.secretPaths.cockatriceEnv
       ];
       ports = [
         "4747:4747"

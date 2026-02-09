@@ -20,6 +20,7 @@ in rec {
       modules = [
         config
         outputs.nixosModules.default
+        inputs.opnix.nixosModules.default
       ];
     };
 

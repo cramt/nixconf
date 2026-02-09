@@ -4,3 +4,4 @@ infra/terraform.tfstate
 infra/terraform.tfstate.backup
 infra/.terraform
 titan-frontend
+secrets.json

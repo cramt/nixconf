@@ -6,8 +6,6 @@
   ...
 }: let
   cfg = config.myNixOS.services.titan-vm;
-  secrets = import ../../secrets.nix;
-
   # Get the titan NixOS configuration and build the VM runner
   titanConfig = inputs.self.nixosConfigurations.titan;
   titanVm = titanConfig.config.system.build.vm;
@@ -114,11 +112,11 @@ in {
         VNC_PORT = toString vncPort;
         SSH_USERNAME = "cramt";
         SSH_PASSWORD = "titan";
-        TITAN_API_KEY = secrets.titan_frontend_api_key or "default-dev-key";
       };
 
       serviceConfig = {
         ExecStart = "${titanFrontendPackage}/bin/titan-frontend";
+        EnvironmentFile = config.services.onepassword-secrets.secretPaths.titanFrontendEnv;
         Restart = "always";
         RestartSec = "10";
         User = "cramt";

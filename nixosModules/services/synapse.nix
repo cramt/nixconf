@@ -1,17 +1,11 @@
 {
-  pkgs,
   config,
   ...
 }: let
   secrets = import ../../secrets.nix;
-  shared_secret = secrets.shared_matrix_secret;
   turnDomain = "turn.${secrets.domain}";
   turnMin = 49000;
   turnMax = 50000;
-  cloudflareCredentials = pkgs.writeText ''cloudflare_creds.env'' ''
-    CLOUDFLARE_EMAIL=${secrets.email}
-    CLOUDFLARE_API_KEY=${secrets.cloudflare_api_key}
-  '';
 in {
   config = {
     myNixOS.services.postgres = {
@@ -29,7 +23,7 @@ in {
       group = "turnserver";
       email = secrets.email;
       dnsProvider = "cloudflare";
-      environmentFile = cloudflareCredentials;
+      environmentFile = config.services.onepassword-secrets.secretPaths.cloudflareCredsEnv;
     };
     # turn server notwork config
     networking.firewall = {
@@ -47,15 +41,16 @@ in {
       matrix-synapse = {
         enable = true;
         withJemalloc = true;
+        extraConfigFiles = [
+          config.services.onepassword-secrets.secretPaths.synapseExtraConfig
+        ];
         settings = {
           enable_metrics = true;
           enable_registration = false;
           allow_guest_access = false;
           dynamic_thumbnails = true;
           server_name = "matrix.${secrets.domain}";
-          registration_shared_secret = shared_secret;
           turn_uris = ["turn:${turnDomain}:3478?transport=udp" "turn:${turnDomain}:3478?transport=tcp"];
-          turn_shared_secret = shared_secret;
           turn_user_lifetime = "1h";
           listeners = [
             {
@@ -82,7 +77,7 @@ in {
         min-port = turnMin;
         max-port = turnMax;
         use-auth-secret = true;
-        static-auth-secret = shared_secret;
+        static-auth-secret-file = config.services.onepassword-secrets.secretPaths.matrixSharedSecret;
         realm = turnDomain;
         cert = "${config.security.acme.certs.${turnDomain}.directory}/full.pem";
         pkey = "${config.security.acme.certs.${turnDomain}.directory}/key.pem";
