@@ -162,7 +162,7 @@
         mars = mkSystem ./hosts/mars/configuration.nix;
         luna = mkSystem ./hosts/luna/configuration.nix;
         eros = mkSystem ./hosts/eros/configuration.nix;
-        titan = mkSystem ./hosts/titan/configuration.nix;
+        # titan = mkSystem ./hosts/titan/configuration.nix;
       };
 
       homeManagerModules.default = ./homeManagerModules;

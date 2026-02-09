@@ -21,6 +21,7 @@
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
   myNixOS = {
+    opnix-secrets.enable = true;
     gnupg.enable = true;
     powertop.enable = true;
     nvidia.enable = true;
@@ -128,7 +129,7 @@
         dataDir = "/mnt/imbrium/pgsql";
       };
       titan-vm = {
-        enable = true;
+        enable = false;
         dataDir = "/mnt/imbrium/titan-vm";
         memory = "8G";
         cores = 4;

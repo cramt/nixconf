@@ -11,7 +11,7 @@
 
   programs.home-manager.enable = true;
 
-  nix.extraConfig = ''
+  nix.extraOptions = ''
     !include /var/lib/opnix/secrets/nixAccessTokensConf
   '';
 
