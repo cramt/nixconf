@@ -13,9 +13,9 @@
 in {
   options.myHomeManager.git = {
     signingKey = lib.mkOption {
-      default = "";
+      default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I";
       description = ''
-        the gpg signing key
+        the ssh signing key (public key)
       '';
     };
   };
@@ -74,6 +74,10 @@ in {
               ]
             )
           );
+        gpg = {
+          format = "ssh";
+          ssh.program = "${lib.getExe' pkgs._1password-gui "op-ssh-sign"}";
+        };
         commit = {
           gpgsign = true;
         };

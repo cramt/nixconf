@@ -19,13 +19,21 @@ in {
   programs.ssh = {
     enable = true;
     enableDefaultConfig = false;
+    extraConfig = ''
+      Host *
+          IdentityAgent ~/.1password/agent.sock
+    '';
     matchBlocks."*" = {
-      addKeysToAgent = "yes";
       controlPath = "~/.ssh/control-%C";
     };
   };
 
-  # SSH_AUTH_SOCK is set by Home Manager's services.gpg-agent with enableSshSupport
+  xdg.configFile."1Password/ssh/agent.toml" = {
+    text = ''
+      [[ssh-keys]]
+      item = "SSH Key - Personal"
+    '';
+  };
 
   home.packages = (builtins.attrValues sshTargetPackages) ++ (builtins.attrValues sshTargetDesktops);
 }

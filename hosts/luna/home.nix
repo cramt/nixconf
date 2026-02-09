@@ -13,8 +13,7 @@
 
   myHomeManager = {
     bundles.general.enable = true;
-    git.signingKey = "D14C758B96260E88";
-  };
+};
 
   home.stateVersion = "25.05";
 }
