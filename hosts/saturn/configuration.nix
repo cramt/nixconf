@@ -75,6 +75,7 @@
       ];
     };
     gnupg.enable = true;
+    onepassword.enable = true;
     qemu.enable = true;
     docker.enable = true;
     bundles.general.enable = true;

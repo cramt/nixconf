@@ -27,6 +27,7 @@
 
   myNixOS = {
     gnupg.enable = true;
+    onepassword.enable = true;
     qemu.enable = true;
     docker.enable = true;
     bluetooth.enable = true;
