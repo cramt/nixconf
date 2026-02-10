@@ -133,7 +133,7 @@
         memory = "8G";
         cores = 4;
         diskSize = "100G";
-        frontend.enable = true;
+        frontend.enable = false;
       };
       conduit.enable = false;
       terraform_remote_backend.enable = true;
@@ -188,6 +188,7 @@
     experimental-features = ["nix-command" "flakes"];
   };
   environment.systemPackages = [
+    pkgs.ghostty.terminfo
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

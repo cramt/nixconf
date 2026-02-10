@@ -68,6 +68,8 @@
       };
       terraformRemotePassword = {
         reference = "op://Homelab/TerraformRemoteState/password";
+        owner = "postgres";
+        group = "postgres";
         services = ["postgresql"];
       };
     };
