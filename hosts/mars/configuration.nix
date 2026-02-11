@@ -41,7 +41,6 @@
 
     services = {
       tailscale.enable = false;
-      synapse.enable = false;
       caddy = {
         enable = false;
         domain = "localhost";

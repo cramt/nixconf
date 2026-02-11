@@ -8,15 +8,6 @@
   turnMax = 50000;
 in {
   config = {
-    myNixOS.services.postgres = {
-      enable = true;
-      applicationUsers = [
-        {
-          name = "matrix-synapse";
-        }
-      ];
-    };
-    # tls
     security.acme.acceptTerms = true;
     security.acme.certs.${turnDomain} = {
       reloadServices = ["coturn"];
@@ -25,7 +16,7 @@ in {
       dnsProvider = "cloudflare";
       environmentFile = config.services.onepassword-secrets.secretPaths.cloudflareCredsEnv;
     };
-    # turn server notwork config
+
     networking.firewall = {
       allowedUDPPortRanges = [
         {
@@ -34,39 +25,38 @@ in {
         }
       ];
       allowedUDPPorts = [3478 5349];
-      allowedTCPPortRanges = [];
       allowedTCPPorts = [3478 5349];
     };
+
+    port-selector = {
+      set-ports."3478" = "matrix_turn_udp";
+      additional-blocked-port-ranges = [
+        {
+          from = turnMin;
+          to = turnMax;
+        }
+      ];
+    };
+
+    myNixOS.services.caddy.serviceMap = {
+      matrix = {
+        port = 6167;
+      };
+    };
+
+    # secret env file for registration_token, turn_secret, etc.
+    systemd.services.continuwuity.serviceConfig.EnvironmentFile = [
+      config.services.onepassword-secrets.secretPaths.matrixSecretEnv
+    ];
+
     services = {
-      matrix-synapse = {
+      matrix-continuwuity = {
         enable = true;
-        withJemalloc = true;
-        extraConfigFiles = [
-          config.services.onepassword-secrets.secretPaths.synapseExtraConfig
-        ];
-        settings = {
-          enable_metrics = true;
-          enable_registration = false;
-          allow_guest_access = false;
-          dynamic_thumbnails = true;
+        settings.global = {
           server_name = "matrix.${site.domain}";
           turn_uris = ["turn:${turnDomain}:3478?transport=udp" "turn:${turnDomain}:3478?transport=tcp"];
-          turn_user_lifetime = "1h";
-          listeners = [
-            {
-              bind_addresses = ["0.0.0.0"];
-              port = 8448;
-              resources = [
-                {
-                  compress = false;
-                  names = ["client"];
-                }
-              ];
-              tls = false;
-              type = "http";
-              x_forwarded = false;
-            }
-          ];
+          allow_registration = true;
+          allow_announcements_check = false;
         };
       };
 

@@ -74,6 +74,7 @@
         }
       ];
     };
+    opnix-secrets.enable = true;
     gnupg.enable = true;
     onepassword.enable = true;
     qemu.enable = true;
@@ -94,7 +95,7 @@
       titan-vm = {
         enable = false;
       };
-      stoatchat.enable = true;
+      stoatchat.enable = false;
       ollama = {
         enable = true;
         gpu = "rocm";

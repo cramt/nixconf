@@ -1,4 +1,13 @@
-{...}: {
+{config, lib, ...}: let
+  hasUser = name: builtins.hasAttr name config.users.users;
+  hasGroup = name: builtins.hasAttr name config.users.groups;
+  ownerIf = name: lib.optionalAttrs (hasUser name) {owner = name;};
+  groupIf = name: lib.optionalAttrs (hasGroup name) {group = name;};
+in {
+  users.users = builtins.mapAttrs (name: _: {
+    extraGroups = ["onepassword-secrets"];
+  }) config.myNixOS.home-users;
+
   services.onepassword-secrets = {
     enable = true;
     tokenFile = "/etc/opnix-token";
@@ -13,10 +22,8 @@
       };
       postgresPassword = {
         reference = "op://Homelab/Postgres/password";
-        owner = "postgres";
-        group = "postgres";
         services = ["postgresql"];
-      };
+      } // ownerIf "postgres" // groupIf "postgres";
       homelabControllerEnv = {
         reference = "op://Homelab/HomelabController/envFile";
         services = ["homelab_system_controller"];
@@ -50,14 +57,9 @@
       matrixSharedSecret = {
         reference = "op://Homelab/Matrix/sharedSecret";
         services = ["coturn"];
-      };
-      conduitSecretEnv = {
+      } // ownerIf "turnserver" // groupIf "turnserver";
+      matrixSecretEnv = {
         reference = "op://Homelab/Matrix/conduitEnv";
-        services = ["conduit"];
-      };
-      synapseExtraConfig = {
-        reference = "op://Homelab/Matrix/synapseExtraConfig";
-        services = ["matrix-synapse"];
       };
       ollamaBearerEnv = {
         reference = "op://Homelab/Ollama/bearerEnv";
@@ -68,10 +70,8 @@
       };
       terraformRemotePassword = {
         reference = "op://Homelab/TerraformRemoteState/password";
-        owner = "postgres";
-        group = "postgres";
         services = ["postgresql"];
-      };
+      } // ownerIf "postgres" // groupIf "postgres";
     };
   };
 }

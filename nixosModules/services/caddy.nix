@@ -42,18 +42,6 @@
       })
       cfg.serviceMap)
     // (
-      if config.myNixOS.services.conduit.enable
-      then {
-        "matrix.${cfg.domain}" = {
-          extraConfig = ''
-            import cors
-            reverse_proxy http://localhost:6167
-          '';
-        };
-      }
-      else {}
-    )
-    // (
       if config.myNixOS.services.ollama.enable
       then {
         "ollama.${cfg.domain}" = {

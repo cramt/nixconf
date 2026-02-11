@@ -136,11 +136,11 @@
         frontend.enable = false;
       };
       stoatchat = {
-        enable = true;
+        enable = false;
         domain = "chat.cramt.dk";
         dataDir = "/storage/stoatchat";
       };
-      conduit.enable = false;
+      continuwuity.enable = true;
       terraform_remote_backend.enable = true;
       servatrice.enable = true;
       sshd.enable = true;

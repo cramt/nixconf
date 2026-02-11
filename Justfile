@@ -21,3 +21,9 @@ update:
     just update_gems
     npins update
     nh os switch
+
+tf *args:
+    #!/usr/bin/env bash
+    export OP_SERVICE_ACCOUNT_TOKEN=$(cat /etc/opnix-token)
+    export PG_CONN_STR="postgres://terraformremotestate:$(op read 'op://Homelab/TerraformRemoteState/password')@$(op read 'op://Homelab/Infrastructure/lunaInternalAddress'):5432"
+    terraform -chdir=infra {{args}}
