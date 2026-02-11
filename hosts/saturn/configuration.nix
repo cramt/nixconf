@@ -94,6 +94,7 @@
       titan-vm = {
         enable = false;
       };
+      stoatchat.enable = true;
       ollama = {
         enable = true;
         gpu = "rocm";

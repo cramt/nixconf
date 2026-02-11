@@ -133,6 +133,11 @@
       url = "github:brizzbuzz/opnix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    stoatchat = {
+      url = "path:./packages/stoatchat";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {

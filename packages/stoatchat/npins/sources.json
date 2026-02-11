@@ -1,0 +1,103 @@
+{
+  "pins": {
+    "autumn": {
+      "type": "Container",
+      "image_name": "ghcr.io/revoltchat/autumn",
+      "image_tag": "20250930-2",
+      "image_digest": "sha256:d0ee55f41deabdc80e53aa057bde2724120355700c2a1976d7cac5873137a796",
+      "hash": "sha256-0SkjfSuyU9+0jmx4laWDw3UFpoAL+em3f/fgCRx7fvI="
+    },
+    "bonfire": {
+      "type": "Container",
+      "image_name": "ghcr.io/revoltchat/bonfire",
+      "image_tag": "20250930-2",
+      "image_digest": "sha256:2d17f1b885c91a5c608bb2945403717612e96b44be0eaeb752f14fab3bd3886f",
+      "hash": "sha256-7DQ73OGerxC/5uSHoT1Cq2exwlyl+hXgY3lRTlCFwpg="
+    },
+    "caddy": {
+      "type": "Container",
+      "image_name": "docker.io/caddy",
+      "image_tag": "latest",
+      "image_digest": "sha256:f20f80e1fb627294fb84b8515b7593aff8018c840f1396dc942a50ed0c2db648",
+      "hash": "sha256-S5axa+cn5Yp4OCevHOcQQuOOqSYQaFjv6WNUm2aLv+E="
+    },
+    "crond": {
+      "type": "Container",
+      "image_name": "ghcr.io/revoltchat/crond",
+      "image_tag": "20250930-2",
+      "image_digest": "sha256:f9f7f83a63beb389ea9d29ff580347c3e96a8d2ea62a4dfaa58ebada9979429e",
+      "hash": "sha256-+DhAtb13z1AnRob2YKcXqJwElhW2RJg4/0d5OzmC/dw="
+    },
+    "gifbox": {
+      "type": "Container",
+      "image_name": "ghcr.io/revoltchat/gifbox",
+      "image_tag": "20250930-2",
+      "image_digest": "sha256:6681a316fc237978f2bf31004c068897c2d98cce3f290399bbdaab074caa7394",
+      "hash": "sha256-k++B/EfjBPeob/BGeKSJTfg42u2zEUX4v5RioifkdPM="
+    },
+    "january": {
+      "type": "Container",
+      "image_name": "ghcr.io/revoltchat/january",
+      "image_tag": "20250930-2",
+      "image_digest": "sha256:f4ade709bbf80e460a55a9240b5fc628b69d0e05d6fe48948616f1614bea6d85",
+      "hash": "sha256-dDLt83JTEGijbNbu0xzu+TwhgxHHnvLBqNahCSmsU5M="
+    },
+    "keydb": {
+      "type": "Container",
+      "image_name": "docker.io/eqalpha/keydb",
+      "image_tag": "latest",
+      "image_digest": "sha256:6537505c42355ca1f571276bddf83f5b750f760f07b2a185a676481791e388ac",
+      "hash": "sha256-WUwfD+g3le6Pz7diao/KdweRcU1lOeapaGfC/9JilSk="
+    },
+    "minio": {
+      "type": "Container",
+      "image_name": "docker.io/minio/minio",
+      "image_tag": "latest",
+      "image_digest": "sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e",
+      "hash": "sha256-luLrbbivL653bT7T74aT3sJwPQ6uAq0Rp7KYFMU/FDA="
+    },
+    "minio-mc": {
+      "type": "Container",
+      "image_name": "docker.io/minio/mc",
+      "image_tag": "latest",
+      "image_digest": "sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727",
+      "hash": "sha256-uvK0ivSiO3r6Bm1oiTKuriiSz3dYxzoE0UZEi/lBv6g="
+    },
+    "mongo": {
+      "type": "Container",
+      "image_name": "docker.io/mongo",
+      "image_tag": "latest",
+      "image_digest": "sha256:6f55a078e025aa29fea2826c82f67ff2f774b82efd816c4c30bbfe67904f0bb8",
+      "hash": "sha256-TjY0nm/8l5fT49kbADxcamDdO+2xJLUanKU34wO7eIk="
+    },
+    "pushd": {
+      "type": "Container",
+      "image_name": "ghcr.io/revoltchat/pushd",
+      "image_tag": "20250930-2",
+      "image_digest": "sha256:618e60ae64e7dfd9a7a44bcc9726a2fc09b52213dfe30f2fec47b873321f4de8",
+      "hash": "sha256-SVNOqo4XoRN0dBaN+Chj1HYfoWXOJp0L8zLJ728rauU="
+    },
+    "rabbitmq": {
+      "type": "Container",
+      "image_name": "docker.io/rabbitmq",
+      "image_tag": "4",
+      "image_digest": "sha256:e831b3cdc1e6a3abd86bb67a75a54b319f5a2fc4dc3adf68e73417bbd266ef8b",
+      "hash": "sha256-QFV7GwbN938JmhPAgUNf+21yEP5cVEDluI3aaqQABBc="
+    },
+    "server": {
+      "type": "Container",
+      "image_name": "ghcr.io/revoltchat/server",
+      "image_tag": "20250930-2",
+      "image_digest": "sha256:3186190b0c131a39cb6fd251d13ab826651603073c2e5b34695806007ea4a463",
+      "hash": "sha256-Mnh3frVzUx4G3QOdBa4v6rhqY89cbGTJkGulzIykrCM="
+    },
+    "web": {
+      "type": "Container",
+      "image_name": "ghcr.io/revoltchat/client",
+      "image_tag": "master",
+      "image_digest": "sha256:5cc05853c215a02ee3d1f71390ad00af06c7ef53602b4b21f419f8702607d8c8",
+      "hash": "sha256-nEIfS21hyTDw4MHLkjJRMFBGHkhLNWYNFi7lzyE6d/I="
+    }
+  },
+  "version": 7
+}
