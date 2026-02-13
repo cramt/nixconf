@@ -135,11 +135,6 @@
         diskSize = "100G";
         frontend.enable = false;
       };
-      stoatchat = {
-        enable = false;
-        domain = "chat.cramt.dk";
-        dataDir = "/storage/stoatchat";
-      };
       continuwuity.enable = true;
       terraform_remote_backend.enable = true;
       servatrice.enable = true;

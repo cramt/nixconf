@@ -100,6 +100,11 @@ in {
       fwupd.enable = true;
     };
 
+    systemd.services.nix-daemon.serviceConfig = {
+      Nice = 19;
+      IOSchedulingClass = "idle";
+    };
+
     nix = {
       optimise.automatic = true;
     };

@@ -12,9 +12,6 @@
     dxvk
     gamescope
     mangohud
-    (wineWowPackages.full.override {
-      mingwSupport = true;
-    })
     winetricks
     inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.melonDS
     prismlauncher
