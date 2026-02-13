@@ -21,7 +21,6 @@ in rec {
         config
         outputs.nixosModules.default
         inputs.opnix.nixosModules.default
-        inputs.stoatchat.nixosModules.default
       ];
     };
 
