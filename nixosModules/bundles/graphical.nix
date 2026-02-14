@@ -46,7 +46,6 @@
       powerline-fonts
       powerline-symbols
       corefonts
-      beeper
     ];
 
     enableDefaultPackages = true;

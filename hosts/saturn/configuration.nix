@@ -92,6 +92,7 @@
         tvshows = "/mnt/amirani/tvshows";
       };
     in {
+      sunshine.enable = true;
       titan-vm = {
         enable = false;
       };
@@ -199,5 +200,5 @@
     )
     (import ./monitors.nix);
 
-  system.stateVersion = "25.05"; # Did you read the comment?
+  system.stateVersion = "25.11"; # Did you read the comment?
 }

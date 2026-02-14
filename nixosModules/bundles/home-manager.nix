@@ -76,6 +76,9 @@ in {
           "pipewire"
           "plugdev"
           "dailout"
+          "input"
+          "audio"
+          "render"
         ];
       }
       // cfg.userNixosSettings;

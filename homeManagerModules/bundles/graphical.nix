@@ -3,8 +3,7 @@
   config,
   inputs,
   ...
-}:
-{
+}: {
   home.packages = with pkgs; [
     wl-clipboard
     alacritty
@@ -13,7 +12,6 @@
     pavucontrol
     adwaita-qt
     gimp
-    anytype
     vlc
     element-desktop
     antigravity

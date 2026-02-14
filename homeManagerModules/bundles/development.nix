@@ -35,7 +35,6 @@ in {
       just
       clang
       postgresql.out
-      terraform
       opentofu
       tflint
       inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.awscli2

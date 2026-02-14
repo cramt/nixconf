@@ -5,17 +5,17 @@
 }: {
   imports = [
     ./hardware-configuration.nix
-    inputs.nixos-generators.nixosModules.all-formats
+    inputs.nixos-hardware.nixosModules.raspberry-pi-4
   ];
 
-  boot.loader.grub.enable = false;
-  boot.loader.generic-extlinux-compatible.enable = true;
-
   networking.hostName = "eros";
+  boot.kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
 
   environment.systemPackages = with pkgs; [
     neovim
     wget
+    moonlight-embedded
+    pkgs.ghostty.terminfo
   ];
 
   myNixOS = {
@@ -43,5 +43,24 @@
     experimental-features = nix-command flakes
   '';
 
-  system.stateVersion = "25.05";
+  system.stateVersion = "25.11";
+
+  programs.sway = {
+    enable = true;
+  };
+
+  services.dbus.enable = true;
+
+  services.greetd = {
+    enable = true;
+    restart = false;
+
+    settings = rec {
+      initial_session = {
+        command = "${pkgs.sway}/bin/sway";
+        user = "cramt";
+      };
+      default_session = initial_session;
+    };
+  };
 }

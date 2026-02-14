@@ -4,15 +4,32 @@
   pkgs,
   modulesPath,
   ...
-}: {
-  imports = [
-    (modulesPath + "/installer/scan/not-detected.nix")
+}: let
+in {
+  boot.extraModulePackages = [];
+
+  boot.initrd.includeDefaultModules = false;
+
+  # Force a minimal set. For SD-boot on Pi 4, you can often go *very* small.
+  # Start with just USB input (optional) and SD support.
+  boot.initrd.availableKernelModules = lib.mkForce [
+    "mmc_block"
+    "sd_mod"
+    "usbhid"
   ];
 
-  boot.initrd.availableKernelModules = ["xhci_pci" "usbhid"];
-  boot.initrd.kernelModules = [];
-  boot.kernelModules = [];
-  boot.extraModulePackages = [];
+  # No encryption/LVM → no need for extra initrd kernel modules
+  boot.initrd.kernelModules = lib.mkForce [];
+  boot.kernelModules = [
+    "vc4"
+    "v3d"
+  ];
+
+  fileSystems."/boot/firmware" = {
+    device = "/dev/disk/by-label/FIRMWARE";
+    fsType = "vfat";
+    options = ["nofail"];
+  };
 
   fileSystems."/" = {
     device = "/dev/disk/by-label/NIXOS_SD"; # this is important!
