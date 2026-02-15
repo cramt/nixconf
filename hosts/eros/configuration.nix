@@ -1,95 +1,105 @@
+{ lib, pkgs, modulesPath, ... }:
 {
-  pkgs,
-  inputs,
-  lib,
-  ...
-}: {
-  imports = with inputs.nixos-raspberrypi.nixosModules; [
-    raspberry-pi-4.base
-    raspberry-pi-4.display-vc4
-    raspberry-pi-4.bluetooth
+  imports = [
+    "${modulesPath}/installer/sd-card/sd-image-aarch64.nix"
   ];
 
-  nixpkgs.hostPlatform = "aarch64-linux";
-  nixpkgs.buildPlatform = "x86_64-linux";
+  nix.settings = {
+    trusted-users = [ "cramt" ];
 
-  networking.hostName = "eros";
-
-  programs.kdeconnect.enable = true;
-
-  environment.systemPackages = with pkgs; [
-    neovim
-    wget
-    moonlight-embedded
-    ghostty
-  ];
+    substituters = [
+      "https://nix-community.cachix.org"
+    ];
+    trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+  };
 
   myNixOS = {
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
-    bundles.users.enable = true;
     services.sshd.enable = true;
-    services.hotspot.enable = true;
   };
 
-  programs.zsh.enable = true;
+
+  nixpkgs = {
+    hostPlatform = "aarch64-linux";
+    config = {
+      allowUnfree = true;
+    };
+  };
+
+  boot.supportedFilesystems.zfs = lib.mkForce false;
+  sdImage.compressImage = false;
+
+  networking = {
+    hostName = "eros";
+    useNetworkd = true;
+  };
+
+  systemd = {
+    network = {
+      enable = true;
+
+      networks."10-lan" = {
+        matchConfig.Name = "end0";
+        networkConfig.DHCP = "yes";
+        linkConfig.RequiredForOnline = "routable";
+      };
+    };
+  };
+
   users.users.cramt = {
     isNormalUser = true;
-    initialPassword = "12345";
-    description = "";
-    shell = pkgs.zsh;
-    extraGroups = [
-      "libvirtd"
-      "networkmanager"
-      "wheel"
-      "pipewire"
-      "docker"
-      "storage"
-      "gamemode"
-      "plugdev"
-      "dailout"
-    ];
+    extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
     ];
   };
 
-  networking.networkmanager.enable = true;
+  security.sudo.wheelNeedsPassword = false;
 
-  nix.extraOptions = ''
-    keep-outputs = true
-    keep-derivations = true
-    experimental-features = nix-command flakes
-  '';
+  environment.systemPackages = with pkgs; [
+    libraspberrypi
+    raspberrypi-eeprom
+    neovim
+    btop
+    sway
+  ];
 
-  system.stateVersion = "25.11";
-  programs = {
-    sway.enable = true;
-  };
 
-  services.dbus.enable = true;
+    programs.sway.enable = true;
 
-  users.users.greeter = {
-    isSystemUser = true;
-    group = "greeter";
-  };
-  users.groups.greeter = {};
+    services.greetd = {
+      enable = true;
 
-  services.greetd = {
-    enable = true;
-    restart = false;
-
-    settings = {
-      initial_session = {
-        user = "cramt";
-        command = "${pkgs.systemd}/bin/systemd-cat -t sway -- env WLR_RENDERER=pixman ${pkgs.sway}/bin/sway -d";
-      };
-
-      default_session = {
-        user = "greeter";
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd ${pkgs.sway}/bin/sway";
+      # Autologin straight into Sway
+      settings = {
+        initial_session = {
+          command = "sway";
+          user = "cramt";
+        };
+        # Optional: fallback if initial_session exits (e.g., you log out of Sway)
+        # default_session = {
+        #   command = "sway";
+        #   user = "yourUserName";
+        # };
       };
     };
-  };
+
+    # For better GPU/DRM for Wayland on the Pi (names may vary by NixOS release)
+    hardware.graphics.enable = true; # on older releases: hardware.opengl.enable = true;
+
+    # Often helpful on small ARM SBCs
+    services.dbus.enable = true;
+
+    # Logind is enough for Sway; seatd is NOT required if using logind.
+    # If you prefer seatd instead, you can do:
+    # services.seatd.enable = true;
+    # users.users.yourUserName.extraGroups = [ "seat" "video" "input" "render" ];
+
+  hardware.enableRedistributableFirmware = true;
+
+  system.stateVersion = "25.11";
 }

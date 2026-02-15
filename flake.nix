@@ -160,8 +160,7 @@
         saturn = mkSystem ./hosts/saturn/configuration.nix;
         mars = mkSystem ./hosts/mars/configuration.nix;
         luna = mkSystem ./hosts/luna/configuration.nix;
-        eros = mkPiSystem ./hosts/eros/configuration.nix;
-        eros-img = mkPiImgSystem ./hosts/eros/configuration.nix;
+        eros = mkSystem ./hosts/eros/configuration.nix;
         # titan = mkSystem ./hosts/titan/configuration.nix;
       };
 
