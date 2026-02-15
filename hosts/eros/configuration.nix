@@ -1,21 +1,27 @@
 {
   pkgs,
   inputs,
+  lib,
   ...
 }: {
-  imports = [
-    ./hardware-configuration.nix
-    inputs.nixos-hardware.nixosModules.raspberry-pi-4
+  imports = with inputs.nixos-raspberrypi.nixosModules; [
+    raspberry-pi-4.base
+    raspberry-pi-4.display-vc4
+    raspberry-pi-4.bluetooth
   ];
 
+  nixpkgs.hostPlatform = "aarch64-linux";
+  nixpkgs.buildPlatform = "x86_64-linux";
+
   networking.hostName = "eros";
-  boot.kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+
+  programs.kdeconnect.enable = true;
 
   environment.systemPackages = with pkgs; [
     neovim
     wget
     moonlight-embedded
-    pkgs.ghostty.terminfo
+    ghostty
   ];
 
   myNixOS = {
@@ -24,15 +30,29 @@
     bundles.users.enable = true;
     services.sshd.enable = true;
     services.hotspot.enable = true;
-    home-users = {
-      "cramt" = {
-        userConfig = ./home.nix;
-        authorizedKeys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
-        ];
-      };
-    };
+  };
+
+  programs.zsh.enable = true;
+  users.users.cramt = {
+    isNormalUser = true;
+    initialPassword = "12345";
+    description = "";
+    shell = pkgs.zsh;
+    extraGroups = [
+      "libvirtd"
+      "networkmanager"
+      "wheel"
+      "pipewire"
+      "docker"
+      "storage"
+      "gamemode"
+      "plugdev"
+      "dailout"
+    ];
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
+    ];
   };
 
   networking.networkmanager.enable = true;
@@ -44,23 +64,32 @@
   '';
 
   system.stateVersion = "25.11";
-
-  programs.sway = {
-    enable = true;
+  programs = {
+    sway.enable = true;
   };
 
   services.dbus.enable = true;
+
+  users.users.greeter = {
+    isSystemUser = true;
+    group = "greeter";
+  };
+  users.groups.greeter = {};
 
   services.greetd = {
     enable = true;
     restart = false;
 
-    settings = rec {
+    settings = {
       initial_session = {
-        command = "${pkgs.sway}/bin/sway";
         user = "cramt";
+        command = "${pkgs.systemd}/bin/systemd-cat -t sway -- env WLR_RENDERER=pixman ${pkgs.sway}/bin/sway -d";
       };
-      default_session = initial_session;
+
+      default_session = {
+        user = "greeter";
+        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --cmd ${pkgs.sway}/bin/sway";
+      };
     };
   };
 }

@@ -12,17 +12,50 @@ in rec {
 
   # ========================== Buildables ========================== #
 
-  mkSystem = config:
-    inputs.nixpkgs.lib.nixosSystem {
-      specialArgs = {
-        inherit inputs outputs myLib;
-      };
-      modules = [
-        config
-        outputs.nixosModules.default
-        inputs.opnix.nixosModules.default
-      ];
+  mkSystemConfig = config: {
+    specialArgs = {
+      inherit inputs outputs myLib;
+      nixos-raspberrypi = inputs.nixos-raspberrypi;
     };
+    modules = [
+      config
+      outputs.nixosModules.default
+      inputs.opnix.nixosModules.default
+    ];
+  };
+
+  mkSystem = config: inputs.nixpkgs.lib.nixosSystem (mkSystemConfig config);
+  mkPiImgSystem = config: let out = mkSystemConfig config; in inputs.nixos-raspberrypi.lib.nixosSystemFull {
+      system = "x86_64-linux";
+    specialArgs = out.specialArgs;
+    modules = out.modules ++ [({ ... }: { imports = [ inputs.nixos-raspberrypi.nixosModules.sd-image ]; })];
+  };
+  mkPiSystem = config: let out = mkSystemConfig config; in inputs.nixos-raspberrypi.lib.nixosSystemFull {
+    specialArgs = out.specialArgs;
+    modules = out.modules ++ [({ ... }: {
+            fileSystems = {
+              "/boot/firmware" = {
+                device = "/dev/disk/by-label/FIRMWARE";
+                fsType = "vfat";
+                options = [
+                  "noatime"
+                  "noauto"
+                  "x-systemd.automount"
+                  "x-systemd.idle-timeout=1min"
+                ];
+              };
+
+              "/" = {
+                device = "/dev/disk/by-label/NIXOS_SD";
+                fsType = "ext4";
+                options = [
+                  "x-initrd.mount"
+                  "noatime"
+                ];
+              };
+            };
+          })];
+  };
 
   mkHome = sys: config:
     inputs.home-manager.lib.homeManagerConfiguration {

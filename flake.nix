@@ -109,6 +109,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nixos-raspberrypi = {
+      url = "github:nvmd/nixos-raspberrypi/main";
+    };
+
     git_update_notifier = {
       url = "github:cramt/git_update_notifier";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -132,6 +136,15 @@
     };
   };
 
+  nixConfig = {
+    extra-substituters = [
+      "https://nixos-raspberrypi.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
+    ];
+  };
+
   outputs = {
     flake-utils,
     nixpkgs,
@@ -147,7 +160,8 @@
         saturn = mkSystem ./hosts/saturn/configuration.nix;
         mars = mkSystem ./hosts/mars/configuration.nix;
         luna = mkSystem ./hosts/luna/configuration.nix;
-        eros = mkSystem ./hosts/eros/configuration.nix;
+        eros = mkPiSystem ./hosts/eros/configuration.nix;
+        eros-img = mkPiImgSystem ./hosts/eros/configuration.nix;
         # titan = mkSystem ./hosts/titan/configuration.nix;
       };
 
@@ -160,44 +174,9 @@
       };
     in {
       packages = {
-        eros-img =
-          pkgs.runCommand "eros.img" {
-            nativeBuildInputs = [
-              pkgs.zstd
-              pkgs.util-linux
-              pkgs.jq
-              pkgs.mtools
-            ];
-          } ''
-                set -euo pipefail
-
-                mkdir -p "$out"
-
-                # Locate the produced compressed image from the sd-card build output.
-                imgZst="$(ls ${self.nixosConfigurations.eros.config.system.build.images.sd-card}/sd-image/*.img.zst)"
-
-                # Decompress to a stable filename.
-                ${pkgs.zstd}/bin/unzstd -c "$imgZst" > "$out/eros.img"
-
-                # Read partition table as JSON and compute byte offset of partition 1 (FIRMWARE).
-                sectorsize="$(${pkgs.util-linux}/bin/sfdisk -J "$out/eros.img" | ${pkgs.jq}/bin/jq -r '.partitiontable.sectorsize')"
-                start="$(${pkgs.util-linux}/bin/sfdisk -J "$out/eros.img" | ${pkgs.jq}/bin/jq -r '.partitiontable.partitions[0].start')"
-                offset="$(( start * sectorsize ))"
-
-                # Write the firmware config we want.
-                cat > "$TMPDIR/config.txt" <<'EOF'
-            dtoverlay=vc4-kms-v3d
-            gpu_mem=128
-            disable_overscan=1
-            EOF
-
-                # Overwrite /config.txt in the firmware FAT partition without mounting.
-                # mtools uses the "image@@offset" syntax to address a partition inside an image.
-                ${pkgs.mtools}/bin/mcopy -o -i "$out/eros.img@@$offset" "$TMPDIR/config.txt" ::config.txt
-
-                # Optional sanity check (lists root of the firmware partition)
-                ${pkgs.mtools}/bin/mdir -i "$out/eros.img@@$offset" ::
-          '';
+        eros-img = pkgs.runCommand "eros-img" {} ''
+          ${pkgs.zstd}/bin/unzstd -d ${self.nixosConfigurations.eros.config.system.build.images.sd-card}/sd-image/* -o $out
+        '';
       };
     }));
 }
