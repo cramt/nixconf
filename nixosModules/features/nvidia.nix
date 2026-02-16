@@ -10,7 +10,7 @@ in {
       pkgs.linuxPackages.nvidia_x11
     ];
 
-    hardware.opengl.extraPackages = [
+    hardware.graphics.extraPackages = [
       pkgs.linuxPackages.nvidia_x11
     ];
     boot = {

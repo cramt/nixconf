@@ -9,7 +9,7 @@ in {
   options.myNixOS.greetd = {
     command = lib.mkOption {
       type = lib.types.str;
-      default = "uwsm start hyprland-uwsm";
+      default = "uwsm start -e -D Hyprland hyprland.desktop";
       description = "Session command to run on autologin";
     };
     user = lib.mkOption {
@@ -31,6 +31,6 @@ in {
     };
 
     # Fallback greeter in case the default session crashes
-    environment.systemPackages = [pkgs.greetd.tuigreet];
+    environment.systemPackages = [pkgs.tuigreet];
   };
 }

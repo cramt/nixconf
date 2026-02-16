@@ -68,10 +68,6 @@ in {
             ]
           )
           cfg.monitors);
-
-        windowrulev2 = [
-          "fullscreen, class:.*"
-        ];
       };
     };
   };

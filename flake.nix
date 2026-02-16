@@ -161,6 +161,7 @@
         mars = mkSystem ./hosts/mars/configuration.nix;
         luna = mkSystem ./hosts/luna/configuration.nix;
         eros = mkSystem ./hosts/eros/configuration.nix;
+        ganymede = mkSystem ./hosts/ganymede/configuration.nix;
         # titan = mkSystem ./hosts/titan/configuration.nix;
       };
 

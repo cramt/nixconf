@@ -6,6 +6,9 @@ add_foundry_zips:
 build_luna: add_foundry_zips
     nh os switch --target-host root@192.168.178.24 -H luna -- --fallback
 
+build_ganymede:
+    nh os switch --target-host root@192.168.178.47 -H ganymede -- --fallback
+
 clean_ruby:
     rm -rf ~/.local/share/gem/
 
