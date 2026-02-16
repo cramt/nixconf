@@ -20,7 +20,13 @@
 
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
+  programs.hyprland = {
+    enable = true;
+    withUWSM = true;
+  };
+
   myNixOS = {
+    greetd.enable = true;
     opnix-secrets.enable = true;
     gnupg.enable = true;
     powertop.enable = true;

@@ -1,118 +1,105 @@
 {
-  pkgs,
   lib,
   config,
   ...
 }: let
-  input = {
-    setPorts = lib.attrsets.filterAttrs (n: v: v != null) config.port-selector.set-ports;
-    autoAssign = config.port-selector.auto-assign;
-    additionalBlockedPortRanges = config.port-selector.additional-blocked-port-ranges;
-  };
-  gen = pkgs.writers.writeJS "gen-ports" {} ''
-    const { createHash } = require("node:crypto")
-    const fs = require('node:fs');
-    const rawHash = (val) => {
-      const h = createHash("sha256")
-      h.update(val)
-      return parseInt(h.digest("hex"), 16)
-    }
-    const inputRaw = process.env.INPUT
-    const seed = rawHash(inputRaw)
-    const hash = (val) => {
-      const h = createHash("sha256")
-      h.update(seed.toString(16))
-      h.update(val.toString())
-      return parseInt(h.digest("hex"), 16)
-    }
-    const inclusiveRange = function* (start, end) {
-        for(let i = start; i <= end; i++) {
-           yield i
-        }
-    }
-    const assertNoDuplicates = (arr) => {
-        const uniqueElements = new Set()
-        const duplicates = [];
+  cfg = config.port-selector;
 
-        arr.forEach(item => {
-          if (uniqueElements.has(item)) {
-            duplicates.push(item);
-          } else {
-            uniqueElements.add(item);
-          }
-        });
+  # Convert a hex character to its integer value
+  hexCharToInt = c:
+    let
+      chars = {
+        "0" = 0; "1" = 1; "2" = 2; "3" = 3; "4" = 4;
+        "5" = 5; "6" = 6; "7" = 7; "8" = 8; "9" = 9;
+        "a" = 10; "b" = 11; "c" = 12; "d" = 13; "e" = 14; "f" = 15;
+      };
+    in chars.${c};
 
-        if(duplicates.length !== 0) {
-            throw "duplicates found " + JSON.strinify(duplicates)
-        }
-    }
-    const { setPorts, autoAssign, additionalBlockedPortRanges } = JSON.parse(inputRaw)
-    assertNoDuplicates([...Object.values(setPorts), autoAssign])
-    autoAssign.sort((a, b) => hash(a) - hash(b))
-    const blockedPortSet = new Set([
-        ...additionalBlockedPortRanges.map(({from, to}) => [...inclusiveRange(from, to)]).flat(),
-        ...Object.keys(setPorts).map(x => parseInt(x))
-    ])
-    const freePorts = Array.from(new Set([...inclusiveRange(0, 2**16)]).difference(blockedPortSet))
-    freePorts.sort((a, b) => hash(a) - hash(b))
-    autoAssign.forEach(x => {
-        const port = freePorts.shift().toString()
-        setPorts[port] = x
-    })
-    const output = Object.fromEntries(Object.entries(setPorts).map(([a, b]) => [b, parseInt(a)]))
-    fs.writeFileSync(process.env.out, JSON.stringify(output))
-  '';
-  output = pkgs.runCommand "ports" {} ''
-    INPUT='${builtins.toJSON input}' ${gen}
-  '';
+  # Convert first n hex chars of a string to an integer
+  hexToInt = n: s:
+    builtins.foldl' (acc: c: acc * 16 + hexCharToInt c) 0
+      (lib.take n (lib.stringToCharacters s));
+
+  # Hash a service name to a port in range [minPort, maxPort]
+  minPort = 1025;
+  maxPort = 65535;
+  portRange = maxPort - minPort + 1;
+
+  hashToPort = name:
+    let
+      hash = builtins.hashString "sha256" name;
+      # Use 8 hex chars (32 bits) — plenty of entropy for port selection
+      n = hexToInt 8 hash;
+    in minPort + (lib.trivial.mod n portRange);
+
+  # Assign ports to a list of names, avoiding collisions with usedPorts
+  assignPorts = names: usedPorts:
+    let
+      findFree = candidate: used:
+        if builtins.elem candidate used
+        then findFree (if candidate >= maxPort then minPort else candidate + 1) used
+        else candidate;
+      go = remaining: used: acc:
+        if remaining == [] then acc
+        else let
+          name = builtins.head remaining;
+          rest = builtins.tail remaining;
+          candidate = hashToPort name;
+          port = findFree candidate used;
+        in go rest (used ++ [port]) (acc // { ${name} = port; });
+    in go names usedPorts {};
+
+  # Pinned ports: flip from { "portNum" = "name"; } to { "name" = portNum; }
+  pinnedPorts = lib.mapAttrs' (port: name: {
+    name = name;
+    value = lib.toInt port;
+  }) cfg.set-ports;
+
+  pinnedPortValues = lib.attrValues pinnedPorts;
+
+  # Blocked port ranges flattened to a list
+  blockedPorts = builtins.concatMap
+    ({ from, to }: lib.range from to)
+    cfg.additional-blocked-port-ranges;
+
+  autoAssigned = assignPorts cfg.auto-assign (pinnedPortValues ++ blockedPorts);
+
+  allPorts = pinnedPorts // autoAssigned;
 in {
-  options = {
-    port-selector = lib.mkOption {
-      type = lib.types.submodule {
+  options.port-selector = {
+    set-ports = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = {};
+      description = "Manually pinned port assignments (port number string -> service name)";
+    };
+    auto-assign = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [];
+      description = "Service names to auto-assign ports to";
+    };
+    additional-blocked-port-ranges = lib.mkOption {
+      default = [];
+      type = lib.types.listOf (lib.types.submodule {
         options = {
-          set-ports = lib.mkOption {
-            default = {};
-            type = lib.types.submodule {
-              options = builtins.listToAttrs (builtins.map (i: {
-                name = builtins.toString i;
-                value = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
-                  default = null;
-                };
-              }) (lib.lists.range 0 65536));
-            };
+          from = lib.mkOption {
+            type = lib.types.ints.u16;
           };
-          auto-assign = lib.mkOption {
-            default = [];
-            type = lib.types.listOf lib.types.str;
-          };
-          additional-blocked-port-ranges = lib.mkOption {
-            default = [];
-            type = lib.types.listOf (lib.types.submodule {
-              options = {
-                from = lib.mkOption {
-                  type = lib.types.ints.u16;
-                };
-                to = lib.mkOption {
-                  type = lib.types.ints.u16;
-                };
-              };
-            });
-          };
-          ports = lib.mkOption {
-            type = lib.types.attrsOf (lib.types.ints.u16);
+          to = lib.mkOption {
+            type = lib.types.ints.u16;
           };
         };
-      };
+      });
+    };
+    ports = lib.mkOption {
+      type = lib.types.attrsOf lib.types.ints.u16;
+      readOnly = true;
+      default = allPorts;
+      description = "Final resolved port map (service-name -> port)";
     };
   };
   config.port-selector = {
     additional-blocked-port-ranges = [
-      {
-        from = 0;
-        to = 1024;
-      }
+      { from = 0; to = 1024; }
     ];
-    ports = builtins.fromJSON (builtins.readFile output);
   };
 }

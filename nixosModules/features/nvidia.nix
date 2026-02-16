@@ -1,7 +1,18 @@
-{config, ...}: let
+{
+  config,
+  pkgs,
+  ...
+}: let
   driver = config.boot.kernelPackages.nvidiaPackages.stable;
 in {
   config = {
+    environment.systemPackages = [
+      pkgs.linuxPackages.nvidia_x11
+    ];
+
+    hardware.opengl.extraPackages = [
+      pkgs.linuxPackages.nvidia_x11
+    ];
     boot = {
       extraModprobeConfig = ''
         options nvidia NVreg_RestrictProfilingToAdminUsers=0 NVreg_DeviceFileMode=0666
