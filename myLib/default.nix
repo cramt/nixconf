@@ -16,11 +16,16 @@ in rec {
     specialArgs = {
       inherit inputs outputs myLib;
     };
-    modules = [
-      config
-      outputs.nixosModules.default
-      inputs.opnix.nixosModules.default
-    ];
+    # outputs.nixosModules has "default" plus flat entries like "features.bluetooth",
+    # "bundles.general", "services.caddy" — each already a valid NixOS module
+    # (flake-parts wraps each entry with {_class, _file, imports=[v]}).
+    modules =
+      [
+        config
+        outputs.nixosModules.default
+        inputs.opnix.nixosModules.default
+      ]
+      ++ builtins.attrValues (builtins.removeAttrs outputs.nixosModules ["default"]);
   };
 
   mkSystem = config: inputs.nixpkgs.lib.nixosSystem (mkSystemConfig config);
@@ -31,10 +36,15 @@ in rec {
       extraSpecialArgs = {
         inherit inputs myLib outputs;
       };
-      modules = [
-        config
-        outputs.homeManagerModules.default
-      ];
+      # outputs.homeManagerModules is freeform (flake-parts passes it raw),
+      # so features/bundles are raw attrsets of module functions.
+      modules =
+        [
+          config
+          outputs.homeManagerModules.default
+        ]
+        ++ builtins.attrValues outputs.homeManagerModules.features
+        ++ builtins.attrValues outputs.homeManagerModules.bundles;
     };
 
   # =========================== Helpers ============================ #
@@ -93,13 +103,25 @@ in rec {
     in (extendModule ((extension name) // {path = f;})))
     modules;
 
-  # ============================ Shell ============================= #
-  forAllSystems = pkgs:
-    inputs.nixpkgs.lib.genAttrs [
-      "x86_64-linux"
-      "aarch64-linux"
-      "x86_64-darwin"
-      "aarch64-darwin"
-    ]
-    (system: pkgs inputs.nixpkgs.legacyPackages.${system});
+  # Wraps a module at `path` with a self-contained enable option.
+  # optionAttrPath: e.g. ["myNixOS" "bluetooth"] or ["myNixOS" "bundles" "general"]
+  # enableDescription: string passed to lib.mkEnableOption
+  # path: file path or module function
+  mkEnabledModule = optionAttrPath: enableDescription: path:
+    {config, lib, pkgs, ...} @ margs: let
+      mod =
+        if (builtins.isString path) || (builtins.isPath path)
+        then import path margs
+        else path margs;
+      modNoImports = builtins.removeAttrs mod ["imports" "options"];
+      fullOptionPath = optionAttrPath ++ ["enable"];
+      isEnabled = lib.attrByPath fullOptionPath false config;
+      enableOption = lib.mkEnableOption enableDescription;
+      ownEnableOptions = lib.foldr (a: b: {"${a}" = b;}) enableOption fullOptionPath;
+    in {
+      imports = mod.imports or [];
+      options = lib.recursiveUpdate (mod.options or {}) ownEnableOptions;
+      config = lib.mkIf isEnabled (mod.config or modNoImports);
+    };
+
 }

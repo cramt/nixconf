@@ -37,10 +37,13 @@ in {
       users =
         builtins.mapAttrs
         (name: user: {...}: {
-          imports = [
-            (import user.userConfig)
-            outputs.homeManagerModules.default
-          ];
+          imports =
+            [
+              (import user.userConfig)
+              outputs.homeManagerModules.default
+            ]
+            ++ builtins.attrValues outputs.homeManagerModules.features
+            ++ builtins.attrValues outputs.homeManagerModules.bundles;
         })
         (config.myNixOS.home-users);
     };

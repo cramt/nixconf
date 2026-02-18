@@ -55,10 +55,13 @@ in {
       };
       users = {
         ${cfg.userName} = {...}: {
-          imports = [
-            (import cfg.userConfig)
-            outputs.homeManagerModules.default
-          ];
+          imports =
+            [
+              (import cfg.userConfig)
+              outputs.homeManagerModules.default
+            ]
+            ++ builtins.attrValues outputs.homeManagerModules.features
+            ++ builtins.attrValues outputs.homeManagerModules.bundles;
         };
       };
     };

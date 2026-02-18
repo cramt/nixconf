@@ -23,7 +23,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    flake-utils.url = "github:numtide/flake-utils";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
 
     nh.url = "github:nix-community/nh";
 
@@ -132,38 +135,13 @@
     };
   };
 
-  outputs = {
-    flake-utils,
-    nixpkgs,
-    self,
-    ...
-  } @ inputs: let
-    # super simple boilerplate-reducing
-    # lib with a bunch of functions
-    myLib = import ./myLib/default.nix {inherit inputs;};
-  in
-    (with myLib; {
-      nixosConfigurations = {
-        saturn = mkSystem ./hosts/saturn/configuration.nix;
-        mars = mkSystem ./hosts/mars/configuration.nix;
-        luna = mkSystem ./hosts/luna/configuration.nix;
-        eros = mkSystem ./hosts/eros/configuration.nix;
-        ganymede = mkSystem ./hosts/ganymede/configuration.nix;
-        # titan = mkSystem ./hosts/titan/configuration.nix;
-      };
-
-      homeManagerModules.default = ./homeManagerModules;
-      nixosModules.default = ./nixosModules;
-    })
-    // (flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = import nixpkgs {
-        inherit system;
-      };
-    in {
-      packages = {
-        eros-img = pkgs.runCommand "eros-img" {} ''
-          ${pkgs.zstd}/bin/unzstd -d ${self.nixosConfigurations.eros.config.system.build.images.sd-card}/sd-image/* -o $out
-        '';
-      };
-    }));
+  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    imports = [
+      ./flake/lib.nix
+      ./flake/hosts.nix
+      ./flake/packages.nix
+      ./flake/exported-modules.nix
+    ];
+    systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+  };
 }

@@ -1,60 +1,15 @@
 {
   pkgs,
-  config,
-  lib,
   inputs,
-  outputs,
-  myLib,
   ...
-}: let
-  cfg = config.myNixOS;
-
-  # Taking all modules in ./features and adding enables to them
-  features =
-    myLib.extendModules
-    (name: {
-      extraOptions = {
-        myNixOS.${name}.enable = lib.mkEnableOption "enable my ${name} configuration";
-      };
-
-      configExtension = config: (lib.mkIf cfg.${name}.enable config);
-    })
-    (myLib.filesIn ./features);
-
-  # Taking all module bundles in ./bundles and adding bundle.enables to them
-  bundles =
-    myLib.extendModules
-    (name: {
-      extraOptions = {
-        myNixOS.bundles.${name}.enable = lib.mkEnableOption "enable ${name} module bundle";
-      };
-
-      configExtension = config: (lib.mkIf cfg.bundles.${name}.enable config);
-    })
-    (myLib.filesIn ./bundles);
-
-  services =
-    myLib.extendModules
-    (name: {
-      extraOptions = {
-        myNixOS.services.${name}.enable = lib.mkEnableOption "enable ${name} service";
-      };
-
-      configExtension = config: (lib.mkIf cfg.services.${name}.enable config);
-    })
-    (myLib.filesIn ./services);
-in {
-  imports =
-    [
-      inputs.home-manager.nixosModules.home-manager
-      inputs.stylix.nixosModules.stylix
-      inputs.foundryvtt.nixosModules.foundryvtt
-      inputs.nixarr.nixosModules.default
-      ../portselector.nix
-    ]
-    ++ features
-    ++ bundles
-    ++ services;
+}: {
+  imports = [
+    inputs.home-manager.nixosModules.home-manager
+    inputs.stylix.nixosModules.stylix
+    inputs.foundryvtt.nixosModules.foundryvtt
+    inputs.nixarr.nixosModules.default
+    ../portselector.nix
+  ];
 
   config = {
     # https://github.com/pop-os/cosmic-session/issues/166#issuecomment-3613536888
