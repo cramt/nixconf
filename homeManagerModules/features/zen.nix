@@ -1,43 +1,9 @@
 {
   pkgs,
-  lib,
   inputs,
   ...
 }: let
   mkZenExtension = import ../../packages/mkZenExtension.nix {inherit pkgs;};
-
-  extensions =
-    (with pkgs.nur.repos.rycee.firefox-addons; [
-      ublock-origin
-      sponsorblock
-      vimium
-      refined-github
-      onepassword-password-manager
-      bitwarden
-      multi-account-containers
-    ])
-    ++ [
-      (mkZenExtension {
-        name = "move-tab-to-new-window";
-        shortcut = "Ctrl+Shift+M";
-        description = "Move current tab to a new window";
-        permissions = ["tabs"];
-        js = ''
-          browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
-            if (tabs[0]) {
-              browser.windows.create({ tabId: tabs[0].id });
-            }
-          });
-        '';
-      })
-    ];
-
-  extensionSettings = builtins.listToAttrs (map (ext: {
-    name = ext.addonId;
-    value = {
-      installation_mode = "force_installed";
-    };
-  }) extensions);
 in {
   config = {
     stylix.targets.zen-browser.profileNames = ["default"];
@@ -47,10 +13,33 @@ in {
       policies = {
         DisableAppUpdate = true;
         DisableTelemetry = true;
-        ExtensionSettings = extensionSettings;
       };
       profiles.default = {
-        extensions.packages = extensions;
+        extensions.packages =
+          (with pkgs.nur.repos.rycee.firefox-addons; [
+            ublock-origin
+            sponsorblock
+            vimium
+            refined-github
+            onepassword-password-manager
+            bitwarden
+            multi-account-containers
+          ])
+          ++ [
+            (mkZenExtension {
+              name = "move-tab-to-new-window";
+              shortcut = "Ctrl+Shift+M";
+              description = "Move current tab to a new window";
+              permissions = ["tabs"];
+              js = ''
+                browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+                  if (tabs[0]) {
+                    browser.windows.create({ tabId: tabs[0].id });
+                  }
+                });
+              '';
+            })
+          ];
 
         settings = {
           "browser.disableResetPrompt" = true;
