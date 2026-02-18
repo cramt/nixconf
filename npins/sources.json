@@ -27,8 +27,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:c26e846fcc959ea76eab0454174680ec215ffce0a5cacf45516fcba61479c00b",
-      "hash": "sha256-Lj06Gyf4p89Zupe9OR/orAxmPCUhZpiByjMj4EqDnQ0="
+      "image_digest": "sha256:332d43965c109fa4d593786a7ad5fae349631952fa3e914bf5a057e38df12404",
+      "hash": "sha256-gRyDqW2FUk93sBKogqxFVjQmkAuUuhdZyKVdFVRHKDk="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -40,8 +40,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre944764.2343bbb58f99/nixexprs.tar.xz",
-      "hash": "sha256-9SFCZkVcpDOV6unH5hVEy4+dB0rxMuUoBnDAO6vshac="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre946843.ac055f38c798/nixexprs.tar.xz",
+      "hash": "sha256-erxy9meNKMaKpKQpl8KfhZsVY4EtR4eaHT94jY98Ty0="
     }
   },
   "version": 7
