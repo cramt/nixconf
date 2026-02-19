@@ -353,7 +353,22 @@
               name = "Qwen3-Coder 32B";
             };
             "gpt-oss:20b" = {
-              name = "gptoss 20B";
+              name = "GPT-OSS 20B";
+            };
+            "deepseek-r1:32b" = {
+              name = "DeepSeek R1 32B";
+            };
+            "codestral:22b" = {
+              name = "Codestral 22B";
+            };
+            "devstral" = {
+              name = "Devstral";
+            };
+            "llama3.3:70b" = {
+              name = "Llama 3.3 70B";
+            };
+            "phi4:14b" = {
+              name = "Phi-4 14B";
             };
           };
         };

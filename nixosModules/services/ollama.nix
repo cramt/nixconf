@@ -157,8 +157,10 @@ in {
             RestartMaxDelaySec = "2h";
             RestartSteps = "10";
             ExecStart = pkgs.writeShellScript "ollama-model-loader" ''
-              ${pkgs.parallel}/bin/parallel --tag ${firstInst.pkg}/bin/ollama pull \
-                ::: ${lib.escapeShellArgs cfg.loadModels}
+              for model in ${lib.escapeShellArgs cfg.loadModels}; do
+                ${firstInst.pkg}/bin/ollama pull "$model" &
+              done
+              wait
             '';
           };
         };

@@ -43,6 +43,15 @@
       sshd.enable = true;
       ollama = {
         enable = true;
+        loadModels = [
+          "qwen3-coder:32b"
+          "gpt-oss:20b"
+          "deepseek-r1:32b"
+          "codestral:22b"
+          "devstral"
+          "llama3.3:70b"
+          "phi4:14b"
+        ];
         instances = {
           default = {gpu = "cuda";};
         };
