@@ -43,7 +43,9 @@
       sshd.enable = true;
       ollama = {
         enable = true;
-        gpu = "cuda";
+        instances = {
+          default = {gpu = "cuda";};
+        };
       };
     };
 

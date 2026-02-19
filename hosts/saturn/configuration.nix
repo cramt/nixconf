@@ -98,8 +98,13 @@
       };
       ollama = {
         enable = true;
-        gpu = "rocm";
-        rocmVersion = "11.0.1";
+        instances = {
+          default = {
+            gpu = "rocm";
+            rocmVersion = "11.0.1";
+            port = 11434;
+          };
+        };
       };
       nixarr.enable = false;
       jellyfin = {

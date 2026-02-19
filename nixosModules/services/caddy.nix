@@ -42,7 +42,23 @@
       })
       cfg.serviceMap)
     // (
-      if config.myNixOS.services.ollama.enable
+      if config.myNixOS.services.olla.enable
+      then {
+        "ollama.${cfg.domain}" = {
+          logFormat = lib.mkForce ''
+            output stdout
+            level DEBUG
+          '';
+          extraConfig = let
+            ollaPort = builtins.toString config.port-selector.ports.olla;
+          in ''
+            import cors
+            @bearer header Authorization "Bearer {$OLLAMA_BEARER_SECRET}"
+            reverse_proxy @bearer http://localhost:${ollaPort}
+          '';
+        };
+      }
+      else if config.myNixOS.services.ollama.enable
       then {
         "ollama.${cfg.domain}" = {
           logFormat = lib.mkForce ''

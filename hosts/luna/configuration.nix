@@ -50,7 +50,25 @@
       tor.enable = true;
       ollama = {
         enable = true;
-        gpu = "cuda";
+        instances = {
+          default = {
+            gpu = "cuda";
+            visibleDevices = "0";
+          };
+        };
+      };
+      olla = {
+        enable = true;
+        endpoints = [
+          {
+            url = "http://192.168.178.23:11434";
+            name = "saturn-ollama";
+          }
+          {
+            url = "http://localhost:${toString config.port-selector.ports."ollama-default"}";
+            name = "luna-ollama";
+          }
+        ];
       };
       minio.enable = true;
       btopttyd.enable = true;

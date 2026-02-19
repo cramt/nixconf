@@ -8,6 +8,7 @@
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.11";
     nixarr.url = "github:nix-media-server/nixarr/cramt/jellyfin-users";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
+    quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
@@ -135,13 +136,14 @@
     };
   };
 
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-    imports = [
-      ./flake/lib.nix
-      ./flake/hosts.nix
-      ./flake/packages.nix
-      ./flake/exported-modules.nix
-    ];
-    systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
-  };
+  outputs = inputs:
+    inputs.flake-parts.lib.mkFlake {inherit inputs;} {
+      imports = [
+        ./flake/lib.nix
+        ./flake/hosts.nix
+        ./flake/packages.nix
+        ./flake/exported-modules.nix
+      ];
+      systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
+    };
 }
