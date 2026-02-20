@@ -53,6 +53,7 @@ in {
     };
 
     environment.sessionVariables = {};
+    environment.systemPackages = [pkgs.comma];
     # battery
     services.upower.enable = true;
 
