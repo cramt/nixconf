@@ -34,8 +34,8 @@
       "type": "Container",
       "image_name": "mbround18/valheim",
       "image_tag": "latest",
-      "image_digest": "sha256:68cf418f39b0174e421ca0f063be38a11f1a4aadb48f3b15e9cc7c7be39111a6",
-      "hash": "sha256-ZFg6ydgB9O3qH7krOnOZwv08OXZTaJ5wgZH092rDTOk="
+      "image_digest": "sha256:abb98466d453f128b96e41d9730cd52f2938013cae7980ce6d3dccc14168d228",
+      "hash": "sha256-r4q1M2mu/qDH5CWM5+O48YSlvQFEH+XGIWLBGas8Ykw="
     },
     "nixpkgs": {
       "type": "Channel",
@@ -47,8 +47,8 @@
       "type": "Container",
       "image_name": "ghcr.io/thushan/olla",
       "image_tag": "latest",
-      "image_digest": "sha256:26734a22d1e8ea09b5f21591479685d9c2eaeba7a94491d4564bb4e1d382c4b2",
-      "hash": "sha256-ZN0XZ8Rl2G2VSndnCVD/YpzBLaKUlvDQIUekhrMF/PU="
+      "image_digest": "sha256:15e7affc71f8355e76d4846b1133f96c1161f7acb1b05853be1deeb6e30e1f3e",
+      "hash": "sha256-yXEIm26CRtBkbBYrFZfWmuCW0BQDUba8gJ+uZ7di8WQ="
     }
   },
   "version": 7
