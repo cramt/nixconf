@@ -20,15 +20,15 @@
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
       "image_tag": "latest",
-      "image_digest": "sha256:20a5656c4af4854e1877046294f77113f949d27e35940a9a65f231423d063207",
-      "hash": "sha256-FKz5sn47UlocC8CgVhRYb13vRGqwpVa5KunhhxlAIxI="
+      "image_digest": "sha256:42553e381f00704a9686c4c220e4063cb77ba4e3d1819455263ec23a66a58755",
+      "hash": "sha256-HnJt1ji6+L5ZqEMs0s2FRRzw1DaK6jeufP9DpzyADtY="
     },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:07d0e4548a29547daaff36cfcdc1ba5b4ef74728c1753343af1aca4c988cb91d",
-      "hash": "sha256-y4mxuA636ztbc7PZ4KUcCvXayUOg38SQF2iPI1ZVnLg="
+      "image_digest": "sha256:10581fbfede795ac79bb58f020f9ce0adde3129a749b1a89d64d30a2247f2861",
+      "hash": "sha256-2eS4o7uM/PXkaFnpDxyhbBuSjQ/7YNgTBi80wpgFeK0="
     },
     "mbround18/valheim": {
       "type": "Container",

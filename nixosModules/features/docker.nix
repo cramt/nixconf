@@ -19,8 +19,13 @@ in {
     networking.firewall = {
       allowedTCPPorts = lib.optionals (cfg.httpPort != null) [cfg.httpPort];
     };
+
     virtualisation.docker = {
       enable = true;
+      autoPrune = {
+        enable = true;
+        dates = "weekly";
+      };
       daemon.settings = {
         runtimes = {
           runsc.path = "${pkgs.gvisor}/bin/runsc";

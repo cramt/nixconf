@@ -137,7 +137,38 @@ in {
       )
       // lib.optionalAttrs (cfg.loadModels != [] && instanceList != []) (let
         firstInst = lib.head instanceList;
+        normalizedModels = map (m:
+          if builtins.match ".*:.*" m == null
+          then "${m}:latest"
+          else m)
+        cfg.loadModels;
       in {
+        ollama-model-cleanup = {
+          description = "Remove unconfigured ollama models";
+          after = ["ollama-model-loader.service"];
+          environment = {
+            HOME = home;
+            OLLAMA_MODELS = models;
+            OLLAMA_HOST = "127.0.0.1:${toString firstInst.port}";
+          };
+          serviceConfig = {
+            Type = "oneshot";
+            User = "ollama";
+            ExecStart = pkgs.writeShellScript "ollama-model-cleanup" ''
+              configured=(${lib.escapeShellArgs normalizedModels})
+              while IFS= read -r model; do
+                keep=false
+                for c in "''${configured[@]}"; do
+                  [[ "$model" == "$c" ]] && keep=true && break
+                done
+                if [[ "$keep" == false ]]; then
+                  echo "Removing unconfigured model: $model"
+                  ${firstInst.pkg}/bin/ollama rm "$model"
+                fi
+              done < <(${firstInst.pkg}/bin/ollama list | tail -n +2 | awk '{print $1}')
+            '';
+          };
+        };
         ollama-model-loader = {
           description = "Download ollama models";
           wantedBy = ["multi-user.target" "ollama-${firstInst.name}.service"];
@@ -165,5 +196,15 @@ in {
           };
         };
       });
+
+    systemd.timers = lib.optionalAttrs (cfg.loadModels != [] && instanceList != []) {
+      ollama-model-cleanup = {
+        wantedBy = ["timers.target"];
+        timerConfig = {
+          OnCalendar = "weekly";
+          Persistent = true;
+        };
+      };
+    };
   };
 }
