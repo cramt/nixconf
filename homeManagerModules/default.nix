@@ -70,23 +70,7 @@ in {
     ]
     ++ (myLib.filesIn ./fixes);
   nixpkgs = {
-    overlays = [
-      inputs.nur.overlays.default
-      (final: prev: {
-        julia = prev.julia.withPackages ["JuliaFormatter" "LanguageServer"];
-      })
-      (final: prev: {
-        cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
-          patches = (old.patches or []) ++ [../patches/no_ssd.patch];
-          doCheck = false;
-        });
-      })
-      (final: prev: {
-        docker = prev.docker.override {
-          buildxSupport = true;
-        };
-      })
-    ];
+    overlays = import ../overlays inputs;
     config = {
       allowUnfree = true;
     };

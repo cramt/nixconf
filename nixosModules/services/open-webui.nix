@@ -7,7 +7,7 @@
 }: let
   port = config.port-selector.ports.open-webui;
 
-  site = import ../../site.nix;
+  site = import ../../myLib/site.nix;
   ollama_port = config.port-selector.ports.ollama;
   searxng-port = config.port-selector.ports.searxng;
   tika-port = config.port-selector.ports.tika;

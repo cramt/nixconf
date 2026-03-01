@@ -27,7 +27,7 @@ in {
       port = port;
       dataDir = cfg.dataVolume;
       #world = "magy-mage";
-      hostName = "foundry-a.${(import ../../site.nix).domain}";
+      hostName = "foundry-a.${(import ../../myLib/site.nix).domain}";
       minifyStaticFiles = true;
       proxyPort = 443;
       proxySSL = true;

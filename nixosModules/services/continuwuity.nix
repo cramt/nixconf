@@ -1,5 +1,5 @@
 {config, ...}: let
-  site = import ../../site.nix;
+  site = import ../../myLib/site.nix;
   turnDomain = "turn.${site.domain}";
   turnMin = 49000;
   turnMax = 50000;

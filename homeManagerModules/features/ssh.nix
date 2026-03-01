@@ -1,5 +1,5 @@
 {pkgs, config, ...}: let
-  site = import ../../site.nix;
+  site = import ../../myLib/site.nix;
   sshTargets = {
     luna = "-t cramt@${site.luna_internal_address} -A";
     remote_luna = "-t cramt@${site.ip} -p 2269 -A";

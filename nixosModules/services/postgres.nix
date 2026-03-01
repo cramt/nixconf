@@ -5,7 +5,7 @@
   ...
 }: let
   cfg = config.myNixOS.services.postgres;
-  site = import ../../site.nix;
+  site = import ../../myLib/site.nix;
 
   port = config.port-selector.ports.postgresql;
 in {

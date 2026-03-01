@@ -1,5 +1,5 @@
 {config, ...}: let
-  site = import ../../site.nix;
+  site = import ../../myLib/site.nix;
 in {
   services.tailscale = {
     enable = true;
