@@ -55,6 +55,7 @@
             import cors
             @bearer header Authorization "Bearer {$OLLAMA_BEARER_SECRET}"
             reverse_proxy @bearer http://localhost:${ollaPort}
+            respond 401
           '';
         };
       }
@@ -74,6 +75,7 @@
               health_uri /
               lb_policy first
             }
+            respond 401
           '';
         };
       }

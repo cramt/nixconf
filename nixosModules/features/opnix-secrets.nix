@@ -64,6 +64,7 @@ in {
       ollamaBearerEnv = {
         reference = "op://Homelab/Ollama/bearerEnv";
         services = ["caddy"];
+        owner = "cramt";
       };
       nixAccessTokensConf = {
         reference = "op://Homelab/GitHub/nixAccessTokensConf";

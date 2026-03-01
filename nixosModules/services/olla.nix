@@ -13,7 +13,7 @@
   ollaConfig = yamlFormat.generate "olla-config.yaml" {
     server = {
       host = "0.0.0.0";
-      port = 40114;
+      port = port;
     };
     proxy = {
       engine = cfg.proxyEngine;
@@ -83,8 +83,8 @@ in {
     virtualisation.quadlet.containers.olla = {
       autoStart = true;
       containerConfig = {
-        image = "${docker_source.image_name}:${docker_source.image_tag}@${docker_source.image_digest}";
-        publishPorts = ["127.0.0.1:${toString port}:40114"];
+        image = "${docker_source.image_name}:${docker_source.image_tag}";
+        networks = ["host"];
         volumes = ["${ollaConfig}:/config/config.yaml:ro"];
         environments = {
           OLLA_CONFIG_FILE = "/config/config.yaml";

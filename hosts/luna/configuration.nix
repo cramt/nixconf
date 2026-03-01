@@ -21,8 +21,8 @@
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
   programs.hyprland = {
-    enable = true;
-    withUWSM = true;
+    enable = false;
+    withUWSM = false;
   };
 
   myNixOS = {
@@ -69,6 +69,10 @@
       olla = {
         enable = true;
         endpoints = [
+          {
+            url = "http://192.168.178.22:11434";
+            name = "hannah-ollama";
+          }
           {
             url = "http://192.168.178.23:11434";
             name = "saturn-ollama";

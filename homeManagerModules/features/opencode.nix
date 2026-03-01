@@ -4,6 +4,10 @@
   inputs,
   ...
 }: {
+  programs.zsh.initContent = ''
+    [[ -f /var/lib/opnix/secrets/ollamaBearerEnv ]] && { set -a; source /var/lib/opnix/secrets/ollamaBearerEnv; set +a; }
+  '';
+
   programs.opencode = {
     enable = true;
     package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
@@ -129,9 +133,12 @@
 
         ollama = {
           npm = "@ai-sdk/openai-compatible";
-          name = "Ollama (local)";
+          name = "Ollama";
           options = {
-            baseURL = "http://localhost:11434/v1";
+            baseURL = "https://ollama.cramt.dk/olla/openai/v1";
+            headers = {
+              Authorization = "Bearer {env:OLLAMA_BEARER_SECRET}";
+            };
           };
           models = {
             "qwen3-coder:32b" = {

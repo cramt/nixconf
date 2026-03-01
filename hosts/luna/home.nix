@@ -14,7 +14,7 @@
   myHomeManager = {
     bundles.general.enable = true;
     hyprland = {
-      enable = true;
+      enable = false;
       exec = "firefox --kiosk https://example.com";
     };
     monitors = [
