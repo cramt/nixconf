@@ -20,15 +20,15 @@
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
       "image_tag": "latest",
-      "image_digest": "sha256:42553e381f00704a9686c4c220e4063cb77ba4e3d1819455263ec23a66a58755",
-      "hash": "sha256-HnJt1ji6+L5ZqEMs0s2FRRzw1DaK6jeufP9DpzyADtY="
+      "image_digest": "sha256:261290353c745efcaf613aa750094c007b07a1d683d8c22954f95dfb8bbf6b84",
+      "hash": "sha256-efvFmLX4dPDGcmCwdgT00jtFZi/4aDr/dRpEPuviHXY="
     },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:10581fbfede795ac79bb58f020f9ce0adde3129a749b1a89d64d30a2247f2861",
-      "hash": "sha256-2eS4o7uM/PXkaFnpDxyhbBuSjQ/7YNgTBi80wpgFeK0="
+      "image_digest": "sha256:accaf39e7620dd2cfbae9522d5a995d8a50b5be8318b2f1a40b7cf09bd007d81",
+      "hash": "sha256-r3t9PFIvOJhOVWxbEslQEKASbrxxODTN6ef3U5WIDzc="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -40,8 +40,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre955350.c0f3d81a7ddb/nixexprs.tar.xz",
-      "hash": "sha256-BHKMR414WpfUddNyUtx2GR1VPl0R9sWGQs/opgYm9rc="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre956570.42bbf3e1e000/nixexprs.tar.xz",
+      "hash": "sha256-/EblNb7RqX4zA0YHht97WweZYtoFWjBYvAiOIylgLgA="
     },
     "thushan/olla": {
       "type": "Container",
