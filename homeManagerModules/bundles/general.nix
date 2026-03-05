@@ -43,7 +43,6 @@
     ripgrep
     sd
     fd
-    neofetch
     wget
     unzip
     dnsutils

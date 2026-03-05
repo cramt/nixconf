@@ -20,8 +20,8 @@
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
       "image_tag": "latest",
-      "image_digest": "sha256:261290353c745efcaf613aa750094c007b07a1d683d8c22954f95dfb8bbf6b84",
-      "hash": "sha256-efvFmLX4dPDGcmCwdgT00jtFZi/4aDr/dRpEPuviHXY="
+      "image_digest": "sha256:bcca04076da332241e6c56eb8cd869947f173eda1e48183f712eaf9884a0f971",
+      "hash": "sha256-Qei0lJVsuc90ep1riOTqQrxcIJVMhg7/2c1WAsVH+Ws="
     },
     "itzg/minecraft-server": {
       "type": "Container",
@@ -40,8 +40,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre956570.42bbf3e1e000/nixexprs.tar.xz",
-      "hash": "sha256-/EblNb7RqX4zA0YHht97WweZYtoFWjBYvAiOIylgLgA="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre958526.66d9241e3dc2/nixexprs.tar.xz",
+      "hash": "sha256-WK88zUooc09jTZIDe9QnXaN4RxjvsV1F0DnSVdt7Kpk="
     },
     "thushan/olla": {
       "type": "Container",
