@@ -101,16 +101,16 @@ inputs: [
               --- a/html/webpack.config.js
               +++ b/html/webpack.config.js
               @@ -29,6 +29,10 @@ const baseConfig = {
-                              test: /\.s?[ac]ss$/,
-                              use: [devMode ? 'style-loader' : MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
-                          },
+                               test: /\.s?[ac]ss$/,
+                               use: [devMode ? 'style-loader' : MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+                           },
               +            {
               +                test: /\.(ttf|otf|eot|woff|woff2)$/,
               +                type: 'asset/inline',
               +            },
-                      ],
-                  },
-                  resolve: {
+                       ],
+                   },
+                   resolve: {
             '')
         ];
     });
