@@ -53,7 +53,7 @@
   home.sessionVariables = {
     NH_FLAKE = "${config.home.homeDirectory}/nixconf";
     EDITOR = "nvim";
-    BROWSER = "zen";
+    BROWSER = "zen-beta";
     TERMINAL = "alacritty";
   };
 }

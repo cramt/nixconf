@@ -59,6 +59,7 @@ in {
             [
               (import cfg.userConfig)
               outputs.homeManagerModules.default
+              inputs.nix-index-database.hmModules.nix-index
             ]
             ++ builtins.attrValues outputs.homeManagerModules.features
             ++ builtins.attrValues outputs.homeManagerModules.bundles;
