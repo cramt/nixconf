@@ -213,6 +213,12 @@
   # Configure console keymap
   console.keyMap = "dk-latin1";
 
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
+
   nix.settings = let
     caches = ["https://cache.nixos.org/" "http://192.168.0.107:5000/" "http://192.168.0.106:5000/"];
   in {

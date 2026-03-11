@@ -25,6 +25,7 @@ in {
       autoPrune = {
         enable = true;
         dates = "weekly";
+        flags = ["--all"];
       };
       daemon.settings = {
         runtimes = {
