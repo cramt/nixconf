@@ -13,6 +13,7 @@
 
   myHomeManager = {
     bundles.general.enable = true;
+    openclaw.enable = true;
   };
 
   home.stateVersion = "25.11";

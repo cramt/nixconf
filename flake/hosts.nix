@@ -13,6 +13,7 @@
       luna     = ../hosts/luna/configuration.nix;
       eros     = ../hosts/eros/configuration.nix;
       ganymede = ../hosts/ganymede/configuration.nix;
+      titan    = ../hosts/titan/configuration.nix;
     };
 
     flake.nixosConfigurations = lib.mapAttrs

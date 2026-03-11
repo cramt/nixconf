@@ -38,9 +38,9 @@ in {
         reference = "op://Homelab/Minio/credsEnv";
         services = ["minio"];
       };
-      titanFrontendEnv = {
-        reference = "op://Homelab/TitanFrontend/envFile";
-        services = ["titan-frontend"];
+      openclawEnv = {
+        reference = "op://Homelab/OpenClaw/envFile";
+        services = ["openclaw-vm"];
       };
       jellyfinCramtPassword = {
         reference = "op://Homelab/JellyfinUsers/cramtPassword";

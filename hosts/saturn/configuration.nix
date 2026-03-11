@@ -93,9 +93,6 @@
       };
     in {
       sunshine.enable = true;
-      titan-vm = {
-        enable = false;
-      };
       ollama = {
         enable = true;
         loadModels = [

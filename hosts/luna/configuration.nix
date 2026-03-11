@@ -165,12 +165,11 @@
         dataDir = "/mnt/imbrium/pgsql";
       };
       titan-vm = {
-        enable = false;
+        enable = true;
         dataDir = "/mnt/imbrium/titan-vm";
-        memory = "8G";
-        cores = 4;
-        diskSize = "100G";
-        frontend.enable = false;
+        secretFiles = {
+          "env" = config.services.onepassword-secrets.secretPaths.openclawEnv;
+        };
       };
       continuwuity.enable = true;
       terraform_remote_backend.enable = true;
