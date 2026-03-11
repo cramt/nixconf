@@ -1,12 +1,18 @@
-{config, lib, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
   hasUser = name: builtins.hasAttr name config.users.users;
   hasGroup = name: builtins.hasAttr name config.users.groups;
   ownerIf = name: lib.optionalAttrs (hasUser name) {owner = name;};
   groupIf = name: lib.optionalAttrs (hasGroup name) {group = name;};
 in {
-  users.users = builtins.mapAttrs (name: _: {
-    extraGroups = ["onepassword-secrets"];
-  }) config.myNixOS.home-users;
+  users.users =
+    builtins.mapAttrs (name: _: {
+      extraGroups = ["onepassword-secrets"];
+    })
+    config.myNixOS.home-users;
 
   services.onepassword-secrets = {
     enable = true;
@@ -20,10 +26,12 @@ in {
         reference = "op://Homelab/Cloudflare/credsEnv";
         services = ["acme-turn.cramt.dk"];
       };
-      postgresPassword = {
-        reference = "op://Homelab/Postgres/password";
-        services = ["postgresql"];
-      } // ownerIf "postgres" // groupIf "postgres";
+      postgresPassword =
+        {
+          reference = "op://Homelab/Postgres/password";
+          services = ["postgresql"];
+        }
+        // ownerIf "postgres" // groupIf "postgres";
       homelabControllerEnv = {
         reference = "op://Homelab/HomelabController/envFile";
         services = ["homelab_system_controller"];
@@ -38,10 +46,6 @@ in {
         reference = "op://Homelab/Minio/credsEnv";
         services = ["minio"];
       };
-      openclawEnv = {
-        reference = "op://Homelab/OpenClaw/envFile";
-        services = ["openclaw-vm"];
-      };
       jellyfinCramtPassword = {
         reference = "op://Homelab/JellyfinUsers/cramtPassword";
       };
@@ -54,10 +58,12 @@ in {
       cockatriceEnv = {
         reference = "op://Homelab/Cockatrice/envFile";
       };
-      matrixSharedSecret = {
-        reference = "op://Homelab/Matrix/sharedSecret";
-        services = ["coturn"];
-      } // ownerIf "turnserver" // groupIf "turnserver";
+      matrixSharedSecret =
+        {
+          reference = "op://Homelab/Matrix/sharedSecret";
+          services = ["coturn"];
+        }
+        // ownerIf "turnserver" // groupIf "turnserver";
       matrixSecretEnv = {
         reference = "op://Homelab/Matrix/conduitEnv";
       };
@@ -69,10 +75,12 @@ in {
       nixAccessTokensConf = {
         reference = "op://Homelab/GitHub/nixAccessTokensConf";
       };
-      terraformRemotePassword = {
-        reference = "op://Homelab/TerraformRemoteState/password";
-        services = ["postgresql"];
-      } // ownerIf "postgres" // groupIf "postgres";
+      terraformRemotePassword =
+        {
+          reference = "op://Homelab/TerraformRemoteState/password";
+          services = ["postgresql"];
+        }
+        // ownerIf "postgres" // groupIf "postgres";
     };
   };
 }

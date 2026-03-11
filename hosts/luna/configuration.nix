@@ -166,9 +166,8 @@
       };
       titan-vm = {
         enable = true;
-        dataDir = "/mnt/imbrium/titan-vm";
+        dataDir = "/storage/titan-vm";
         secretFiles = {
-          "env" = config.services.onepassword-secrets.secretPaths.openclawEnv;
         };
       };
       continuwuity.enable = true;
