@@ -7,7 +7,7 @@
     inputs.nix-flatpak.homeManagerModules.nix-flatpak
   ];
   home.packages = with pkgs; [
-    xorg.libxcb
+    libxcb
     gamemode
     dxvk
     gamescope
