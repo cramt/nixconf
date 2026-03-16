@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   modulesPath,
   ...
 }: {
@@ -37,11 +38,27 @@
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
     bundles.users.enable = true;
+    services.sshd.enable = true;
 
     home-users = {
       "cramt" = {
         userConfig = ./home.nix;
       };
+    };
+  };
+
+  port-selector.auto-assign = ["ttyd" "sshd"];
+
+  services.openssh.ports = [config.port-selector.ports.sshd];
+
+  services.ttyd = {
+    enable = true;
+    writeable = true;
+    port = config.port-selector.ports.ttyd;
+    entrypoint = ["${pkgs.shadow}/bin/login" "-f" "cramt"];
+    clientOptions = {
+      fontFamily = "Iosevka";
+      fontSize = "16";
     };
   };
 

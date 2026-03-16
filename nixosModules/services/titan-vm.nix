@@ -9,6 +9,8 @@
   vmConfig = inputs.self.nixosConfigurations.titan;
   vm = vmConfig.config.system.build.vm;
   port = config.port-selector.ports.titan-vm;
+  sshPort = config.port-selector.ports.titan-vm-ssh;
+  ttydPort = config.port-selector.ports.titan-vm-ttyd;
   secretsStaging = "${cfg.dataDir}/secrets";
 in {
   options.myNixOS.services.titan-vm = {
@@ -42,7 +44,8 @@ in {
   };
 
   config = {
-    port-selector.auto-assign = ["titan-vm"];
+    port-selector.auto-assign = ["titan-vm" "titan-vm-ttyd"];
+    port-selector.set-ports."2221" = "titan-vm-ssh";
 
     virtualisation.libvirtd.enable = true;
 
@@ -63,7 +66,11 @@ in {
           "-nographic"
           "-virtfs local,path=${secretsStaging},mount_tag=secrets,security_model=mapped-xattr,readonly=on"
         ];
-        QEMU_NET_OPTS = "hostfwd=tcp:127.0.0.1:${toString port}-:18789";
+        QEMU_NET_OPTS = lib.concatStringsSep "," [
+          "hostfwd=tcp:127.0.0.1:${toString port}-:18789"
+          "hostfwd=tcp:0.0.0.0:${toString sshPort}-:${toString (builtins.head vmConfig.config.services.openssh.ports)}"
+          "hostfwd=tcp:127.0.0.1:${toString ttydPort}-:${toString vmConfig.config.port-selector.ports.ttyd}"
+        ];
         NIX_DISK_IMAGE = "${cfg.dataDir}/titan.qcow2";
         USE_TMPDIR = "0";
       };
@@ -91,6 +98,14 @@ in {
 
     myNixOS.services.caddy.serviceMap.openclaw = {
       inherit port;
+    };
+
+    myNixOS.services.caddy.serviceMap.ttydtitan = {
+      port = ttydPort;
+      basic-auth = {
+        username = "admin";
+        hashed-password = "$2a$14$3elBL1TrHKl9Ei10/PqFfudA8v939SirZN1sAynDbsWOE5t.eT3AK";
+      };
     };
   };
 }
