@@ -47,6 +47,11 @@ in {
     port-selector.auto-assign = ["titan-vm" "titan-vm-ttyd"];
     port-selector.set-ports."2221" = "titan-vm-ssh";
 
+    networking.firewall = {
+      allowedUDPPorts = [2221];
+      allowedTCPPorts = [2221];
+    };
+
     virtualisation.libvirtd.enable = true;
 
     systemd.tmpfiles.rules = [
@@ -58,6 +63,7 @@ in {
       description = "Titan VM";
       after = ["network.target" "libvirtd.service"];
       wantedBy = ["multi-user.target"];
+      restartTriggers = ["${vm}"];
 
       environment = {
         QEMU_OPTS = lib.concatStringsSep " " [
@@ -68,7 +74,7 @@ in {
         ];
         QEMU_NET_OPTS = lib.concatStringsSep "," [
           "hostfwd=tcp:127.0.0.1:${toString port}-:18789"
-          "hostfwd=tcp:0.0.0.0:${toString sshPort}-:${toString (builtins.head vmConfig.config.services.openssh.ports)}"
+          "hostfwd=tcp:0.0.0.0:${toString sshPort}-:22"
           "hostfwd=tcp:127.0.0.1:${toString ttydPort}-:${toString vmConfig.config.port-selector.ports.ttyd}"
         ];
         NIX_DISK_IMAGE = "${cfg.dataDir}/titan.qcow2";
