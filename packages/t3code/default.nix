@@ -16,8 +16,8 @@ let
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
-    rev = "f98679d21738ebdd4bb918fd783dd0dc2a6e2730";
-    hash = "sha256-Q7pbLLC+uiGI4m4cRDHBHfmQ+r/RuBMt9d8HylqRvlo=";
+    rev = "321251907a296b1d0932a42bc20ab2c08f8015ad";
+    hash = "sha256-bqrAeOU3lZN4d2yhrqtDou4Nvh9KTG5Xh8m9MDdGKSE=";
   };
 
   nodeModules = stdenv.mkDerivation {
@@ -42,7 +42,7 @@ let
 
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = "sha256-e7zkgc4BbN5kHw+8HRuNWMiFcYvUU6ZklttLX19+T/4=";
+    outputHash = "sha256-wwI1DlJnyADeBl0gr1lkgM5+nxP2IovfDL746zvM6gY=";
   };
 in
 stdenv.mkDerivation {
