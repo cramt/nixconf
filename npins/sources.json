@@ -11,24 +11,24 @@
       "version_upper_bound": null,
       "release_prefix": null,
       "submodules": false,
-      "version": "v0.17.0",
-      "revision": "6bbce72e1902b082c0edf5bd3442b34aeacb7f7c",
-      "url": "https://api.github.com/repos/steipete/CodexBar/tarball/refs/tags/v0.17.0",
-      "hash": "sha256-CyV+nd1bQVXrk8/nroCzyMEXec1seLrA2GkNkeTkJVs="
+      "version": "v0.18.0",
+      "revision": "026e3e900a6acfe4f9d00e71a5ada93214f7fbb9",
+      "url": "https://api.github.com/repos/steipete/CodexBar/tarball/refs/tags/v0.18.0",
+      "hash": "sha256-Z/PLecAMEYz/2PkbAPGf5eDpwihHJT4Qh4mDL/fzjSQ="
     },
     "haveagitgat/tdarr": {
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
       "image_tag": "latest",
-      "image_digest": "sha256:d5efda35bc62a5af68faf4beaee5ad3bfcbc3e7f4ce51b33c9d5bab365039610",
-      "hash": "sha256-BYthCC1lll4Fz8j7Ixi9n9O77FEQStog2AifT7Kzzsg="
+      "image_digest": "sha256:53e524dd2fd8bb7dee778a50b805fc9a92bdbea6957b7cfcea6b1a5ba42b07f0",
+      "hash": "sha256-45SQkHbskC9m/nhNhKKtru5AQiALJYK/LhnTZwsxR94="
     },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:2ae4449c981dab8ba734eaa43b5f7aa4d251d72cd3e01fe6a889c7417d1f7321",
-      "hash": "sha256-cj4H9cgeNVP1RWKjozFHhYxzKE9a3ynRpCCsKhaerjs="
+      "image_digest": "sha256:f9d7e0352a0892dac831afd8b5f2f409dfd71bc492fa7a40c0b194e13eefd836",
+      "hash": "sha256-pI6bVXtDC0XS47/vHdcnEZRBuxcI2uQeDJnaolVJaN0="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -40,8 +40,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre960315.608d0cadfed2/nixexprs.tar.xz",
-      "hash": "sha256-ng4mTBcXO6Nc1cTlXxCPkI49nDJbwFNg/DBhx7YkymE="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre963857.f8573b9c935c/nixexprs.tar.xz",
+      "hash": "sha256-YgVQzPaKa5eVf/rGA5Rn7BWJcP0T98JkE+2KuKVTyzA="
     },
     "thushan/olla": {
       "type": "Container",
