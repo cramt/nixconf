@@ -13,6 +13,7 @@
 
   myHomeManager = {
     bundles.general.enable = true;
+    bundles.development.enable = true;
     hyprland = {
       enable = false;
       exec = "firefox --kiosk https://example.com";

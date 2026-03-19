@@ -49,6 +49,13 @@
       "image_tag": "latest",
       "image_digest": "sha256:7dc16916e0d4eaaa4307105503c1e7c5b6dbc1aff87ad709bd00e0abd0e97992",
       "hash": "sha256-DmeHhpdWBLY8pcgYtaP4QO1IJxHjBzJqpWYLsBvxJ0c="
+    },
+    "wolveix/satisfactory-server": {
+      "type": "Container",
+      "image_name": "wolveix/satisfactory-server",
+      "image_tag": "latest",
+      "image_digest": "sha256:e103700ae6ae4c50f19dac80eadb2a805c5b885e179ae2a40850e967bf189efd",
+      "hash": "sha256-gbVUYyYuyU4Bubk8pfiH63n4PMw2xG5u0bCTE36IAgk="
     }
   },
   "version": 7

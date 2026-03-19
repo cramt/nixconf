@@ -149,6 +149,10 @@
         tvVolume = downloads.tvshows;
         movieVolume = downloads.movies;
       };
+      satisfactory = {
+        enable = true;
+        dataVolume = "/storage/satisfactory";
+      };
       valheim = {
         enable = true;
         worldVolume = "/mnt/imbrium/valheim_config";
@@ -165,7 +169,7 @@
         dataDir = "/mnt/imbrium/pgsql";
       };
       titan-vm = {
-        enable = true;
+        enable = false;
         dataDir = "/storage/titan-vm";
         secretFiles = {
         };
