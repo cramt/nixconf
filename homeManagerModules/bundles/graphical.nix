@@ -36,5 +36,6 @@
     nautilus.enable = true;
     keymapp.enable = true;
     vscode.enable = true;
+    t3code.enable = true;
   };
 }
