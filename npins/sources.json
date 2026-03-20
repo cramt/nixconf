@@ -43,6 +43,22 @@
       "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre963857.f8573b9c935c/nixexprs.tar.xz",
       "hash": "sha256-YgVQzPaKa5eVf/rGA5Rn7BWJcP0T98JkE+2KuKVTyzA="
     },
+    "t3code": {
+      "type": "GitRelease",
+      "repository": {
+        "type": "GitHub",
+        "owner": "pingdotgg",
+        "repo": "t3code"
+      },
+      "pre_releases": false,
+      "version_upper_bound": null,
+      "release_prefix": null,
+      "submodules": false,
+      "version": "v0.0.13",
+      "revision": "2a237c20019af8eae1020511b41256ea93127e4c",
+      "url": "https://api.github.com/repos/pingdotgg/t3code/tarball/refs/tags/v0.0.13",
+      "hash": "sha256-Bjw+juN3dWd1aQLKpxbKUBgS8Yt9hK1IwN1X1pXGo9E="
+    },
     "thushan/olla": {
       "type": "Container",
       "image_name": "ghcr.io/thushan/olla",
