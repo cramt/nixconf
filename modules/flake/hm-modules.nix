@@ -9,6 +9,10 @@
 # once, avoiding merge conflicts.
 { lib, config, ... }: {
   options.hmModules = {
+    default = lib.mkOption {
+      type = lib.types.deferredModule;
+      description = "The base home-manager module (homeManagerModules.default)";
+    };
     features = lib.mkOption {
       type = lib.types.lazyAttrsOf lib.types.deferredModule;
       default = {};
@@ -22,7 +26,7 @@
   };
 
   config.flake.homeManagerModules = {
-    default = ../../homeManagerModules;
+    default = config.hmModules.default;
     features = config.hmModules.features;
     bundles = config.hmModules.bundles;
   };

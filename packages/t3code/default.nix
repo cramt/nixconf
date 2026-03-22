@@ -11,8 +11,7 @@
   pkg-config,
   nodePackages,
   npinsSources,
-}:
-let
+}: let
   pin = npinsSources.t3code;
   version = lib.removePrefix "v" pin.version;
 
@@ -38,126 +37,126 @@ let
 
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = lib.fakeHash;
+    outputHash = "sha256-mJVhRnPvrLQJaHqBw4vRAJB5GyF9HWusb6QbKHeawp4=";
   };
 in
-stdenv.mkDerivation {
-  pname = "t3code";
-  inherit version;
+  stdenv.mkDerivation {
+    pname = "t3code";
+    inherit version;
 
-  src = pin;
+    src = pin;
 
-  nativeBuildInputs = [
-    bun
-    nodejs_24
-    makeWrapper
-    copyDesktopItems
-    python3
-    pkg-config
-    nodePackages.node-gyp
-  ];
+    nativeBuildInputs = [
+      bun
+      nodejs_24
+      makeWrapper
+      copyDesktopItems
+      python3
+      pkg-config
+      nodePackages.node-gyp
+    ];
 
-  # Spawn the backend server with system node instead of the electron binary,
-  # so node-pty only needs to be compiled against the system Node.js ABI.
-  postPatch = ''
-    substituteInPlace apps/desktop/src/main.ts \
-      --replace-fail \
-        'ChildProcess.spawn(process.execPath, [backendEntry]' \
-        'ChildProcess.spawn("${nodejs_24}/bin/node", [backendEntry]'
+    # Spawn the backend server with system node instead of the electron binary,
+    # so node-pty only needs to be compiled against the system Node.js ABI.
+    postPatch = ''
+      substituteInPlace apps/desktop/src/main.ts \
+        --replace-fail \
+          'ChildProcess.spawn(process.execPath, [backendEntry]' \
+          'ChildProcess.spawn("${nodejs_24}/bin/node", [backendEntry]'
 
-    # Bundle all runtime deps into the desktop main process except electron
-    # (Electron APIs are provided by the Electron runtime itself).
-    substituteInPlace apps/desktop/tsdown.config.ts \
-      --replace-fail \
-        'noExternal: (id) => id.startsWith("@t3tools/"),' \
-        'noExternal: (id) => id !== "electron",'
+      # Bundle all runtime deps into the desktop main process except electron
+      # (Electron APIs are provided by the Electron runtime itself).
+      substituteInPlace apps/desktop/tsdown.config.ts \
+        --replace-fail \
+          'noExternal: (id) => id.startsWith("@t3tools/"),' \
+          'noExternal: (id) => id !== "electron",'
 
-    # Bundle all runtime deps into the server except node-pty (native addon).
-    substituteInPlace apps/server/tsdown.config.ts \
-      --replace-fail \
-        'noExternal: (id) => id.startsWith("@t3tools/"),' \
-        'noExternal: (id) => id !== "node-pty",'
-  '';
+      # Bundle all runtime deps into the server except node-pty (native addon).
+      substituteInPlace apps/server/tsdown.config.ts \
+        --replace-fail \
+          'noExternal: (id) => id.startsWith("@t3tools/"),' \
+          'noExternal: (id) => id !== "node-pty",'
+    '';
 
-  configurePhase = ''
-    runHook preConfigure
+    configurePhase = ''
+      runHook preConfigure
 
-    # Copy root + all workspace node_modules from the FOD
-    cp -r ${nodeModules}/node_modules ./node_modules
-    for dir in apps/desktop apps/server apps/web apps/marketing \
-                packages/contracts packages/shared scripts; do
-      if [ -d "${nodeModules}/$dir/node_modules" ]; then
-        cp -r "${nodeModules}/$dir/node_modules" "./$dir/node_modules"
-      fi
-    done
-    chmod -R +w node_modules apps/*/node_modules packages/*/node_modules scripts/node_modules 2>/dev/null || true
+      # Copy root + all workspace node_modules from the FOD
+      cp -r ${nodeModules}/node_modules ./node_modules
+      for dir in apps/desktop apps/server apps/web apps/marketing \
+                  packages/contracts packages/shared scripts; do
+        if [ -d "${nodeModules}/$dir/node_modules" ]; then
+          cp -r "${nodeModules}/$dir/node_modules" "./$dir/node_modules"
+        fi
+      done
+      chmod -R +w node_modules apps/*/node_modules packages/*/node_modules scripts/node_modules 2>/dev/null || true
 
-    # Patch shebangs (FOD skipped this to avoid store refs; .bin/ are symlinks
-    # so we patch the full trees, not just .bin/)
-    for nm in node_modules apps/*/node_modules packages/*/node_modules scripts/node_modules; do
-      [ -d "$nm" ] && patchShebangs "$nm"
-    done
+      # Patch shebangs (FOD skipped this to avoid store refs; .bin/ are symlinks
+      # so we patch the full trees, not just .bin/)
+      for nm in node_modules apps/*/node_modules packages/*/node_modules scripts/node_modules; do
+        [ -d "$nm" ] && patchShebangs "$nm"
+      done
 
-    # Rebuild node-pty native module (in apps/server) against system Node.js
-    export HOME=$TMPDIR
-    pushd apps/server/node_modules/node-pty
-    node-gyp rebuild --nodedir=${nodejs_24}/include/node
-    popd
+      # Rebuild node-pty native module (in apps/server) against system Node.js
+      export HOME=$TMPDIR
+      pushd apps/server/node_modules/node-pty
+      node-gyp rebuild --nodedir=${nodejs_24}/include/node
+      popd
 
-    runHook postConfigure
-  '';
+      runHook postConfigure
+    '';
 
-  buildPhase = ''
-    runHook preBuild
+    buildPhase = ''
+      runHook preBuild
 
-    export HOME=$TMPDIR
-    export ELECTRON_SKIP_BINARY_DOWNLOAD=1
+      export HOME=$TMPDIR
+      export ELECTRON_SKIP_BINARY_DOWNLOAD=1
 
-    # Build everything in dependency order (turbo resolves the order)
-    bun run build
+      # Build everything in dependency order (turbo resolves the order)
+      bun run build
 
-    runHook postBuild
-  '';
+      runHook postBuild
+    '';
 
-  installPhase = ''
-    runHook preInstall
+    installPhase = ''
+      runHook preInstall
 
-    local root=$out/lib/t3code
-    mkdir -p "$root/apps/desktop" "$root/apps/server"
+      local root=$out/lib/t3code
+      mkdir -p "$root/apps/desktop" "$root/apps/server"
 
-    cp -r apps/desktop/dist-electron "$root/apps/desktop/dist-electron"
-    cp -r apps/server/dist           "$root/apps/server/dist"
+      cp -r apps/desktop/dist-electron "$root/apps/desktop/dist-electron"
+      cp -r apps/server/dist           "$root/apps/server/dist"
 
-    # node-pty is the only non-bundled dep (native addon)
-    mkdir -p "$root/apps/server/node_modules"
-    cp -rL apps/server/node_modules/node-pty "$root/apps/server/node_modules/node-pty"
-    cp -rL apps/server/node_modules/node-addon-api "$root/apps/server/node_modules/node-addon-api" 2>/dev/null || true
+      # node-pty is the only non-bundled dep (native addon)
+      mkdir -p "$root/apps/server/node_modules"
+      cp -rL apps/server/node_modules/node-pty "$root/apps/server/node_modules/node-pty"
+      cp -rL apps/server/node_modules/node-addon-api "$root/apps/server/node_modules/node-addon-api" 2>/dev/null || true
 
-    mkdir -p $out/bin
-    makeWrapper ${lib.getExe electron} $out/bin/t3code \
-      --add-flags "$root/apps/desktop/dist-electron/main.js" \
-      --chdir "$root" \
-      --set ELECTRON_IS_DEV 0 \
-      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}"
+      mkdir -p $out/bin
+      makeWrapper ${lib.getExe electron} $out/bin/t3code \
+        --add-flags "$root/apps/desktop/dist-electron/main.js" \
+        --chdir "$root" \
+        --set ELECTRON_IS_DEV 0 \
+        --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}"
 
-    runHook postInstall
-  '';
+      runHook postInstall
+    '';
 
-  desktopItems = [
-    (makeDesktopItem {
-      name = "t3code";
-      exec = "t3code";
-      desktopName = "T3 Code";
-      comment = "Minimal web GUI for coding agents";
-      categories = [ "Development" ];
-    })
-  ];
+    desktopItems = [
+      (makeDesktopItem {
+        name = "t3code";
+        exec = "t3code";
+        desktopName = "T3 Code";
+        comment = "Minimal web GUI for coding agents";
+        categories = ["Development"];
+      })
+    ];
 
-  meta = with lib; {
-    description = "Minimal web GUI for coding agents with Claude Code support";
-    homepage = "https://github.com/pingdotgg/t3code";
-    license = licenses.mit;
-    platforms = [ "x86_64-linux" ];
-    mainProgram = "t3code";
-  };
-}
+    meta = with lib; {
+      description = "Minimal web GUI for coding agents with Claude Code support";
+      homepage = "https://github.com/pingdotgg/t3code";
+      license = licenses.mit;
+      platforms = ["x86_64-linux"];
+      mainProgram = "t3code";
+    };
+  }

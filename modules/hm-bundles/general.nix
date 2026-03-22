@@ -1,0 +1,39 @@
+{ inputs, ... }: {
+  hmModules.bundles.general = { config, lib, pkgs, ... }: {
+    imports = [
+      inputs.nix-colors.homeManagerModules.default
+    ];
+    options.myHomeManager.bundles.general.enable = lib.mkEnableOption "myHomeManager.bundles.general";
+    config = lib.mkIf config.myHomeManager.bundles.general.enable {
+      programs.home-manager.enable = true;
+      nix.extraOptions = ''
+        !include /var/lib/opnix/secrets/nixAccessTokensConf
+      '';
+      myHomeManager = {
+        yazi.enable = true;
+        zoxide.enable = true;
+        neovim.enable = true;
+        zsh.enable = true;
+        ssh.enable = true;
+        gpg-agent.enable = true;
+        git.enable = true;
+        nix-index.enable = true;
+        starship.enable = true;
+        nushell.enable = true;
+        zellij.enable = true;
+        btop.enable = true;
+        lazygit.enable = true;
+        fzf.enable = true;
+      };
+      home.packages = with pkgs; [
+        git gnupg nushell zellij eza zoxide bat ripgrep sd fd wget unzip dnsutils nix-output-monitor jq
+      ];
+      home.sessionVariables = {
+        NH_FLAKE = "${config.home.homeDirectory}/nixconf";
+        EDITOR = "nvim";
+        BROWSER = "zen-beta";
+        TERMINAL = "alacritty";
+      };
+    };
+  };
+}

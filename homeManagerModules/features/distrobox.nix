@@ -1,3 +1,0 @@
-{...}: {
-  programs.distrobox.enable = true;
-}

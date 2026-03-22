@@ -1,6 +1,6 @@
 # NixOS single-user home-manager setup (deprecated, prefer bundles.users)
 { inputs, ... }: {
-  flake.nixosModules."bundles.home-manager" = { config, lib, pkgs, myLib, ... }:
+  flake.nixosModules."bundles.home-manager" = { config, lib, pkgs, ... }:
   let
     cfg = config.myNixOS;
     outputs = inputs.self.outputs;
@@ -32,8 +32,7 @@
 
       home-manager = {
         extraSpecialArgs = {
-          inherit inputs myLib pkgs;
-          outputs = inputs.self.outputs;
+          inherit inputs;
         };
         users.${cfg.userName} = {...}: {
           imports =

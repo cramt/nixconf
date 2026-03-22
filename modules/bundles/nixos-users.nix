@@ -1,6 +1,6 @@
 # NixOS multi-user bundle with home-manager integration
 { inputs, ... }: {
-  flake.nixosModules."bundles.users" = { config, lib, pkgs, myLib, ... }:
+  flake.nixosModules."bundles.users" = { config, lib, pkgs, ... }:
   let
     cfg = config.myNixOS;
     outputs = inputs.self.outputs;
@@ -27,8 +27,7 @@
       programs.zsh.enable = true;
       home-manager = {
         extraSpecialArgs = {
-          inherit inputs myLib pkgs;
-          outputs = inputs.self.outputs;
+          inherit inputs;
         };
         users =
           builtins.mapAttrs
