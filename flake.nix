@@ -3,14 +3,11 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-master.url = "github:nixos/nixpkgs";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.11";
     nixarr.url = "github:nix-media-server/nixarr/cramt/jellyfin-users";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
     quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
-
-    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     claude-code.url = "github:sadjow/claude-code-nix";
 
@@ -33,17 +30,6 @@
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    astal = {
-      url = "github:aylur/astal";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    ags = {
-      url = "github:aylur/ags";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.astal.follows = "astal";
     };
 
     hyprshell = {
