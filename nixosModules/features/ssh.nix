@@ -1,5 +1,0 @@
-{ ... }: {
-  programs.ssh = {
-    startAgent = false;
-  };
-}

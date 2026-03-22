@@ -138,16 +138,11 @@
       url = "github:brizzbuzz/opnix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    import-tree.url = "github:vic/import-tree";
   };
 
   outputs = inputs:
-    inputs.flake-parts.lib.mkFlake {inherit inputs;} {
-      imports = [
-        ./flake/lib.nix
-        ./flake/hosts.nix
-        ./flake/packages.nix
-        ./flake/exported-modules.nix
-      ];
-      systems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
-    };
+    inputs.flake-parts.lib.mkFlake {inherit inputs;}
+    (inputs.import-tree ./modules);
 }
