@@ -12,6 +12,8 @@
       inputs.cosmic-manager.homeManagerModules.cosmic-manager
       inputs.zen-browser.homeModules.beta
       inputs.hyprshell.homeModules.hyprshell
+      inputs.niri-flake.homeModules.config
+      inputs.noctalia-shell.homeModules.default
       ({ lib, config, ... }: {
         config = lib.mkIf (config.stylix.enable && config.programs.neovide.enable) {
           stylix.targets.neovide.enable = lib.mkForce false;

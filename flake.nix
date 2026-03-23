@@ -126,6 +126,13 @@
     };
 
     import-tree.url = "github:vic/import-tree";
+
+    niri-flake.url = "github:sodiboo/niri-flake";
+
+    noctalia-shell = {
+      url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:
