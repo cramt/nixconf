@@ -150,7 +150,9 @@
         movieVolume = downloads.movies;
       };
       satisfactory = {
+        maxPlayers = 8;
         enable = true;
+        beta = true;
         dataVolume = "/storage/satisfactory";
       };
       valheim = {

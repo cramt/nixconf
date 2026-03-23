@@ -1,4 +1,4 @@
-{ ... }: {
+{...}: {
   flake.nixosModules."services.satisfactory" = {
     config,
     lib,
