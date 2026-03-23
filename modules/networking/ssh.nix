@@ -49,6 +49,15 @@ in {
         '';
       };
 
+      xdg.configFile."autostart/1password.desktop".text = ''
+        [Desktop Entry]
+        Name=1Password
+        Exec=1password --silent
+        Terminal=false
+        Type=Application
+        StartupNotify=false
+      '';
+
       home.packages = (builtins.attrValues sshTargetPackages) ++ (builtins.attrValues sshTargetDesktops);
     };
   };
