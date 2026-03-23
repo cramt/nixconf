@@ -1,4 +1,6 @@
-{...}: {
+{...}: let
+  ports = [7777 8888];
+in {
   flake.nixosModules."services.satisfactory" = {
     config,
     lib,
@@ -35,25 +37,21 @@
     };
     config = lib.mkIf cfg.enable {
       networking.firewall = {
-        allowedUDPPorts = [7777];
-        allowedTCPPorts = [7777 8888];
+        allowedUDPPorts = ports;
+        allowedTCPPorts = ports;
       };
       virtualisation.oci-containers.backend = "docker";
       virtualisation.oci-containers.containers.satisfactory = {
         hostname = "satisfactory";
         imageFile = docker_source;
         image = "${docker_source.image_name}:${docker_source.image_tag}";
-        ports = [
-          "7777:7777/tcp"
-          "7777:7777/udp"
-          "8888:8888/tcp"
-        ];
+        ports = (builtins.map (x: "${builtins.toString x}:${builtins.toString x}/tcp") ports) ++ builtins.map (x: "${builtins.toString x}:${builtins.toString x}/udp") ports;
         environment = {
           PUID = "1000";
           PGID = "1000";
           TZ = "Europe/Copenhagen";
           MAXPLAYERS = toString cfg.maxPlayers;
-          SKIPUPDATE = "false";
+          SKIPUPDATE = "true";
           STEAMBETA =
             if cfg.beta
             then "true"

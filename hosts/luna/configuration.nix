@@ -150,8 +150,8 @@
         movieVolume = downloads.movies;
       };
       satisfactory = {
-        maxPlayers = 8;
         enable = true;
+        maxPlayers = 8;
         beta = true;
         dataVolume = "/storage/satisfactory";
       };
