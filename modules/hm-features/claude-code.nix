@@ -1,7 +1,18 @@
-{ ... }: {
-  hmModules.features.claude-code = { config, lib, pkgs, ... }: {
+{ inputs, ... }: {
+  hmModules.features.claude-code = { config, lib, pkgs, ... }:
+  let
+    claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
+    mkClaudeWithConfig = name: configDir: pkgs.writeShellScriptBin name ''
+      export CLAUDE_CONFIG_DIR="${configDir}"
+      exec ${claudeCodePkg}/bin/claude "$@"
+    '';
+  in {
     options.myHomeManager.claude-code.enable = lib.mkEnableOption "myHomeManager.claude-code";
     config = lib.mkIf config.myHomeManager.claude-code.enable {
+      home.packages = [
+        (mkClaudeWithConfig "claude-w" "$HOME/.claude-work")
+        (mkClaudeWithConfig "claude-p" "$HOME/.claude-personal")
+      ];
       home.file.".claude/CLAUDE.md".text = ''
         # Global Claude Code Instructions
 
