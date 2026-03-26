@@ -11,24 +11,24 @@
       "version_upper_bound": null,
       "release_prefix": null,
       "submodules": false,
-      "version": "v0.18.0",
-      "revision": "026e3e900a6acfe4f9d00e71a5ada93214f7fbb9",
-      "url": "https://api.github.com/repos/steipete/CodexBar/tarball/refs/tags/v0.18.0",
-      "hash": "sha256-Z/PLecAMEYz/2PkbAPGf5eDpwihHJT4Qh4mDL/fzjSQ="
+      "version": "v0.19.0",
+      "revision": "9d24649dda742ea90d59329b27c8cf91797be6d5",
+      "url": "https://api.github.com/repos/steipete/CodexBar/tarball/refs/tags/v0.19.0",
+      "hash": "sha256-PPS0Xw7WoUTaoc6vLk0wkVlOy3Scn9c7tiivRLYCSHI="
     },
     "haveagitgat/tdarr": {
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
       "image_tag": "latest",
-      "image_digest": "sha256:53e524dd2fd8bb7dee778a50b805fc9a92bdbea6957b7cfcea6b1a5ba42b07f0",
-      "hash": "sha256-45SQkHbskC9m/nhNhKKtru5AQiALJYK/LhnTZwsxR94="
+      "image_digest": "sha256:94bc18b3e9d3e9a7ae6fe75e86ff080a83905d32c0581529b2de6324fa2dcb53",
+      "hash": "sha256-XqItgJFa4VhepMmSO1nzsUes1huvSX6jBYXWX2idHZE="
     },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:f9d7e0352a0892dac831afd8b5f2f409dfd71bc492fa7a40c0b194e13eefd836",
-      "hash": "sha256-pI6bVXtDC0XS47/vHdcnEZRBuxcI2uQeDJnaolVJaN0="
+      "image_digest": "sha256:a0218eb9b88196d6269836a2d7173dabdaaa640f0d8ce427109fc4bf4d21c921",
+      "hash": "sha256-S0Y/ZbRNs0TnD9clbjf1gI9k/4YKCrIavQiKhRhwKEs="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -40,8 +40,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre968143.4724d5647207/nixexprs.tar.xz",
-      "hash": "sha256-mfxnx78wXFjuGbZ1bc/nb9JDxJKf4Aq85WzvXKpI7CM="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre968305.fdc7b8f7b30f/nixexprs.tar.xz",
+      "hash": "sha256-WLxi1vfcykjq9Yb2umqBJs6lVM6MpV2tXfcrAjroxUk="
     },
     "t3code": {
       "type": "GitRelease",
@@ -54,10 +54,10 @@
       "version_upper_bound": null,
       "release_prefix": null,
       "submodules": false,
-      "version": "v0.0.13",
-      "revision": "2a237c20019af8eae1020511b41256ea93127e4c",
-      "url": "https://api.github.com/repos/pingdotgg/t3code/tarball/refs/tags/v0.0.13",
-      "hash": "sha256-Bjw+juN3dWd1aQLKpxbKUBgS8Yt9hK1IwN1X1pXGo9E="
+      "version": "v0.0.14",
+      "revision": "28afb14004bbb92a523a87c334de02421f72a627",
+      "url": "https://api.github.com/repos/pingdotgg/t3code/tarball/refs/tags/v0.0.14",
+      "hash": "sha256-KB22/NiuDg5t/kDBa8jzlPHv0yDGE+hSplgrEustFUE="
     },
     "thushan/olla": {
       "type": "Container",
