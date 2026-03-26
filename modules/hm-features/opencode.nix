@@ -26,6 +26,7 @@
           plugin = [
             "opencode-antigravity-auth@latest"
             "opencode-anthropic-auth@latest"
+            "opencode-m365-auth@latest"
           ];
 
           agent = {
@@ -93,6 +94,19 @@
               options = {
                 baseURL = "https://api.anthropic.com/v1";
                 timeout = 600000;
+              };
+            };
+            m365 = {
+              npm = "@ai-sdk/openai-compatible";
+              name = "M365 Copilot";
+              models = {
+                "m365-copilot" = { name = "M365 Copilot (Auto)"; };
+                "gpt-5.4" = { name = "GPT-5.4 Think Deeper"; };
+                "gpt-5.4-quick" = { name = "GPT-5.4 Quick"; };
+                "gpt-5.3" = { name = "GPT-5.3 Quick"; };
+                "gpt-5.3-think-deeper" = { name = "GPT-5.3 Think Deeper"; };
+                "gpt-5.2" = { name = "GPT-5.2 Quick"; };
+                "gpt-5.2-think-deeper" = { name = "GPT-5.2 Think Deeper"; };
               };
             };
             ollama = {
