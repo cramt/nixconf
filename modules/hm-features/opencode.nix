@@ -1,5 +1,10 @@
-{ inputs, ... }: {
-  hmModules.features.opencode = { config, lib, pkgs, ... }: {
+{...}: {
+  hmModules.features.opencode = {
+    config,
+    lib,
+    pkgs,
+    ...
+  }: {
     options.myHomeManager.opencode.enable = lib.mkEnableOption "myHomeManager.opencode";
     config = lib.mkIf config.myHomeManager.opencode.enable {
       programs.zsh.initContent = ''
@@ -10,7 +15,7 @@
 
       programs.opencode = {
         enable = true;
-        package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+        package = pkgs.opencode;
 
         settings = {
           autoshare = false;
@@ -28,7 +33,7 @@
           plugin = [
             "opencode-antigravity-auth@latest"
             "opencode-anthropic-auth@latest"
-            "opencode-m365-auth@latest"
+            #"opencode-m365-auth@latest"
           ];
 
           agent = {
@@ -102,13 +107,13 @@
               npm = "@ai-sdk/openai-compatible";
               name = "M365 Copilot";
               models = {
-                "m365-copilot" = { name = "M365 Copilot (Auto)"; };
-                "gpt-5.4" = { name = "GPT-5.4 Think Deeper"; };
-                "gpt-5.4-quick" = { name = "GPT-5.4 Quick"; };
-                "gpt-5.3" = { name = "GPT-5.3 Quick"; };
-                "gpt-5.3-think-deeper" = { name = "GPT-5.3 Think Deeper"; };
-                "gpt-5.2" = { name = "GPT-5.2 Quick"; };
-                "gpt-5.2-think-deeper" = { name = "GPT-5.2 Think Deeper"; };
+                "m365-copilot" = {name = "M365 Copilot (Auto)";};
+                "gpt-5.4" = {name = "GPT-5.4 Think Deeper";};
+                "gpt-5.4-quick" = {name = "GPT-5.4 Quick";};
+                "gpt-5.3" = {name = "GPT-5.3 Quick";};
+                "gpt-5.3-think-deeper" = {name = "GPT-5.3 Think Deeper";};
+                "gpt-5.2" = {name = "GPT-5.2 Quick";};
+                "gpt-5.2-think-deeper" = {name = "GPT-5.2 Think Deeper";};
               };
             };
             ollama = {
@@ -121,13 +126,13 @@
                 };
               };
               models = {
-                "qwen3-coder:32b" = { name = "Qwen3-Coder 32B"; };
-                "gpt-oss:20b" = { name = "GPT-OSS 20B"; };
-                "deepseek-r1:32b" = { name = "DeepSeek R1 32B"; };
-                "codestral:22b" = { name = "Codestral 22B"; };
-                "devstral" = { name = "Devstral"; };
-                "llama3.3:70b" = { name = "Llama 3.3 70B"; };
-                "phi4:14b" = { name = "Phi-4 14B"; };
+                "qwen3-coder:32b" = {name = "Qwen3-Coder 32B";};
+                "gpt-oss:20b" = {name = "GPT-OSS 20B";};
+                "deepseek-r1:32b" = {name = "DeepSeek R1 32B";};
+                "codestral:22b" = {name = "Codestral 22B";};
+                "devstral" = {name = "Devstral";};
+                "llama3.3:70b" = {name = "Llama 3.3 70B";};
+                "phi4:14b" = {name = "Phi-4 14B";};
               };
             };
           };
