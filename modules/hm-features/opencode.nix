@@ -6,6 +6,8 @@
         [[ -f /var/lib/opnix/secrets/ollamaBearerEnv ]] && { set -a; source /var/lib/opnix/secrets/ollamaBearerEnv; set +a; }
       '';
 
+      home.sessionVariables.CHROMIUM_PATH = "${pkgs.chromium}/bin/chromium";
+
       programs.opencode = {
         enable = true;
         package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
