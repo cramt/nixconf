@@ -37,7 +37,7 @@
 
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = "sha256-r6I1tYslVbkZhOlQUFqmEkAiDQJd+pV/icuejAn6mwc=";
+    outputHash = "sha256-F9j2O/w8NiOAy5F9Y0r3RvwS7JtGnMTfUE6SHfmvZw4=";
   };
 in
   stdenv.mkDerivation {
@@ -61,8 +61,8 @@ in
     postPatch = ''
       substituteInPlace apps/desktop/src/main.ts \
         --replace-fail \
-          'ChildProcess.spawn(process.execPath, [backendEntry]' \
-          'ChildProcess.spawn("${nodejs_24}/bin/node", [backendEntry]'
+          'ChildProcess.spawn(process.execPath, [backendEntry, "--bootstrap-fd", "3"]' \
+          'ChildProcess.spawn("${nodejs_24}/bin/node", [backendEntry, "--bootstrap-fd", "3"]'
 
       # Bundle all runtime deps into the desktop main process except electron
       # (Electron APIs are provided by the Electron runtime itself).
