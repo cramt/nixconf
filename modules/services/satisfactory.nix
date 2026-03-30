@@ -51,7 +51,7 @@ in {
           PGID = "1000";
           TZ = "Europe/Copenhagen";
           MAXPLAYERS = toString cfg.maxPlayers;
-          SKIPUPDATE = "true";
+          SKIPUPDATE = "false";
           STEAMBETA =
             if cfg.beta
             then "true"
