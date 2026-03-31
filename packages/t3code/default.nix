@@ -10,7 +10,7 @@
   python3,
   pkg-config,
   nodePackages,
-  npinsSources,
+  npinsSources ? (import ../../npins),
 }: let
   pin = npinsSources.t3code;
   version = lib.removePrefix "v" pin.version;

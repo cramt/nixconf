@@ -18,27 +18,12 @@ update_flake:
 update_gems:
     (cd gems && bundle lock --update)
 
-update_t3code_deps:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    pkg="packages/t3code/default.nix"
-    # Invalidate node modules FOD hash, then build to get the correct one
-    sed -i 's|outputHash = "sha256-[^"]*"|outputHash = lib.fakeHash|' "$pkg"
-    echo "t3code: fetching new node modules hash..."
-    node_hash=$(nix build .#t3code 2>&1 | sed -n 's/.*got: *\(sha256-[^ ]*\).*/\1/p')
-    if [ -z "$node_hash" ]; then
-        echo "ERROR: could not extract node modules hash from build output"
-        exit 1
-    fi
-    sed -i "s|lib.fakeHash|\"$node_hash\"|" "$pkg"
-    echo "t3code: node modules hash updated"
-
 update:
     fwupdmgr update -y || true
     just update_flake
     just update_gems
     npins update
-    just update_t3code_deps
+    , nix-update t3code --flake
     nh os switch
 
 tf *args:
