@@ -88,6 +88,11 @@
 
     foundryvtt.url = "github:reckenrode/nix-foundryvtt";
 
+    everything-claude-code = {
+      url = "github:affaan-m/everything-claude-code";
+      flake = false;
+    };
+
     darkmingo-cockactrice-theme = {
       url = "github:mingomongo/DarkMingo-Theme-for-Cockatrice";
       flake = false;

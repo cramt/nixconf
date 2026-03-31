@@ -277,6 +277,22 @@
         "type": "github"
       }
     },
+    "everything-claude-code": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1774992429,
+        "narHash": "sha256-jIZBpzz9nb0SsGhyVsjL3zUNPmVgK5LNg2cMVu/+j38=",
+        "owner": "affaan-m",
+        "repo": "everything-claude-code",
+        "rev": "44dfc35b16a832307279f1940a5953008e8bcda9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "affaan-m",
+        "repo": "everything-claude-code",
+        "type": "github"
+      }
+    },
     "firefox-gnome-theme": {
       "flake": false,
       "locked": {
@@ -2068,6 +2084,7 @@
         "cosmic-manager": "cosmic-manager",
         "darkmingo-cockactrice-theme": "darkmingo-cockactrice-theme",
         "disko": "disko",
+        "everything-claude-code": "everything-claude-code",
         "flake-parts": "flake-parts_2",
         "foundryvtt": "foundryvtt",
         "git_update_notifier": "git_update_notifier",
