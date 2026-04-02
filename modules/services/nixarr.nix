@@ -1,4 +1,4 @@
-{ ... }: {
+{...}: {
   flake.nixosModules."services.nixarr" = {
     pkgs,
     lib,
@@ -38,37 +38,70 @@
       services.radarr.settings.auth.required = "DisabledForLocalAddresses";
       services.sonarr.settings.auth.required = "DisabledForLocalAddresses";
       services.prowlarr.settings.auth.required = "DisabledForLocalAddresses";
-      nixarr = {
+
+      services.jellarr = {
         enable = true;
-        jellyfin = {
-          enable = true;
-          libraries = [
-            {
-              name = "tvshows";
-              type = "tvshows";
-              paths = ["/storage/downloads/tvshows" "${config.nixarr.mediaDir}/library/shows"];
-              enable = true;
-            }
-            {
-              name = "movies";
-              type = "movies";
-              paths = ["/storage/downloads/movies" "${config.nixarr.mediaDir}/library/movies"];
-              enable = true;
-            }
-          ];
+        config = {
+          version = 1;
+          base_url = "http://localhost:8096";
+          system = {};
+          startup = {
+            serverName = "luna-jellyfin";
+            preferredMetadataLanguage = "en";
+            metadataCountryCode = "DK";
+            uiCulture = "en-US";
+            remoteAccess = {
+              enableRemoteAccess = true;
+              enableAutomaticPortMapping = false;
+            };
+            user = {
+              name = "cramt";
+              passwordFile = config.services.onepassword-secrets.secretPaths.jellyfinCramtPassword;
+            };
+            apiKeyApp = "jellarr";
+            apiKeyFile = "${config.services.jellarr.dataDir}/api-key";
+            completeStartupWizard = true;
+          };
           users = [
             {
               name = "cramt";
               passwordFile = config.services.onepassword-secrets.secretPaths.jellyfinCramtPassword;
-              isAdministrator = true;
+              policy = {
+                isAdministrator = true;
+              };
             }
             {
               name = "hannah";
               passwordFile = config.services.onepassword-secrets.secretPaths.jellyfinHannahPassword;
-              isAdministrator = true;
+              policy = {
+                isAdministrator = true;
+              };
             }
           ];
+          library = {
+            virtualFolders = [
+              {
+                name = "tvshows";
+                collectionType = "tvshows";
+                libraryOptions.pathInfos = [
+                  {path = "${config.nixarr.mediaDir}/library/shows";}
+                ];
+              }
+              {
+                name = "movies";
+                collectionType = "movies";
+                libraryOptions.pathInfos = [
+                  {path = "${config.nixarr.mediaDir}/library/movies";}
+                ];
+              }
+            ];
+          };
         };
+      };
+
+      nixarr = {
+        enable = true;
+        jellyfin.enable = true;
         jellyseerr.enable = true;
         bazarr.enable = true;
         sonarr = {
@@ -89,8 +122,8 @@
         transmission = {
           enable = true;
         };
-        mediaDir = "/storage/media";
-        stateDir = "/storage/media/.state/nixarr";
+        mediaDir = lib.mkDefault "/storage/media";
+        stateDir = lib.mkDefault "/storage/media/.state/nixarr";
       };
     };
   };

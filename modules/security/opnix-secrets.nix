@@ -49,10 +49,12 @@
           };
           jellyfinCramtPassword = {
             reference = "op://Homelab/JellyfinUsers/cramtPassword";
-          };
+            mode = "0640";
+          } // groupIf "jellarr";
           jellyfinHannahPassword = {
             reference = "op://Homelab/JellyfinUsers/hannahPassword";
-          };
+            mode = "0640";
+          } // groupIf "jellarr";
           cockatricePassword = {
             reference = "op://Homelab/Cockatrice/password";
           };

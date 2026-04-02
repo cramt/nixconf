@@ -7,6 +7,7 @@
       inputs.stylix.nixosModules.stylix
       inputs.foundryvtt.nixosModules.foundryvtt
       inputs.nixarr.nixosModules.default
+      inputs.jellarr.nixosModules.default
       inputs.quadlet-nix.nixosModules.quadlet
       ./portselector.nix
     ];

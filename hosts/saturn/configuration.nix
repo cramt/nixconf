@@ -112,7 +112,7 @@
           };
         };
       };
-      nixarr.enable = false;
+      nixarr.enable = true;
       jellyfin = {
         enable = false;
         configVolume = "/mnt/amirani/configs/jellyfin";
@@ -174,6 +174,11 @@
         userConfig = ./home.nix;
       };
     };
+  };
+
+  nixarr = {
+    mediaDir = "/var/lib/nixarr-test/media";
+    stateDir = "/var/lib/nixarr-test/.state";
   };
 
   networking.hostName = "saturn";
