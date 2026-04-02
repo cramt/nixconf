@@ -21,7 +21,7 @@
         [
           gh pkg-config gnumake (lib.hiPrio gcc) yarn
           inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nodejs_24
-          nodePackages.pnpm cargo rustfmt rustc just clang postgresql.out opentofu tflint
+          pnpm cargo rustfmt rustc just clang postgresql.out opentofu tflint
           inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.awscli2
           gcc-arm-embedded zig futhark devenv geminicommit
           inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code

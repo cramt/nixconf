@@ -9,7 +9,7 @@
   copyDesktopItems,
   python3,
   pkg-config,
-  nodePackages,
+  node-gyp,
   npinsSources ? (import ../../npins),
 }: let
   pin = npinsSources.t3code;
@@ -53,7 +53,7 @@ in
       copyDesktopItems
       python3
       pkg-config
-      nodePackages.node-gyp
+      node-gyp
     ];
 
     # Spawn the backend server with system node instead of the electron binary,
