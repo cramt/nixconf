@@ -6,7 +6,7 @@
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.11";
     nixarr.url = "github:nix-media-server/nixarr/dev";
-    jellarr.url = "github:cramt/jellarr/feat/startup-wizard-init";
+    jellarr.url = "github:cramt/jellarr";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
     quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
 

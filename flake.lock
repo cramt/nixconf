@@ -1304,16 +1304,15 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1775142919,
-        "narHash": "sha256-froRdFoeHEviylqVA+4MOXB3JFAWSte8hlSXIMLhc6Y=",
+        "lastModified": 1775145301,
+        "narHash": "sha256-eX/racUuDpFEx5g5e+NLc+jMc5ZThR7UoWkEtAiDpeE=",
         "owner": "cramt",
         "repo": "jellarr",
-        "rev": "19a9acd54b43d119e8c425ef59eaad396f594b52",
+        "rev": "93119916accf259f87cdc07e447690cea62ba459",
         "type": "github"
       },
       "original": {
         "owner": "cramt",
-        "ref": "feat/startup-wizard-init",
         "repo": "jellarr",
         "type": "github"
       }
