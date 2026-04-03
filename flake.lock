@@ -1590,11 +1590,11 @@
         "website-builder": "website-builder"
       },
       "locked": {
-        "lastModified": 1775132085,
-        "narHash": "sha256-3V5cakxA6G3uhVVHIYVDCD+aps/bJWCJZLdPwfDeMro=",
+        "lastModified": 1775238194,
+        "narHash": "sha256-ghJ795IQPS6u1skykOc3XKYQGLRthM3Orx9EJMjz8LM=",
         "owner": "nix-media-server",
         "repo": "nixarr",
-        "rev": "ca5776ff01d390a9d780db1382ad476e3a2ca980",
+        "rev": "2bf2692bdfb3810be12b30b8f26051d0d4fe5582",
         "type": "github"
       },
       "original": {
