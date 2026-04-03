@@ -40,8 +40,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre973084.6ebfbc38bdc6/nixexprs.tar.xz",
-      "hash": "sha256-PqhsO5qloSyvATi9qAIrgUcEFK67xSoacjacPw+t4H0="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre973302.106eb93cbb9d/nixexprs.tar.xz",
+      "hash": "sha256-YXwjgR1eZAhHYU/7p2hzod3VRsHwlOiekgPp0aJJULI="
     },
     "t3code": {
       "type": "GitRelease",
