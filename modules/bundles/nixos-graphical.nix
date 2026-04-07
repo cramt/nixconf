@@ -10,7 +10,19 @@
         alsa.enable = true;
         pulse.enable = true;
         jack.enable = true;
-        wireplumber.enable = true;
+        wireplumber = {
+          enable = true;
+          extraConfig."bluetooth-codec" = {
+            "monitor.bluez.rules" = [
+              {
+                matches = [ { "device.name" = "~bluez_card.*"; } ];
+                actions.update-props = {
+                  "bluez5.codecs" = [ "aac" "sbc_xq" "sbc" ];
+                };
+              }
+            ];
+          };
+        };
         systemWide = true;
       };
       boot.plymouth.enable = false;
