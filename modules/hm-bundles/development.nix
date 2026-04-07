@@ -1,6 +1,10 @@
-{ inputs, ... }: {
-  hmModules.bundles.development = { config, lib, pkgs, ... }:
-  let
+{inputs, ...}: {
+  hmModules.bundles.development = {
+    config,
+    lib,
+    pkgs,
+    ...
+  }: let
     ld_packages = with pkgs; [
       libyaml.dev
       stdenv.cc.cc
@@ -19,13 +23,34 @@
       };
       home.packages = with pkgs;
         [
-          gh pkg-config gnumake (lib.hiPrio gcc) yarn
+          chromium
+          gh
+          pkg-config
+          gnumake
+          (lib.hiPrio gcc)
+          yarn
           inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nodejs_24
-          pnpm cargo rustfmt rustc just clang postgresql.out opentofu tflint
+          pnpm
+          cargo
+          rustfmt
+          rustc
+          just
+          clang
+          postgresql.out
+          opentofu
+          tflint
           inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.awscli2
-          gcc-arm-embedded zig futhark devenv geminicommit
+          gcc-arm-embedded
+          zig
+          futhark
+          devenv
+          geminicommit
           inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
-          spade npins nix-prefetch-docker sshpass codexbar
+          spade
+          npins
+          nix-prefetch-docker
+          sshpass
+          codexbar
         ]
         ++ ld_packages;
       home.sessionVariables = {
