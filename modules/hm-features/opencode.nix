@@ -88,9 +88,9 @@
               };
             };
             local = {
-              description = "Local reasoning with DeepSeek R1 32B";
+              description = "Local coding agent with Devstral";
               mode = "subagent";
-              model = "ollama/deepseek-r1:32b";
+              model = "ollama-local/devstral";
               temperature = 0.2;
             };
           };
@@ -126,13 +126,25 @@
                 };
               };
               models = {
-                "qwen3-coder:32b" = {name = "Qwen3-Coder 32B";};
-                "gpt-oss:20b" = {name = "GPT-OSS 20B";};
-                "deepseek-r1:32b" = {name = "DeepSeek R1 32B";};
-                "codestral:22b" = {name = "Codestral 22B";};
+                "qwen2.5-coder:14b" = {name = "Qwen2.5 Coder 14B";};
+                "gemma4:e4b" = {name = "Gemma 4 E4B";};
                 "devstral" = {name = "Devstral";};
-                "llama3.3:70b" = {name = "Llama 3.3 70B";};
-                "phi4:14b" = {name = "Phi-4 14B";};
+                "gpt-oss:20b" = {name = "GPT-OSS 20B";};
+                "mistral:7b-instruct-v0.3" = {name = "Mistral 7B v0.3";};
+              };
+            };
+            ollama-local = {
+              npm = "@ai-sdk/openai-compatible";
+              name = "Ollama (Local)";
+              options = {
+                baseURL = "http://localhost:11434/v1";
+              };
+              models = {
+                "qwen2.5-coder:14b" = {name = "Qwen2.5 Coder 14B";};
+                "gemma4:e4b" = {name = "Gemma 4 E4B";};
+                "devstral" = {name = "Devstral";};
+                "gpt-oss:20b" = {name = "GPT-OSS 20B";};
+                "mistral:7b-instruct-v0.3" = {name = "Mistral 7B v0.3";};
               };
             };
           };

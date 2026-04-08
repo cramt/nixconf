@@ -96,13 +96,11 @@
       ollama = {
         enable = true;
         loadModels = [
-          "qwen3-coder:32b"
-          "gpt-oss:20b"
-          "deepseek-r1:32b"
-          "codestral:22b"
+          "qwen2.5-coder:14b"
+          "gemma4:e4b"
           "devstral"
-          "llama3.3:70b"
-          "phi4:14b"
+          "gpt-oss:20b"
+          "mistral:7b-instruct-v0.3"
         ];
         instances = {
           default = {

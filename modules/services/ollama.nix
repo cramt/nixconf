@@ -34,6 +34,7 @@
           HOME = home;
           OLLAMA_MODELS = models;
           OLLAMA_HOST = "0.0.0.0:${toString port}";
+          OLLAMA_NUM_CTX = "65536";
         }
         // lib.optionalAttrs (visibleDevices != null && gpu == "cuda") {
           CUDA_VISIBLE_DEVICES = visibleDevices;
