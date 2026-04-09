@@ -24,6 +24,7 @@ update:
     just update_gems
     npins update
     , nix-update t3code --flake
+    , nix-update pi-coding-agent --flake --generate-lockfile
     nh os switch
 
 tf *args:

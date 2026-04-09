@@ -36,7 +36,7 @@ inputs: [
   })
 
   (final: prev: {
-    codexbar = prev.callPackage ../packages/codexbar/default.nix {};
+    pi-coding-agent = prev.callPackage ../packages/pi-coding-agent/default.nix {};
   })
 
   # Fix faugus-launcher subprocess calls: faugus-run invokes `sys.executable -m faugus.components`

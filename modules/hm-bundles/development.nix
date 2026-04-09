@@ -50,7 +50,7 @@
           npins
           nix-prefetch-docker
           sshpass
-          codexbar
+          pi-coding-agent
         ]
         ++ ld_packages;
       home.sessionVariables = {

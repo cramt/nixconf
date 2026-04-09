@@ -1,21 +1,5 @@
 {
   "pins": {
-    "CodexBar": {
-      "type": "GitRelease",
-      "repository": {
-        "type": "GitHub",
-        "owner": "steipete",
-        "repo": "CodexBar"
-      },
-      "pre_releases": false,
-      "version_upper_bound": null,
-      "release_prefix": null,
-      "submodules": false,
-      "version": "v0.19.0",
-      "revision": "9d24649dda742ea90d59329b27c8cf91797be6d5",
-      "url": "https://api.github.com/repos/steipete/CodexBar/tarball/refs/tags/v0.19.0",
-      "hash": "sha256-PPS0Xw7WoUTaoc6vLk0wkVlOy3Scn9c7tiivRLYCSHI="
-    },
     "haveagitgat/tdarr": {
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
