@@ -17,7 +17,7 @@
 
   myNixOS = {
     bundles.general.enable = true;
-    bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
+    bundles.general.stylixAsset = ../../media/artemis2_2.jpg;
     services.sshd.enable = true;
   };
 

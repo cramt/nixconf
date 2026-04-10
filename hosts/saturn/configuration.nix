@@ -80,7 +80,7 @@
     qemu.enable = true;
     docker.enable = true;
     bundles.general.enable = true;
-    bundles.general.stylixAsset = ../../media/terantula_nebula.jpg;
+    bundles.general.stylixAsset = ../../media/artemis2_2.jpg;
     bundles.graphical.enable = true;
     steam.enable = true;
     amd.enable = true;
