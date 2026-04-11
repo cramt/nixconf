@@ -35,7 +35,7 @@
   };
 
   fileSystems."/mnt/amirani" = {
-    device = "/dev/disk/by-uuid/94c8d7b9-75ca-4f31-87d7-42944c58207e";
+    device = "/dev/disk/by-uuid/fc155353-2c26-40f4-992a-204b174c270c";
     fsType = "ext4";
     options = [
       "users"

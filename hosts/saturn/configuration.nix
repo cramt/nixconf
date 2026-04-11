@@ -29,6 +29,7 @@
   services.scx.enable = true;
   boot.extraModprobeConfig = ''
     options usbhid mousepoll=2
+    options snd-intel-dspcfg dsp_driver=1
   '';
 
   boot.binfmt.emulatedSystems = ["aarch64-linux"];
