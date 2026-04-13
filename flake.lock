@@ -1588,18 +1588,14 @@
         "website-builder": "website-builder"
       },
       "locked": {
-        "lastModified": 1775238194,
-        "narHash": "sha256-ghJ795IQPS6u1skykOc3XKYQGLRthM3Orx9EJMjz8LM=",
-        "owner": "nix-media-server",
-        "repo": "nixarr",
-        "rev": "2bf2692bdfb3810be12b30b8f26051d0d4fe5582",
-        "type": "github"
+        "lastModified": 1776019701,
+        "narHash": "sha256-LShv2EppuKG2Mefi9BQAkL0ozViBjO6YaRBvA3XCq2Q=",
+        "path": "/home/cramt/code/nixarr",
+        "type": "path"
       },
       "original": {
-        "owner": "nix-media-server",
-        "ref": "dev",
-        "repo": "nixarr",
-        "type": "github"
+        "path": "/home/cramt/code/nixarr",
+        "type": "path"
       }
     },
     "nixpkgs": {

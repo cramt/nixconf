@@ -87,6 +87,7 @@
         containerConfig = {
           image = "${docker_source.image_name}:${docker_source.image_tag}";
           networks = ["host"];
+          healthCmd = "none";
           volumes = ["${ollaConfig}:/config/config.yaml:ro"];
           environments = {
             OLLA_CONFIG_FILE = "/config/config.yaml";

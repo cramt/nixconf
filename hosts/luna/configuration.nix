@@ -39,13 +39,7 @@
     bundles.general.stylixAsset = ../../media/artemis2_2.jpg;
     bundles.users.enable = true;
 
-    services = let
-      downloads = {
-        raw = "/mnt/crisium/downloads/raw";
-        movies = "/mnt/crisium/downloads/movies";
-        tvshows = "/mnt/imbrium/downloads/tvshows";
-      };
-    in {
+    services = {
       nixarr.enable = true;
       tor.enable = true;
       ollama = {
@@ -98,18 +92,6 @@
         enable = true;
         dataVolume = "/mnt/imbrium/gtnh";
       };
-      jellyfin = {
-        enable = false;
-        configVolume = "/mnt/imbrium/configs/jellyfin";
-        mediaVolumes = {
-          tvshows = downloads.tvshows;
-          movies = downloads.movies;
-        };
-        gpuDevices = [
-          "/dev/dri/card1"
-          "/dev/dri/renderD128"
-        ];
-      };
       caddy = {
         enable = true;
         cacheVolume = "/mnt/imbrium/configs/caddy-cache";
@@ -117,37 +99,9 @@
           books = "/mnt/imbrium/books";
         };
       };
-      qbittorrent = {
-        enable = false;
-        configVolume = "/mnt/imbrium/configs/qbittorrent";
-        downloadVolume = downloads.raw;
-      };
       foundryvtt = {
         enable = true;
         dataVolume = "/mnt/imbrium/configs/foundryvtt_a";
-      };
-      prowlarr = {
-        enable = false;
-        configVolume = "/mnt/imbrium/configs/prowlarr";
-      };
-      radarr = {
-        enable = false;
-        configVolume = "/mnt/imbrium/configs/radarr";
-        downloadVolume = downloads.raw;
-        movieVolume = downloads.movies;
-      };
-      sonarr = {
-        enable = false;
-        configVolume = "/mnt/imbrium/configs/sonarr";
-        downloadVolume = downloads.raw;
-        tvVolume = downloads.tvshows;
-      };
-      bazarr = {
-        enable = false;
-        configVolume = "/mnt/imbrium/configs/bazarr";
-        downloadVolume = downloads.raw;
-        tvVolume = downloads.tvshows;
-        movieVolume = downloads.movies;
       };
       satisfactory = {
         enable = true;

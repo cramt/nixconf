@@ -86,13 +86,7 @@
     steam.enable = true;
     amd.enable = true;
     bundles.users.enable = true;
-    services = let
-      downloads = {
-        raw = "/mnt/amirani/raw_downloads";
-        movies = "/mnt/amirani/movies";
-        tvshows = "/mnt/amirani/tvshows";
-      };
-    in {
+    services = {
       sunshine.enable = true;
       ollama = {
         enable = true;
@@ -112,55 +106,15 @@
         };
       };
       nixarr.enable = true;
-      jellyfin = {
-        enable = false;
-        configVolume = "/mnt/amirani/configs/jellyfin";
-        mediaVolumes = {
-          tvshows = downloads.tvshows;
-          movies = downloads.movies;
-        };
-        gpuDevices = [
-          "/dev/dri/card1"
-          "/dev/dri/renderD128"
-        ];
-      };
       caddy = {
         enable = false;
         cacheVolume = "/mnt/amirani/configs/caddy-cache";
         staticFileVolumes = {};
         domain = "localhost";
       };
-      qbittorrent = {
-        enable = false;
-        configVolume = "/mnt/amirani/configs/qbittorrent";
-        downloadVolume = downloads.raw;
-      };
       foundryvtt = {
         enable = false;
         dataVolume = "/mnt/amirani/configs/foundryvtt_a";
-      };
-      prowlarr = {
-        enable = false;
-        configVolume = "/mnt/amirani/configs/prowlarr";
-      };
-      radarr = {
-        enable = false;
-        configVolume = "/mnt/amirani/configs/radarr";
-        downloadVolume = downloads.raw;
-        movieVolume = downloads.movies;
-      };
-      sonarr = {
-        enable = false;
-        configVolume = "/mnt/amirani/configs/sonarr";
-        downloadVolume = downloads.raw;
-        tvVolume = downloads.tvshows;
-      };
-      bazarr = {
-        enable = false;
-        configVolume = "/mnt/amirani/configs/bazarr";
-        downloadVolume = downloads.raw;
-        tvVolume = downloads.tvshows;
-        movieVolume = downloads.movies;
       };
       homelab_system_controller = {
         enable = false;
