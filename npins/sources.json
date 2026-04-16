@@ -11,8 +11,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:eb41e6f0d2e8972d4a55898fc18d3cf916c423fdb70a8d69c3d09aaf6f95e6cf",
-      "hash": "sha256-TQFOBj7SW2JMn7yQMPXkNVFdolbivW5YR2dhOUdaSvk="
+      "image_digest": "sha256:14ef5f5413d1888a5ee49c3a1c23c78e415e26598f3ecdfb96fcef65bfcc4435",
+      "hash": "sha256-Y3M+J9tdIkVVko76qaC89X5ypkw37064OxIXAjUPy3o="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -24,8 +24,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre977728.b0188973b4b2/nixexprs.tar.xz",
-      "hash": "sha256-QIGMZuG5QK1Z4OEMDSpEJc7JRonbemZ9S+xpBIsQuNE="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre978638.13043924aaa7/nixexprs.tar.xz",
+      "hash": "sha256-qTVvODr6edFBLD2lncXPF8yTQeCafZUuKVtpV3Xb3yM="
     },
     "t3code": {
       "type": "GitRelease",
@@ -38,10 +38,10 @@
       "version_upper_bound": null,
       "release_prefix": null,
       "submodules": false,
-      "version": "v0.0.15",
-      "revision": "f82bae16680206e4be20baf3d835941aa68611cf",
-      "url": "https://api.github.com/repos/pingdotgg/t3code/tarball/refs/tags/v0.0.15",
-      "hash": "sha256-HOPiA8X/FzswKGmOuYKog3YIn5iq5rJ/7kDoGhN11x0="
+      "version": "v0.0.17",
+      "revision": "e3004ae806d4e9a81e03ff919f50d2d34c37ffe7",
+      "url": "https://api.github.com/repos/pingdotgg/t3code/tarball/refs/tags/v0.0.17",
+      "hash": "sha256-EbkDGpQSVHopyPWnVvndp9vDoLqXGYd1hF9iy7zYKiQ="
     },
     "thushan/olla": {
       "type": "Container",
