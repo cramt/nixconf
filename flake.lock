@@ -1583,19 +1583,24 @@
     "nixarr": {
       "inputs": {
         "nixpkgs": "nixpkgs_8",
+        "sickbeard-mp4-automator": "sickbeard-mp4-automator",
         "treefmt-nix": "treefmt-nix_2",
         "vpnconfinement": "vpnconfinement",
         "website-builder": "website-builder"
       },
       "locked": {
-        "lastModified": 1776019701,
-        "narHash": "sha256-LShv2EppuKG2Mefi9BQAkL0ozViBjO6YaRBvA3XCq2Q=",
-        "path": "/home/cramt/code/nixarr",
-        "type": "path"
+        "lastModified": 1776072844,
+        "narHash": "sha256-g7hp3kGHSEkZeapn9ubGw7QyvOeol9pXPEN5MrEvI0A=",
+        "owner": "nix-media-server",
+        "repo": "nixarr",
+        "rev": "fd3c34e7bdeecf1e6f94ef2fa52a8dc3711e99b2",
+        "type": "github"
       },
       "original": {
-        "path": "/home/cramt/code/nixarr",
-        "type": "path"
+        "owner": "nix-media-server",
+        "ref": "feat/sma",
+        "repo": "nixarr",
+        "type": "github"
       }
     },
     "nixpkgs": {
@@ -2264,6 +2269,22 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "sickbeard-mp4-automator": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1771841168,
+        "narHash": "sha256-pSCBAJ2pPfnNfQCvkC8Qy6IshK3J8oACRbFJolor3AU=",
+        "owner": "mdhiggins",
+        "repo": "sickbeard_mp4_automator",
+        "rev": "e3db46613bba5724ab298b64a9214f6f6ae863b1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mdhiggins",
+        "repo": "sickbeard_mp4_automator",
         "type": "github"
       }
     },
