@@ -13,7 +13,7 @@
   npinsSources ? (import ../../npins),
 }: let
   pin = npinsSources.t3code;
-  version = lib.removePrefix "v" pin.version;
+  version = "0-unstable-${builtins.substring 0 7 pin.revision}";
 
   nodeModules = stdenv.mkDerivation {
     name = "t3code-node-modules";
@@ -37,7 +37,7 @@
 
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = "sha256-F9j2O/w8NiOAy5F9Y0r3RvwS7JtGnMTfUE6SHfmvZw4=";
+    outputHash = "sha256-EfP3+3ah3MgJN59LekMCIaSTYRhHPqyoa4mYdokIHHo=";
   };
 in
   stdenv.mkDerivation {

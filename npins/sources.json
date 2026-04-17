@@ -28,20 +28,17 @@
       "hash": "sha256-qTVvODr6edFBLD2lncXPF8yTQeCafZUuKVtpV3Xb3yM="
     },
     "t3code": {
-      "type": "GitRelease",
+      "type": "Git",
       "repository": {
         "type": "GitHub",
         "owner": "pingdotgg",
         "repo": "t3code"
       },
-      "pre_releases": false,
-      "version_upper_bound": null,
-      "release_prefix": null,
-      "submodules": false,
-      "version": "v0.0.17",
-      "revision": "e3004ae806d4e9a81e03ff919f50d2d34c37ffe7",
-      "url": "https://api.github.com/repos/pingdotgg/t3code/tarball/refs/tags/v0.0.17",
-      "hash": "sha256-EbkDGpQSVHopyPWnVvndp9vDoLqXGYd1hF9iy7zYKiQ="
+      "branch": "main",
+      "submodules": true,
+      "revision": "d22c6f52800673d954840bd447109aeb707c6e8e",
+      "url": null,
+      "hash": "sha256-baounNDmDniH/v0TQFSt5zj1/AflxEmYauPxl5hvT6U="
     },
     "thushan/olla": {
       "type": "Container",
