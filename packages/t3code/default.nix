@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchFromGitHub,
   bun,
   nodejs_24,
   electron,
@@ -10,14 +11,19 @@
   python3,
   pkg-config,
   node-gyp,
-  npinsSources ? (import ../../npins),
 }: let
-  pin = npinsSources.t3code;
-  version = "0-unstable-${builtins.substring 0 7 pin.revision}";
+  version = "0.0.21-nightly.20260420.77-unstable-2026-04-20";
+  src = fetchFromGitHub {
+    owner = "pingdotgg";
+    repo = "t3code";
+    rev = "f6978db60553716a9974b9e85f855bae8124905d";
+    hash = "sha256-1Ywg8ghkRyh8MTbGHC3yl4Kwgc/m60MdDootdAyw2XY=";
+    fetchSubmodules = true;
+  };
 
   nodeModules = stdenv.mkDerivation {
-    name = "t3code-node-modules";
-    src = pin;
+    pname = "t3code-node-modules";
+    inherit version src;
 
     nativeBuildInputs = [
       bun
@@ -37,14 +43,12 @@
 
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = "sha256-EfP3+3ah3MgJN59LekMCIaSTYRhHPqyoa4mYdokIHHo=";
+    outputHash = "sha256-pxmCy6Mk4KCP6kbvqrbQ1pbRtmZ90oHsFSvkjpA2oqI=";
   };
 in
   stdenv.mkDerivation {
     pname = "t3code";
-    inherit version;
-
-    src = pin;
+    inherit version src;
 
     nativeBuildInputs = [
       bun
@@ -68,13 +72,13 @@ in
       # (Electron APIs are provided by the Electron runtime itself).
       substituteInPlace apps/desktop/tsdown.config.ts \
         --replace-fail \
-          'noExternal: (id) => id.startsWith("@t3tools/"),' \
+          'noExternal: (id) => id.startsWith("@t3tools/") || id.startsWith("effect-acp"),' \
           'noExternal: (id) => id !== "electron",'
 
       # Bundle all runtime deps into the server except node-pty (native addon).
       substituteInPlace apps/server/tsdown.config.ts \
         --replace-fail \
-          'noExternal: (id) => id.startsWith("@t3tools/"),' \
+          'noExternal: (id) => id.startsWith("@t3tools/") || id.startsWith("effect-acp"),' \
           'noExternal: (id) => id !== "node-pty",'
     '';
 
@@ -83,8 +87,7 @@ in
 
       # Copy root + all workspace node_modules from the FOD
       cp -r ${nodeModules}/node_modules ./node_modules
-      for dir in apps/desktop apps/server apps/web apps/marketing \
-                  packages/contracts packages/shared scripts; do
+      for dir in apps/* packages/* scripts; do
         if [ -d "${nodeModules}/$dir/node_modules" ]; then
           cp -r "${nodeModules}/$dir/node_modules" "./$dir/node_modules"
         fi
@@ -151,6 +154,9 @@ in
         categories = ["Development"];
       })
     ];
+
+    # Exposed so `nix-update t3code -s passthru.nodeModules` can bump the FOD hash.
+    passthru = {inherit nodeModules;};
 
     meta = with lib; {
       description = "Minimal web GUI for coding agents with Claude Code support";

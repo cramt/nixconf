@@ -4,15 +4,15 @@
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
       "image_tag": "latest",
-      "image_digest": "sha256:db9520315f83974cb5b8f2a8ed89a8a2be3d97d29575f54cbe4b5cc5e6daf5a5",
-      "hash": "sha256-f+t9RzjDq7tf2eowvAgdb48iqPRN/zsoPwHSZqcUOfg="
+      "image_digest": "sha256:4d48a46fb984b29e07cf4fd66cf7d3c8bd7c2c8dd662d09b4e20e11ae93e52fc",
+      "hash": "sha256-QXRTevnSFnaT0OyQxkyql25GuXA2b6ymakHjtDJdSww="
     },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:14ef5f5413d1888a5ee49c3a1c23c78e415e26598f3ecdfb96fcef65bfcc4435",
-      "hash": "sha256-Y3M+J9tdIkVVko76qaC89X5ypkw37064OxIXAjUPy3o="
+      "image_digest": "sha256:2b075e2dd7f08235f9e9283eb46b85d916811ad8b371b167e0a864f01506c992",
+      "hash": "sha256-n0dC7QVU4Z9h+92MtX+rXyxNT+jNynpZNKHGU2KEx6o="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -24,28 +24,15 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre978638.13043924aaa7/nixexprs.tar.xz",
-      "hash": "sha256-qTVvODr6edFBLD2lncXPF8yTQeCafZUuKVtpV3Xb3yM="
-    },
-    "t3code": {
-      "type": "Git",
-      "repository": {
-        "type": "GitHub",
-        "owner": "pingdotgg",
-        "repo": "t3code"
-      },
-      "branch": "main",
-      "submodules": true,
-      "revision": "d22c6f52800673d954840bd447109aeb707c6e8e",
-      "url": null,
-      "hash": "sha256-baounNDmDniH/v0TQFSt5zj1/AflxEmYauPxl5hvT6U="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre981196.b86751bc4085/nixexprs.tar.xz",
+      "hash": "sha256-mBqzkn7oJti2hqeO8iTbDxKw+1ifxpP53feQ0CEXies="
     },
     "thushan/olla": {
       "type": "Container",
       "image_name": "ghcr.io/thushan/olla",
       "image_tag": "latest",
-      "image_digest": "sha256:7dc16916e0d4eaaa4307105503c1e7c5b6dbc1aff87ad709bd00e0abd0e97992",
-      "hash": "sha256-DmeHhpdWBLY8pcgYtaP4QO1IJxHjBzJqpWYLsBvxJ0c="
+      "image_digest": "sha256:2c5782ba4e185e87278cdff6a94b43caa4e57b15f0031a161dc3f475e880ba6e",
+      "hash": "sha256-iIqIr9tOY1NtrrhghVGUDh448MhlY1Zb7J1zr22EM4M="
     },
     "wolveix/satisfactory-server": {
       "type": "Container",

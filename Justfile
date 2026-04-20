@@ -23,8 +23,7 @@ update:
     just update_flake
     just update_gems
     npins update
-    , nix-update t3code --flake
-    , nix-update pi-coding-agent --flake --generate-lockfile
+    , nix-update t3code --flake --version=branch -s passthru.nodeModules
     nh os switch
 
 tf *args:

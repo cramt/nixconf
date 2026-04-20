@@ -35,10 +35,6 @@ inputs: [
     };
   })
 
-  (final: prev: {
-    pi-coding-agent = prev.callPackage ../packages/pi-coding-agent/default.nix {};
-  })
-
   # Fix faugus-launcher subprocess calls: faugus-run invokes `sys.executable -m faugus.components`
   # which spawns bare python3 without site-packages, so deps like `requests` are missing.
   # Workaround for nixpkgs#423927 (buildPythonPackage incomplete wrapping).
