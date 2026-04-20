@@ -137,7 +137,7 @@ in
 
       mkdir -p $out/bin
       makeWrapper ${lib.getExe electron} $out/bin/t3code \
-        --add-flags "$root/apps/desktop/dist-electron/main.js" \
+        --add-flags "$root/apps/desktop/dist-electron/main.cjs" \
         --chdir "$root" \
         --set ELECTRON_IS_DEV 0 \
         --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}"
