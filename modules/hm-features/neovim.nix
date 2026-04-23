@@ -61,7 +61,8 @@
               { key = "<S-Tab>"; mode = "v"; action = "<gv"; desc = "Unindent"; }
             ] ++ (builtins.map (x: { key = "<C-${lib.strings.toUpper x}>"; mode = "n"; action = "<C-W>${x}"; }) ["h" "j" "k" "l"]);
             fzf-lua.profile = "fzf-native";
-            languages = { enableTreesitter = true; enableExtraDiagnostics = false; markdown.enable = true; bash.enable = true; css.enable = true; html.enable = true; rust.enable = true; astro.enable = true; tailwind.enable = true; ts.enable = true; };
+            lsp.presets.tailwindcss-language-server.enable = true;
+            languages = { enableTreesitter = true; enableExtraDiagnostics = false; markdown.enable = true; bash.enable = true; css.enable = true; html.enable = true; rust.enable = true; astro.enable = true; typescript.enable = true; };
             visuals = { nvim-scrollbar.enable = true; nvim-web-devicons.enable = true; nvim-cursorline.enable = true; cinnamon-nvim.enable = true; fidget-nvim.enable = true; highlight-undo.enable = true; indent-blankline.enable = true; };
             statusline.lualine = { enable = true; theme = "base16"; };
             autopairs.nvim-autopairs.enable = true;

@@ -8,7 +8,7 @@
     config = lib.mkIf config.myHomeManager.zed.enable {
       programs.zed-editor = {
         enable = true;
-        extensions = ["toml" "ruby" "rust" "nix" "terraform"];
+        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin"];
         mutableUserSettings = false;
         mutableUserKeymaps = false;
         mutableUserTasks = false;
@@ -36,7 +36,7 @@
         ];
         userSettings = {
           node = { path = lib.getExe pkgs.nodejs; npm_path = lib.getExe' pkgs.nodejs "npm"; };
-          show_edit_predictions = false;
+
           journal.hour_format = "hour24";
           auto_update = false;
           terminal = {
@@ -62,10 +62,8 @@
             ruby-lsp.binary.path = lib.getExe rubyGems.ruby-lsp;
             rubocop.binary.path = lib.getExe rubyGems.rubocop;
           };
-          agent = {
-            default_model = { model = "gemini-3-pro"; provider = "google"; };
-            thread_summary_model = { provider = "google"; model = "gemini-2.0-flash"; };
-          };
+
+          theme = lib.mkForce "Catppuccin Mocha";
           vim_mode = true;
           load_direnv = "shell_hook";
           base_keymap = "VSCode";
