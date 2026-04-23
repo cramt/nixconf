@@ -31,8 +31,8 @@
       "type": "Container",
       "image_name": "ghcr.io/thushan/olla",
       "image_tag": "latest",
-      "image_digest": "sha256:2c5782ba4e185e87278cdff6a94b43caa4e57b15f0031a161dc3f475e880ba6e",
-      "hash": "sha256-iIqIr9tOY1NtrrhghVGUDh448MhlY1Zb7J1zr22EM4M="
+      "image_digest": "sha256:cd30eed61b39eec60e06e2b6b6710aebe612cffe2ef5e78d36501ebe23f01a93",
+      "hash": "sha256-v5RqHx67+1HP8W+vurbXtZfRX3Ozawhj9GObIckycn8="
     },
     "wolveix/satisfactory-server": {
       "type": "Container",
