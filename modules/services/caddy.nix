@@ -43,46 +43,6 @@
         })
         cfg.serviceMap)
       // (
-        if config.myNixOS.services.olla.enable
-        then {
-          "ollama.${cfg.domain}" = {
-            logFormat = lib.mkForce ''
-              output stdout
-              level DEBUG
-            '';
-            extraConfig = let
-              ollaPort = builtins.toString config.port-selector.ports.olla;
-            in ''
-              import cors
-              @bearer header Authorization "Bearer {$OLLAMA_BEARER_SECRET}"
-              reverse_proxy @bearer http://localhost:${ollaPort}
-              respond 401
-            '';
-          };
-        }
-        else if config.myNixOS.services.ollama.enable
-        then {
-          "ollama.${cfg.domain}" = {
-            logFormat = lib.mkForce ''
-              output stdout
-              level DEBUG
-            '';
-            extraConfig = let
-              port = builtins.toString config.port-selector.ports.ollama;
-            in ''
-              import cors
-              @bearer header Authorization "Bearer {$OLLAMA_BEARER_SECRET}"
-              reverse_proxy @bearer http://192.168.178.23:${port} http://localhost:${port} {
-                health_uri /
-                lb_policy first
-              }
-              respond 401
-            '';
-          };
-        }
-        else {}
-      )
-      // (
         if config.myNixOS.services.servatrice.enable
         then {
           "cockatrice.${cfg.domain}" = {
@@ -170,7 +130,6 @@
       services.caddy = {
         enable = true;
         email = (import ../../myLib/site.nix).email;
-        environmentFile = config.services.onepassword-secrets.secretPaths.ollamaBearerEnv;
         globalConfig = ''
           debug
         '';

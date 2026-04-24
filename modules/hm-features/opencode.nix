@@ -7,10 +7,6 @@
   }: {
     options.myHomeManager.opencode.enable = lib.mkEnableOption "myHomeManager.opencode";
     config = lib.mkIf config.myHomeManager.opencode.enable {
-      programs.zsh.initContent = ''
-        [[ -f /var/lib/opnix/secrets/ollamaBearerEnv ]] && { set -a; source /var/lib/opnix/secrets/ollamaBearerEnv; set +a; }
-      '';
-
       home.sessionVariables.CHROMIUM_PATH = "${pkgs.chromium}/bin/chromium";
 
       programs.opencode = {
@@ -88,9 +84,9 @@
               };
             };
             local = {
-              description = "Local coding agent with Devstral";
+              description = "Local coding agent with Qwen3.6 27B";
               mode = "subagent";
-              model = "ollama-local/devstral";
+              model = "llama-cpp-local/qwen3.6-27b";
               temperature = 0.2;
             };
           };
@@ -116,35 +112,14 @@
                 "gpt-5.2-think-deeper" = {name = "GPT-5.2 Think Deeper";};
               };
             };
-            ollama = {
+            llama-cpp-local = {
               npm = "@ai-sdk/openai-compatible";
-              name = "Ollama";
-              options = {
-                baseURL = "https://ollama.cramt.dk/olla/openai/v1";
-                headers = {
-                  Authorization = "Bearer {env:OLLAMA_BEARER_SECRET}";
-                };
-              };
-              models = {
-                "qwen2.5-coder:14b" = {name = "Qwen2.5 Coder 14B";};
-                "gemma4:e4b" = {name = "Gemma 4 E4B";};
-                "devstral" = {name = "Devstral";};
-                "gpt-oss:20b" = {name = "GPT-OSS 20B";};
-                "mistral:7b-instruct-v0.3" = {name = "Mistral 7B v0.3";};
-              };
-            };
-            ollama-local = {
-              npm = "@ai-sdk/openai-compatible";
-              name = "Ollama (Local)";
+              name = "llama.cpp (Local)";
               options = {
                 baseURL = "http://localhost:11434/v1";
               };
               models = {
-                "qwen2.5-coder:14b" = {name = "Qwen2.5 Coder 14B";};
-                "gemma4:e4b" = {name = "Gemma 4 E4B";};
-                "devstral" = {name = "Devstral";};
-                "gpt-oss:20b" = {name = "GPT-OSS 20B";};
-                "mistral:7b-instruct-v0.3" = {name = "Mistral 7B v0.3";};
+                "qwen3.6-27b" = {name = "Qwen3.6 27B";};
               };
             };
           };

@@ -88,14 +88,15 @@
     bundles.users.enable = true;
     services = {
       sunshine.enable = true;
-      ollama = {
+      llama-cpp = {
         enable = true;
-        loadModels = [
-          "qwen2.5-coder:14b"
-          "gemma4:e4b"
-          "devstral"
-          "gpt-oss:20b"
-          "mistral:7b-instruct-v0.3"
+        models = [
+          {
+            name = "qwen3.6-27b";
+            repo = "unsloth/Qwen3.6-27B-GGUF";
+            file = "Qwen3.6-27B-UD-Q3_K_XL.gguf";
+            args = ["-ngl" "999" "-c" "16384" "--flash-attn" "on"];
+          }
         ];
         instances = {
           default = {

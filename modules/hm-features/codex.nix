@@ -5,10 +5,10 @@
       programs.codex = {
         enable = true;
         settings = {
-          model = "gpt-oss:20b";
-          model_provider = "ollama";
+          model = "qwen3.6-27b";
+          model_provider = "llama-cpp";
           model_providers = {
-            ollama = { name = "ollama"; baseURL = "http://localhost:11434/v1"; };
+            llama-cpp = { name = "llama.cpp"; baseURL = "http://localhost:11434/v1"; };
           };
         };
       };

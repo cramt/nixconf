@@ -8,7 +8,6 @@
     cfg = config.myNixOS.services.open-webui;
     port = config.port-selector.ports.open-webui;
     site = import ../../myLib/site.nix;
-    ollama_port = config.port-selector.ports.ollama;
     searxng-port = config.port-selector.ports.searxng;
     tika-port = config.port-selector.ports.tika;
   in {
@@ -31,11 +30,11 @@
           RAG_TEXT_SPLITTER = "token";
           CHUNK_SIZE = "500";
           CHUNK_OVERLAP = "50";
-          RAG_EMBEDDING_ENGINE = "ollama";
-          RAG_EMBEDDING_MODEL = "DC1LEX/nomic-embed-text-v1.5-multimodal:latest";
           WEBUI_URL = "https://open-webui.${site.domain}";
-          ENABLE_OLLAMA_API = "true";
-          OLLAMA_BASE_URLS = "http://192.168.178.23:${builtins.toString ollama_port};http://localhost:${builtins.toString ollama_port}";
+          ENABLE_OLLAMA_API = "false";
+          ENABLE_OPENAI_API = "true";
+          OPENAI_API_BASE_URLS = "http://192.168.178.23:11434/v1";
+          OPENAI_API_KEYS = "none";
           ENABLE_PERSISTENT_CONFIG = "false";
           ENABLE_WEB_SEARCH = "true";
           WEB_SEARCH_ENGINE = "searxng";

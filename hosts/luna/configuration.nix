@@ -42,41 +42,6 @@
     services = {
       nixarr.enable = true;
       tor.enable = true;
-      ollama = {
-        enable = true;
-        loadModels = [
-          "qwen3-coder:32b"
-          "gpt-oss:20b"
-          "deepseek-r1:32b"
-          "codestral:22b"
-          "devstral"
-          "llama3.3:70b"
-          "phi4:14b"
-        ];
-        instances = {
-          default = {
-            gpu = "cuda";
-            visibleDevices = "0";
-          };
-        };
-      };
-      olla = {
-        enable = true;
-        endpoints = [
-          {
-            url = "http://192.168.178.22:11434";
-            name = "hannah-ollama";
-          }
-          {
-            url = "http://192.168.178.23:11434";
-            name = "saturn-ollama";
-          }
-          {
-            url = "http://localhost:${toString config.port-selector.ports."ollama-default"}";
-            name = "luna-ollama";
-          }
-        ];
-      };
       minio.enable = true;
       btopttyd.enable = true;
       minecraft-forge = {
