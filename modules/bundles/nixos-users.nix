@@ -62,6 +62,7 @@
                 "gamemode"
                 "plugdev"
                 "dailout"
+                "systemd-journal"
               ];
               openssh.authorizedKeys.keys = user.authorizedKeys;
             })
