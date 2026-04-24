@@ -106,6 +106,7 @@
           };
         };
       };
+      yelliv.enable = true;
       nixarr.enable = true;
       caddy = {
         enable = false;

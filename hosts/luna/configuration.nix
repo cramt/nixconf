@@ -89,12 +89,6 @@
       postgres = {
         dataDir = "/mnt/imbrium/pgsql";
       };
-      titan-vm = {
-        enable = false;
-        dataDir = "/storage/titan-vm";
-        secretFiles = {
-        };
-      };
       continuwuity.enable = true;
       terraform_remote_backend.enable = true;
       servatrice.enable = true;

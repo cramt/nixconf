@@ -11,7 +11,6 @@ My personal NixOS configuration, managing a fleet of machines using [flake-parts
 | `mars` | Desktop | Secondary desktop, AMD gaming PC with COSMIC |
 | `ganymede` | Laptop | NVIDIA laptop running KDE Plasma 6, always-on (lid-close ignored) |
 | `eros` | SBC | Raspberry Pi (aarch64), SD card image |
-| `titan` | VM | QEMU guest, shares Nix store with host via 9p |
 
 ## Common Commands
 

@@ -203,7 +203,7 @@
                   mkdir -p "$dest"
                   if [[ ! -f "$target" ]]; then
                     echo "Downloading ${m.repo}/${m.file} -> $target"
-                    ${hfHub}/bin/huggingface-cli download \
+                    ${hfHub}/bin/hf download \
                       ${lib.escapeShellArg m.repo} \
                       ${lib.escapeShellArg m.file} \
                       --local-dir "$dest"
