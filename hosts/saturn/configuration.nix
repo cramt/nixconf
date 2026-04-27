@@ -91,12 +91,31 @@
       llama-cpp = {
         enable = true;
         models = [
+          # --- Option 1: Qwen3.6-27B (smartest, tight VRAM fit) ---
+          # ~13GB model + quantized KV cache. Fits 16GB with headroom.
+          # If this crashes your desktop again, switch to option 2 or 3.
+          # {
+          #  name = "qwen3.6-27b";
+          #  repo = "unsloth/Qwen3.6-27B-GGUF";
+          #  file = "Qwen3.6-27B-UD-Q3_K_XL.gguf";
+          #  args = ["-ngl" "999" "-c" "8192" "--flash-attn" "on" "-ctk" "iq4_nl" "-ctv" "iq4_nl"];
+          # }
+          # --- Option 2: Qwen3-14B (balanced, comfortable fit) ---
+          # ~9GB model. Plenty of VRAM headroom, bigger context possible.
           {
-            name = "qwen3.6-27b";
-            repo = "unsloth/Qwen3.6-27B-GGUF";
-            file = "Qwen3.6-27B-UD-Q3_K_XL.gguf";
+            name = "qwen3-14b";
+            repo = "unsloth/Qwen3-14B-GGUF";
+            file = "Qwen3-14B-Q4_K_M.gguf";
             args = ["-ngl" "999" "-c" "16384" "--flash-attn" "on"];
           }
+          # --- Option 3: Qwen3.5-9B (fastest, safest, most headroom) ---
+          # ~6GB model. Tons of room, can push context way up.
+          # {
+          #   name = "qwen3.5-9b";
+          #   repo = "unsloth/Qwen3.5-9B-GGUF";
+          #   file = "Qwen3.5-9B-UD-Q4_K_XL.gguf";
+          #   args = ["-ngl" "999" "-c" "32768" "--flash-attn" "on"];
+          # }
         ];
         instances = {
           default = {
@@ -106,7 +125,14 @@
           };
         };
       };
-      yelliv.enable = true;
+      yelliv = {
+        enable = true;
+        discord = {
+          enable = true;
+          guildId = "337731942399082498";
+          userId = "149996010314137600";
+        };
+      };
       nixarr.enable = true;
       caddy = {
         enable = false;

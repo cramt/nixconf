@@ -73,6 +73,9 @@
           nixAccessTokensConf = {
             reference = "op://Homelab/GitHub/nixAccessTokensConf";
           };
+          discordBotToken = {
+            reference = "op://Homelab/OpenClaw-Discord/botToken";
+          };
           terraformRemotePassword =
             {
               reference = "op://Homelab/TerraformRemoteState/password";

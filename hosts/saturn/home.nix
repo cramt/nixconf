@@ -20,5 +20,19 @@
     waybar.monitors = ["DP-2"];
   };
 
+  home.packages = let
+    open-openclaw = import ../../scripts/open_openclaw.nix { inherit pkgs; };
+  in [
+    open-openclaw
+    (pkgs.makeDesktopItem {
+      name = "openclaw";
+      desktopName = "OpenClaw";
+      comment = "Local LLM chat via OpenClaw gateway";
+      exec = "${open-openclaw}/bin/open-openclaw";
+      icon = "applications-science";
+      categories = [ "Network" "Chat" ];
+    })
+  ];
+
   home.stateVersion = "25.11";
 }

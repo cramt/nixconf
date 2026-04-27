@@ -11,8 +11,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:2b075e2dd7f08235f9e9283eb46b85d916811ad8b371b167e0a864f01506c992",
-      "hash": "sha256-n0dC7QVU4Z9h+92MtX+rXyxNT+jNynpZNKHGU2KEx6o="
+      "image_digest": "sha256:f145798d6cc97ea612e408c722d580fd260c5d65d21b7cd20461afbce6e7c6ec",
+      "hash": "sha256-4214m5ePclsXX+bnnmeuN7xSwtYipT2BVKrMFHUg17o="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -31,8 +31,8 @@
       "type": "Container",
       "image_name": "ghcr.io/thushan/olla",
       "image_tag": "latest",
-      "image_digest": "sha256:cd30eed61b39eec60e06e2b6b6710aebe612cffe2ef5e78d36501ebe23f01a93",
-      "hash": "sha256-v5RqHx67+1HP8W+vurbXtZfRX3Ozawhj9GObIckycn8="
+      "image_digest": "sha256:6df6e3379efc89b865105efde1adc53e5fff63a1c08dff7dc6c56556fcfebac7",
+      "hash": "sha256-6Z2lkK32OmQfbJCgv89rviSpG9PYh8Vfqnhe5NrV6Dc="
     },
     "wolveix/satisfactory-server": {
       "type": "Container",

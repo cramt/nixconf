@@ -12,12 +12,12 @@
   pkg-config,
   node-gyp,
 }: let
-  version = "0.0.22-nightly.20260423.108-unstable-2026-04-23";
+  version = "0.0.22-nightly.20260427.135-unstable-2026-04-27";
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
-    rev = "ada410bccff144ce4cfed0e2c6e18974b045f968";
-    hash = "sha256-E5r9Ui7SKl2V6COTsNf2gSHnsae1ACrmHUutxO54Bak=";
+    rev = "dbebc387dd458dd7062380ccb862a5cdac7aba66";
+    hash = "sha256-UR7HsnJq1RSiTMCi7LqVDQbx4IxmIC8aK67tqbqsv98=";
     fetchSubmodules = true;
   };
 
@@ -43,7 +43,7 @@
 
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = "sha256-HTih4mYr6+p9oK0wLgRCKz9xbIed74fHKoKM/Wpqzz8=";
+    outputHash = "sha256-Y26xklsEBJYkyznls3s45P4eq2Pa3arFfLIu1VPUSy4=";
   };
 in
   stdenv.mkDerivation {

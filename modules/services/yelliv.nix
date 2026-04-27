@@ -27,13 +27,24 @@
       };
       llamaModelId = lib.mkOption {
         type = lib.types.str;
-        default = "qwen3.6-27b";
+        default = "qwen3-14b";
         description = "Model id exposed by llama-swap on the host";
       };
       hostPort = lib.mkOption {
         type = lib.types.nullOr lib.types.port;
         default = null;
         description = "Host port forwarded to the gateway (null = auto via port-selector)";
+      };
+      discord = {
+        enable = lib.mkEnableOption "Discord channel for OpenClaw";
+        guildId = lib.mkOption {
+          type = lib.types.str;
+          description = "Discord server (guild) ID";
+        };
+        userId = lib.mkOption {
+          type = lib.types.str;
+          description = "Your Discord user ID (for allowlist)";
+        };
       };
     };
     config = lib.mkIf cfg.enable (let
@@ -48,7 +59,7 @@
       };
 
       systemd.tmpfiles.rules = [
-        "d ${cfg.dataDir} 0750 root root -"
+        "d ${cfg.dataDir} 0755 root root -"
       ];
 
       # Allow the container to reach the host's llama-cpp port.
@@ -114,6 +125,11 @@
             hostPath = cfg.dataDir;
             isReadOnly = false;
           };
+        } // lib.optionalAttrs cfg.discord.enable {
+          "/run/secrets/discord-bot-token" = {
+            hostPath = config.services.onepassword-secrets.secretPaths.discordBotToken;
+            isReadOnly = true;
+          };
         };
         config = { config, lib, pkgs, ... }: {
           system.stateVersion = "25.11";
@@ -151,6 +167,10 @@
               ("+" + pkgs.writeShellScript "yelliv-pre-start" ''
                 set -euo pipefail
 
+                # Ensure the state dir is world-readable so the host user
+                # can read the token file without sudo.
+                chmod 755 /var/lib/openclaw
+
                 # Generate a random gateway auth token on first boot and
                 # persist it in the bind-mounted state dir. bind=lan refuses
                 # to run without one.
@@ -160,8 +180,8 @@
                   token=$(head -c 32 /dev/urandom | base64 | tr -d '=+/' | head -c 48)
                   printf 'OPENCLAW_GATEWAY_TOKEN=%s\n' "$token" > "$envFile"
                   chown openclaw:openclaw "$envFile"
-                  chmod 600 "$envFile"
                 fi
+                chmod 644 "$envFile"
 
                 # Sync declarative AGENTS/SOUL/TOOLS docs into a writable
                 # workspace so plugins (e.g. acpx) can create `state/`
@@ -173,6 +193,14 @@
                   [[ -f "$f" ]] || continue
                   install -o openclaw -g openclaw -m 0644 "$f" "$workspace/$(basename "$f")"
                 done
+
+                # Write discord bot token env file from the bind-mounted secret.
+                discordEnv=/var/lib/openclaw/discord.env
+                if [[ -f /run/secrets/discord-bot-token ]]; then
+                  printf 'DISCORD_BOT_TOKEN=%s\n' "$(cat /run/secrets/discord-bot-token)" > "$discordEnv"
+                  chown openclaw:openclaw "$discordEnv"
+                  chmod 600 "$discordEnv"
+                fi
 
                 # Seed auth-profiles.json with a dummy api_key for the local
                 # llama-cpp provider. llama-cpp ignores the key but the
@@ -196,13 +224,16 @@
             enable = true;
             port = gatewayPort;
             stateDir = "/var/lib/openclaw";
-            environmentFiles = [ "-/var/lib/openclaw/token.env" ];
+            environmentFiles = [
+              "-/var/lib/openclaw/token.env"
+            ] ++ lib.optional cfg.discord.enable "-/var/lib/openclaw/discord.env";
             config = {
               gateway = {
                 mode = "local";
                 bind = "lan";
                 auth.mode = "token";
                 controlUi.allowedOrigins = [
+                  "http://localhost:${toString resolvedHostPort}"
                   "http://127.0.0.1:${toString resolvedHostPort}"
                   "http://${hostAddress}:${toString resolvedHostPort}"
                   "http://192.168.178.23:${toString resolvedHostPort}"
@@ -223,6 +254,21 @@
                 };
               };
               agents.defaults.workspace = "/var/lib/openclaw/workspace";
+            } // lib.optionalAttrs cfg.discord.enable {
+              channels.discord = {
+                enabled = true;
+                token = {
+                  source = "env";
+                  provider = "default";
+                  id = "DISCORD_BOT_TOKEN";
+                };
+                dmPolicy = "pairing";
+                groupPolicy = "allowlist";
+                guilds.${cfg.discord.guildId} = {
+                  requireMention = false;
+                  users = [ cfg.discord.userId ];
+                };
+              };
             };
           };
         };
