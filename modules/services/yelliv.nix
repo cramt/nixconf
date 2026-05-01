@@ -4,6 +4,7 @@
   flake.nixosModules."services.yelliv" = { config, lib, pkgs, ... }:
   let
     cfg = config.myNixOS.services.yelliv;
+    hostname = config.networking.hostName;
     hostAddress = "10.233.42.1";
     localAddress = "10.233.42.2";
     gatewayPort = 18789;
@@ -34,6 +35,15 @@
         type = lib.types.nullOr lib.types.port;
         default = null;
         description = "Host port forwarded to the gateway (null = auto via port-selector)";
+      };
+      externalInterface = lib.mkOption {
+        type = lib.types.str;
+        description = "Host network interface used for container NAT masquerading";
+      };
+      extraAllowedOrigins = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+        description = "Additional origins allowed by the Control UI CORS policy";
       };
       discord = {
         enable = lib.mkEnableOption "Discord channel for OpenClaw";
@@ -68,11 +78,11 @@
 
       # Masquerade outbound traffic from the container's veth so the guest
       # can pull npm packages (for plugins like acpx that spawn `npx …`) and
-      # reach any other external endpoint via saturn's uplink.
+      # reach any other external endpoint via the host's uplink.
       networking.nat = {
         enable = true;
         internalInterfaces = [ "ve-yelliv" ];
-        externalInterface = "enp6s0";
+        externalInterface = cfg.externalInterface;
       };
 
       # Make `http://127.0.0.1:<forwarded port>` reach the container from the
@@ -211,7 +221,7 @@
                 if [[ ! -s "$authFile" ]]; then
                   umask 077
                   ${pkgs.jq}/bin/jq -n \
-                    '{version: 1, profiles: {"saturn-llama-cpp:default": {type: "api_key", provider: "saturn-llama-cpp", key: "local-no-auth"}}}' \
+                    '{version: 1, profiles: {"${hostname}-llama-cpp:default": {type: "api_key", provider: "${hostname}-llama-cpp", key: "local-no-auth"}}}' \
                     > "$authFile"
                   chown openclaw:openclaw "$authFile"
                   chmod 600 "$authFile"
@@ -236,14 +246,13 @@
                   "http://localhost:${toString resolvedHostPort}"
                   "http://127.0.0.1:${toString resolvedHostPort}"
                   "http://${hostAddress}:${toString resolvedHostPort}"
-                  "http://192.168.178.23:${toString resolvedHostPort}"
-                  "http://saturn:${toString resolvedHostPort}"
-                  "http://saturn.local:${toString resolvedHostPort}"
-                ];
+                  "http://${hostname}:${toString resolvedHostPort}"
+                  "http://${hostname}.local:${toString resolvedHostPort}"
+                ] ++ cfg.extraAllowedOrigins;
               };
               models = {
                 mode = "merge";
-                providers.saturn-llama-cpp = {
+                providers."${hostname}-llama-cpp" = {
                   api = "openai-completions";
                   baseUrl = cfg.llamaBaseUrl;
                   apiKey = "local-no-auth";

@@ -15,36 +15,55 @@
     # from the same repo don't clobber each other.
     modelPath = m: "${modelsDir}/${lib.replaceStrings ["/"] ["_"] m.repo}/${m.file}";
 
-    pkgFor = gpu: {
-      rocm = pkgs.llama-cpp.override { rocmSupport = true; };
-      cuda = pkgs.llama-cpp.override { cudaSupport = true; };
-    }.${gpu};
+    pkgFor = gpu:
+      {
+        rocm = pkgs.llama-cpp.override {
+          rocmSupport = true;
+          rpcSupport = true;
+        };
+        cuda = pkgs.llama-cpp.override {
+          cudaSupport = true;
+          rpcSupport = true;
+        };
+      }
+      .${gpu};
 
     instanceList = lib.mapAttrsToList (name: icfg: {
       inherit name;
-      inherit (icfg) gpu rocmVersion visibleDevices;
+      inherit (icfg) gpu rocmVersion visibleDevices rpc tensorSplit;
       pkg = pkgFor icfg.gpu;
       port = config.port-selector.ports."llama-cpp-${name}";
     }) cfg.instances;
 
     mkSwapConfig = inst: let
       yamlFormat = pkgs.formats.yaml {};
+      rpcArgs = lib.optionals (inst.rpc != [])
+        ["--rpc" (lib.concatStringsSep "," inst.rpc)];
+      tensorSplitArgs = lib.optionals (inst.tensorSplit != null)
+        ["--tensor-split" inst.tensorSplit];
       modelsMap = lib.listToAttrs (map (m:
         lib.nameValuePair m.name {
           cmd = lib.concatStringsSep " " ([
-            "${inst.pkg}/bin/llama-server"
-            "--model" (modelPath m)
-            "--port" "\${PORT}"
-            "--host" "127.0.0.1"
-          ] ++ m.args);
+              "${inst.pkg}/bin/llama-server"
+              "--model"
+              (modelPath m)
+              "--port"
+              "\${PORT}"
+              "--host"
+              "127.0.0.1"
+            ]
+            ++ rpcArgs
+            ++ tensorSplitArgs
+            ++ m.args);
           ttl = m.ttl;
-        }
-      ) cfg.models);
-    in yamlFormat.generate "llama-swap-${inst.name}.yaml" {
-      healthCheckTimeout = 600;
-      logLevel = "info";
-      models = modelsMap;
-    };
+        })
+        cfg.models);
+    in
+      yamlFormat.generate "llama-swap-${inst.name}.yaml" {
+        healthCheckTimeout = 600;
+        logLevel = "info";
+        models = modelsMap;
+      };
 
     mkSwapService = inst: {
       description = "llama-swap instance (${inst.name})";
@@ -142,6 +161,16 @@
               type = lib.types.nullOr lib.types.port;
               default = null;
               description = "Fixed port for the llama-swap listener (null = auto-assign via port-selector)";
+            };
+            rpc = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [];
+              description = "RPC worker endpoints (host:port) for cross-server model sharding";
+            };
+            tensorSplit = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Custom tensor split proportions across devices (e.g. \"3,2\" for 60/40)";
             };
           };
         });

@@ -21,7 +21,7 @@
         prismlauncher
         lutris
         heroic
-        (bottles.override {removeWarningPopup = true;})
+        #(bottles.override {removeWarningPopup = true;})
         faugus-launcher
       ];
       services.flatpak = {

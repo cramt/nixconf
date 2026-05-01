@@ -12,7 +12,7 @@
   pkg-config,
   node-gyp,
 }: let
-  version = "0.0.22-nightly.20260427.135-unstable-2026-04-27";
+  version = "0.0.22-nightly.20260427.140-unstable-2026-04-27";
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";

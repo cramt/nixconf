@@ -92,6 +92,34 @@
       continuwuity.enable = true;
       terraform_remote_backend.enable = true;
       servatrice.enable = true;
+      llama-cpp = {
+        enable = true;
+        models = [
+          {
+            name = "qwen3-14b";
+            repo = "unsloth/Qwen3-14B-GGUF";
+            file = "Qwen3-14B-Q4_K_M.gguf";
+            args = ["-ngl" "999" "-c" "16384" "--flash-attn" "on"];
+          }
+        ];
+        instances = {
+          default = {
+            gpu = "cuda";
+            port = 11434;
+            rpc = ["192.168.178.23:50052"]; # saturn
+          };
+        };
+      };
+      yelliv = {
+        enable = true;
+        externalInterface = "enp3s0";
+        extraAllowedOrigins = ["http://192.168.178.24:22535"];
+        discord = {
+          enable = true;
+          guildId = "337731942399082498";
+          userId = "149996010314137600";
+        };
+      };
       sshd.enable = true;
       harmonia = {
         prio = 50;
