@@ -25,6 +25,15 @@ inputs: [
     });
   })
 
+  # Workaround for nixpkgs#514113: openldap 2.6.13 test017-syncreplication-refresh
+  # is flaky and fails the build.
+  # Remove once nixpkgs#513765 (bumps syncrepl test sleep timeouts) is merged.
+  (final: prev: {
+    openldap = prev.openldap.overrideAttrs {
+      doCheck = !prev.stdenv.hostPlatform.isi686;
+    };
+  })
+
   (final: prev: {
     julia = prev.julia.withPackages ["JuliaFormatter" "LanguageServer"];
   })
