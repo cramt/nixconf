@@ -43,9 +43,9 @@
           curseForgeEnv = {
             reference = "op://Homelab/CurseForge/envFile";
           };
-          minioCredsEnv = {
-            reference = "op://Homelab/Minio/credsEnv";
-            services = ["minio"];
+          garageEnv = {
+            reference = "op://Homelab/Garage/envFile";
+            services = ["garage"];
           };
           jellyfinCramtPassword = {
             reference = "op://Homelab/JellyfinUsers/cramtPassword";

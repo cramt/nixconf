@@ -42,7 +42,7 @@
     services = {
       nixarr.enable = true;
       tor.enable = true;
-      minio.enable = true;
+      garage.enable = true;
       btopttyd.enable = true;
       minecraft-forge = {
         enable = false;
