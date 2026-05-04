@@ -63,6 +63,10 @@
             rubocop.binary.path = lib.getExe rubyGems.rubocop;
           };
 
+          project_panel.dock = "left";
+          git_panel.dock = "left";
+          outline_panel.dock = "left";
+
           theme = lib.mkForce "Catppuccin Mocha";
           vim_mode = true;
           load_direnv = "shell_hook";
