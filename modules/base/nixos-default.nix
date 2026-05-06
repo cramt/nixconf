@@ -27,10 +27,12 @@
         substituters = [
           "https://yazi.cachix.org"
           "https://nvf.cachix.org"
+          "https://nixos-raspberrypi.cachix.org"
         ];
         trusted-public-keys = [
           "yazi.cachix.org-1:Dcdz63NZKfvUCbDGngQDAZq6kOroIrFoyO064uvLh8k="
           "nvf.cachix.org-1:GMQWiUhZ6ux9D5CvFFMwnc2nFrUHTeGaXRlVBXo+naI="
+          "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
         ];
       };
       programs.nix-ld.enable = true;
