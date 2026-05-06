@@ -32,6 +32,7 @@
       icon = "applications-science";
       categories = [ "Network" "Chat" ];
     })
+    (import ../../scripts/keep_awake.nix { inherit pkgs; })
   ];
 
   home.stateVersion = "25.11";

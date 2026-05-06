@@ -139,5 +139,9 @@
     mpvpaper.backgroundVideo = ../../media/cosmere.mp4;
   };
 
+  home.packages = [
+    (import ../../scripts/keep_awake.nix { inherit pkgs; })
+  ];
+
   home.stateVersion = "25.11";
 }
