@@ -69,6 +69,7 @@
 , snappy
 , twolame
 , shine
+, lcms2
 }:
 
 let
@@ -92,6 +93,55 @@ let
   libavutil57 = fetchurl {
     url = "http://deb.debian.org/debian/pool/main/f/ffmpeg/libavutil57_5.1.8-0+deb12u1_arm64.deb";
     hash = "sha256-KYdMGJXRNTWWgzUUBVIkueOC1FnDIsZxLSi+ibJ+iwo=";
+  };
+
+  # Steam Link's `shell` binary links directly against a pile of bookworm-era
+  # codec libraries with ABI-locked sonames that nixpkgs has long since moved
+  # past. We vendor each .deb here; the matching .so files get copied into
+  # $TOP/lib at install time so both autoPatchelfHook and the launcher's
+  # LD_LIBRARY_PATH find them.
+  vendoredDebs = {
+    libvpx7 = fetchurl {
+      url = "http://security.debian.org/debian-security/pool/updates/main/libv/libvpx/libvpx7_1.12.0-1+deb12u5_arm64.deb";
+      hash = "sha256-STK5UVdIykgxHgDKVIdBrveCIwDJwUnEAP0KfLC2w5Q=";
+    };
+    libdav1d6 = fetchurl {
+      url = "http://ftp.debian.org/debian/pool/main/d/dav1d/libdav1d6_1.0.0-2+deb12u1_arm64.deb";
+      hash = "sha256-V5yCC4DONJEUPEEaNCs6Iizjo4HHwFLoyFAd5brOlU8=";
+    };
+    libcodec2 = fetchurl {
+      url = "http://ftp.debian.org/debian/pool/main/c/codec2/libcodec2-1.0_1.0.5-1_arm64.deb";
+      hash = "sha256-E8UYKVjQETM9MOFFnl5yrLJKKzQzrE3QJ9NfGv3LYzg=";
+    };
+    libgsm1 = fetchurl {
+      url = "http://ftp.debian.org/debian/pool/main/libg/libgsm/libgsm1_1.0.22-1_arm64.deb";
+      hash = "sha256-TABBtFo+JTXfzbkSIvvZyyp5yboOONbUStcnQktFd3U=";
+    };
+    libjxl07 = fetchurl {
+      url = "http://ftp.debian.org/debian/pool/main/j/jpeg-xl/libjxl0.7_0.7.0-10+deb12u1_arm64.deb";
+      hash = "sha256-/EbZ0kwi4WcmzA/hMfUsSzzAjbe6QI7xUXOEG9OTPy4=";
+    };
+    librav1e0 = fetchurl {
+      url = "http://ftp.debian.org/debian/pool/main/r/rust-rav1e/librav1e0_0.5.1-6_arm64.deb";
+      hash = "sha256-BUv/fi8troaT6TPYUF0a1NmaDIuuXVz+R1CLAHy0RVU=";
+    };
+    libsvtav1enc1 = fetchurl {
+      url = "http://ftp.debian.org/debian/pool/main/s/svt-av1/libsvtav1enc1_1.4.1+dfsg-1_arm64.deb";
+      hash = "sha256-hhVpLhN5ejRbKup3fjlq1vnBnm/0lFliX5B4uzMZmv4=";
+    };
+    libtheora0 = fetchurl {
+      url = "http://ftp.debian.org/debian/pool/main/libt/libtheora/libtheora0_1.1.1+dfsg.1-16.1+deb12u1_arm64.deb";
+      hash = "sha256-2dp5aWpqiGpgbsvCWUl5ePTWFty2FUQBGkig4Eht0QU=";
+    };
+    libx265-199 = fetchurl {
+      url = "http://ftp.debian.org/debian/pool/main/x/x265/libx265-199_3.5-2+b1_arm64.deb";
+      hash = "sha256-MUK5yfsAUBPO5Xq+5Rq714ygppP8YaolL+/Vvl0HSwM=";
+    };
+    # libjxl 0.7 needs libhwy.so.1; nixpkgs only ships libhwy as a static .a.
+    libhwy1 = fetchurl {
+      url = "http://ftp.debian.org/debian/pool/main/h/highway/libhwy1_1.0.3-3+deb12u1_arm64.deb";
+      hash = "sha256-v9SSuwxcUHLGfqBTw8qIY99n0U0Ga03d1Rnuroy82S8=";
+    };
   };
 in
 stdenv.mkDerivation {
@@ -157,25 +207,16 @@ stdenv.mkDerivation {
     snappy
     twolame
     shine
+    lcms2               # liblcms2.so.2 — pulled in by vendored libjxl 0.7
   ];
 
-  # Vendored Debian bookworm ffmpeg 5 .so files link against codec sonames that
-  # don't exist in nixpkgs (version-locked to bookworm's ABI). These are optional
-  # codec paths — steamlink only needs h264/hevc for game streaming.
+  # Sonames we genuinely don't ship — libsteam_api is loaded by steamclient at
+  # runtime from the host Steam install (not present here, but the optional code
+  # path won't fire), libGLES_CM is the legacy GLES1 common-profile path that
+  # nixpkgs dropped years ago.
   autoPatchelfIgnoreMissingDeps = [
-    "libvpx.so.7"
-    "libdav1d.so.6"
-    "libjxl.so.0.7"
-    "libjxl_threads.so.0.7"
-    "libx265.so.199"
-    "libSvtAv1Enc.so.1"
-    "libcodec2.so.1.0"
     "libsteam_api.so"
     "libGLES_CM.so.1"
-    "libgsm.so.1"
-    "librav1e.so.0"
-    "libtheoraenc.so.1"
-    "libtheoradec.so.1"
   ];
 
   unpackPhase = ''
@@ -187,12 +228,18 @@ stdenv.mkDerivation {
   buildPhase = ''
     runHook preBuild
 
-    # Vendor libavcodec.so.59 and libavutil.so.57 from Debian bookworm.
-    # autoPatchelfHook will pick them up via addAutoPatchelfSearchPath.
-    mkdir -p vendored-ffmpeg5
-    dpkg-deb -x ${libavcodec59} ffmpeg5-extract
-    dpkg-deb -x ${libavutil57} ffmpeg5-extract
-    cp -P ffmpeg5-extract/usr/lib/aarch64-linux-gnu/libav*.so* vendored-ffmpeg5/
+    # Extract every vendored Debian .deb into a single staging dir, then collect
+    # every .so under aarch64-linux-gnu/ (and its sub-dirs, e.g. libjxl) into
+    # vendored-bookworm/. autoPatchelfHook picks this up via the preFixup search
+    # path and the launcher's LD_LIBRARY_PATH finds them at runtime.
+    mkdir -p vendored-bookworm vendored-extract
+    ${lib.concatMapStringsSep "\n    "
+      (deb: "dpkg-deb -x ${deb} vendored-extract")
+      (lib.attrValues vendoredDebs)}
+    dpkg-deb -x ${libavcodec59} vendored-extract
+    dpkg-deb -x ${libavutil57} vendored-extract
+    find vendored-extract/usr/lib/aarch64-linux-gnu -type f -name '*.so*' -exec cp -P {} vendored-bookworm/ \;
+    find vendored-extract/usr/lib/aarch64-linux-gnu -type l -name '*.so*' -exec cp -P {} vendored-bookworm/ \;
 
     runHook postBuild
   '';
@@ -208,16 +255,19 @@ stdenv.mkDerivation {
     # on PATH and even if it were, /etc/os-release won't say "bookworm".
     touch $out/share/steamlink/.ignore_arch
 
-    # Drop in vendored ffmpeg5 libs alongside the bundled libs so the launcher's
-    # LD_LIBRARY_PATH ($TOP/lib) picks them up.
-    cp -P vendored-ffmpeg5/libav*.so* $out/share/steamlink/lib/
+    # Drop the vendored bookworm libs alongside the bundled libs so the
+    # launcher's LD_LIBRARY_PATH ($TOP/lib) picks them up.
+    cp -P vendored-bookworm/*.so* $out/share/steamlink/lib/
 
     # Neutralize the in-script apt-based dep installer and the udev-rules
-    # bootstrap (we install udev rules via NixOS instead).
+    # bootstrap (we install udev rules via NixOS instead). Also redirect TMPDIR
+    # off $TOP/.tmp — $TOP is the read-only nix store; the upstream script
+    # blindly rm -rf's and mkdir's it and crashes on EROFS.
     substituteInPlace $out/share/steamlink/steamlink.sh \
       --replace-fail '"$STEAMDEPS" "$TOP/steamlinkdeps-$VERSION_CODENAME.txt"' 'true' \
       --replace-fail '"$STEAMDEPS" "$TOP/steamlinkdeps.txt"' 'true' \
-      --replace-fail 'UDEV_RULES_DIR=/lib/udev/rules.d' 'UDEV_RULES_DIR=/run/current-system/sw/lib/udev/rules.d'
+      --replace-fail 'UDEV_RULES_DIR=/lib/udev/rules.d' 'UDEV_RULES_DIR=/run/current-system/sw/lib/udev/rules.d' \
+      --replace-fail 'export TMPDIR="$TOP/.tmp"' 'export TMPDIR="''${XDG_RUNTIME_DIR:-/tmp}/steamlink-tmp"'
 
     # Ship udev rules + uinput modules-load fragment for NixOS to consume.
     cp $out/share/steamlink/udev/rules.d/56-steamlink.rules $out/lib/udev/rules.d/
