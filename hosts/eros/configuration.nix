@@ -87,11 +87,23 @@ in
       hdmi_drive = { enable = true; value = 2; };
       # Boost HDMI signal level to survive long / cheap cables.
       config_hdmi_boost = { enable = true; value = 4; };
-      # Allow 4K@60 negotiation. Future-proofs the EDID handshake.
-      hdmi_enable_4kp60 = { enable = true; value = 1; };
       # Bigger CMA window so the GPU has room for video decode buffers.
       gpu_mem = { enable = true; value = 256; };
     };
+
+    # Force 1080p output. The Pi 4's BCM2711 can only DMA-address the lower
+    # 1 GiB of RAM, so VC4 has to bounce framebuffers through swiotlb. A single
+    # 4K BGRA framebuffer is ~32 MiB and overruns the swiotlb pool, which
+    # presents as Steam Link freezing and then crashing the second a stream
+    # starts (the kernel logs `vc4-drm gpu: swiotlb buffer is full`). 1080p
+    # buffers are 8 MiB and fit comfortably. Steam Link's host-side encoder
+    # streams 1080p by default anyway. HDMI-A-2 is the active port (HDMI0 on
+    # the Pi 4 board); A-1 is the second port and disconnected here.
+    boot.kernelParams = [
+      "swiotlb=131072"
+      "video=HDMI-A-1:1920x1080@60"
+      "video=HDMI-A-2:1920x1080@60"
+    ];
 
     # Steam Link wants /dev/uinput for virtual controller emulation, and xpadneo
     # gives proper Xbox controller (rumble, battery) support over Bluetooth.
@@ -152,19 +164,31 @@ in
     # the package so changes track upstream.
     services.udev.packages = [ steamlink ];
 
-    # Boot straight into a fullscreen Wayland kiosk running Steam Link via cage.
-    # Cage starts XWayland for Qt 5.14's xcb platform plugin (the bundled Qt has
-    # no native Wayland plugin). default_session re-runs the kiosk so a crash
-    # doesn't strand the TV on a blank tty.
+    # Boot straight into Steam Link on the framebuffer via Qt's eglfs plugin —
+    # no cage, no XWayland. Cage's wlroots 0.19 segfaults in
+    # xwayland_surface_destroy the moment Steam Link reparents to start a
+    # stream, which presented as "input device cannot be mapped to output
+    # device". eglfs talks to KMS/GBM directly, dropping two crash-prone layers.
+    # default_session re-runs the kiosk so a crash doesn't strand the TV on a
+    # blank tty.
     services.greetd = {
       enable = true;
-      settings = {
+      settings = let
+        kiosk = pkgs.writeShellScript "steamlink-kiosk" ''
+          export QT_QPA_PLATFORM=eglfs
+          export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+          export QT_QPA_EGLFS_KMS_ATOMIC=1
+          # Hide the cursor; eglfs draws one by default and there's no mouse.
+          export QT_QPA_EGLFS_HIDECURSOR=1
+          exec ${steamlink}/bin/steamlink
+        '';
+      in {
         initial_session = {
-          command = "${pkgs.cage}/bin/cage -s -- ${steamlink}/bin/steamlink";
+          command = toString kiosk;
           user = "cramt";
         };
         default_session = {
-          command = "${pkgs.cage}/bin/cage -s -- ${steamlink}/bin/steamlink";
+          command = toString kiosk;
           user = "cramt";
         };
       };
