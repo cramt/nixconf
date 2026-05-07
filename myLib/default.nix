@@ -1,7 +1,7 @@
 {inputs}: let
   outputs = inputs.self.outputs;
 in {
-  mkSystem = config: inputs.nixpkgs.lib.nixosSystem {
+  mkSystem = { config, nixpkgs ? inputs.nixpkgs }: nixpkgs.lib.nixosSystem {
     specialArgs = {
       inherit inputs outputs;
     };

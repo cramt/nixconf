@@ -25,11 +25,13 @@
         experimental-features = ["nix-command" "flakes"];
         trusted-users = ["cramt" "root"];
         substituters = [
+          "https://cramt.cachix.org"
           "https://yazi.cachix.org"
           "https://nvf.cachix.org"
           "https://nixos-raspberrypi.cachix.org"
         ];
         trusted-public-keys = [
+          "cramt.cachix.org-1:F7DlWw50o0gCn5TxMuep2PPku+7L9dxTIarTnPaNvls="
           "yazi.cachix.org-1:Dcdz63NZKfvUCbDGngQDAZq6kOroIrFoyO064uvLh8k="
           "nvf.cachix.org-1:GMQWiUhZ6ux9D5CvFFMwnc2nFrUHTeGaXRlVBXo+naI="
           "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="

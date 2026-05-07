@@ -143,6 +143,7 @@
     };
 
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
+    nixpkgs-rpi.follows = "nixos-raspberrypi/nixpkgs";
   };
 
   outputs = inputs:

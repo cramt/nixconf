@@ -2331,6 +2331,10 @@
         "nixarr": "nixarr",
         "nixos-raspberrypi": "nixos-raspberrypi",
         "nixpkgs": "nixpkgs_11",
+        "nixpkgs-rpi": [
+          "nixos-raspberrypi",
+          "nixpkgs"
+        ],
         "nixpkgs-ruby-downgrade": "nixpkgs-ruby-downgrade",
         "nixpkgs-stable": "nixpkgs-stable_2",
         "nixvim": "nixvim",
