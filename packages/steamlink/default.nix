@@ -67,10 +67,7 @@
 , librsvg
 , cairo
 , snappy
-, libtheora
-, gsm
 , twolame
-, rav1e
 , shine
 }:
 
@@ -158,10 +155,7 @@ stdenv.mkDerivation {
     librsvg
     cairo
     snappy
-    libtheora
-    gsm
     twolame
-    rav1e
     shine
   ];
 
@@ -178,6 +172,10 @@ stdenv.mkDerivation {
     "libcodec2.so.1.0"
     "libsteam_api.so"
     "libGLES_CM.so.1"
+    "libgsm.so.1"
+    "librav1e.so.0"
+    "libtheoraenc.so.1"
+    "libtheoradec.so.1"
   ];
 
   unpackPhase = ''
