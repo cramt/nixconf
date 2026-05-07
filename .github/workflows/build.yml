@@ -18,8 +18,6 @@ jobs:
             runner: ubuntu-latest
           - host: luna
             runner: ubuntu-latest
-          - host: ganymede
-            runner: ubuntu-latest
           - host: eros
             runner: ubuntu-24.04-arm
 
