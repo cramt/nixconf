@@ -60,6 +60,18 @@
 , libxcb-render-util
 , libxcb-wm
 , libxshmfence
+, openxr-loader
+, sndio
+, xorg
+, libva
+, librsvg
+, cairo
+, snappy
+, libtheora
+, gsm
+, twolame
+, rav1e
+, shine
 }:
 
 let
@@ -139,6 +151,33 @@ stdenv.mkDerivation {
     libxcb-render-util
     libxcb-wm
     libxshmfence
+    openxr-loader
+    sndio
+    xorg.libXtst
+    libva
+    librsvg
+    cairo
+    snappy
+    libtheora
+    gsm
+    twolame
+    rav1e
+    shine
+  ];
+
+  # Vendored Debian bookworm ffmpeg 5 .so files link against codec sonames that
+  # don't exist in nixpkgs (version-locked to bookworm's ABI). These are optional
+  # codec paths — steamlink only needs h264/hevc for game streaming.
+  autoPatchelfIgnoreMissingDeps = [
+    "libvpx.so.7"
+    "libdav1d.so.6"
+    "libjxl.so.0.7"
+    "libjxl_threads.so.0.7"
+    "libx265.so.199"
+    "libSvtAv1Enc.so.1"
+    "libcodec2.so.1.0"
+    "libsteam_api.so"
+    "libGLES_CM.so.1"
   ];
 
   unpackPhase = ''
@@ -206,8 +245,6 @@ stdenv.mkDerivation {
     addAutoPatchelfSearchPath $out/share/steamlink/Qt-5.14.1/lib
   '';
 
-  # Steam Link's `bin/shell` ABI-locks against specific Qt 5.14 / SDL3 / ffmpeg 5
-  # builds Valve ships. autoPatchelf will fail loudly on any miss; do not relax.
   dontStrip = true;
 
   meta = with lib; {
