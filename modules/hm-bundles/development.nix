@@ -51,6 +51,7 @@
           npins
           nix-prefetch-docker
           sshpass
+          cachix
         ]
         ++ ld_packages;
       home.sessionVariables = {
