@@ -60,6 +60,7 @@
         PKG_CONFIG_PATH = lib.strings.concatStringsSep ":" (
           builtins.map (x: "${x}/lib/pkgconfig") ld_packages
         );
+        AGENT_BROWSER_SKILLS_DIR = "${pkgs.agent-browser}/share/agent-browser/skills";
       };
     };
   };
