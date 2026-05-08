@@ -135,8 +135,6 @@
     ];
 
     waybar.monitors = ["eDP-1"];
-
-    mpvpaper.backgroundVideo = ../../media/cosmere.mp4;
   };
 
   home.packages = [
