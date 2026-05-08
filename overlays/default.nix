@@ -25,6 +25,12 @@ inputs: [
     });
   })
 
+  (final: prev: {
+    cockatrice = prev.callPackage ../packages/cockatrice {
+      src = inputs.cockatrice-src;
+    };
+  })
+
   # Workaround for nixpkgs#514113: openldap 2.6.13 test017-syncreplication-refresh
   # is flaky and fails the build.
   # Remove once nixpkgs#513765 (bumps syncrepl test sleep timeouts) is merged.

@@ -114,6 +114,11 @@
       flake = false;
     };
 
+    cockatrice-src = {
+      url = "github:Cockatrice/Cockatrice/2026-05-08-Release-3.0.0";
+      flake = false;
+    };
+
     homelab_system_controller = {
       url = "github:cramt/homelab_system_controller";
       inputs.nixpkgs.follows = "nixpkgs";
