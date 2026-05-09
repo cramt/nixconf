@@ -12,12 +12,12 @@
   pkg-config,
   node-gyp,
 }: let
-  version = "0.0.23-nightly.20260507.219-unstable-2026-05-06";
+  version = "0-unstable-2026-05-09";
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
-    rev = "a74ed8ed32c2a949ec6fc91b9ae57c25ac96359a";
-    hash = "sha256-SMXryPYuESHXyFKNd/vjqMtActaoNaxgy0kaf6Wc+qg=";
+    rev = "3c32bc8fd1f5970e65988e36937cb8e2921437f9";
+    hash = "sha256-gsDHogGnzKVwypGwK1PzYBXpBYBFQHIbXMpWVUGzKU8=";
     fetchSubmodules = true;
   };
 
@@ -43,7 +43,7 @@
 
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = "sha256-A7YzJL4NSd7LmoVqg51N1N3ZVIeOIBRSVdI0UGDSxqk=";
+    outputHash = "sha256-Wo1W8S1Mp+n/B6tFox58S0JEYhHjj1j3KTJYMLLDn1g=";
   };
 in
   stdenv.mkDerivation {
@@ -63,10 +63,10 @@ in
     # Spawn the backend server with system node instead of the electron binary,
     # so node-pty only needs to be compiled against the system Node.js ABI.
     postPatch = ''
-      substituteInPlace apps/desktop/src/main.ts \
+      substituteInPlace apps/desktop/src/backend/DesktopBackendConfiguration.ts \
         --replace-fail \
-          'ChildProcess.spawn(process.execPath, [backendEntry, "--bootstrap-fd", "3"]' \
-          'ChildProcess.spawn("${nodejs_24}/bin/node", [backendEntry, "--bootstrap-fd", "3"]'
+          'executablePath: process.execPath,' \
+          'executablePath: "${nodejs_24}/bin/node",'
 
       # Bundle all runtime deps into the desktop main process except electron
       # (Electron APIs are provided by the Electron runtime itself).
