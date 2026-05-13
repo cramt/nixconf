@@ -45,9 +45,45 @@
     # ECC MCP config
     eccMcp = builtins.fromJSON (builtins.readFile "${ecc}/.mcp.json");
 
+    cfg = config.myHomeManager.claude-code;
+
+    extraMcpServers = lib.optionalAttrs cfg.mcp.zammad.enable {
+      zammad = {
+        command = "${pkgs.uv}/bin/uvx";
+        args = [
+          "--from" "git+https://github.com/basher83/zammad-mcp.git"
+          "mcp-zammad"
+        ];
+        env = {
+          ZAMMAD_URL = cfg.mcp.zammad.url;
+          ZAMMAD_HTTP_TOKEN_FILE = cfg.mcp.zammad.tokenFile;
+        };
+      };
+    };
+
+    mergedMcp = eccMcp // {
+      mcpServers = (eccMcp.mcpServers or {}) // extraMcpServers;
+    };
+    mcpJson = builtins.toJSON mergedMcp;
+
   in {
-    options.myHomeManager.claude-code.enable = lib.mkEnableOption "myHomeManager.claude-code";
-    config = lib.mkIf config.myHomeManager.claude-code.enable {
+    options.myHomeManager.claude-code = {
+      enable = lib.mkEnableOption "myHomeManager.claude-code";
+      mcp.zammad = {
+        enable = lib.mkEnableOption "Zammad MCP server (basher83/zammad-mcp)";
+        url = lib.mkOption {
+          type = lib.types.str;
+          default = "https://support.re-zip.com/api/v1";
+          description = "Zammad API base URL.";
+        };
+        tokenFile = lib.mkOption {
+          type = lib.types.str;
+          default = "/var/lib/opnix/secrets/zammadHttpToken";
+          description = "Path to a file containing the Zammad HTTP API token.";
+        };
+      };
+    };
+    config = lib.mkIf cfg.enable {
       home.packages = [
         (mkClaudeWithConfig "claude-w" "$HOME/.claude-work")
         (mkClaudeWithConfig "claude-p" "$HOME/.claude-personal")
@@ -76,9 +112,34 @@
           - Never add Co-Authored-By lines to commits
         '';
 
-        # Global MCP servers from ECC
-        ".claude/mcp.json".text = builtins.toJSON eccMcp;
       } // eccCommands // eccAgents // eccRules;
+
+      # Claude Code reads user-scope MCP servers from <CLAUDE_CONFIG_DIR>/.claude.json
+      # (or ~/.claude.json when CLAUDE_CONFIG_DIR is unset). It does NOT read any
+      # ~/.claude/mcp.json. Register declaratively via `claude mcp add-json` for
+      # each variant so plain `claude`, `claude-w`, and `claude-p` all see them.
+      home.activation.registerClaudeMcpServers = lib.hm.dag.entryAfter ["writeBoundary"] ''
+        export PATH=${lib.makeBinPath [pkgs.jq pkgs.coreutils claudeCodePkg]}:$PATH
+        SERVERS='${mcpJson}'
+
+        register_dir() {
+          if [ -n "$1" ]; then
+            mkdir -p "$1"
+            export CLAUDE_CONFIG_DIR="$1"
+          else
+            unset CLAUDE_CONFIG_DIR
+          fi
+          for name in $(jq -r '.mcpServers | keys[]' <<< "$SERVERS"); do
+            server_json=$(jq -c --arg n "$name" '.mcpServers[$n]' <<< "$SERVERS")
+            claude mcp remove -s user "$name" >/dev/null 2>&1 || true
+            claude mcp add-json -s user "$name" "$server_json" >/dev/null
+          done
+        }
+
+        register_dir ""
+        register_dir "$HOME/.claude-work"
+        register_dir "$HOME/.claude-personal"
+      '';
     };
   };
 }

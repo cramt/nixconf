@@ -8,7 +8,7 @@
   imports = [
     ./hardware-configuration.nix
     inputs.disko.nixosModules.default
-    (import ./disko.nix {device = "/dev/sda";})
+    (import ./disko.nix {device = "/dev/disk/by-id/ata-Samsung_SSD_850_EVO_250GB_S2R4NB0J105220R";})
   ];
 
   boot = {

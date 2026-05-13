@@ -17,6 +17,7 @@
     helium.enable = true;
     blueman.enable = true;
     cockatrice.enable = true;
+    claude-code.mcp.zammad.enable = true;
     firefox.profiles = {
       cramt = {
         extensions = with pkgs.nur.repos.rycee.firefox-addons; [
