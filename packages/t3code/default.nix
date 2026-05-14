@@ -12,12 +12,12 @@
   pkg-config,
   node-gyp,
 }: let
-  version = "0-unstable-2026-05-09";
+  version = "0-unstable-2026-05-14";
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
-    rev = "3c32bc8fd1f5970e65988e36937cb8e2921437f9";
-    hash = "sha256-gsDHogGnzKVwypGwK1PzYBXpBYBFQHIbXMpWVUGzKU8=";
+    rev = "ea20e800216417c8d3b5dfc54a863bbd9e0b3e20";
+    hash = "sha256-7mqRuWft9h9MAEVzuwC6K1aj2UUAcjheWrwncXhpbro=";
     fetchSubmodules = true;
   };
 
@@ -43,7 +43,7 @@
 
     outputHashMode = "recursive";
     outputHashAlgo = "sha256";
-    outputHash = "sha256-Wo1W8S1Mp+n/B6tFox58S0JEYhHjj1j3KTJYMLLDn1g=";
+    outputHash = "sha256-KsPkaAYL+Nub4JbPYAIXXHay7dRW7tnffRsjqJe1MrI=";
   };
 in
   stdenv.mkDerivation {
@@ -72,13 +72,13 @@ in
       # (Electron APIs are provided by the Electron runtime itself).
       substituteInPlace apps/desktop/tsdown.config.ts \
         --replace-fail \
-          'noExternal: (id) => id.startsWith("@t3tools/") || id.startsWith("effect-acp"),' \
+          'noExternal: (id) => id.startsWith("@t3tools/"),' \
           'noExternal: (id) => id !== "electron",'
 
       # Bundle all runtime deps into the server except node-pty (native addon).
       substituteInPlace apps/server/tsdown.config.ts \
         --replace-fail \
-          'noExternal: (id) => id.startsWith("@t3tools/") || id.startsWith("effect-acp"),' \
+          'noExternal: (id) => internalPackagePrefixes.some((prefix) => id.startsWith(prefix)),' \
           'noExternal: (id) => id !== "node-pty",'
     '';
 
