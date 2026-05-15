@@ -6,7 +6,7 @@
   dataB = "/dev/disk/by-id/ata-TOSHIBA_HDWG440_12X0A02GFZ0G";
 
   # Vault partition is sized to the smaller drive's allocation (mirrored 1:1).
-  vaultSize = "1T";
+  vaultSize = "100G";
 
   btrfsMountOptions = ["compress=zstd:3" "noatime"];
 in {
