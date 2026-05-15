@@ -47,47 +47,47 @@
       minecraft-forge = {
         enable = false;
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
-        dataDir = "/mnt/imbrium/minecraft-forge";
+        dataDir = "/pool/minecraft-forge";
       };
       minecraft-homestead = {
         enable = true;
-        dataDir = "/mnt/imbrium/minecraft-homestead";
+        dataDir = "/pool/minecraft-homestead";
       };
       gtnh = {
         enable = true;
-        dataVolume = "/mnt/imbrium/gtnh";
+        dataVolume = "/pool/gtnh";
       };
       caddy = {
         enable = true;
-        cacheVolume = "/mnt/imbrium/configs/caddy-cache";
+        cacheVolume = "/pool/configs/caddy-cache";
         staticFileVolumes = {
-          books = "/mnt/imbrium/books";
+          books = "/pool/books";
         };
       };
       foundryvtt = {
         enable = true;
-        dataVolume = "/mnt/imbrium/configs/foundryvtt_a";
+        dataVolume = "/pool/configs/foundryvtt_a";
       };
       satisfactory = {
         enable = true;
         maxPlayers = 8;
         beta = true;
-        dataVolume = "/storage/satisfactory";
+        dataVolume = "/pool/satisfactory";
       };
       valheim = {
         enable = true;
-        worldVolume = "/mnt/imbrium/valheim_config";
-        binaryVolume = "/mnt/imbrium/valheim_binary";
+        worldVolume = "/pool/valheim_config";
+        binaryVolume = "/pool/valheim_binary";
         serverName = "wutwutgame3";
         worldName = "wutwutgame3";
       };
       homelab_system_controller = {
         enable = false;
-        databaseUrl = "sqlite:/mnt/imbrium/homelab_discord_bot.db?mode=rwc";
+        databaseUrl = "sqlite:/pool/homelab_discord_bot.db?mode=rwc";
       };
       open-webui.enable = false;
       postgres = {
-        dataDir = "/mnt/imbrium/pgsql";
+        dataDir = "/pool/pgsql";
       };
       continuwuity.enable = true;
       terraform_remote_backend.enable = true;
