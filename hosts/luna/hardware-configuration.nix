@@ -17,35 +17,6 @@
   boot.kernelModules = ["kvm-intel"];
   boot.extraModulePackages = [];
 
-  fileSystems."/mnt/imbrium" = {
-    device = "/dev/disk/by-uuid/128b1a4f-d766-4022-a409-7fa9e4f0bcef";
-    fsType = "ext4";
-    options = [
-      "users"
-      "exec"
-      "nofail"
-    ];
-  };
-
-  fileSystems."/mnt/crisium" = {
-    device = "/dev/disk/by-uuid/004da557-bc1a-4751-b799-249864cb2157";
-    fsType = "ext4";
-    options = [
-      "users"
-      "exec"
-      "nofail"
-    ];
-  };
-  environment.systemPackages = with pkgs; [
-    mergerfs
-  ];
-
-  fileSystems."/storage" = {
-    fsType = "fuse.mergerfs";
-    device = "/mnt/*";
-    options = ["cache.files=partial" "dropcacheonclose=true" "category.create=mfs"];
-  };
-
   swapDevices = [];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking

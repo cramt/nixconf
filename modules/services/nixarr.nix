@@ -84,7 +84,7 @@
                 name = "tvshows";
                 collectionType = "tvshows";
                 libraryOptions.pathInfos = [
-                  {path = "/storage/downloads/tvshows";}
+                  {path = "/pool/downloads/tvshows";}
                   {path = "${config.nixarr.mediaDir}/library/shows";}
                 ];
               }
@@ -92,7 +92,7 @@
                 name = "movies";
                 collectionType = "movies";
                 libraryOptions.pathInfos = [
-                  {path = "/storage/downloads/movies";}
+                  {path = "/pool/downloads/movies";}
                   {path = "${config.nixarr.mediaDir}/library/movies";}
                 ];
               }
@@ -136,8 +136,8 @@
           audio-default-language = "eng";
           subtitle-default-language = "eng";
         };
-        mediaDir = lib.mkDefault "/storage/media";
-        stateDir = lib.mkDefault "/storage/media/.state/nixarr";
+        mediaDir = lib.mkDefault "/pool/media";
+        stateDir = lib.mkDefault "/pool/media/.state/nixarr";
       };
     };
   };

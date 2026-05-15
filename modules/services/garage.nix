@@ -117,8 +117,8 @@
         environmentFile = config.services.onepassword-secrets.secretPaths.garageEnv;
         settings = {
           replication_mode = "1";
-          metadata_dir = "/storage/garage/meta";
-          data_dir = "/storage/garage/data";
+          metadata_dir = "/pool/garage/meta";
+          data_dir = "/pool/garage/data";
           rpc_bind_addr = "[::]:${builtins.toString rpc_port}";
           s3_api = {
             s3_region = "garage";
