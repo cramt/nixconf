@@ -110,16 +110,6 @@
           };
         };
       };
-      yelliv = {
-        enable = true;
-        externalInterface = "enp3s0";
-        extraAllowedOrigins = ["http://192.168.178.24:22535"];
-        discord = {
-          enable = true;
-          guildId = "337731942399082498";
-          userId = "149996010314137600";
-        };
-      };
       sshd.enable = true;
       harmonia = {
         prio = 50;

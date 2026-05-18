@@ -1,4 +1,4 @@
-{...}: {
+{inputs, ...}: {
   flake.nixosModules."services.nixarr" = {
     pkgs,
     lib,
@@ -6,6 +6,7 @@
     ...
   }: let
     cfg = config.myNixOS.services.nixarr;
+    jellarrPkg = inputs.jellarr.packages.${pkgs.stdenv.hostPlatform.system}.default;
   in {
     options.myNixOS.services.nixarr = {
       enable = lib.mkEnableOption "myNixOS.services.nixarr";
@@ -139,6 +140,13 @@
         mediaDir = lib.mkDefault "/pool/media";
         stateDir = lib.mkDefault "/pool/media/.state/nixarr";
       };
+
+      # jellarr's NixOS module rebuilds its package against the consumer's
+      # pkgs, which fails when nixpkgs has moved past the pnpmDeps hash the
+      # upstream flake locked. Use the package built with jellarr's own pinned
+      # nixpkgs instead.
+      systemd.services.jellarr.serviceConfig.ExecStart =
+        lib.mkForce (lib.getExe jellarrPkg);
     };
   };
 }

@@ -1,6 +1,5 @@
 inputs: [
   inputs.nur.overlays.default
-  inputs.nix-openclaw.overlays.default
 
   (final: prev: let
     sources = import ../npins;
