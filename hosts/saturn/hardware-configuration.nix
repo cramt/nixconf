@@ -42,11 +42,34 @@
       "nofail"
     ];
   };
-  fileSystems."/mnt/phoebe" = {
-    device = "/dev/disk/by-uuid/237D1319-99EC-45C6-A3EE-EF5CA58BA04D";
+  fileSystems."/mnt/titan" = {
+    device = "/dev/disk/by-uuid/37eaa6ae-251c-49b4-afc4-5824c26b0cde";
     fsType = "ext4";
     options = [
       "users"
+      "nofail"
+    ];
+  };
+  fileSystems."/mnt/phoebe" = {
+    device = "/dev/disk/by-uuid/e383424c-bcda-4e10-bdcf-522feb8b7949";
+    fsType = "ext4";
+    options = [
+      "users"
+      "nofail"
+    ];
+  };
+
+  environment.systemPackages = with pkgs; [
+    mergerfs
+  ];
+
+  fileSystems."/external_storage" = {
+    fsType = "fuse.mergerfs";
+    device = "/mnt/amirani:/mnt/titan:/mnt/phoebe";
+    options = [
+      "cache.files=partial"
+      "dropcacheonclose=true"
+      "category.create=mfs"
       "nofail"
     ];
   };
