@@ -38,6 +38,7 @@
     qemu.enable = true;
     docker.enable = true;
     bluetooth.enable = true;
+    localsend.enable = true;
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/artemis2_2.jpg;
     bundles.graphical.enable = true;
