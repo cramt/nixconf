@@ -6,6 +6,11 @@
     hasGroup = name: builtins.hasAttr name config.users.groups;
     ownerIf = name: lib.optionalAttrs (hasUser name) {owner = name;};
     groupIf = name: lib.optionalAttrs (hasGroup name) {group = name;};
+    # Only attach restart wiring for services that are actually enabled on this
+    # host. Otherwise opnix emits a `systemd.services.<name>` stub with only
+    # After=/Wants= (no ExecStart), which systemd rejects as bad-setting and
+    # NixOS activation reports as "Failed to start <svc>: bad unit file setting".
+    servicesIf = enabled: names: lib.optionalAttrs enabled {services = names;};
   in {
     options.myNixOS.opnix-secrets.enable = lib.mkEnableOption "myNixOS.opnix-secrets";
     config = lib.mkIf config.myNixOS.opnix-secrets.enable {
@@ -21,22 +26,19 @@
         secrets = {
           tailscalePreauthKey = {
             reference = "op://Homelab/Tailscale/preauthKey";
-            services = ["tailscaled"];
-          };
+          } // servicesIf config.services.tailscale.enable ["tailscaled"];
           cloudflareCredsEnv = {
             reference = "op://Homelab/Cloudflare/credsEnv";
-            services = ["acme-turn.cramt.dk"];
-          };
+          } // servicesIf (config.security.acme.certs ? "turn.cramt.dk") ["acme-turn.cramt.dk"];
           postgresPassword =
             {
               reference = "op://Homelab/Postgres/password";
-              services = ["postgresql"];
             }
+            // servicesIf config.services.postgresql.enable ["postgresql"]
             // ownerIf "postgres" // groupIf "postgres";
           homelabControllerEnv = {
             reference = "op://Homelab/HomelabController/envFile";
-            services = ["homelab_system_controller"];
-          };
+          } // servicesIf config.myNixOS.services.homelab_system_controller.enable ["homelab_system_controller"];
           valheimEnv = {
             reference = "op://Homelab/Valheim/envFile";
           };
@@ -45,8 +47,7 @@
           };
           garageEnv = {
             reference = "op://Homelab/Garage/envFile";
-            services = ["garage"];
-          };
+          } // servicesIf config.services.garage.enable ["garage"];
           jellyfinCramtPassword = {
             reference = "op://Homelab/JellyfinUsers/cramtPassword";
             mode = "0640";
@@ -64,8 +65,8 @@
           matrixSharedSecret =
             {
               reference = "op://Homelab/Matrix/sharedSecret";
-              services = ["coturn"];
             }
+            // servicesIf config.services.coturn.enable ["coturn"]
             // ownerIf "turnserver" // groupIf "turnserver";
           matrixSecretEnv = {
             reference = "op://Homelab/Matrix/conduitEnv";
@@ -79,8 +80,8 @@
           terraformRemotePassword =
             {
               reference = "op://Homelab/TerraformRemoteState/password";
-              services = ["postgresql"];
             }
+            // servicesIf config.services.postgresql.enable ["postgresql"]
             // ownerIf "postgres" // groupIf "postgres";
         };
       };
