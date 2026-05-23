@@ -104,7 +104,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    foundryvtt.url = "github:reckenrode/nix-foundryvtt";
+    foundryvtt.url = "github:nix-foundryvtt/nix-foundryvtt";
 
     everything-claude-code = {
       url = "github:affaan-m/everything-claude-code";

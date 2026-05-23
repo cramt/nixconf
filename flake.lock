@@ -663,13 +663,13 @@
       "locked": {
         "lastModified": 1778746725,
         "narHash": "sha256-Okv5rnIBFaXShyg1h4hsDA7Fs4bKEmcSKPQQf1HR5Rc=",
-        "owner": "reckenrode",
+        "owner": "nix-foundryvtt",
         "repo": "nix-foundryvtt",
         "rev": "db075efec1947c593c237af6f0a8629ca8709bf1",
         "type": "github"
       },
       "original": {
-        "owner": "reckenrode",
+        "owner": "nix-foundryvtt",
         "repo": "nix-foundryvtt",
         "type": "github"
       }
