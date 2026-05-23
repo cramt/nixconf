@@ -73,6 +73,17 @@ inputs: [
     rocmPackages = inputs.nixpkgs-stable.legacyPackages.${prev.stdenv.hostPlatform.system}.rocmPackages;
   })
 
+  # TODO: remove once https://github.com/NixOS/nixpkgs/pull/523060 is in unstable
+  (final: prev: let
+    master = import inputs.nixpkgs-master {
+      inherit (prev.stdenv.hostPlatform) system;
+      config.allowUnfree = true;
+    };
+  in {
+    _1password-cli = master._1password-cli;
+    _1password-gui = master._1password-gui;
+  })
+
   (pkgs: prev: {
     ttyd = prev.ttyd.overrideAttrs (final: prev: {
       nativeBuildInputs =

@@ -20,6 +20,8 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.11";
+    # TODO: remove once https://github.com/NixOS/nixpkgs/pull/523060 is in unstable
+    nixpkgs-master.url = "github:nixos/nixpkgs/master";
     nixarr.url = "github:nix-media-server/nixarr/feat/sma";
     jellarr.url = "github:cramt/jellarr";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
