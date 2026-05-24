@@ -165,6 +165,21 @@
 
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
     nixpkgs-rpi.follows = "nixos-raspberrypi/nixpkgs";
+
+    # Permanent fork: upstream rewrote the hash-generation pipeline around a
+    # `.targets.json` that pre-22.03 OpenWrt releases don't ship, so it can no
+    # longer produce hashes for 19.07.x — the last release with the bcm53xx
+    # Archer C5 v2 profile. This fork keeps the older builder + cached hashes
+    # for 19.07.10 and carries the bcm53xx variantless-imagebuilder fix.
+    openwrt-imagebuilder = {
+      url = "github:cramt/nix-openwrt-imagebuilder";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    dewclaw = {
+      url = "github:MakiseKurisu/dewclaw";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:

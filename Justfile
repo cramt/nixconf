@@ -9,6 +9,17 @@ build_luna: add_foundry_zips
 build_ganymede:
     nh os switch --target-host root@192.168.178.47 -H ganymede -- --fallback
 
+# Build the OpenWrt sysupgrade image for the Archer C5 v2 (titan).
+# Flash result via the C5 v2's LuCI web UI → System → Backup / Flash Firmware.
+build_titan:
+    nix build .#titan-img
+
+# Push UCI config to a running titan (Archer C5 v2 with OpenWrt).
+# Requires titan to be reachable over SSH at the IP set in hosts/titan/dewclaw.nix.
+deploy_titan:
+    nix build .#titan-deploy
+    ./result/bin/deploy-titan
+
 clean_ruby:
     rm -rf ~/.local/share/gem/
 
