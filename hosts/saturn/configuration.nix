@@ -16,6 +16,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
   services.scx.enable = true;
+  services.scx.scheduler = "scx_lavd";
   boot.extraModprobeConfig = ''
     options usbhid mousepoll=2
     options snd-intel-dspcfg dsp_driver=1

@@ -21,6 +21,7 @@
         settings = {
           PasswordAuthentication = false;
           KbdInteractiveAuthentication = false;
+          AllowAgentForwarding = true;
         };
       };
     };

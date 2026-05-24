@@ -15,7 +15,9 @@
         enableCompletion = true;
         autosuggestion.enable = true;
         initContent = ''
-          export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/gnupg/S.gpg-agent.ssh"
+          ${lib.optionalString (config.myHomeManager.gpg-agent.enable or false && config.myHomeManager.gpg-agent.enableSshSupport or true) ''
+            export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/gnupg/S.gpg-agent.ssh"
+          ''}
           export GPG_TTY=$(tty)
           bios_reboot() { systemctl reboot --firmware-setup }
           windows_reboot() { systemctl reboot --boot-loader-entry=auto-windows }

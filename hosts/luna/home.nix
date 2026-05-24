@@ -9,6 +9,8 @@
   myHomeManager = {
     bundles.general.enable = true;
     bundles.development.enable = true;
+    ssh.use1Password = false;
+    gpg-agent.enableSshSupport = false;
     hyprland = {
       enable = false;
       exec = "firefox --kiosk https://example.com";

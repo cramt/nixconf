@@ -28,37 +28,52 @@ in {
         })
       sshTargetPackages;
   in {
-    options.myHomeManager.ssh.enable = lib.mkEnableOption "myHomeManager.ssh";
-    config = lib.mkIf config.myHomeManager.ssh.enable {
-      programs.ssh = {
-        enable = true;
-        enableDefaultConfig = false;
-        extraConfig = ''
+    options.myHomeManager.ssh = {
+      enable = lib.mkEnableOption "myHomeManager.ssh";
+      use1Password = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Whether to route ssh client auth through the 1Password agent
+          (sets IdentityAgent for Host *, writes the 1Password agent.toml,
+          and autostarts the 1Password desktop app). Disable on headless
+          hosts where 1Password is not installed.
+        '';
+      };
+    };
+    config = lib.mkIf config.myHomeManager.ssh.enable (lib.mkMerge [
+      {
+        programs.ssh = {
+          enable = true;
+          enableDefaultConfig = false;
+          matchBlocks."*" = {
+            controlPath = "~/.ssh/control-%C";
+          };
+        };
+        home.packages = (builtins.attrValues sshTargetPackages) ++ (builtins.attrValues sshTargetDesktops);
+      }
+      (lib.mkIf config.myHomeManager.ssh.use1Password {
+        programs.ssh.extraConfig = ''
           Host *
               IdentityAgent ~/.1password/agent.sock
         '';
-        matchBlocks."*" = {
-          controlPath = "~/.ssh/control-%C";
+
+        xdg.configFile."1Password/ssh/agent.toml" = {
+          text = ''
+            [[ssh-keys]]
+            item = "SSH Key - Personal"
+          '';
         };
-      };
 
-      xdg.configFile."1Password/ssh/agent.toml" = {
-        text = ''
-          [[ssh-keys]]
-          item = "SSH Key - Personal"
+        xdg.configFile."autostart/1password.desktop".text = ''
+          [Desktop Entry]
+          Name=1Password
+          Exec=1password --silent
+          Terminal=false
+          Type=Application
+          StartupNotify=false
         '';
-      };
-
-      xdg.configFile."autostart/1password.desktop".text = ''
-        [Desktop Entry]
-        Name=1Password
-        Exec=1password --silent
-        Terminal=false
-        Type=Application
-        StartupNotify=false
-      '';
-
-      home.packages = (builtins.attrValues sshTargetPackages) ++ (builtins.attrValues sshTargetDesktops);
-    };
+      })
+    ]);
   };
 }
