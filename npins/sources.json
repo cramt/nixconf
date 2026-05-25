@@ -24,8 +24,8 @@
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre1003446.a0991c886dc8/nixexprs.tar.xz",
-      "hash": "sha256-5kB9V6f63Htxk/O8vzfXXw/mOCrR6F75GO7fJvQ9pJA="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.05pre1003764.3d8f0f3f72a6/nixexprs.tar.xz",
+      "hash": "sha256-Zc5W2GRfLZtIDsEn0A5kzoN0+yNWq/3MzzoXGu0ytMU="
     },
     "thushan/olla": {
       "type": "Container",

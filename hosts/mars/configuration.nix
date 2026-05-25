@@ -40,7 +40,7 @@
     bluetooth.enable = true;
     localsend.enable = true;
     bundles.general.enable = true;
-    bundles.general.stylixAsset = ../../media/artemis2_2.jpg;
+    bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.graphical.enable = true;
     bundles.users.enable = true;
     steam = {

@@ -36,7 +36,7 @@
       httpPort = 2375;
     };
     bundles.general.enable = true;
-    bundles.general.stylixAsset = ../../media/artemis2_2.jpg;
+    bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.users.enable = true;
 
     services = {
