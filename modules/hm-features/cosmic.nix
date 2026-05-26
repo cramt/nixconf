@@ -77,39 +77,6 @@
               ]
             ]);
           }
-          {
-            name = "Dock";
-            anchor = ron "enum" "Bottom";
-            anchor_gap = false;
-            autohide = ron "optional" {
-              handle_size = 2;
-              transition_time = 200;
-              wait_time = 500;
-            };
-            background = ron "enum" "ThemeDefault";
-            border_radius = 160;
-            expand_to_edges = false;
-            keyboard_interactivity = ron "enum" "OnDemand";
-            layer = ron "enum" "Top";
-            margin = 0;
-            opacity = 1.0;
-            output = ron "enum" "All";
-            padding = 0;
-            size = ron "enum" "L";
-            size_center = ron "optional" null;
-            size_wings = ron "optional" null;
-            spacing = 0;
-            exclusive_zone = false;
-            autohover_delay_ms = ron "optional" 500;
-            plugins_center = ron "optional" [
-              "com.system76.CosmicPanelLauncherButton"
-              "com.system76.CosmicPanelWorkspacesButton"
-              "com.system76.CosmicPanelAppButton"
-              "com.system76.CosmicAppList"
-              "com.system76.CosmicAppletMinimize"
-            ];
-            plugins_wings = null;
-          }
         ];
         shortcuts = [
           { action = ron "enum" "Disable"; key = "Super+y"; }
