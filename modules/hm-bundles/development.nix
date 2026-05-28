@@ -62,6 +62,7 @@
           builtins.map (x: "${x}/lib/pkgconfig") ld_packages
         );
         AGENT_BROWSER_SKILLS_DIR = "${pkgs.agent-browser}/share/agent-browser/skills";
+        SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
       };
     };
   };

@@ -118,28 +118,41 @@
       # (or ~/.claude.json when CLAUDE_CONFIG_DIR is unset). It does NOT read any
       # ~/.claude/mcp.json. Register declaratively via `claude mcp add-json` for
       # each variant so plain `claude`, `claude-w`, and `claude-p` all see them.
-      home.activation.registerClaudeMcpServers = lib.hm.dag.entryAfter ["writeBoundary"] ''
-        export PATH=${lib.makeBinPath [pkgs.jq pkgs.coreutils claudeCodePkg]}:$PATH
-        SERVERS='${mcpJson}'
+      #
+      # Runs as a user systemd unit (not a home.activation step) because each
+      # `claude mcp` invocation is ~360ms of Node cold-start; 42 of them on the
+      # boot critical path added ~15s to home-manager-cramt.service. As a user
+      # unit started by default.target, it trails the login in the background.
+      # home-manager auto-restarts the unit on switch when the script changes.
+      systemd.user.services.claude-mcp-register = {
+        Unit.Description = "Register Claude Code MCP servers";
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${pkgs.writeShellScript "register-claude-mcp" ''
+            export PATH=${lib.makeBinPath [pkgs.jq pkgs.coreutils claudeCodePkg]}:$PATH
+            SERVERS='${mcpJson}'
 
-        register_dir() {
-          if [ -n "$1" ]; then
-            mkdir -p "$1"
-            export CLAUDE_CONFIG_DIR="$1"
-          else
-            unset CLAUDE_CONFIG_DIR
-          fi
-          for name in $(jq -r '.mcpServers | keys[]' <<< "$SERVERS"); do
-            server_json=$(jq -c --arg n "$name" '.mcpServers[$n]' <<< "$SERVERS")
-            claude mcp remove -s user "$name" >/dev/null 2>&1 || true
-            claude mcp add-json -s user "$name" "$server_json" >/dev/null
-          done
-        }
+            register_dir() {
+              if [ -n "$1" ]; then
+                mkdir -p "$1"
+                export CLAUDE_CONFIG_DIR="$1"
+              else
+                unset CLAUDE_CONFIG_DIR
+              fi
+              for name in $(jq -r '.mcpServers | keys[]' <<< "$SERVERS"); do
+                server_json=$(jq -c --arg n "$name" '.mcpServers[$n]' <<< "$SERVERS")
+                claude mcp remove -s user "$name" >/dev/null 2>&1 || true
+                claude mcp add-json -s user "$name" "$server_json" >/dev/null
+              done
+            }
 
-        register_dir ""
-        register_dir "$HOME/.claude-work"
-        register_dir "$HOME/.claude-personal"
-      '';
+            register_dir ""
+            register_dir "$HOME/.claude-work"
+            register_dir "$HOME/.claude-personal"
+          ''}";
+        };
+        Install.WantedBy = [ "default.target" ];
+      };
     };
   };
 }
