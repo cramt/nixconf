@@ -121,7 +121,7 @@
     };
 
     cockatrice-src = {
-      url = "github:Cockatrice/Cockatrice/2026-05-08-Release-3.0.0";
+      url = "github:Cockatrice/Cockatrice/2026-05-23-Release-3.0.1";
       flake = false;
     };
 

@@ -40,6 +40,12 @@ inputs: [
   })
 
   (final: prev: {
+    scaleway-cli = prev.scaleway-cli.overrideAttrs (old: {
+      doCheck = false;
+    });
+  })
+
+  (final: prev: {
     julia = prev.julia.withPackages ["JuliaFormatter" "LanguageServer"];
   })
 

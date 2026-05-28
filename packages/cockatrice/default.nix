@@ -9,7 +9,7 @@
 }:
 stdenv.mkDerivation {
   pname = "cockatrice";
-  version = "3.0.0";
+  version = "3.0.1";
 
   inherit src;
 

@@ -139,16 +139,16 @@
     "cockatrice-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1778252570,
-        "narHash": "sha256-jLHGWtHbJTQ5Gefrnd8aUq1K3f2QzyE4YU5bW//gH4Y=",
+        "lastModified": 1779488380,
+        "narHash": "sha256-lxhjJPna76Xb/LEMMfzUXe3ZIh1xYpS4yZSZuWkaVq4=",
         "owner": "Cockatrice",
         "repo": "Cockatrice",
-        "rev": "63143f941643dc2f46f658cb51ea3b5727da3e56",
+        "rev": "b3450a78cd16bc6fcb1594b285d9b5d1926c2fd8",
         "type": "github"
       },
       "original": {
         "owner": "Cockatrice",
-        "ref": "2026-05-08-Release-3.0.0",
+        "ref": "2026-05-23-Release-3.0.1",
         "repo": "Cockatrice",
         "type": "github"
       }
