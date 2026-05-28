@@ -30,6 +30,13 @@ inputs: [
     };
   })
 
+  # Replace nixpkgs' source-built zed-editor (lags upstream by days/weeks)
+  # with the official prebuilt preview tarball. Bump version + hash in
+  # ../packages/zed-bin/default.nix.
+  (final: prev: {
+    zed-editor = prev.callPackage ../packages/zed-bin {};
+  })
+
   # Workaround for nixpkgs#514113: openldap 2.6.13 test017-syncreplication-refresh
   # is flaky and fails the build.
   # Remove once nixpkgs#513765 (bumps syncrepl test sleep timeouts) is merged.
