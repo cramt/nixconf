@@ -30,38 +30,47 @@ npins update          # Update non-flake pinned sources
 
 ### Flake Structure
 
-The flake uses `flake-parts` (replacing the old `flake-utils`). `flake.nix` is a minimal wrapper around `flake-parts.lib.mkFlake` that imports four modules from `flake/`:
+The flake uses `flake-parts`. `flake.nix` is a minimal wrapper around `flake-parts.lib.mkFlake` whose entire module list is `inputs.import-tree ./modules` — **every `.nix` file under `modules/` is auto-imported as a flake-parts module**. There is no central import list; dropping a file into `modules/` is enough to wire it in.
+
+The flake-parts plumbing lives in `modules/flake/`:
 
 | File | Purpose |
 |------|---------|
-| `flake/lib.nix` | Instantiates `myLib` and exposes it as `_module.args.myLib` to all flake modules |
-| `flake/hosts.nix` | Declares the `nixosHosts` option (attrset of hostname → config path) and builds `nixosConfigurations` |
-| `flake/packages.nix` | `perSystem` packages (e.g. `eros-img`) — replaces `flake-utils.lib.eachDefaultSystem` |
-| `flake/exported-modules.nix` | Exports `nixosModules.default` and `homeManagerModules.default` as flake outputs |
+| `modules/flake/lib.nix` | Instantiates `myLib` and exposes it as `_module.args.myLib` to all flake modules |
+| `modules/flake/hosts.nix` | Declares the `nixosHosts` option (hostname → `{ config; nixpkgs; }`) and builds `flake.nixosConfigurations` via `myLib.mkSystem` |
+| `modules/flake/systems.nix` | The `systems` list for `perSystem` |
+| `modules/flake/packages.nix` | `perSystem` packages (e.g. `eros-img`, `titan-img`, `t3code`) |
+| `modules/flake/hm-modules.nix` | Typed accumulator options (`hmModules.default/features/bundles`) wired into `flake.homeManagerModules` once, to avoid freeform merge conflicts |
 
-The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`. Each host is registered in `flake/hosts.nix` under the `nixosHosts` option and built via `myLib.mkSystem ./hosts/<name>/configuration.nix`. **To add a new host, add one line to `nixosHosts` in `flake/hosts.nix`.**
+The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`. Each is registered in the `nixosHosts` attrset in `modules/flake/hosts.nix`. **To add a new host, add one line to `nixosHosts`** (set `nixpkgs` per-host to use a vendor cache, as `eros` does with `nixpkgs-rpi`).
 
 ### myLib (`myLib/default.nix`)
 
-A helper library providing:
-- `mkSystem` / `mkHome` — build NixOS/Home Manager configurations
-- `extendModules` — the core pattern: takes a directory of modules and automatically wraps each in an enable option
-- `filesIn` / `dirsIn` — directory enumeration helpers
+A thin helper exposing `mkSystem { config, nixpkgs ? inputs.nixpkgs }`, which calls `nixpkgs.lib.nixosSystem` and imports `outputs.nixosModules.default`, opnix, and every other `outputs.nixosModules.*` entry.
 
 ### Module System Pattern
 
-Both `nixosModules/` and `homeManagerModules/` use `extendModules` to auto-generate enable options for every file in `features/`, `bundles/`, and `services/` subdirectories.
+There is **no automatic enable-option wrapping**. Each module file is a flake-parts module that *manually* registers itself into the appropriate output and declares its own `enable` option guarded by `lib.mkIf`. The directory a file lives in is organizational; the namespace it lands in is whatever the file declares.
 
-**NixOS modules** (accessed as `myNixOS.*` in host configs):
-- `nixosModules/features/<name>.nix` → `myNixOS.<name>.enable = true`
-- `nixosModules/bundles/<name>.nix` → `myNixOS.bundles.<name>.enable = true`
-- `nixosModules/services/<name>.nix` → `myNixOS.services.<name>.enable = true`
+**NixOS modules** — a file sets `flake.nixosModules."<category>.<name>"` and declares `options.myNixOS.<...>`:
 
-**Home Manager modules** (accessed as `myHomeManager.*` in home configs):
-- `homeManagerModules/features/<name>.nix` → `myHomeManager.<name>.enable = true`
-- `homeManagerModules/bundles/<name>.nix` → `myHomeManager.bundles.<name>.enable = true`
+```nix
+{ ... }: {
+  flake.nixosModules."services.foo" = { config, lib, ... }: let
+    cfg = config.myNixOS.services.foo;
+  in {
+    options.myNixOS.services.foo.enable = lib.mkEnableOption "myNixOS.services.foo";
+    config = lib.mkIf cfg.enable { /* ... */ };
+  };
+}
+```
 
-`homeManagerModules/fixes/` contains unconditional fixes (no enable option; always imported).
+Conventionally: `services/*.nix` → `myNixOS.services.<name>`, `bundles/*.nix` → `myNixOS.bundles.<name>`, and `features`/`hardware`/`networking`/`security`/`virtualization`/`desktop` files → `myNixOS.<name>`. `modules/base/` files (`nixos-default.nix`, `portselector.nix`) are unconditional base config / `nixosModules.default`.
+
+**Home Manager modules** — a file contributes to the typed accumulators from `hm-modules.nix` and declares `options.myHomeManager.<...>`:
+- `modules/hm-base/*` → `hmModules.default` (always imported)
+- `modules/hm-features/<name>.nix` → `hmModules.features.<name>` → `myHomeManager.<name>.enable`
+- `modules/hm-bundles/<name>.nix` → `hmModules.bundles.<name>` → `myHomeManager.bundles.<name>.enable`
 
 ### Host Structure
 
@@ -74,13 +83,13 @@ Each host in `hosts/<name>/` has:
 
 ### Key Subsystems
 
-- **Theming**: `stylix` (dark theme, Iosevka Nerd Font). Configured in `nixosModules/bundles/general.nix`. The `stylixAsset` option accepts an image or `.mp4` (first frame is extracted).
+- **Theming**: `stylix` (dark theme, Iosevka Nerd Font). Configured in `modules/bundles/nixos-general.nix`. The `stylixAsset` option accepts an image or `.mp4` (first frame is extracted).
 - **Secrets**: `opnix` (1Password-based). Enabled per-host with `myNixOS.opnix-secrets.enable = true`.
-- **Port assignment**: `portselector.nix` provides a `port-selector` NixOS option that deterministically assigns ports to services by hashing their names, with manual overrides via `set-ports`.
+- **Port assignment**: `modules/base/portselector.nix` provides a `port-selector` NixOS option that deterministically assigns ports to services by hashing their names, with manual overrides via `set-ports`.
 - **Non-flake pins**: `npins/` for sources that don't have flake support.
 - **Gems**: `gems/` — Ruby gems used by scripts (locked with `bundle lock`).
-- **Packages**: `packages/` — custom packages (`declaradroid`, `codexbar`).
-- **Scripts**: `scripts/` — Nix-defined scripts (zellij, sway gaming, etc.).
+- **Packages**: `packages/` — custom packages (`declaradroid`, `t3code`, `cockatrice`, `steamlink`, `zed-bin`).
+- **Scripts**: `scripts/` — Nix-defined scripts (`zellij_smart_start`, `sway_gaming`, `keep_awake`, etc.).
 
 ### Home Manager Bundles
 

@@ -40,6 +40,7 @@
     bundles.users.enable = true;
 
     services = {
+      claude-remote-control.enable = true;
       nixarr.enable = true;
       tor.enable = true;
       garage.enable = false;

@@ -78,6 +78,7 @@
     amd.enable = true;
     bundles.users.enable = true;
     services = {
+      claude-remote-control.enable = true;
       sunshine.enable = true;
       llama-cpp-rpc = {
         enable = true;
