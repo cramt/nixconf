@@ -20,8 +20,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.11";
-    # TODO: remove once https://github.com/NixOS/nixpkgs/pull/523060 is in unstable
-    nixpkgs-master.url = "github:nixos/nixpkgs/master";
     # TODO: remove once https://github.com/NixOS/nixpkgs/issues/523332 is fixed in unstable
     # Last nixpkgs rev before the GDM/GNOME 49 → 50 bump that broke the greeter
     # (blank screen + top-left cursor on boot). Used to pin the GDM stack only.

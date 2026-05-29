@@ -86,17 +86,6 @@ inputs: [
     rocmPackages = inputs.nixpkgs-stable.legacyPackages.${prev.stdenv.hostPlatform.system}.rocmPackages;
   })
 
-  # TODO: remove once https://github.com/NixOS/nixpkgs/pull/523060 is in unstable
-  (final: prev: let
-    master = import inputs.nixpkgs-master {
-      inherit (prev.stdenv.hostPlatform) system;
-      config.allowUnfree = true;
-    };
-  in {
-    _1password-cli = master._1password-cli;
-    _1password-gui = master._1password-gui;
-  })
-
   # TODO: remove once https://github.com/NixOS/nixpkgs/issues/523332 is fixed in unstable
   # GDM 50.0 fails to launch its greeter session ("Failed to execute child process
   # 'gnome-session'"), leaving the user staring at a blank screen with a cursor in the
