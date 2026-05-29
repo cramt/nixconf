@@ -18,6 +18,7 @@
     blueman.enable = true;
     cockatrice.enable = true;
     claude-code.mcp.zammad.enable = true;
+    claude-code.mcp.ms365.enable = true;
     firefox.profiles = {
       cramt = {
         extensions = with pkgs.nur.repos.rycee.firefox-addons; [

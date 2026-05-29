@@ -47,19 +47,31 @@
 
     cfg = config.myHomeManager.claude-code;
 
-    extraMcpServers = lib.optionalAttrs cfg.mcp.zammad.enable {
-      zammad = {
-        command = "${pkgs.uv}/bin/uvx";
-        args = [
-          "--from" "git+https://github.com/basher83/zammad-mcp.git"
-          "mcp-zammad"
-        ];
-        env = {
-          ZAMMAD_URL = cfg.mcp.zammad.url;
-          ZAMMAD_HTTP_TOKEN_FILE = cfg.mcp.zammad.tokenFile;
+    extraMcpServers =
+      (lib.optionalAttrs cfg.mcp.zammad.enable {
+        zammad = {
+          command = "${pkgs.uv}/bin/uvx";
+          args = [
+            "--from" "git+https://github.com/basher83/zammad-mcp.git"
+            "mcp-zammad"
+          ];
+          env = {
+            ZAMMAD_URL = cfg.mcp.zammad.url;
+            ZAMMAD_HTTP_TOKEN_FILE = cfg.mcp.zammad.tokenFile;
+          };
         };
-      };
-    };
+      })
+      // (lib.optionalAttrs cfg.mcp.ms365.enable {
+        ms365 = {
+          command = "${pkgs.nodejs}/bin/npx";
+          args = [ "-y" "@softeria/ms-365-mcp-server" ]
+            ++ lib.optional cfg.mcp.ms365.orgMode "--org-mode"
+            ++ lib.optional cfg.mcp.ms365.readOnly "--read-only";
+          env = lib.optionalAttrs (cfg.mcp.ms365.clientId != null) {
+            MS365_MCP_CLIENT_ID = cfg.mcp.ms365.clientId;
+          };
+        };
+      });
 
     mergedMcp = eccMcp // {
       mcpServers = (eccMcp.mcpServers or {}) // extraMcpServers;
@@ -80,6 +92,28 @@
           type = lib.types.str;
           default = "/var/lib/opnix/secrets/zammadHttpToken";
           description = "Path to a file containing the Zammad HTTP API token.";
+        };
+      };
+      mcp.ms365 = {
+        enable = lib.mkEnableOption "Microsoft 365 MCP server (Softeria/ms-365-mcp-server) — Outlook/Teams/SharePoint/OneDrive via Graph";
+        orgMode = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "Pass --org-mode to enable work/school (Microsoft 365) features.";
+        };
+        readOnly = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Pass --read-only to disable all write operations (send/reply/draft/move/delete).";
+        };
+        clientId = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = ''
+            Azure AD application (client) ID to use instead of the server's
+            built-in multi-tenant app. Leave null to use the built-in app
+            (still requires tenant admin consent for the requested Graph scopes).
+          '';
         };
       };
     };
