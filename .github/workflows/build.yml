@@ -7,8 +7,32 @@ on:
     branches: [main]
 
 jobs:
-  x86:
+  # Enumerate flake packages -> a build matrix consumed via fromJSON below.
+  matrix:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: accept-flake-config = true
+
+      - id: gen
+        run: ./.github/scripts/build-matrix.sh
+
+  # Prebuild every flake package on its own runner and push to cachix. These are
+  # the cache-miss-by-construction derivations (ROCm/CUDA llama.cpp, overlay
+  # patches); building them in isolation means each finishes within the 6h cap
+  # and gets cached, so the host builds below substitute instead of compiling.
+  prebuild:
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
 
@@ -23,19 +47,29 @@ jobs:
           name: cramt
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Build saturn
-        run: nix build .#nixosConfigurations.saturn.config.system.build.toplevel --print-build-logs
+      - name: Build ${{ matrix.package }} (${{ matrix.system }})
+        run: nix build ".#packages.${{ matrix.system }}.${{ matrix.package }}" --print-build-logs
 
-      - name: Build mars
-        if: always()
-        run: nix build .#nixosConfigurations.mars.config.system.build.toplevel --print-build-logs
-
-      - name: Build luna
-        if: always()
-        run: nix build .#nixosConfigurations.luna.config.system.build.toplevel --print-build-logs
-
-  arm64:
-    runs-on: ubuntu-24.04-arm
+  # Build each host toplevel. needs:prebuild only for ordering (warm cache);
+  # if:!cancelled() lets these run even if a prebuild leg failed, so a single
+  # bad package never blocks the host builds — they just fall back to compiling.
+  build:
+    needs: prebuild
+    if: ${{ !cancelled() }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - host: saturn
+            runner: ubuntu-latest
+          - host: mars
+            runner: ubuntu-latest
+          - host: luna
+            runner: ubuntu-latest
+          - host: eros
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
 
@@ -50,5 +84,5 @@ jobs:
           name: cramt
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Build eros
-        run: nix build .#nixosConfigurations.eros.config.system.build.toplevel --print-build-logs
+      - name: Build ${{ matrix.host }}
+        run: nix build ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel" --print-build-logs

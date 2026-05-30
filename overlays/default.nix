@@ -24,6 +24,23 @@ inputs: [
     });
   })
 
+  # Shared definitions for the GPU-accelerated llama.cpp builds used by the
+  # llama-cpp / llama-cpp-rpc services. These are cache misses by construction
+  # (Hydra doesn't build ROCm/CUDA variants), so they're exposed as flake
+  # packages (modules/flake/packages.nix) and prebuilt in CI. Keeping the
+  # override here means the service modules and the prebuilt flake packages
+  # resolve to the exact same store path.
+  (final: prev: {
+    llama-cpp-rocm-rpc = prev.llama-cpp.override {
+      rocmSupport = true;
+      rpcSupport = true;
+    };
+    llama-cpp-cuda-rpc = prev.llama-cpp.override {
+      cudaSupport = true;
+      rpcSupport = true;
+    };
+  })
+
   (final: prev: {
     cockatrice = prev.callPackage ../packages/cockatrice {
       src = inputs.cockatrice-src;

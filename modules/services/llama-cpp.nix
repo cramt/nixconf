@@ -17,14 +17,8 @@
 
     pkgFor = gpu:
       {
-        rocm = pkgs.llama-cpp.override {
-          rocmSupport = true;
-          rpcSupport = true;
-        };
-        cuda = pkgs.llama-cpp.override {
-          cudaSupport = true;
-          rpcSupport = true;
-        };
+        rocm = pkgs.llama-cpp-rocm-rpc;
+        cuda = pkgs.llama-cpp-cuda-rpc;
       }
       .${gpu};
 
