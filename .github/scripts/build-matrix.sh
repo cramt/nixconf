@@ -11,9 +11,14 @@ declare -A runners=(
   [aarch64-linux]=ubuntu-24.04-arm
 )
 
+# Only the packages actually buildable on this system: meta.available drops
+# unsupported platforms (e.g. x86-only t3code on arm) and unfree licenses
+# (e.g. steamlink), which would otherwise fail the build job at eval time.
+filter='set: builtins.filter (n: let r = builtins.tryEval (set.${n}.meta.available or true); in r.success && r.value) (builtins.attrNames set)'
+
 include='[]'
 for system in "${!runners[@]}"; do
-  names=$(nix eval --json ".#packages.${system}" --apply builtins.attrNames)
+  names=$(nix eval --json ".#packages.${system}" --apply "$filter")
   include=$(jq -cn \
     --argjson acc "$include" \
     --argjson names "$names" \
