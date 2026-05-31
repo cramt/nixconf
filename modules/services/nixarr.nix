@@ -125,18 +125,6 @@
         transmission = {
           enable = true;
         };
-        sma = {
-          enable = true;
-          hardware-acceleration = "nvenc";
-          hwaccel-decoders = ["h264_cuvid" "hevc_cuvid"];
-          video-codecs = ["h264" "hevc"];
-          output-format = "mkv";
-          output-extension = "mkv";
-          audio-languages = ["eng" "dan"];
-          subtitle-languages = ["eng" "dan"];
-          audio-default-language = "eng";
-          subtitle-default-language = "eng";
-        };
         mediaDir = lib.mkDefault "/pool/media";
         stateDir = lib.mkDefault "/pool/media/.state/nixarr";
       };

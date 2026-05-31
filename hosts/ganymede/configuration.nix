@@ -63,7 +63,12 @@
     HandleHibernateKey = "ignore";
     IdleAction = "ignore";
   };
-  systemd.sleep.extraConfig = "AllowSuspend=no\nAllowHibernation=no\nAllowSuspendThenHibernate=no\nAllowHybridSleep=no";
+  systemd.sleep.settings.Sleep = {
+    AllowSuspend = "no";
+    AllowHibernation = "no";
+    AllowSuspendThenHibernate = "no";
+    AllowHybridSleep = "no";
+  };
 
   networking.hostName = "ganymede";
   networking.networkmanager.enable = true;
@@ -85,5 +90,5 @@
     pkgs.ghostty.terminfo
   ];
 
-  system.stateVersion = "25.11";
+  system.stateVersion = "26.05";
 }

@@ -1205,22 +1205,20 @@
     "nixarr": {
       "inputs": {
         "nixpkgs": "nixpkgs_7",
-        "sickbeard-mp4-automator": "sickbeard-mp4-automator",
         "treefmt-nix": "treefmt-nix_2",
         "vpnconfinement": "vpnconfinement",
         "website-builder": "website-builder"
       },
       "locked": {
-        "lastModified": 1776072844,
-        "narHash": "sha256-g7hp3kGHSEkZeapn9ubGw7QyvOeol9pXPEN5MrEvI0A=",
+        "lastModified": 1780144466,
+        "narHash": "sha256-EydxECBxfJK3ByItkowsHVaGDhIMt+d05bgTJIAcIqM=",
         "owner": "nix-media-server",
         "repo": "nixarr",
-        "rev": "fd3c34e7bdeecf1e6f94ef2fa52a8dc3711e99b2",
+        "rev": "9d686fbae193c4d353477b3691261eb9d944391a",
         "type": "github"
       },
       "original": {
         "owner": "nix-media-server",
-        "ref": "feat/sma",
         "repo": "nixarr",
         "type": "github"
       }
@@ -1337,16 +1335,16 @@
     },
     "nixpkgs-ruby-downgrade": {
       "locked": {
-        "lastModified": 1779796641,
-        "narHash": "sha256-ZsIrKmhp4vbBXoXXmR/tBXA/UCsAQiJL9vsgZEduhVY=",
+        "lastModified": 1779971959,
+        "narHash": "sha256-R5nauXyqyfRUFiZycFFZdkF7wl6eaUpPLst35+2nJQY=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "25f538306313eae3927264466c70d7001dcea1df",
+        "rev": "ec942ba042dad5ef097e2ef3a3effc034241f011",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-25.11",
+        "ref": "nixos-26.05",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -1369,16 +1367,16 @@
     },
     "nixpkgs-stable_2": {
       "locked": {
-        "lastModified": 1779796641,
-        "narHash": "sha256-ZsIrKmhp4vbBXoXXmR/tBXA/UCsAQiJL9vsgZEduhVY=",
+        "lastModified": 1779971959,
+        "narHash": "sha256-R5nauXyqyfRUFiZycFFZdkF7wl6eaUpPLst35+2nJQY=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "25f538306313eae3927264466c70d7001dcea1df",
+        "rev": "ec942ba042dad5ef097e2ef3a3effc034241f011",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-25.11",
+        "ref": "nixos-26.05",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -1962,22 +1960,6 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "sickbeard-mp4-automator": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1771841168,
-        "narHash": "sha256-pSCBAJ2pPfnNfQCvkC8Qy6IshK3J8oACRbFJolor3AU=",
-        "owner": "mdhiggins",
-        "repo": "sickbeard_mp4_automator",
-        "rev": "e3db46613bba5724ab298b64a9214f6f6ae863b1",
-        "type": "github"
-      },
-      "original": {
-        "owner": "mdhiggins",
-        "repo": "sickbeard_mp4_automator",
         "type": "github"
       }
     },

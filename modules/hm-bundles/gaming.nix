@@ -17,7 +17,7 @@
         gamescope
         mangohud
         winetricks
-        inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.melonDS
+        inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.melonds
         prismlauncher
         lutris
         heroic

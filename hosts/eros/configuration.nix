@@ -198,6 +198,8 @@ in
 
     hardware.enableRedistributableFirmware = true;
 
+    # eros tracks the nixos-raspberrypi vendor nixpkgs (currently 25.11),
+    # not the nixos-26.05 release branch, so its stateVersion stays at 25.11.
     system.stateVersion = "25.11";
   };
 }

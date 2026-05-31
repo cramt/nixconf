@@ -18,13 +18,13 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-25.11";
-    nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-26.05";
+    nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-26.05";
     # TODO: remove once https://github.com/NixOS/nixpkgs/issues/523332 is fixed in unstable
     # Last nixpkgs rev before the GDM/GNOME 49 → 50 bump that broke the greeter
     # (blank screen + top-left cursor on boot). Used to pin the GDM stack only.
     nixpkgs-pre-gdm50.url = "github:nixos/nixpkgs/d233902339c02a9c334e7e593de68855ad26c4cb";
-    nixarr.url = "github:nix-media-server/nixarr/feat/sma";
+    nixarr.url = "github:nix-media-server/nixarr";
     jellarr.url = "github:cramt/jellarr";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
     quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
