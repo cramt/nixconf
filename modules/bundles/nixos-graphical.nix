@@ -18,6 +18,10 @@
                 matches = [ { "device.name" = "~bluez_card.*"; } ];
                 actions.update-props = {
                   "bluez5.codecs" = [ "aac" "sbc_xq" "sbc" ];
+                  # Don't auto-switch to HFP/HSP when an app opens the mic.
+                  # The WH-1000XM4 drops the link on the A2DP->HFP transition,
+                  # causing random disconnect/reconnect cycles.
+                  "bluez5.autoswitch-profile" = false;
                 };
               }
             ];
