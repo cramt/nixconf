@@ -12,11 +12,11 @@
   pkg-config,
   node-gyp,
 }: let
-  version = "0-unstable-2026-05-22";
+  version = "0-unstable-2026-06-05";
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
-    rev = "4f0f24f055fe5f5346f7e73372e8cdc167e052f9";
+    rev = "92be60e7c1bae7bdf74482116e09be4cefed1e56";
     hash = "sha256-NM/pIU5Rdpudoa/f5NvaTxhKymScx/lTbMPOnbSxOQE=";
     fetchSubmodules = true;
   };
