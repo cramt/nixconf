@@ -27,6 +27,11 @@
       services.flatpak = {
         enable = true;
         packages = [];
+        # NixOS exports SSL_CERT_FILE pointing at a /nix/store CA bundle that
+        # isn't mounted inside the Flatpak sandbox, which breaks TLS for every
+        # flatpak (Bottles reports "You are offline"). Point flatpaks at the CA
+        # bundle that actually exists inside the runtime.
+        overrides.settings.global.Environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
       };
       myHomeManager = {
         wowup.enable = true;
