@@ -16,7 +16,7 @@
       programs.go.enable = true;
       myHomeManager = {
         claude-code.enable = true;
-        opencode.enable = true;
+        pi.enable = true;
         java.enable = true;
         ruby.enable = true;
         codex.enable = true;
