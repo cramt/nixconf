@@ -43,6 +43,10 @@
         inherit (cfg) host openFirewall;
         port = config.port-selector.ports.m365-copilot-proxy;
         secretsFile = config.services.onepassword-secrets.secretPaths.m365CopilotProxySecrets;
+        # Full untruncated debug logging to
+        # /var/lib/m365-copilot-proxy/.config/opencode-m365/debug.log,
+        # so failed requests can be reverse engineered from complete payloads.
+        environment.M365_TRACE = "1";
       };
 
       # opnix secret co-located with the service so it's only fetched on hosts
