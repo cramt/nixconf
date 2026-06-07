@@ -21,11 +21,22 @@
           supportsReasoningEffort = false;
           supportsUsageInStreaming = false;
         };
+        # All slugs the proxy maps to an M365 tone (see MODEL_TONES in
+        # @m365-copilot/core). m365-copilot is the default "magic" auto-router;
+        # the gpt-5.x slugs pin a specific backend tone. NB: "-think-deeper" and
+        # the bare gpt-5.4 slug resolve to the same reasoning tone — the
+        # reasoning tiers tend to batch tool calls, the default is the most
+        # disciplined at one-call-per-turn. Switch with `pi --model <id>`.
         models = [
-          {
-            id = "m365-copilot";
-            name = "M365 Copilot";
-          }
+          { id = "m365-copilot"; name = "M365 Copilot (default / magic)"; }
+          { id = "gpt-5.4"; name = "GPT-5.4 (reasoning)"; }
+          { id = "gpt-5.4-quick"; name = "GPT-5.4 Quick"; }
+          { id = "gpt-5.3"; name = "GPT-5.3 Quick"; }
+          { id = "gpt-5.3-think-deeper"; name = "GPT-5.3 (reasoning)"; }
+          { id = "gpt-5.2"; name = "GPT-5.2 Quick"; }
+          { id = "gpt-5.2-think-deeper"; name = "GPT-5.2 (reasoning)"; }
+          { id = "think-deeper"; name = "Think Deeper (generic reasoning)"; }
+          { id = "quick"; name = "Quick (generic)"; }
         ];
       };
     };
