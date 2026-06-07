@@ -39,7 +39,9 @@
       programs.pi.coding-agent = {
         enable = true;
 
-        # ~/.pi/agent/settings.json
+        # ~/.pi/agent/settings.json. When the M365 proxy is enabled on this
+        # host it becomes the default provider/model; otherwise pi falls back
+        # to anthropic.
         settings = {
           defaultProvider = "anthropic";
           defaultModel = "claude-sonnet-4-6";
@@ -48,13 +50,16 @@
           compaction.enabled = true;
 
           enableInstallTelemetry = false;
+        } // lib.optionalAttrs m365Enabled {
+          defaultProvider = "m365";
+          defaultModel = "m365-copilot";
         };
 
         # Register the local M365 Copilot proxy as a provider when it's enabled
-        # on this host (→ ~/.pi/agent/models.json). Use it with
-        # `pi --models "m365*"` or `pi --provider m365 --model m365-copilot`.
-        # Keep the toolset lean (M365 disengages on large tool payloads), e.g.
-        # `pi --models "m365*" --tools read,list,edit,write`.
+        # on this host (→ ~/.pi/agent/models.json). Keep the toolset lean (M365
+        # disengages on large tool payloads), e.g.
+        # `pi --tools read,list,edit,write`. To use anthropic for a run:
+        # `pi --provider anthropic --model claude-sonnet-4-6`.
         models = lib.mkIf m365Enabled m365Models;
       };
     };
