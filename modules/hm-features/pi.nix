@@ -29,14 +29,18 @@
         # disciplined at one-call-per-turn. Switch with `pi --model <id>`.
         models = [
           { id = "m365-copilot"; name = "M365 Copilot (default / magic)"; }
+          { id = "auto"; name = "Auto (magic)"; }
+          { id = "quick"; name = "Quick (generic)"; }
+          { id = "think-deeper"; name = "Think Deeper (generic reasoning)"; }
           { id = "gpt-5.4"; name = "GPT-5.4 (reasoning)"; }
+          { id = "gpt-5.4-think-deeper"; name = "GPT-5.4 Think Deeper (reasoning)"; }
           { id = "gpt-5.4-quick"; name = "GPT-5.4 Quick"; }
           { id = "gpt-5.3"; name = "GPT-5.3 Quick"; }
-          { id = "gpt-5.3-think-deeper"; name = "GPT-5.3 (reasoning)"; }
+          { id = "gpt-5.3-quick"; name = "GPT-5.3 Quick"; }
+          { id = "gpt-5.3-think-deeper"; name = "GPT-5.3 Think Deeper (reasoning)"; }
           { id = "gpt-5.2"; name = "GPT-5.2 Quick"; }
-          { id = "gpt-5.2-think-deeper"; name = "GPT-5.2 (reasoning)"; }
-          { id = "think-deeper"; name = "Think Deeper (generic reasoning)"; }
-          { id = "quick"; name = "Quick (generic)"; }
+          { id = "gpt-5.2-quick"; name = "GPT-5.2 Quick"; }
+          { id = "gpt-5.2-think-deeper"; name = "GPT-5.2 Think Deeper (reasoning)"; }
         ];
       };
     };
