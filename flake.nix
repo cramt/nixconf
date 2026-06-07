@@ -39,6 +39,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # OpenAI-compatible proxy for M365 Copilot (Nitro service + NixOS module).
+    m365-copilot-proxy = {
+      url = "github:cramt/m365-copilot-proxy";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     winapps = {
       url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";

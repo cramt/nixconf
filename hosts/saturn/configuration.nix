@@ -67,6 +67,7 @@
       ];
     };
     opnix-secrets.enable = true;
+    services.m365-copilot-proxy.enable = true;
     gnupg.enable = true;
     onepassword.enable = true;
     qemu.enable = true;

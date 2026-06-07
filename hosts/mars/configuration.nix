@@ -35,6 +35,7 @@
     gnupg.enable = true;
     onepassword.enable = true;
     opnix-secrets.enable = true;
+    services.m365-copilot-proxy.enable = true;
     qemu.enable = true;
     docker.enable = true;
     bluetooth.enable = true;
