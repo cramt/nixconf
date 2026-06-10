@@ -1,9 +1,7 @@
 { inputs, ... }:
 {
   perSystem = { pkgs, lib, system, ... }: {
-    packages = {
-      t3code = pkgs.callPackage ../../packages/t3code/default.nix {};
-    } // lib.optionalAttrs (system == "x86_64-linux") {
+    packages = lib.optionalAttrs (system == "x86_64-linux") {
       # OpenWrt sysupgrade image for the Archer C5 v2 (host: titan). The upstream
       # ImageBuilder ships only x86_64-linux binaries, so gate accordingly.
       titan-img = import ../../hosts/titan/configuration.nix { inherit pkgs inputs; };

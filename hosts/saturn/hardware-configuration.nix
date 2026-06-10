@@ -70,6 +70,7 @@
       "cache.files=partial"
       "dropcacheonclose=true"
       "category.create=mfs"
+      "fsname=/dev/mergerfs/external_storage"
       "nofail"
     ];
   };

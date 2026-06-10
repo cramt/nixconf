@@ -39,7 +39,7 @@ The flake-parts plumbing lives in `modules/flake/`:
 | `modules/flake/lib.nix` | Instantiates `myLib` and exposes it as `_module.args.myLib` to all flake modules |
 | `modules/flake/hosts.nix` | Declares the `nixosHosts` option (hostname → `{ config; nixpkgs; }`) and builds `flake.nixosConfigurations` via `myLib.mkSystem` |
 | `modules/flake/systems.nix` | The `systems` list for `perSystem` |
-| `modules/flake/packages.nix` | `perSystem` packages (e.g. `eros-img`, `titan-img`, `t3code`) |
+| `modules/flake/packages.nix` | `perSystem` packages (e.g. `eros-img`, `titan-img`) |
 | `modules/flake/hm-modules.nix` | Typed accumulator options (`hmModules.default/features/bundles`) wired into `flake.homeManagerModules` once, to avoid freeform merge conflicts |
 
 The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`. Each is registered in the `nixosHosts` attrset in `modules/flake/hosts.nix`. **To add a new host, add one line to `nixosHosts`** (set `nixpkgs` per-host to use a vendor cache, as `eros` does with `nixpkgs-rpi`).
@@ -88,7 +88,7 @@ Each host in `hosts/<name>/` has:
 - **Port assignment**: `modules/base/portselector.nix` provides a `port-selector` NixOS option that deterministically assigns ports to services by hashing their names, with manual overrides via `set-ports`.
 - **Non-flake pins**: `npins/` for sources that don't have flake support.
 - **Gems**: `gems/` — Ruby gems used by scripts (locked with `bundle lock`).
-- **Packages**: `packages/` — custom packages (`declaradroid`, `t3code`, `cockatrice`, `steamlink`, `zed-bin`).
+- **Packages**: `packages/` — custom packages (`declaradroid`, `cockatrice`, `steamlink`, `zed-bin`).
 - **Scripts**: `scripts/` — Nix-defined scripts (`zellij_smart_start`, `sway_gaming`, `keep_awake`, etc.).
 
 ### Home Manager Bundles
