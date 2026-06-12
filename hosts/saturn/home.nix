@@ -14,6 +14,8 @@
     bundles.graphical.enable = true;
     bundles.gaming.enable = true;
     helium.enable = true;
+    agentsview.enable = true;
+    agentsview.service.enable = true;
     obs.enable = true;
     jujutsu.enable = true;
     monitors = import ./monitors.nix;

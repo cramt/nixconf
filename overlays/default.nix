@@ -47,6 +47,12 @@ inputs: [
     };
   })
 
+  # Not in nixpkgs; built from source (Go + embedded Svelte frontend).
+  # Bump version + hashes in ../packages/agentsview/default.nix.
+  (final: prev: {
+    agentsview = prev.callPackage ../packages/agentsview {};
+  })
+
   # Replace nixpkgs' source-built zed-editor (lags upstream by days/weeks)
   # with the official prebuilt preview tarball. Bump version + hash in
   # ../packages/zed-bin/default.nix.
