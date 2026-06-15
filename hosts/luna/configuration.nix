@@ -88,6 +88,7 @@
         databaseUrl = "sqlite:/pool/homelab_discord_bot.db?mode=rwc";
       };
       open-webui.enable = false;
+      litellm.enable = true;
       postgres = {
         dataDir = "/pool/pgsql";
       };
