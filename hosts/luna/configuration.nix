@@ -89,7 +89,12 @@
       };
       open-webui.enable = false;
       litellm.enable = true;
-      hermes-agent.enable = true;
+      claude-sub-proxy.enable = true;
+      hermes-agent = {
+        enable = true;
+        discord.enable = true;
+        discord.allowedUserIds = [ "149996010314137600" ];
+      };
       postgres = {
         dataDir = "/pool/pgsql";
       };

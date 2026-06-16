@@ -45,6 +45,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # OpenAI-compatible proxy fronting the Claude Agent SDK with caller-side
+    # tool-call passthrough — runs Hermes' brain on the Claude subscription.
+    claude-sub-proxy = {
+      url = "github:cramt/claude-sub-proxy";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Nous Research Hermes Agent — self-hosted autonomous agent. The flake
     # exposes nixosModules.default + packages. Deliberately NOT following our
     # nixpkgs: it's a large Python app pinned against its own nixpkgs, and
