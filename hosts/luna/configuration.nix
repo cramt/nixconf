@@ -89,6 +89,7 @@
       };
       open-webui.enable = false;
       litellm.enable = true;
+      hermes-agent.enable = true;
       postgres = {
         dataDir = "/pool/pgsql";
       };

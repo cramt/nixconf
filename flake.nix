@@ -45,6 +45,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Nous Research Hermes Agent — self-hosted autonomous agent. The flake
+    # exposes nixosModules.default + packages. Deliberately NOT following our
+    # nixpkgs: it's a large Python app pinned against its own nixpkgs, and
+    # overriding that risks breaking the build.
+    hermes-agent.url = "github:NousResearch/hermes-agent";
+
     winapps = {
       url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";
