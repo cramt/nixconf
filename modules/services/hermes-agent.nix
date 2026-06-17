@@ -39,6 +39,16 @@
           agent — scope it to your own ID.
         '';
       };
+      discord.homeChannelId = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "1465064573840130289";
+        description = ''
+          Discord channel ID for the home channel (DISCORD_HOME_CHANNEL), where
+          cron results and cross-platform messages are delivered. Set this
+          declaratively — `/sethome` can't persist against the read-only config.
+        '';
+      };
     };
 
     config = lib.mkIf cfg.enable {
@@ -62,14 +72,20 @@
         # the integration is enabled, to keep the default build lean.
         extraDependencyGroups = lib.optionals cfg.discord.enable [ "messaging" ];
 
-        # Allowlist (non-secret) goes through the .env env path. Without it
-        # Hermes denies every Discord user.
-        environment = lib.optionalAttrs
-          (cfg.discord.enable && cfg.discord.allowedUserIds != [ ])
-          { DISCORD_ALLOWED_USERS = lib.concatStringsSep "," cfg.discord.allowedUserIds; };
+        # Allowlist + home channel (non-secret) go through the .env env path.
+        # Without the allowlist Hermes denies every Discord user; the home
+        # channel can't be set via /sethome against the read-only config.
+        environment =
+          lib.optionalAttrs (cfg.discord.enable && cfg.discord.allowedUserIds != [ ])
+            { DISCORD_ALLOWED_USERS = lib.concatStringsSep "," cfg.discord.allowedUserIds; }
+          // lib.optionalAttrs (cfg.discord.enable && cfg.discord.homeChannelId != null)
+            { DISCORD_HOME_CHANNEL = cfg.discord.homeChannelId; };
 
         settings.model = {
-          default = "claude-opus-4-8";
+          # Sonnet, not Opus: your Sonnet weekly pool is separate and far more
+          # generous, which reduces the intermittent extra-usage misclassification
+          # and doesn't contend with Opus/session usage.
+          default = "claude-sonnet-4-6";
           provider = "custom";   # any OpenAI-compatible endpoint
           base_url = "http://127.0.0.1:${toString proxyPort}/v1";
           # The proxy runs without auth; the OpenAI client still wants a
