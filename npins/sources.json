@@ -11,8 +11,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:024f32979e8a184caa5c08274a47407dc385892053933833e422f5fc8aae832d",
-      "hash": "sha256-pyoP5LViSO87s+K1bAayVDCuUSxCFvs3XvZLG1vJjlY="
+      "image_digest": "sha256:34cdd7be4847ee0d65c1cd1cea5e99e5187e8e032ea86e085ea683c3058c7ea8",
+      "hash": "sha256-o7vZ0tiCPrk8H3Ej/oQjzbnDORRlU7ZcEDUhHrae0ws="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -25,15 +25,15 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1015535.49a4bd0573c3/nixexprs.tar.xz",
-      "hash": "sha256-OzxtVgj26jwAo9t9GxmOsQD3waYIx71PJ3u++2hmWJQ="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1017567.3e41b24abd26/nixexprs.tar.xz",
+      "hash": "sha256-eM+l4TVD26SNoEjcxRcpispqZi5Qrqj/G0ZY4LfqwfM="
     },
     "thushan/olla": {
       "type": "Container",
       "image_name": "ghcr.io/thushan/olla",
       "image_tag": "latest",
-      "image_digest": "sha256:6df6e3379efc89b865105efde1adc53e5fff63a1c08dff7dc6c56556fcfebac7",
-      "hash": "sha256-6Z2lkK32OmQfbJCgv89rviSpG9PYh8Vfqnhe5NrV6Dc="
+      "image_digest": "sha256:1f369f0c5aa8392aca74271cb041dc37e580baf7fc012581eb21d790ab78ee13",
+      "hash": "sha256-cqhN3Vfn6niOerQlzWwES5iaN1jBnLFtOGbHfX9kRcU="
     },
     "wolveix/satisfactory-server": {
       "type": "Container",
