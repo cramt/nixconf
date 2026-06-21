@@ -91,7 +91,6 @@
     mainBinds = {
       # Apps / launcher
       "Mod+Return".action.spawn = ghostty;
-      "Ctrl+T".action.spawn = ghostty;
       "Mod+T".action.spawn = ghostty;            # COSMIC's terminal bind
       "Mod+D".action = ipc "launcher" "toggle";
       "Mod+V".action = ipc "launcher" "clipboard";
@@ -253,7 +252,32 @@
         # inactive = base03) and disables the focus-ring. Previously we forced
         # the focus-ring on with no color, which is where the default blue ring
         # came from. Only set gaps here and let stylix own the highlight colors.
-        layout.gaps = 5;
+        layout = {
+          gaps = 0;
+          # Thinner focus highlight. stylix sets the border colors + enables it;
+          # only the width is left at niri's default (4), so override just that.
+          border.width = 1;
+          # Widths cycled by Super+R (switch-preset-column-width). Includes a
+          # full-width option so a column can fill the working area (= monitor
+          # minus the bar). Super+F (maximize-column) also snaps to full instantly.
+          preset-column-widths = [
+            { proportion = 1. / 3.; }
+            { proportion = 1. / 2.; }
+            { proportion = 2. / 3.; }
+            { proportion = 1.; }
+          ];
+        };
+
+        # Open browsers maximized (full working-area width, i.e. monitor minus
+        # the bar). Regex is case-insensitive and substring-matched, so it
+        # catches helium/firefox/zen whatever their exact app-id. Check an app's
+        # id with `niri msg windows` if you want to add more.
+        window-rules = [
+          {
+            matches = [ { app-id = "(?i)(helium|firefox|zen)"; } ];
+            open-maximized = true;
+          }
+        ];
 
         hotkey-overlay.skip-at-startup = true;
 
