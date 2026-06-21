@@ -8,6 +8,7 @@
 
   myHomeManager = {
     hyprland.enable = false;
+    niri.enable = true;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.development.enable = true;

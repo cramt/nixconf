@@ -12,7 +12,9 @@
       inputs.cosmic-manager.homeManagerModules.cosmic-manager
       inputs.zen-browser.homeModules.beta
       inputs.hyprshell.homeModules.hyprshell
-      inputs.niri-flake.homeModules.config
+      # niri-flake's homeModules.config is injected into home-manager.sharedModules
+      # by its nixosModule (see modules/desktop/niri.nix); importing it here too
+      # would double-declare programs.niri.* and conflict.
       inputs.noctalia-shell.homeModules.default
       ({ lib, config, ... }: {
         config = lib.mkIf (config.stylix.enable && config.programs.neovide.enable) {

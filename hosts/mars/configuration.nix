@@ -43,6 +43,7 @@
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.graphical.enable = true;
+    niri.enable = true;
     bundles.users.enable = true;
     steam = {
       enable = true;

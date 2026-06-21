@@ -1,6 +1,11 @@
 inputs: [
   inputs.nur.overlays.default
 
+  # Exposes niri-stable/niri-unstable and xwayland-satellite-stable/-unstable
+  # under pkgs.*. We use niri-stable (v25.08) + xwayland-satellite-stable, which
+  # have niri's integrated xwayland-satellite support (no manual DISPLAY juggling).
+  inputs.niri-flake.overlays.niri
+
   (final: prev: let
     sources = import ../npins;
     npinspkgs = import sources.nixpkgs {
