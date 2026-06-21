@@ -31,6 +31,14 @@
 
     claude-code.url = "github:sadjow/claude-code-nix";
 
+    # Herdr — agent-aware terminal multiplexer ("tmux for coding agents").
+    # Not in nixpkgs; the upstream flake exposes packages.default + an overlay.
+    # Remote use ("herdr --remote luna") rides plain SSH like tmux — no daemon.
+    herdr = {
+      url = "github:ogulcancelik/herdr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Community-maintained Nix flake for the pi coding agent (https://pi.dev).
     # There is no official flake; lukasl-dev/pi.nix exposes the package,
     # an overlay, and NixOS/Home Manager modules (programs.pi.coding-agent).
@@ -42,13 +50,6 @@
     # OpenAI-compatible proxy for M365 Copilot (Nitro service + NixOS module).
     m365-copilot-proxy = {
       url = "github:cramt/m365-copilot-proxy";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # OpenAI-compatible proxy fronting the Claude Agent SDK with caller-side
-    # tool-call passthrough — runs Hermes' brain on the Claude subscription.
-    claude-sub-proxy = {
-      url = "github:cramt/claude-sub-proxy";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

@@ -10,6 +10,10 @@
           model_providers = {
             llama-cpp = { name = "llama.cpp"; baseURL = "http://localhost:11434/v1"; };
           };
+          # Enable Codex's hook system so herdr's SessionStart agent-state hook
+          # (installed by `herdr integration install codex`) actually fires.
+          # herdr can't set this itself — config.toml is a read-only HM symlink.
+          features.hooks = true;
         };
       };
     };

@@ -20,6 +20,7 @@
         java.enable = true;
         ruby.enable = true;
         codex.enable = true;
+        herdr.enable = true;
       };
       home.packages = with pkgs;
         [

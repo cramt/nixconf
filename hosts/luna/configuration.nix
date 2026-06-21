@@ -89,9 +89,11 @@
       };
       open-webui.enable = false;
       litellm.enable = true;
-      claude-sub-proxy.enable = true;
+      # Disabled: its brain (claude-sub-proxy) was removed for never working.
+      # Restore claude-sub-proxy or repoint settings.model.base_url (e.g. litellm)
+      # before re-enabling — see modules/services/hermes-agent.nix.
       hermes-agent = {
-        enable = true;
+        enable = false;
         discord.enable = true;
         discord.allowedUserIds = [ "149996010314137600" ];
         discord.homeChannelId = "1465064573840130289";
