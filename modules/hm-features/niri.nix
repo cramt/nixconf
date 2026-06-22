@@ -52,14 +52,79 @@
     };
     stylixScheme = { dark = stylixVariant; light = stylixVariant; };
 
-    # Restart the noctalia shell (e.g. after a config change). noctalia-shell is
-    # a launcher that execs into quickshell, so we match the full command line.
-    # The script is deliberately named without "noctalia-shell" so the pkill
-    # can't match (and kill) this very process.
-    restartNoctalia = pkgs.writeShellScript "restart-shell" ''
-      ${pkgs.procps}/bin/pkill -f noctalia-shell 2>/dev/null || true
-      ${pkgs.coreutils}/bin/sleep 0.3
-      exec ${noctalia}
+    # noctalia's ~/.config/noctalia/settings.json. Kept as a binding so it can be
+    # referenced both by xdg.configFile and as a restart trigger on the noctalia
+    # systemd user service (so `nh os switch` restarts the shell on a change).
+    # We manage only the keys we care about; the rest fall back to its defaults.
+    noctaliaSettings = (pkgs.formats.json {}).generate "noctalia-settings.json" {
+      bar.position = "left";
+      # Default to always-visible (working). Super+Shift+B toggles to auto_hide
+      # (hidden, reveals on hover) for gaming — see barModeToggle above.
+      bar.displayMode = "always_visible";
+      # No bottom dock — the left bar already covers launching/window nav.
+      dock.enabled = false;
+      # Declaring bar.widgets fully replaces noctalia's built-in default
+      # layout (it is not merged), so the defaults are replicated here with
+      # a Bluetooth widget added to the bottom cluster (right = bottom on a
+      # left/vertical bar). Per-widget settings fall back to the registry
+      # defaults; only the id is needed to place a widget.
+      bar.widgets = {
+        left = [
+          { id = "Launcher"; }
+          { id = "Clock"; }
+          { id = "SystemMonitor"; }
+          { id = "ActiveWindow"; }
+          { id = "MediaMini"; }
+        ];
+        center = [
+          { id = "Workspace"; }
+        ];
+        right = [
+          { id = "Tray"; }
+          { id = "NotificationHistory"; }
+          { id = "Battery"; }
+          { id = "Volume"; }
+          { id = "Brightness"; }
+          { id = "Bluetooth"; }
+          { id = "ControlCenter"; }
+        ];
+      };
+      # Calmer, less-invasive notification toasts: bottom-right instead of
+      # top-right, compact density (320px wide + tighter layout vs the 440px
+      # default), a touch of transparency, and a shorter normal-urgency
+      # lifetime (5s vs 8s). Low/critical durations keep their defaults.
+      notifications = {
+        location = "bottom_right";
+        density = "compact";
+        backgroundOpacity = 0.92;
+        normalUrgencyDuration = 5;
+      };
+      colorSchemes = {
+        useWallpaperColors = false;
+        predefinedScheme = "Stylix";
+        darkMode = true;
+      };
+      # We paint the wallpaper with swaybg (stylix image) instead of letting
+      # noctalia show its bundled default.
+      wallpaper.enabled = false;
+    };
+
+    # Toggle the bar between "always visible" (default, good for working) and
+    # "auto_hide" (hidden, reveals on hover at the edge — good for gaming, where
+    # on saturn's ultrawide the game is windowed, not fullscreen, so it can't be
+    # detected via fullscreen state). noctalia has no mode-toggle IPC, only
+    # `bar setDisplayMode <mode>`, and our settings.json is a read-only nix store
+    # symlink so noctalia can't persist a runtime mode change — so we track the
+    # current mode in a runtime-dir state file and flip it ourselves.
+    barModeToggle = pkgs.writeShellScript "noctalia-bar-mode-toggle" ''
+      state="''${XDG_RUNTIME_DIR:-/tmp}/noctalia-bar-mode"
+      if [ "$(${pkgs.coreutils}/bin/cat "$state" 2>/dev/null)" = "auto_hide" ]; then
+        next=always_visible
+      else
+        next=auto_hide
+      fi
+      ${pkgs.coreutils}/bin/echo "$next" > "$state"
+      exec ${noctalia} ipc call bar setDisplayMode "$next" all
     '';
 
     # noctalia IPC action: `noctalia-shell ipc call <target> <function>`.
@@ -100,8 +165,9 @@
       # noctalia panels
       "Mod+C".action = ipc "controlCenter" "toggle";
       "Mod+N".action = ipc "notifications" "toggleHistory";
-      "Mod+Shift+N".action.spawn = "${restartNoctalia}";   # restart the noctalia shell
       "Mod+B".action = ipc "bar" "toggle";
+      # Toggle bar auto-hide on/off (always-visible ⇆ hide-except-on-hover).
+      "Mod+Shift+B".action.spawn = "${barModeToggle}";
       "Mod+Escape".action = ipc "sessionMenu" "toggle";
       "Mod+F1".action = ipc "lockScreen" "lock";
 
@@ -181,12 +247,39 @@
 
     config = lib.mkIf config.myHomeManager.niri.enable {
       # Shell: bar, launcher, notifications, control center, lock, wallpaper.
-      # NOT systemd.enable — that binds to graphical-session.target, which COSMIC
-      # also activates, so noctalia would leak onto the COSMIC session. Instead we
-      # spawn it from niri (spawn-at-startup below) so it's scoped to niri only.
+      # NOT programs.noctalia's own systemd.enable — that unit is WantedBy/
+      # PartOf graphical-session.target, which COSMIC also activates, so noctalia
+      # would leak onto the COSMIC session. We define our own service below,
+      # anchored to niri.service instead (see systemd.user.services.noctalia).
       programs.noctalia = {
         enable = true;
         package = pkgs.noctalia-shell;
+      };
+
+      # Run noctalia as a user service anchored to niri.service (niri-flake's
+      # compositor unit). niri.service is active only in a niri session and is
+      # never started under COSMIC, so this scopes the shell to niri without
+      # touching graphical-session.target:
+      #   - WantedBy=niri.service  → starts automatically when niri starts
+      #   - BindsTo/After=niri.service → stops with niri; starts after it
+      #   - After=graphical-session.target → niri has imported WAYLAND_DISPLAY
+      #     and the rest of the session env by then
+      # Because it's a managed unit, `nh os switch` (home-manager's sd-switch)
+      # restarts it on any change — including the X-Restart-Triggers below, which
+      # fire it whenever settings.json changes. No more manual Super+Shift+N.
+      systemd.user.services.noctalia = {
+        Unit = {
+          Description = "Noctalia shell (niri session only)";
+          PartOf = [ "niri.service" ];
+          BindsTo = [ "niri.service" ];
+          After = [ "niri.service" "graphical-session.target" ];
+          X-Restart-Triggers = [ "${noctaliaSettings}" ];
+        };
+        Service = {
+          ExecStart = noctalia;
+          Restart = "on-failure";
+        };
+        Install.WantedBy = [ "niri.service" ];
       };
 
       # noctalia 4.7.x reads ~/.config/noctalia/settings.json. The homeModule's
@@ -195,53 +288,7 @@
       # symlinked/read-only settings.json (it reloads on store-path swap); we
       # manage only the keys we care about, the rest fall back to its defaults.
       xdg.configFile = {
-        "noctalia/settings.json".source = (pkgs.formats.json {}).generate "noctalia-settings.json" {
-          bar.position = "left";
-          # Declaring bar.widgets fully replaces noctalia's built-in default
-          # layout (it is not merged), so the defaults are replicated here with
-          # a Bluetooth widget added to the bottom cluster (right = bottom on a
-          # left/vertical bar). Per-widget settings fall back to the registry
-          # defaults; only the id is needed to place a widget.
-          bar.widgets = {
-            left = [
-              { id = "Launcher"; }
-              { id = "Clock"; }
-              { id = "SystemMonitor"; }
-              { id = "ActiveWindow"; }
-              { id = "MediaMini"; }
-            ];
-            center = [
-              { id = "Workspace"; }
-            ];
-            right = [
-              { id = "Tray"; }
-              { id = "NotificationHistory"; }
-              { id = "Battery"; }
-              { id = "Volume"; }
-              { id = "Brightness"; }
-              { id = "Bluetooth"; }
-              { id = "ControlCenter"; }
-            ];
-          };
-          # Calmer, less-invasive notification toasts: bottom-right instead of
-          # top-right, compact density (320px wide + tighter layout vs the 440px
-          # default), a touch of transparency, and a shorter normal-urgency
-          # lifetime (5s vs 8s). Low/critical durations keep their defaults.
-          notifications = {
-            location = "bottom_right";
-            density = "compact";
-            backgroundOpacity = 0.92;
-            normalUrgencyDuration = 5;
-          };
-          colorSchemes = {
-            useWallpaperColors = false;
-            predefinedScheme = "Stylix";
-            darkMode = true;
-          };
-          # We paint the wallpaper with swaybg (stylix image) instead of letting
-          # noctalia show its bundled default.
-          wallpaper.enabled = false;
-        };
+        "noctalia/settings.json".source = noctaliaSettings;
         # The custom scheme that predefinedScheme = "Stylix" resolves to.
         # noctalia loads schemes from ~/.config/noctalia/colorschemes/<name>/<name>.json.
         "noctalia/colorschemes/Stylix/Stylix.json".source =
@@ -251,13 +298,11 @@
       programs.niri.settings = {
         prefer-no-csd = true;
 
-        # Start the noctalia shell with niri (and only with niri). niri puts this
-        # in a transient systemd scope, so an OOM here won't take down the session.
+        # noctalia itself is started by the noctalia systemd user service (bound
+        # to niri.service — see above), not from here. We still paint the stylix
+        # wallpaper with swaybg (noctalia's own wallpaper module is disabled, so
+        # it would otherwise show its bundled default).
         spawn-at-startup = [
-          { argv = [ noctalia ]; }
-          # noctalia's own wallpaper module is disabled (it paints its bundled
-          # default otherwise — see settings below), so paint the stylix
-          # wallpaper ourselves with swaybg.
           { argv = [ (lib.getExe pkgs.swaybg) "-i" "${config.stylix.image}" "-m" "fill" ]; }
         ];
 

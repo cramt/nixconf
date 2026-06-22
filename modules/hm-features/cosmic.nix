@@ -10,7 +10,18 @@
           enable = true;
           xdgOpenUsePortal = false;
           extraPortals = [ pkgs.xdg-desktop-portal-cosmic pkgs.xdg-desktop-portal-gtk ];
-          config.common = {
+          # Scope this to the COSMIC session only (writes cosmic-portals.conf,
+          # not the session-agnostic portals.conf). xdg-desktop-portal lower-
+          # cases XDG_CURRENT_DESKTOP, so a COSMIC session matches "cosmic".
+          #
+          # Previously this was config.common, which writes ~/.config/xdg-
+          # desktop-portal/portals.conf and applies to EVERY session. In the
+          # niri session that file (a) shadowed /etc/xdg/.../niri-portals.conf
+          # and (b) routed all portal interfaces to the cosmic backend, which
+          # cannot activate outside COSMIC — so every portal call (incl. the
+          # Settings reads GTK apps make on startup) blocked ~1.3s on cosmic's
+          # D-Bus activation timeout, making ghostty et al. spawn slowly.
+          config.cosmic = {
             default = [ "cosmic" ];
             "org.freedesktop.portal.OpenURI" = [ "gtk" ];
           };
