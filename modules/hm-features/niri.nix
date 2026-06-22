@@ -197,6 +197,42 @@
       xdg.configFile = {
         "noctalia/settings.json".source = (pkgs.formats.json {}).generate "noctalia-settings.json" {
           bar.position = "left";
+          # Declaring bar.widgets fully replaces noctalia's built-in default
+          # layout (it is not merged), so the defaults are replicated here with
+          # a Bluetooth widget added to the bottom cluster (right = bottom on a
+          # left/vertical bar). Per-widget settings fall back to the registry
+          # defaults; only the id is needed to place a widget.
+          bar.widgets = {
+            left = [
+              { id = "Launcher"; }
+              { id = "Clock"; }
+              { id = "SystemMonitor"; }
+              { id = "ActiveWindow"; }
+              { id = "MediaMini"; }
+            ];
+            center = [
+              { id = "Workspace"; }
+            ];
+            right = [
+              { id = "Tray"; }
+              { id = "NotificationHistory"; }
+              { id = "Battery"; }
+              { id = "Volume"; }
+              { id = "Brightness"; }
+              { id = "Bluetooth"; }
+              { id = "ControlCenter"; }
+            ];
+          };
+          # Calmer, less-invasive notification toasts: bottom-right instead of
+          # top-right, compact density (320px wide + tighter layout vs the 440px
+          # default), a touch of transparency, and a shorter normal-urgency
+          # lifetime (5s vs 8s). Low/critical durations keep their defaults.
+          notifications = {
+            location = "bottom_right";
+            density = "compact";
+            backgroundOpacity = 0.92;
+            normalUrgencyDuration = 5;
+          };
           colorSchemes = {
             useWallpaperColors = false;
             predefinedScheme = "Stylix";
