@@ -45,7 +45,7 @@
       nixarr.enable = true;
       tor.enable = true;
       garage.enable = false;
-      btopttyd.enable = true;
+      btopttyd.enable = false;
       minecraft-forge = {
         enable = false;
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
