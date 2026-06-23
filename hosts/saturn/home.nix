@@ -8,6 +8,7 @@
 
   myHomeManager = {
     hyprland.enable = false;
+    niri.enable = true;
     bundles.general.enable = true;
     bundles.development.enable = true;
     btop.hardware-accel = "rocm";
