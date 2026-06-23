@@ -14,7 +14,14 @@
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  # memtest86+ entry in the boot menu (run it to chase the Bank-0 memory MCEs;
+  # see docs/saturn-mce-bios.md). No USB stick needed.
+  boot.loader.systemd-boot.memtest86.enable = true;
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+
+  # Decode + log machine-check exceptions into human-readable form (which DIMM,
+  # which error) and track corrected-error counts. Diagnosing CPU/RAM MCEs.
+  hardware.rasdaemon.enable = true;
   services.scx.enable = true;
   services.scx.scheduler = "scx_lavd";
   boot.extraModprobeConfig = ''
