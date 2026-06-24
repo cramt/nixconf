@@ -191,6 +191,12 @@
       "Mod+Shift+Down".action.move-window-down = [];
       "Mod+Shift+Up".action.move-window-up = [];
 
+      # Focus another monitor (vim keys, by logical position)
+      "Mod+Ctrl+H".action.focus-monitor-left = [];
+      "Mod+Ctrl+L".action.focus-monitor-right = [];
+      "Mod+Ctrl+K".action.focus-monitor-up = [];
+      "Mod+Ctrl+J".action.focus-monitor-down = [];
+
       # Move column to another monitor (COSMIC "move to display")
       "Mod+Ctrl+Left".action.move-column-to-monitor-left = [];
       "Mod+Ctrl+Right".action.move-column-to-monitor-right = [];
