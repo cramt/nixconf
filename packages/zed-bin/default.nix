@@ -21,7 +21,7 @@
 #     "https://github.com/zed-industries/zed/releases/download/v<VERSION>/zed-linux-x86_64.tar.gz" \
 #     | xargs nix hash to-sri --type sha256
 let
-  version = "1.6.1-pre";
+  version = "1.8.2-pre";
 in
   stdenv.mkDerivation {
     pname = "zed-editor";
@@ -29,7 +29,7 @@ in
 
     src = fetchurl {
       url = "https://github.com/zed-industries/zed/releases/download/v${version}/zed-linux-x86_64.tar.gz";
-      hash = "sha256-tAduYc2qbCVlws/QaLMKZwQPW99EetC9EMVDhkOA7yc=";
+      hash = "sha256-nOpIsu+CQy8r/aOOIEbgNR6eL9HjJPxQKBvJ8tON92s=";
     };
 
     nativeBuildInputs = [autoPatchelfHook makeWrapper];
