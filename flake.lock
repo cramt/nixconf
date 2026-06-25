@@ -1161,11 +1161,11 @@
         "pnpm2nix": "pnpm2nix"
       },
       "locked": {
-        "lastModified": 1781464878,
-        "narHash": "sha256-Zq5isrt4x8b3KiWmbD6JDhQqE8bXx2J28lPjkCli8pw=",
+        "lastModified": 1782391594,
+        "narHash": "sha256-p0haBUxXPBVVXa72qDx1JmpeXVup44RpBONkAPtnaM8=",
         "owner": "cramt",
         "repo": "m365-copilot-proxy",
-        "rev": "834f6d7c63def88bf14b911e7fae2f044e0c1e11",
+        "rev": "413f1d08f0e8dcdc6187e7f8fd8cd37e299373d1",
         "type": "github"
       },
       "original": {
