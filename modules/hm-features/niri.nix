@@ -16,11 +16,10 @@
 
     ghostty = lib.getExe pkgs.ghostty;
 
-    # noctalia IPC action: forwards `call <target> <function>` to the live
-    # noctalia instance via the shared pid-resolving wrapper (path-based
-    # quickshell ipc lookup is unreliable — see modules/hm-features/noctalia.nix).
+    # noctalia v5 IPC action: `noctalia msg <command…>` to the live instance over
+    # its unix socket (no pid/path juggling — v5 is a single native instance).
     # Returns a niri action attrset (spawn argv list — no shell needed).
-    ipc = target: fn: { spawn = [ "${cfg.noctalia.ipc}" "call" target fn ]; };
+    msg = cmd: { spawn = [ cfg.noctalia.cli "msg" ] ++ cmd; };
 
     # Per-host monitor layout (see hosts/<name>/monitors.nix), keyed by
     # connector (port) the same way the kernel video= params are.
@@ -48,19 +47,20 @@
       # Apps / launcher
       "Mod+Return".action.spawn = ghostty;
       "Mod+T".action.spawn = ghostty;            # COSMIC's terminal bind
-      "Mod+D".action = ipc "launcher" "toggle";
-      "Mod+V".action = ipc "launcher" "clipboard";
-      "Mod+Period".action = ipc "launcher" "emoji";
+      "Mod+D".action = msg [ "panel-toggle" "launcher" ];
+      "Mod+V".action = msg [ "panel-toggle" "clipboard" ];
+      "Mod+Period".action = msg [ "panel-toggle" "launcher" "emoji" ];
       "Mod+Q".action.close-window = [];
 
       # noctalia panels
-      "Mod+C".action = ipc "controlCenter" "toggle";
-      "Mod+N".action = ipc "notifications" "toggleHistory";
-      "Mod+B".action = ipc "bar" "toggle";
+      "Mod+C".action = msg [ "panel-toggle" "control-center" ];
+      # (v5 has no notification-history panel IPC — the history lives in the bar
+      # notifications widget / control center, so Mod+N is dropped.)
+      "Mod+B".action = msg [ "bar-toggle" ];
       # Toggle bar auto-hide on/off (always-visible ⇆ hide-except-on-hover).
       "Mod+Shift+B".action.spawn = "${cfg.noctalia.barModeToggle}";
-      "Mod+Escape".action = ipc "sessionMenu" "toggle";
-      "Mod+F1".action = ipc "lockScreen" "lock";
+      "Mod+Escape".action = msg [ "panel-toggle" "session" ];
+      "Mod+F1".action = msg [ "session" "lock" ];
 
       # Focus (column = horizontal, window = vertical within a column)
       "Mod+H".action.focus-column-left = [];
@@ -126,18 +126,18 @@
       "Mod+Shift+E".action.quit = [];
 
       # Media / volume / brightness → noctalia OSD
-      "XF86AudioRaiseVolume" = { action = ipc "volume" "increase"; allow-when-locked = true; };
-      "XF86AudioLowerVolume" = { action = ipc "volume" "decrease"; allow-when-locked = true; };
-      "XF86AudioMute" = { action = ipc "volume" "muteOutput"; allow-when-locked = true; };
-      "XF86AudioMicMute" = { action = ipc "volume" "muteInput"; allow-when-locked = true; };
-      "Mod+Z".action = ipc "volume" "muteInput";
-      "XF86MonBrightnessUp".action = ipc "brightness" "increase";
-      "XF86MonBrightnessDown".action = ipc "brightness" "decrease";
-      "XF86AudioPlay" = { action = ipc "media" "playPause"; allow-when-locked = true; };
-      "XF86AudioNext" = { action = ipc "media" "next"; allow-when-locked = true; };
-      "XF86AudioPrev" = { action = ipc "media" "previous"; allow-when-locked = true; };
-      "Mod+Shift+Return".action = ipc "media" "playPause";
-      "Mod+Shift+Space".action = ipc "media" "playPause";   # COSMIC's play/pause bind
+      "XF86AudioRaiseVolume" = { action = msg [ "volume-up" ]; allow-when-locked = true; };
+      "XF86AudioLowerVolume" = { action = msg [ "volume-down" ]; allow-when-locked = true; };
+      "XF86AudioMute" = { action = msg [ "volume-mute" ]; allow-when-locked = true; };
+      "XF86AudioMicMute" = { action = msg [ "mic-mute" ]; allow-when-locked = true; };
+      "Mod+Z".action = msg [ "mic-mute" ];
+      "XF86MonBrightnessUp".action = msg [ "brightness-up" ];
+      "XF86MonBrightnessDown".action = msg [ "brightness-down" ];
+      "XF86AudioPlay" = { action = msg [ "media" "toggle" ]; allow-when-locked = true; };
+      "XF86AudioNext" = { action = msg [ "media" "next" ]; allow-when-locked = true; };
+      "XF86AudioPrev" = { action = msg [ "media" "previous" ]; allow-when-locked = true; };
+      "Mod+Shift+Return".action = msg [ "media" "toggle" ];
+      "Mod+Shift+Space".action = msg [ "media" "toggle" ];   # COSMIC's play/pause bind
     };
   in {
     options.myHomeManager.niri.enable = lib.mkEnableOption "myHomeManager.niri";

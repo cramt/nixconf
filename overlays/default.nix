@@ -6,6 +6,14 @@ inputs: [
   # have niri's integrated xwayland-satellite support (no manual DISPLAY juggling).
   inputs.niri-flake.overlays.niri
 
+  # noctalia 5.x (native Wayland+GLES rewrite, no longer quickshell). Exposes
+  # `pkgs.noctalia` (v5) — distinct from nixpkgs' older quickshell-based
+  # `pkgs.noctalia-shell` (4.7.x), which is left untouched. We consume pkgs.noctalia
+  # to match the v5 homeModule we import (modules/hm-base/default-hm.nix). The v5
+  # shell avoids the quickshell layer-shell-over-IPC crash that cosmic-comp
+  # triggers on multi-output setups.
+  inputs.noctalia-shell.overlays.default
+
   (final: prev: let
     sources = import ../npins;
     npinspkgs = import sources.nixpkgs {

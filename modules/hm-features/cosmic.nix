@@ -9,11 +9,11 @@
       inherit key;
       action = ron "enum" { variant = "Spawn"; value = [ cmd ]; };
     };
-    # A Spawn shortcut driving a noctalia IPC action via the shared pid-resolving
-    # wrapper (path-based quickshell ipc lookup is unreliable — see
-    # modules/hm-features/noctalia.nix): forwards `call <target> <fn>`.
-    noctaliaIpc = key: target: fn:
-      spawn key "${config.myHomeManager.noctalia.ipc} call ${target} ${fn}";
+    # A Spawn shortcut driving a noctalia v5 IPC action: `noctalia msg <command>`
+    # (cosmic-comp shlex-splits the string into argv). v5 talks to the single
+    # live instance over its unix socket — no pid/path juggling.
+    noctaliaMsg = key: cmd:
+      spawn key "${config.myHomeManager.noctalia.cli} msg ${cmd}";
   in {
     options.myHomeManager.cosmic.enable = lib.mkEnableOption "myHomeManager.cosmic";
     config = lib.mkIf config.myHomeManager.cosmic.enable {
@@ -81,14 +81,14 @@
           # (modules/hm-features/niri.nix) so the shell feels the same in both
           # sessions. Window management, volume/brightness/media stay native to
           # COSMIC (it has its own OSD + handling).
-          (noctaliaIpc "Super+d" "launcher" "toggle")
-          (noctaliaIpc "Super+v" "launcher" "clipboard")
-          (noctaliaIpc "Super+period" "launcher" "emoji")
-          (noctaliaIpc "Super+c" "controlCenter" "toggle")
-          (noctaliaIpc "Super+b" "bar" "toggle")
+          (noctaliaMsg "Super+d" "panel-toggle launcher")
+          (noctaliaMsg "Super+v" "panel-toggle clipboard")
+          (noctaliaMsg "Super+period" "panel-toggle launcher emoji")
+          (noctaliaMsg "Super+c" "panel-toggle control-center")
+          (noctaliaMsg "Super+b" "bar-toggle")
           (spawn "Super+Shift+b" "${config.myHomeManager.noctalia.barModeToggle}")
-          (noctaliaIpc "Super+Escape" "sessionMenu" "toggle")
-          (noctaliaIpc "Super+F1" "lockScreen" "lock")
+          (noctaliaMsg "Super+Escape" "panel-toggle session")
+          (noctaliaMsg "Super+F1" "session lock")
         ];
         appearance = {
           theme.dark.gaps = ron "tuple" [ 0 1 ];

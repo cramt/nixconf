@@ -1,44 +1,34 @@
-# Noctalia — Quickshell-based Wayland shell (bar, launcher, control center,
-# notifications, lock screen, media/volume/brightness OSD).
+# Noctalia — Wayland shell (bar, launcher, control center, notifications, lock
+# screen, media/volume/brightness OSD).
+#
+# v5 is a native Wayland+OpenGL-ES rewrite (no longer quickshell). It is fed from
+# `pkgs.noctalia` (the flake overlay, see overlays/default.nix) — distinct from
+# nixpkgs' older quickshell-based `pkgs.noctalia-shell` (4.7.x). The v5 shell
+# avoids the quickshell layer-shell-over-IPC crash that cosmic-comp triggered on
+# multi-output setups.
 #
 # Compositor-agnostic: it only needs the wlr-layer-shell protocol, which niri,
 # cosmic-comp, Hyprland, sway, etc. all provide, so this feature is shared by
 # whatever compositor feature wants it (see modules/hm-features/niri.nix and
 # modules/hm-features/cosmic.nix, which set myHomeManager.noctalia.enable).
 #
-# Workspace / active-window widgets use native IPC on niri & Hyprland and fall
-# back to the ext-workspace-v1 protocol elsewhere (e.g. COSMIC), where that
-# integration is reduced.
-#
 # Keybinds are NOT defined here — they are compositor-specific. The shell drives
-# everything over `noctalia-shell ipc call <target> <fn>`; wire keys to that
-# from the compositor feature. The one reusable, compositor-agnostic helper
-# (the bar display-mode toggle) is exposed as a read-only option below.
+# everything over `noctalia msg <command>`; wire keys to that from the compositor
+# feature using the read-only `cli` handle below. The bar display-mode toggle is
+# exposed as a ready-made script (`barModeToggle`).
 { ... }: {
   hmModules.features.noctalia = { config, lib, pkgs, ... }: let
     cfg = config.myHomeManager.noctalia;
 
-    noctaliaExe = lib.getExe pkgs.noctalia-shell;
-
-    # quickshell's path/config-based `ipc` lookup does NOT match our instance
-    # when it's launched as a systemd service with `-p <store-dir>`: it reports
-    # "No running instances" even with exactly one live instance and a correct
-    # by-path registry entry. Targeting the live process by pid works reliably.
-    # This wrapper resolves the pid from the service on each call (so it survives
-    # noctalia restarts) and forwards the ipc args, e.g. `call launcher toggle`.
-    noctaliaIpc = pkgs.writeShellScript "noctalia-ipc" ''
-      pid=$(${pkgs.systemd}/bin/systemctl --user show -p MainPID --value noctalia.service 2>/dev/null)
-      if [ -n "$pid" ] && [ "$pid" != "0" ]; then
-        exec ${noctaliaExe} ipc --pid "$pid" "$@"
-      fi
-      # Fallback to the default lookup if the service isn't found.
-      exec ${noctaliaExe} ipc "$@"
-    '';
+    noctaliaPkg = pkgs.noctalia;
+    noctaliaExe = lib.getExe noctaliaPkg;
 
     # Map the active stylix base16 palette onto noctalia's Material-style color
-    # scheme so the shell matches the rest of the system theme. Stylix is dark,
-    # so we point noctalia at this scheme with darkMode on; both dark/light
-    # variants are filled with the same colors as a safe fallback.
+    # scheme so the shell matches the rest of the system theme. v5 reads custom
+    # palettes from ~/.config/noctalia/palettes/<name>.json (written below via the
+    # homeModule's `customPalettes`), as `dark`/`light` objects of m-prefixed M3
+    # color roles plus a terminal block. Stylix is dark, so both variants get the
+    # same colors as a safe fallback and theme.mode pins dark.
     c = config.lib.stylix.colors.withHashtag;
     stylixVariant = {
       mPrimary = c.base0D;
@@ -68,85 +58,23 @@
         cursor = c.base05;
       };
     };
-    stylixScheme = { dark = stylixVariant; light = stylixVariant; };
+    stylixPalette = { dark = stylixVariant; light = stylixVariant; };
 
-    # noctalia's ~/.config/noctalia/settings.json. Kept as a binding so it can be
-    # referenced both by xdg.configFile and as a restart trigger on the noctalia
-    # systemd user service (so `nh os switch` restarts the shell on a change).
-    # We manage only the keys we care about; the rest fall back to its defaults.
-    noctaliaSettings = (pkgs.formats.json {}).generate "noctalia-settings.json" {
-      bar.position = "left";
-      # Default to always-visible (working). Super+Shift+B toggles to auto_hide
-      # (hidden, reveals on hover) for gaming — see barModeToggle below.
-      bar.displayMode = "always_visible";
-      # No bottom dock — the left bar already covers launching/window nav.
-      dock.enabled = false;
-      # Declaring bar.widgets fully replaces noctalia's built-in default
-      # layout (it is not merged), so the defaults are replicated here with
-      # a Bluetooth widget added to the bottom cluster (right = bottom on a
-      # left/vertical bar). Per-widget settings fall back to the registry
-      # defaults; only the id is needed to place a widget.
-      bar.widgets = {
-        left = [
-          { id = "Launcher"; }
-          { id = "Clock"; }
-          { id = "SystemMonitor"; }
-          { id = "ActiveWindow"; }
-          { id = "MediaMini"; }
-        ];
-        center = [
-          { id = "Workspace"; }
-        ];
-        # NotificationHistory only makes sense when noctalia is the notification
-        # daemon — drop it when another shell (e.g. COSMIC) owns notifications.
-        right = [
-          { id = "Tray"; }
-        ] ++ lib.optional cfg.notifications.enable { id = "NotificationHistory"; } ++ [
-          { id = "Battery"; }
-          { id = "Volume"; }
-          { id = "Brightness"; }
-          { id = "Bluetooth"; }
-          { id = "ControlCenter"; }
-        ];
-      };
-      # enabled = false stops noctalia from claiming org.freedesktop.Notifications
-      # (NotificationService.qml gates the server on this), so another daemon can
-      # own notifications without a D-Bus name fight. Otherwise: calmer toasts —
-      # bottom-right instead of top-right, compact density (320px vs 440px), a
-      # touch of transparency, and a shorter normal-urgency lifetime (5s vs 8s).
-      notifications = {
-        enabled = cfg.notifications.enable;
-        location = "bottom_right";
-        density = "compact";
-        backgroundOpacity = 0.92;
-        normalUrgencyDuration = 5;
-      };
-      colorSchemes = {
-        useWallpaperColors = false;
-        predefinedScheme = "Stylix";
-        darkMode = true;
-      };
-      # We paint the wallpaper with swaybg (stylix image) instead of letting
-      # noctalia show its bundled default.
-      wallpaper.enabled = false;
-    };
-
-    # Toggle the bar between "always visible" (default, good for working) and
-    # "auto_hide" (hidden, reveals on hover at the edge — good for gaming, where
-    # on saturn's ultrawide the game is windowed, not fullscreen, so it can't be
-    # detected via fullscreen state). noctalia has no mode-toggle IPC, only
-    # `bar setDisplayMode <mode>`, and our settings.json is a read-only nix store
-    # symlink so noctalia can't persist a runtime mode change — so we track the
-    # current mode in a runtime-dir state file and flip it ourselves.
+    # Toggle the bar between always-visible (default, good for working) and
+    # auto-hide (hidden, reveals on hover at the edge — good for gaming). v5's
+    # `bar-auto-hide-set` takes an explicit on/off (no toggle verb), and the
+    # config.toml is a read-only nix store symlink so the shell can't persist a
+    # runtime flip — so we track the current state in a runtime-dir file and flip
+    # it ourselves, mirroring the old v4 helper.
     barModeToggle = pkgs.writeShellScript "noctalia-bar-mode-toggle" ''
       state="''${XDG_RUNTIME_DIR:-/tmp}/noctalia-bar-mode"
-      if [ "$(${pkgs.coreutils}/bin/cat "$state" 2>/dev/null)" = "auto_hide" ]; then
-        next=always_visible
+      if [ "$(${pkgs.coreutils}/bin/cat "$state" 2>/dev/null)" = "on" ]; then
+        next=off
       else
-        next=auto_hide
+        next=on
       fi
       ${pkgs.coreutils}/bin/echo "$next" > "$state"
-      exec ${noctaliaIpc} call bar setDisplayMode "$next" all
+      exec ${noctaliaExe} msg bar-auto-hide-set "$next"
     '';
   in {
     options.myHomeManager.noctalia = {
@@ -154,7 +82,7 @@
 
       # Whether noctalia acts as the org.freedesktop.Notifications daemon. Set
       # false to hand notifications to another shell (e.g. COSMIC's own daemon)
-      # and avoid both fighting over the D-Bus name. NOTE: settings.json is a
+      # and avoid both fighting over the D-Bus name. NOTE: config.toml is a
       # single file shared by every wayland session, so this is global — turning
       # it off also disables noctalia notifications under niri.
       notifications.enable = lib.mkOption {
@@ -164,61 +92,89 @@
       };
 
       # Read-only handles so compositor features can wire keybinds without
-      # re-deriving these scripts.
-      ipc = lib.mkOption {
-        type = lib.types.path;
+      # re-deriving these. `cli` is the noctalia binary; drive the shell with
+      # `${cli} msg <command>` (v5 talks to the single live instance over its
+      # own unix socket — no pid/path juggling like the quickshell v4 needed).
+      cli = lib.mkOption {
+        type = lib.types.str;
         readOnly = true;
-        description = "Wrapper that forwards `ipc` args to the live noctalia instance (by pid).";
+        description = "Path to the noctalia binary; use `<cli> msg <command>` to drive the shell.";
       };
       barModeToggle = lib.mkOption {
         type = lib.types.path;
         readOnly = true;
-        description = "Script toggling the bar between always_visible and auto_hide.";
+        description = "Script toggling the bar between always-visible and auto-hide.";
       };
     };
 
     config = lib.mkIf cfg.enable {
-      myHomeManager.noctalia.ipc = noctaliaIpc;
+      myHomeManager.noctalia.cli = noctaliaExe;
       myHomeManager.noctalia.barModeToggle = barModeToggle;
 
-      # Enables the package + the homeModule wiring. We leave its own
-      # systemd.enable off (default) and run our own unit below so we can
-      # attach X-Restart-Triggers for settings.json.
       programs.noctalia = {
         enable = true;
-        package = pkgs.noctalia-shell;
-      };
+        package = noctaliaPkg;
 
-      # Run noctalia as a user service anchored to graphical-session.target, so
-      # it comes up in ANY wayland session (niri or COSMIC). Because it's a
-      # managed unit, `nh os switch` (home-manager's sd-switch) restarts it on
-      # any change — including the X-Restart-Triggers below, which fire whenever
-      # settings.json changes. No more manual restart.
-      systemd.user.services.noctalia = {
-        Unit = {
-          Description = "Noctalia shell";
-          PartOf = [ "graphical-session.target" ];
-          After = [ "graphical-session.target" ];
-          X-Restart-Triggers = [ "${noctaliaSettings}" ];
-        };
-        Service = {
-          ExecStart = noctaliaExe;
-          Restart = "on-failure";
-        };
-        Install.WantedBy = [ "graphical-session.target" ];
-      };
+        # Run noctalia as the homeModule's own user service. It is anchored to the
+        # wayland systemd target (graphical-session.target), so it comes up in ANY
+        # wayland session (niri or COSMIC), and it attaches X-Restart-Triggers on
+        # config.toml + the palettes, so `nh os switch` restarts the shell on any
+        # config change — no manual restart.
+        systemd.enable = true;
 
-      # noctalia 4.7.x reads ~/.config/noctalia/settings.json. The homeModule's
-      # `settings` option instead writes a v5-style config.toml that 4.7 ignores,
-      # so we write settings.json ourselves. noctalia is built to handle a
-      # symlinked/read-only settings.json (it reloads on store-path swap); we
-      # manage only the keys we care about, the rest fall back to its defaults.
-      xdg.configFile = {
-        "noctalia/settings.json".source = noctaliaSettings;
-        # The custom scheme that predefinedScheme = "Stylix" resolves to.
-        # noctalia loads schemes from ~/.config/noctalia/colorschemes/<name>/<name>.json.
-        "noctalia/colorschemes/Stylix/Stylix.json".source =
-          (pkgs.formats.json {}).generate "Stylix.json" stylixScheme;
+        # The custom scheme that theme.source = "custom" / custom_palette resolves
+        # to. Written to ~/.config/noctalia/palettes/Stylix.json.
+        customPalettes.Stylix = stylixPalette;
+
+        # v5 config.toml. We manage only the keys we care about; the rest fall
+        # back to noctalia's defaults. validateConfig (default on) runs
+        # `noctalia config validate` at build time, so schema mistakes fail the
+        # build rather than silently breaking the shell.
+        settings = {
+          shell.font_family = config.stylix.fonts.sansSerif.name;
+
+          bar.main = {
+            position = "left";
+            # always-visible by default; Super+Shift+B flips auto_hide via
+            # barModeToggle for gaming.
+            auto_hide = false;
+            reserve_space = true;
+            # Span the full screen height. margin_ends is the inset at each end of
+            # the bar along its main axis (top/bottom for a vertical bar); the v5
+            # default (180) leaves the floating-bar gap. margin_edge stays at its
+            # default (distance from the left screen edge).
+            margin_ends = 0;
+            # On a vertical (left) bar, start = top and end = bottom. Replicates
+            # the v4 layout: launcher/clock/sysmon/active-window/media at the top,
+            # workspaces centered, status cluster at the bottom.
+            start = [ "launcher" "clock" "sysmon" "active_window" "media" ];
+            center = [ "workspaces" ];
+            end = [ "tray" ]
+              ++ lib.optional cfg.notifications.enable "notifications"
+              ++ [ "battery" "volume" "brightness" "bluetooth" "control-center" ];
+          };
+
+          # No bottom dock — the left bar already covers launching/window nav.
+          dock.enabled = false;
+
+          # enable_daemon = false stops noctalia from claiming the freedesktop
+          # notification name, so another daemon (e.g. COSMIC's) can own
+          # notifications without a D-Bus name fight.
+          notification = {
+            enable_daemon = cfg.notifications.enable;
+            background_opacity = 0.92;
+          };
+
+          # swaybg (niri) / cosmic paint the stylix wallpaper; don't let noctalia
+          # show its bundled default.
+          wallpaper.enabled = false;
+
+          theme = {
+            mode = "dark";
+            source = "custom";
+            custom_palette = "Stylix";
+          };
+        };
       };
     };
   };
