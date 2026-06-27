@@ -13,6 +13,18 @@
     ];
 
     config = {
+      # Workaround for upstream nixpkgs regression:
+      # https://github.com/NixOS/nixpkgs/issues/535850
+      # The current linux_zen build installs its image as `vmlinuz` (the
+      # kernel's install.sh default name) instead of `bzImage`, while NixOS
+      # still derives `system.boot.loader.kernelFile` from `kernel.target`
+      # (= "bzImage"). The file is a valid bzImage, just renamed, so point the
+      # bootloader at the real filename. Guarded to zen kernels so non-zen
+      # hosts (eros/rpi) are unaffected. Remove once the issue is fixed.
+      system.boot.loader.kernelFile =
+        lib.mkIf (config.boot.kernelPackages.kernel.isZen or false)
+          (lib.mkForce "vmlinuz");
+
       systemd.user.settings.Manager.DefaultEnvironment = ''"PATH=/run/wrappers/bin:/etc/profiles/per-user/%u/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"'';
       stylix.enable = true;
       services.gnome.gcr-ssh-agent.enable = false;
