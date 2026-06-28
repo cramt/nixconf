@@ -73,15 +73,6 @@ inputs: [
     zed-editor = prev.callPackage ../packages/zed-bin {};
   })
 
-  # Workaround for nixpkgs#514113: openldap 2.6.13 test017-syncreplication-refresh
-  # is flaky and fails the build.
-  # Remove once nixpkgs#513765 (bumps syncrepl test sleep timeouts) is merged.
-  (final: prev: {
-    openldap = prev.openldap.overrideAttrs {
-      doCheck = !prev.stdenv.hostPlatform.isi686;
-    };
-  })
-
   (final: prev: {
     scaleway-cli = prev.scaleway-cli.overrideAttrs (old: {
       doCheck = false;
@@ -120,24 +111,6 @@ inputs: [
 
   (final: prev: {
     rocmPackages = inputs.nixpkgs-stable.legacyPackages.${prev.stdenv.hostPlatform.system}.rocmPackages;
-  })
-
-  # TODO: remove once https://github.com/NixOS/nixpkgs/issues/523332 is fixed in unstable
-  # GDM 50.0 fails to launch its greeter session ("Failed to execute child process
-  # 'gnome-session'"), leaving the user staring at a blank screen with a cursor in the
-  # top-left after boot. Pin the GDM stack (gdm + gnome-session + gnome-shell) to 49.x
-  # from the last good nixpkgs rev — the NixOS gdm module references all three packages
-  # directly (pkgs.gnome-session, pkgs.gnome-shell, plus the gdm package itself), so
-  # overriding only `gdm` would leave it spawning a mismatched gnome-session 50.
-  (final: prev: let
-    pinned = import inputs.nixpkgs-pre-gdm50 {
-      inherit (prev.stdenv.hostPlatform) system;
-      config.allowUnfree = true;
-    };
-  in {
-    gdm = pinned.gdm;
-    gnome-session = pinned.gnome-session;
-    gnome-shell = pinned.gnome-shell;
   })
 
   (pkgs: prev: {
