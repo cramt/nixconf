@@ -69,6 +69,37 @@ let
       <favourite name="Moonlight">System.Exec("${launchMoonlight}")</favourite>
     </favourites>
   '';
+
+  # Kodi keeps addon enable-state in userdata/Database/Addons33.db (schema v33 =
+  # Kodi 21). Bundled third-party plugins land there disabled, so Kodi nags
+  # "enable add-on?" on every boot. Pre-enable our addons (jellycon + its Python
+  # deps, plus youtube/inputstream) so it never prompts.
+  kodiAddons = [
+    "plugin.video.jellycon"
+    "script.module.addon.signals"
+    "script.module.dateutil"
+    "script.module.kodi-six"
+    "script.module.six"
+    "script.module.websocket"
+    "plugin.video.youtube"
+    "script.module.inputstreamhelper"
+    "inputstream.adaptive"
+  ];
+  # Flip our addons to enabled=1 in Kodi's addon DB. We do NOT create or migrate
+  # the DB — Kodi owns its schema (and the Addons<N>.db version bumps across
+  # releases); we just upsert the enabled flag once Kodi has created it. Runs
+  # before greetd on every boot, so it takes effect on the next Kodi launch.
+  # (Caveat: the very first boot of a freshly reflashed ~/.kodi has no DB yet, so
+  # Kodi may prompt once that boot; every boot after is clean.)
+  kodiAddonSeed = pkgs.writeShellScript "kodi-addon-seed" ''
+    set -eu
+    db="$HOME/.kodi/userdata/Database/Addons33.db"
+    [ -f "$db" ] || { echo "no addon DB yet (fresh ~/.kodi); skipping"; exit 0; }
+    for a in ${lib.concatStringsSep " " kodiAddons}; do
+      ${pkgs.sqlite}/bin/sqlite3 "$db" \
+        "INSERT INTO installed (addonID,enabled,installDate,disabledReason) VALUES ('$a',1,datetime('now'),0) ON CONFLICT(addonID) DO UPDATE SET enabled=1, disabledReason=0;"
+    done
+  '';
 in
 {
   imports = [
@@ -282,6 +313,19 @@ in
       "d /home/cramt/.kodi/userdata 0755 cramt users - -"
       "L+ /home/cramt/.kodi/userdata/favourites.xml - - - - ${kodiFavourites}"
     ];
+
+    # Enable our bundled Kodi addons before Kodi starts, so it never prompts.
+    systemd.services.kodi-addon-seed = {
+      description = "Pre-enable bundled Kodi addons (no enable prompts)";
+      before = [ "greetd.service" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        User = "cramt";
+        ExecStart = toString kodiAddonSeed;
+      };
+    };
 
     services.dbus.enable = true;
 
