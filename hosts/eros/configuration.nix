@@ -1,6 +1,74 @@
 { inputs, lib, pkgs, config, ... }:
 let
   steamlink = pkgs.callPackage ../../packages/steamlink {};
+
+  # Kodi is the couch shell. The GBM build renders straight on KMS/DRM (no X,
+  # no Wayland) — the same direct-to-framebuffer path the old Steam Link kiosk
+  # used, but it takes the DRM master via logind so it cooperates with greetd's
+  # seat. Bundle the client addons we want available out of the box.
+  kodiPkg = pkgs.kodi-gbm.withPackages (p: with p; [
+    jellycon              # Jellyfin client
+    youtube               # YouTube
+    inputstream-adaptive  # adaptive (DASH/HLS) streams youtube et al. rely on
+    inputstreamhelper
+  ]);
+
+  # Single-KMS-app session model. Only one fullscreen app may own the DRM
+  # master at a time, and Kodi-on-GBM does not reliably hand KMS to a nested
+  # eglfs child — so rather than launch the streamers *inside* Kodi we switch
+  # the whole greetd session. eros-shell reruns on every session exit; a marker
+  # file picks the next app and defaults back to Kodi, so quitting Steam Link or
+  # Moonlight drops you back on the Kodi home screen. A Kodi/streamer crash also
+  # just re-enters eros-shell (empty marker → Kodi), so the TV never strands.
+  sessionMarker = "/tmp/eros-session-next";
+
+  # Qt eglfs-on-KMS env shared by the Qt streamers (Steam Link, Moonlight).
+  qtKmsEnv = ''
+    export QT_QPA_PLATFORM=eglfs
+    export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+    export QT_QPA_EGLFS_KMS_ATOMIC=1
+    export QT_QPA_EGLFS_HIDECURSOR=1
+  '';
+
+  erosShell = pkgs.writeShellScript "eros-shell" ''
+    target=kodi
+    if [ -r ${sessionMarker} ]; then
+      target=$(${pkgs.coreutils}/bin/cat ${sessionMarker})
+      ${pkgs.coreutils}/bin/rm -f ${sessionMarker}
+    fi
+    case "$target" in
+      steamlink)
+        ${qtKmsEnv}
+        exec ${steamlink}/bin/steamlink
+        ;;
+      moonlight)
+        ${qtKmsEnv}
+        exec ${pkgs.moonlight-qt}/bin/moonlight
+        ;;
+      *)
+        exec ${kodiPkg}/bin/kodi
+        ;;
+    esac
+  '';
+
+  # One no-arg launcher per streamer, invoked from a Kodi favourite via
+  # System.Exec: record which app to run next, then SIGTERM Kodi (the GBM binary
+  # is `kodi.bin`, which shuts down cleanly) so greetd reruns eros-shell into it.
+  mkLaunch = app: pkgs.writeShellScript "eros-launch-${app}" ''
+    ${pkgs.coreutils}/bin/echo "${app}" > ${sessionMarker}
+    ${pkgs.procps}/bin/pkill -TERM -x kodi.bin || true
+  '';
+  launchSteamlink = mkLaunch "steamlink";
+  launchMoonlight = mkLaunch "moonlight";
+
+  # Shipped to ~/.kodi/userdata so the streamers appear under Kodi's Favourites,
+  # navigable with the controller.
+  kodiFavourites = pkgs.writeText "favourites.xml" ''
+    <favourites>
+      <favourite name="Steam Link">System.Exec("${launchSteamlink}")</favourite>
+      <favourite name="Moonlight">System.Exec("${launchMoonlight}")</favourite>
+    </favourites>
+  '';
 in
 {
   imports = [
@@ -82,18 +150,30 @@ in
       gpu_mem = { enable = true; value = 256; };
     };
 
-    # Force 1080p output. The Pi 4's BCM2711 can only DMA-address the lower
-    # 1 GiB of RAM, so VC4 has to bounce framebuffers through swiotlb. A single
-    # 4K BGRA framebuffer is ~32 MiB and overruns the swiotlb pool, which
-    # presents as Steam Link freezing and then crashing the second a stream
-    # starts (the kernel logs `vc4-drm gpu: swiotlb buffer is full`). 1080p
-    # buffers are 8 MiB and fit comfortably. Steam Link's host-side encoder
-    # streams 1080p by default anyway. HDMI-A-2 is the active port (HDMI0 on
-    # the Pi 4 board); A-1 is the second port and disconnected here.
+    # swiotlb: the Pi 4's BCM2711 can only DMA-address the lower 1 GiB of RAM,
+    # so VC4 bounces framebuffers through swiotlb. A 4K BGRA framebuffer is
+    # ~32 MiB and overruns the pool (kernel logs `vc4-drm gpu: swiotlb buffer is
+    # full`, Steam Link then freezes and crashes the moment a stream starts);
+    # the modest resolutions forced below fit comfortably.
+    #
+    # video=...e: the display is an LG 4K TV (EDID manufacturer GSM, name
+    # "LG TV SSCR2"; native timing 3840x2160@30). We deliberately force 1080p
+    # rather than the native 4K — a 4K framebuffer is ~33 MiB and overruns the
+    # swiotlb pool above, and the TV upscales 1080p fine (Steam Link streams
+    # 1080p regardless). The trailing `e` ("output forced on") is the full-KMS
+    # equivalent of the legacy config.txt `hdmi_force_hotplug=1` (which
+    # vc4-kms-v3d + disable_fw_kms_setup ignore). It matters on a TV: TVs drop
+    # HPD/EDID when powered off or on another input, and without `e` a boot
+    # while the TV is off leaves the connector disconnected → vc4 builds no CRTC
+    # (`Cannot find any crtc or sizes`) → Steam Link's eglfs_kms backend crashes
+    # for want of an output, staying blank even once the TV comes back. Forcing
+    # the connector pins it to 1080p regardless of HPD state. Steam Link renders
+    # on HDMI-A-1 (eglfs picks the first forced connector); both ports are
+    # forced so the cable works in either socket.
     boot.kernelParams = [
       "swiotlb=131072"
-      "video=HDMI-A-1:1920x1080@60"
-      "video=HDMI-A-2:1920x1080@60"
+      "video=HDMI-A-1:1920x1080@60e"
+      "video=HDMI-A-2:1920x1080@60e"
     ];
 
     # Steam Link wants /dev/uinput for virtual controller emulation, and xpadneo
@@ -136,8 +216,9 @@ in
       raspberrypi-eeprom
       neovim
       btop
-      cage
       steamlink
+      moonlight-qt
+      kodiPkg        # the addon-bundled GBM build; also puts kodi-send on PATH
     ];
 
     # Audio: pipewire over HDMI. Steam Link's bundled SDL3 talks to PulseAudio,
@@ -155,35 +236,52 @@ in
     # the package so changes track upstream.
     services.udev.packages = [ steamlink ];
 
-    # Boot straight into Steam Link on the framebuffer via Qt's eglfs plugin —
-    # no cage, no XWayland. Cage's wlroots 0.19 segfaults in
-    # xwayland_surface_destroy the moment Steam Link reparents to start a
-    # stream, which presented as "input device cannot be mapped to output
-    # device". eglfs talks to KMS/GBM directly, dropping two crash-prone layers.
-    # default_session re-runs the kiosk so a crash doesn't strand the TV on a
-    # blank tty.
+    # Steam Controller. steam-hardware ships the udev rules (also covers the
+    # 2.4 GHz dongle if it ever moves here). The gf keeps the dongle on her
+    # desktop, so eros uses the controller over Bluetooth, where it presents as
+    # a HID mouse+keyboard ("lizard mode") — perfect for driving Kodi, and Steam
+    # Link promotes it to a real gamepad for streamed Steam sessions.
+    hardware.steam-hardware.enable = true;
+    hardware.bluetooth.enable = true;
+
+    # Re-seed the controller's Bluetooth bond from 1Password so the pairing
+    # survives SD-card reflashes (BlueZ bonds live on the SD card otherwise).
+    # Paired once by hand; the bond's `info` file is stored at
+    # op://Homelab/SteamControllerBond/info. Requires /etc/opnix-token present.
+    myNixOS.declarativeBluetooth = {
+      enable = true;
+      devices.steamController = {
+        adapter = "DC:A6:32:0B:27:48";   # eros onboard radio (stable across reflash)
+        address = "F8:FC:54:D5:6A:06";   # controller bond/identity address
+        secretRef = "op://Homelab/SteamControllerBond/info";
+      };
+    };
+
+    # Boot into the Kodi couch shell via greetd; eros-shell is the session
+    # dispatcher (see the let-binding above) that also lets Kodi favourites
+    # switch the session into Steam Link or Moonlight and back.
     services.greetd = {
       enable = true;
-      settings = let
-        kiosk = pkgs.writeShellScript "steamlink-kiosk" ''
-          export QT_QPA_PLATFORM=eglfs
-          export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
-          export QT_QPA_EGLFS_KMS_ATOMIC=1
-          # Hide the cursor; eglfs draws one by default and there's no mouse.
-          export QT_QPA_EGLFS_HIDECURSOR=1
-          exec ${steamlink}/bin/steamlink
-        '';
-      in {
+      settings = {
         initial_session = {
-          command = toString kiosk;
+          command = toString erosShell;
           user = "cramt";
         };
         default_session = {
-          command = toString kiosk;
+          command = toString erosShell;
           user = "cramt";
         };
       };
     };
+
+    # Ship the Favourites menu (Steam Link / Moonlight launchers) into Kodi's
+    # userdata. tmpfiles creates the dirs so the symlink lands before Kodi's
+    # first run; the target is read-only in the store, which is fine for a kiosk.
+    systemd.tmpfiles.rules = [
+      "d /home/cramt/.kodi 0755 cramt users - -"
+      "d /home/cramt/.kodi/userdata 0755 cramt users - -"
+      "L+ /home/cramt/.kodi/userdata/favourites.xml - - - - ${kodiFavourites}"
+    ];
 
     services.dbus.enable = true;
 
