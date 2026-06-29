@@ -183,7 +183,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
+    nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/nixos-unstable";
     nixpkgs-rpi.follows = "nixos-raspberrypi/nixpkgs";
 
     # Permanent fork: upstream rewrote the hash-generation pipeline around a

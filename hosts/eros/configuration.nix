@@ -10,15 +10,6 @@ in
     inputs.nixos-raspberrypi.nixosModules.sd-image
   ];
 
-  # Stylix's gnome target unconditionally references services.displayManager.generic,
-  # an option that doesn't exist in nvmd's pinned nixpkgs (older than the rename).
-  # Stub it so module merging succeeds; stylix.enable is false so nothing reads it.
-  options.services.displayManager.generic = lib.mkOption {
-    type = lib.types.attrs;
-    default = {};
-    visible = false;
-  };
-
   config = {
     # nixos-raspberrypi modules expect their own flake passed as a module arg
     # (used to pull rpi-specific kernel/firmware packages). Wire it up since
@@ -198,8 +189,9 @@ in
 
     hardware.enableRedistributableFirmware = true;
 
-    # eros tracks the nixos-raspberrypi vendor nixpkgs (currently 25.11),
-    # not the nixos-26.05 release branch, so its stateVersion stays at 25.11.
-    system.stateVersion = "25.11";
+    # eros tracks nixos-raspberrypi's nixos-unstable branch (release 26.11),
+    # whose nixpkgs has services.kmscon.config / services.displayManager.generic,
+    # so stylix's targets merge without stubs.
+    system.stateVersion = "26.11";
   };
 }
