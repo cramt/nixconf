@@ -236,11 +236,26 @@ in
     # the package so changes track upstream.
     services.udev.packages = [ steamlink ];
 
-    # Steam Controller (the 2.4 GHz USB dongle). steam-hardware ships the udev
-    # rules; the kernel hid-steam driver exposes it as a standard gamepad and
-    # emulates keyboard/mouse ("lizard mode") so it can drive Kodi's UI, while
-    # Steam Link and Moonlight see it as a controller directly.
+    # Steam Controller. steam-hardware ships the udev rules (also covers the
+    # 2.4 GHz dongle if it ever moves here). The gf keeps the dongle on her
+    # desktop, so eros uses the controller over Bluetooth, where it presents as
+    # a HID mouse+keyboard ("lizard mode") — perfect for driving Kodi, and Steam
+    # Link promotes it to a real gamepad for streamed Steam sessions.
     hardware.steam-hardware.enable = true;
+    hardware.bluetooth.enable = true;
+
+    # Re-seed the controller's Bluetooth bond from 1Password so the pairing
+    # survives SD-card reflashes (BlueZ bonds live on the SD card otherwise).
+    # Paired once by hand; the bond's `info` file is stored at
+    # op://Homelab/SteamControllerBond/info. Requires /etc/opnix-token present.
+    myNixOS.declarativeBluetooth = {
+      enable = true;
+      devices.steamController = {
+        adapter = "DC:A6:32:0B:27:48";   # eros onboard radio (stable across reflash)
+        address = "F8:FC:54:D5:6A:06";   # controller bond/identity address
+        secretRef = "op://Homelab/SteamControllerBond/info";
+      };
+    };
 
     # Boot into the Kodi couch shell via greetd; eros-shell is the session
     # dispatcher (see the let-binding above) that also lets Kodi favourites
