@@ -33,6 +33,13 @@
       nix.daemonIOSchedClass = "idle";
       nix.settings = {
         experimental-features = ["nix-command" "flakes"];
+        # Honor the substituters/trusted-public-keys declared in flake.nix's
+        # nixConfig. Without this, nix prints "ignoring untrusted flake
+        # configuration setting 'extra-substituters'" and drops the flake's
+        # caches (e.g. niri.cachix.org, only declared there), silently falling
+        # back to building from source on any host where the system-level
+        # substituters list below doesn't already cover them.
+        accept-flake-config = true;
         trusted-users = ["cramt" "root"];
         substituters = [
           "https://cramt.cachix.org"
