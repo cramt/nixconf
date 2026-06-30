@@ -30,25 +30,46 @@ let
     export QT_QPA_EGLFS_HIDECURSOR=1
   '';
 
+  # Persistent session supervisor. greetd EXITS whenever its session command
+  # exits ("greeter exited without creating a session"), so we must not rely on
+  # greetd relaunching between apps. Instead this loop IS the greetd session and
+  # never returns: it runs the selected app, and when that app exits it loops
+  # back and re-reads the marker (default: Kodi). App switching thus happens
+  # inside one stable greetd session — no greetd churn, no crash-loops. A Kodi
+  # favourite writes the marker and kills Kodi (see mkLaunch); Kodi exits, the
+  # loop launches the chosen app; exiting that app drops back to Kodi.
   erosShell = pkgs.writeShellScript "eros-shell" ''
-    target=kodi
-    if [ -r ${sessionMarker} ]; then
-      target=$(${pkgs.coreutils}/bin/cat ${sessionMarker})
-      ${pkgs.coreutils}/bin/rm -f ${sessionMarker}
-    fi
-    case "$target" in
-      steamlink)
-        ${qtKmsEnv}
-        exec ${steamlink}/bin/steamlink
-        ;;
-      moonlight)
-        ${qtKmsEnv}
-        exec ${pkgs.moonlight-qt}/bin/moonlight
-        ;;
-      *)
-        exec ${kodiPkg}/bin/kodi
-        ;;
-    esac
+    while true; do
+      target=kodi
+      if [ -r ${sessionMarker} ]; then
+        target=$(${pkgs.coreutils}/bin/cat ${sessionMarker})
+        ${pkgs.coreutils}/bin/rm -f ${sessionMarker}
+      fi
+      case "$target" in
+        steamlink)
+          ( ${qtKmsEnv} ${steamlink}/bin/steamlink ) || true
+          ;;
+        moonlight)
+          ( ${qtKmsEnv} ${pkgs.moonlight-qt}/bin/moonlight ) || true
+          ;;
+        nebula)
+          # Firefox kiosk under cage. No WPE Cog browser is packaged for this
+          # nixpkgs pin (pkgs.cog is Grafana's tool), and Chromium/webkitgtk
+          # browsers would compile from source — Firefox is the only browser
+          # that substitutes from cache. No Widevine on aarch64, so nebula.tv
+          # still only plays if it's served DRM-free. Logged to /tmp since
+          # greetd drops session output.
+          ( export MOZ_ENABLE_WAYLAND=1
+            ${pkgs.cage}/bin/cage -- ${pkgs.firefox}/bin/firefox --kiosk https://nebula.tv
+          ) > /tmp/nebula.log 2>&1 || true
+          ;;
+        *)
+          ${kodiPkg}/bin/kodi || true
+          ;;
+      esac
+      # Guard against a hot loop if an app exits instantly (failed to start).
+      ${pkgs.coreutils}/bin/sleep 1
+    done
   '';
 
   # One no-arg launcher per streamer, invoked from a Kodi favourite via
@@ -56,10 +77,24 @@ let
   # is `kodi.bin`, which shuts down cleanly) so greetd reruns eros-shell into it.
   mkLaunch = app: pkgs.writeShellScript "eros-launch-${app}" ''
     ${pkgs.coreutils}/bin/echo "${app}" > ${sessionMarker}
-    ${pkgs.procps}/bin/pkill -TERM -x kodi.bin || true
+    # Kodi-GBM catches a plain SIGTERM, tears down its input (controller goes
+    # dead) but then hangs without exiting. Escalate from a detached helper that
+    # outlives Kodi — but target THIS Kodi by PID, never a blanket pkill: a
+    # delayed KILL against any "kodi.bin" would land on the freshly-restarted
+    # Kodi (if the next app fails to launch) and crash-loop the session. Once
+    # this Kodi exits, greetd reruns eros-shell into the marker's app.
+    pid="$(${pkgs.procps}/bin/pgrep -x kodi.bin || true)"
+    if [ -n "$pid" ]; then
+      ${pkgs.util-linux}/bin/setsid ${pkgs.bash}/bin/sh -c "
+        ${pkgs.coreutils}/bin/kill -TERM $pid 2>/dev/null || true
+        ${pkgs.coreutils}/bin/sleep 5
+        ${pkgs.coreutils}/bin/kill -KILL $pid 2>/dev/null || true
+      " >/dev/null 2>&1 &
+    fi
   '';
   launchSteamlink = mkLaunch "steamlink";
   launchMoonlight = mkLaunch "moonlight";
+  launchNebula = mkLaunch "nebula";
 
   # Shipped to ~/.kodi/userdata so the streamers appear under Kodi's Favourites,
   # navigable with the controller.
@@ -67,6 +102,7 @@ let
     <favourites>
       <favourite name="Steam Link">System.Exec("${launchSteamlink}")</favourite>
       <favourite name="Moonlight">System.Exec("${launchMoonlight}")</favourite>
+      <favourite name="Nebula">System.Exec("${launchNebula}")</favourite>
     </favourites>
   '';
 
