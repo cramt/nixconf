@@ -86,9 +86,16 @@ let
         nebula)
           # Firefox kiosk under sway (pinned to 1080p, see swayNebulaConfig).
           # Nebula serves DRM-free to browsers, so it plays without Widevine.
-          # Logged to /tmp since greetd drops session output.
+          # sc-controller gives the Steam Controller a desktop mapping (trackpad
+          # → mouse, triggers → click) for the browser — but ONLY for this
+          # session: started here, stopped on exit, so Kodi/Steam Link keep
+          # their kernel lizard-mode input. Best-effort: if scc can't grab the
+          # pad (it fights hid-steam over hidraw), the `|| true` lets sway still
+          # run with plain lizard-mode. Logged to /tmp (greetd drops output).
           ( export MOZ_ENABLE_WAYLAND=1
+            ${pkgs.sc-controller}/bin/scc-daemon --alone ${pkgs.sc-controller}/share/scc/default_profiles/Desktop.sccprofile start >/tmp/scc.log 2>&1 || true
             ${sway}/bin/sway -c ${swayNebulaConfig}
+            ${pkgs.sc-controller}/bin/scc-daemon --once stop >/dev/null 2>&1 || true
           ) > /tmp/nebula.log 2>&1 || true
           ;;
         *)
