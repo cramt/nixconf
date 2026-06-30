@@ -360,9 +360,15 @@ in
     };
 
     # sway powers the Nebula browser kiosk (Firefox under sway). programs.sway
-    # gives the wrapped package + XDG portals, dbus, and polkit; eros-shell
-    # launches it transiently for the nebula session (see the let-binding).
+    # gives the wrapped package + dbus + polkit; eros-shell launches it
+    # transiently for the nebula session (see the let-binding).
     programs.sway.enable = true;
+    # ...but drop the XDG desktop portals it would pull in: xdg-desktop-portal
+    # 1.20.4 fails its own test suite on this RPi nixpkgs pin (test_dynamiclauncher
+    # + test_notification), which breaks the eros build natively AND blocks the
+    # x86 flash-eros cross-build (uncached aarch64 portal). A Firefox-only Nebula
+    # kiosk doesn't need portals (no file pickers / screen share), so force them off.
+    xdg.portal.enable = lib.mkForce false;
 
     # Boot into the Kodi couch shell via greetd; eros-shell is the session
     # dispatcher (see the let-binding above) that also lets Kodi favourites
