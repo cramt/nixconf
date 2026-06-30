@@ -22,6 +22,37 @@ let
   # just re-enters eros-shell (empty marker → Kodi), so the TV never strands.
   sessionMarker = "/tmp/eros-session-next";
 
+  # Firefox for the Nebula kiosk, with uBlock Origin + SponsorBlock force-
+  # installed via enterprise policy (declarative + reflash-safe; Firefox fetches
+  # the XPIs from AMO on first launch).
+  firefoxKiosk = pkgs.firefox.override {
+    extraPolicies.ExtensionSettings = {
+      "uBlock0@raymondhill.net" = {
+        installation_mode = "force_installed";
+        install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
+      };
+      "sponsorBlocker@ajay.app" = {
+        installation_mode = "force_installed";
+        install_url = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
+      };
+    };
+  };
+
+  # sway is the Nebula compositor (via programs.sway, which provides the wrapped
+  # package + portals/dbus/polkit). We pin 1080p — cage took the TV's 4K@30
+  # preferred mode, which overran the Pi's V3D max texture size (GL_INVALID_VALUE
+  # spam) and was heavier. Firefox is Wayland-native, so XWayland is disabled.
+  # Closing Firefox (or the exit keybinds) ends sway, dropping back to Kodi.
+  sway = config.programs.sway.package;
+  swayNebulaConfig = pkgs.writeText "sway-nebula.conf" ''
+    output "*" mode 1920x1080
+    default_border none
+    xwayland disable
+    bindsym Mod1+F4 exec ${sway}/bin/swaymsg exit
+    bindsym Ctrl+q exec ${sway}/bin/swaymsg exit
+    exec "${firefoxKiosk}/bin/firefox --kiosk https://nebula.tv; ${sway}/bin/swaymsg exit"
+  '';
+
   # Qt eglfs-on-KMS env shared by the Qt streamers (Steam Link, Moonlight).
   qtKmsEnv = ''
     export QT_QPA_PLATFORM=eglfs
@@ -53,14 +84,11 @@ let
           ( ${qtKmsEnv} ${pkgs.moonlight-qt}/bin/moonlight ) || true
           ;;
         nebula)
-          # Firefox kiosk under cage. No WPE Cog browser is packaged for this
-          # nixpkgs pin (pkgs.cog is Grafana's tool), and Chromium/webkitgtk
-          # browsers would compile from source — Firefox is the only browser
-          # that substitutes from cache. No Widevine on aarch64, so nebula.tv
-          # still only plays if it's served DRM-free. Logged to /tmp since
-          # greetd drops session output.
+          # Firefox kiosk under sway (pinned to 1080p, see swayNebulaConfig).
+          # Nebula serves DRM-free to browsers, so it plays without Widevine.
+          # Logged to /tmp since greetd drops session output.
           ( export MOZ_ENABLE_WAYLAND=1
-            ${pkgs.cage}/bin/cage -- ${pkgs.firefox}/bin/firefox --kiosk https://nebula.tv
+            ${sway}/bin/sway -c ${swayNebulaConfig}
           ) > /tmp/nebula.log 2>&1 || true
           ;;
         *)
@@ -323,6 +351,11 @@ in
         secretRef = "op://Homelab/SteamControllerBond/info";
       };
     };
+
+    # sway powers the Nebula browser kiosk (Firefox under sway). programs.sway
+    # gives the wrapped package + XDG portals, dbus, and polkit; eros-shell
+    # launches it transiently for the nebula session (see the let-binding).
+    programs.sway.enable = true;
 
     # Boot into the Kodi couch shell via greetd; eros-shell is the session
     # dispatcher (see the let-binding above) that also lets Kodi favourites
