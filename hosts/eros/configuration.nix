@@ -153,6 +153,15 @@ in
     home-manager = {
       useGlobalPkgs = true;
       useUserPackages = true;
+      # Back up (don't clobber) any pre-existing dotfile that collides with an
+      # HM-managed one. Without this, HM activation hard-fails at
+      # checkLinkTargets on the FIRST collision and writes NONE of its files —
+      # so a stray ~/.config/mozilla/firefox/profiles.ini (left by a manual
+      # Firefox run before first deploy) aborts the whole activation, leaving
+      # ~/.config/sway/config unwritten and sway falling back to its stock
+      # default config (blue wallpaper + bar, no couch shell). Backing up keeps
+      # deploys/reflashes idempotent against leftover state.
+      backupFileExtension = "hm-bak";
       users.cramt = import ./home.nix;
       # desktop.niri (imported unconditionally by mkSystem, like every nixos
       # module) makes niri-flake inject its HM module into sharedModules for all
@@ -240,6 +249,16 @@ in
           initial_session = session;
           default_session = session;
         };
+    };
+
+    # greetd launches the system sway, which reads ~/.config/sway/config written
+    # by HM activation. Order greetd after that unit so a fresh-reflash boot
+    # can't start sway before its config exists (which would drop it to the stock
+    # default config with no couch shell). home-manager-cramt.service is a
+    # oneshot RemainAfterExit unit, so `after` waits for it to finish.
+    systemd.services.greetd = {
+      after = [ "home-manager-cramt.service" ];
+      wants = [ "home-manager-cramt.service" ];
     };
 
     services.dbus.enable = true;
