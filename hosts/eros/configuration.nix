@@ -1,176 +1,8 @@
 { inputs, lib, pkgs, config, ... }:
 let
+  # Steam Link (patched, aarch64). Kept here for its udev rules + uinput
+  # fragment; the launcher itself runs the copy home-manager installs.
   steamlink = pkgs.callPackage ../../packages/steamlink {};
-
-  # Kodi is the couch shell. The GBM build renders straight on KMS/DRM (no X,
-  # no Wayland) — the same direct-to-framebuffer path the old Steam Link kiosk
-  # used, but it takes the DRM master via logind so it cooperates with greetd's
-  # seat. Bundle the client addons we want available out of the box.
-  kodiPkg = pkgs.kodi-gbm.withPackages (p: with p; [
-    jellycon              # Jellyfin client
-    youtube               # YouTube
-    inputstream-adaptive  # adaptive (DASH/HLS) streams youtube et al. rely on
-    inputstreamhelper
-  ]);
-
-  # Single-KMS-app session model. Only one fullscreen app may own the DRM
-  # master at a time, and Kodi-on-GBM does not reliably hand KMS to a nested
-  # eglfs child — so rather than launch the streamers *inside* Kodi we switch
-  # the whole greetd session. eros-shell reruns on every session exit; a marker
-  # file picks the next app and defaults back to Kodi, so quitting Steam Link or
-  # Moonlight drops you back on the Kodi home screen. A Kodi/streamer crash also
-  # just re-enters eros-shell (empty marker → Kodi), so the TV never strands.
-  sessionMarker = "/tmp/eros-session-next";
-
-  # Firefox for the Nebula kiosk, with uBlock Origin + SponsorBlock force-
-  # installed via enterprise policy (declarative + reflash-safe; Firefox fetches
-  # the XPIs from AMO on first launch).
-  firefoxKiosk = pkgs.firefox.override {
-    extraPolicies.ExtensionSettings = {
-      "uBlock0@raymondhill.net" = {
-        installation_mode = "force_installed";
-        install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
-      };
-      "sponsorBlocker@ajay.app" = {
-        installation_mode = "force_installed";
-        install_url = "https://addons.mozilla.org/firefox/downloads/latest/sponsorblock/latest.xpi";
-      };
-    };
-  };
-
-  # sway is the Nebula compositor (via programs.sway, which provides the wrapped
-  # package + portals/dbus/polkit). We pin 1080p — cage took the TV's 4K@30
-  # preferred mode, which overran the Pi's V3D max texture size (GL_INVALID_VALUE
-  # spam) and was heavier. Firefox is Wayland-native, so XWayland is disabled.
-  # Closing Firefox (or the exit keybinds) ends sway, dropping back to Kodi.
-  sway = config.programs.sway.package;
-  swayNebulaConfig = pkgs.writeText "sway-nebula.conf" ''
-    output "*" mode 1920x1080
-    default_border none
-    xwayland disable
-    bindsym Mod1+F4 exec ${sway}/bin/swaymsg exit
-    bindsym Ctrl+q exec ${sway}/bin/swaymsg exit
-    exec "${firefoxKiosk}/bin/firefox --kiosk https://nebula.tv; ${sway}/bin/swaymsg exit"
-  '';
-
-  # Qt eglfs-on-KMS env shared by the Qt streamers (Steam Link, Moonlight).
-  qtKmsEnv = ''
-    export QT_QPA_PLATFORM=eglfs
-    export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
-    export QT_QPA_EGLFS_KMS_ATOMIC=1
-    export QT_QPA_EGLFS_HIDECURSOR=1
-  '';
-
-  # Persistent session supervisor. greetd EXITS whenever its session command
-  # exits ("greeter exited without creating a session"), so we must not rely on
-  # greetd relaunching between apps. Instead this loop IS the greetd session and
-  # never returns: it runs the selected app, and when that app exits it loops
-  # back and re-reads the marker (default: Kodi). App switching thus happens
-  # inside one stable greetd session — no greetd churn, no crash-loops. A Kodi
-  # favourite writes the marker and kills Kodi (see mkLaunch); Kodi exits, the
-  # loop launches the chosen app; exiting that app drops back to Kodi.
-  erosShell = pkgs.writeShellScript "eros-shell" ''
-    while true; do
-      target=kodi
-      if [ -r ${sessionMarker} ]; then
-        target=$(${pkgs.coreutils}/bin/cat ${sessionMarker})
-        ${pkgs.coreutils}/bin/rm -f ${sessionMarker}
-      fi
-      case "$target" in
-        steamlink)
-          ( ${qtKmsEnv} ${steamlink}/bin/steamlink ) || true
-          ;;
-        moonlight)
-          ( ${qtKmsEnv} ${pkgs.moonlight-qt}/bin/moonlight ) || true
-          ;;
-        nebula)
-          # Firefox kiosk under sway (pinned to 1080p, see swayNebulaConfig).
-          # Nebula serves DRM-free to browsers, so it plays without Widevine.
-          # sc-controller gives the Steam Controller a desktop mapping (trackpad
-          # → mouse, triggers → click) for the browser — but ONLY for this
-          # session: started here, stopped on exit, so Kodi/Steam Link keep
-          # their kernel lizard-mode input. Best-effort: if scc can't grab the
-          # pad (it fights hid-steam over hidraw), the `|| true` lets sway still
-          # run with plain lizard-mode. Logged to /tmp (greetd drops output).
-          ( export MOZ_ENABLE_WAYLAND=1
-            ${pkgs.sc-controller}/bin/scc-daemon --alone ${pkgs.sc-controller}/share/scc/default_profiles/Desktop.sccprofile start >/tmp/scc.log 2>&1 || true
-            ${sway}/bin/sway -c ${swayNebulaConfig}
-            ${pkgs.sc-controller}/bin/scc-daemon --once stop >/dev/null 2>&1 || true
-          ) > /tmp/nebula.log 2>&1 || true
-          ;;
-        *)
-          ${kodiPkg}/bin/kodi || true
-          ;;
-      esac
-      # Guard against a hot loop if an app exits instantly (failed to start).
-      ${pkgs.coreutils}/bin/sleep 1
-    done
-  '';
-
-  # One no-arg launcher per streamer, invoked from a Kodi favourite via
-  # System.Exec: record which app to run next, then SIGTERM Kodi (the GBM binary
-  # is `kodi.bin`, which shuts down cleanly) so greetd reruns eros-shell into it.
-  mkLaunch = app: pkgs.writeShellScript "eros-launch-${app}" ''
-    ${pkgs.coreutils}/bin/echo "${app}" > ${sessionMarker}
-    # Kodi-GBM catches a plain SIGTERM, tears down its input (controller goes
-    # dead) but then hangs without exiting. Escalate from a detached helper that
-    # outlives Kodi — but target THIS Kodi by PID, never a blanket pkill: a
-    # delayed KILL against any "kodi.bin" would land on the freshly-restarted
-    # Kodi (if the next app fails to launch) and crash-loop the session. Once
-    # this Kodi exits, greetd reruns eros-shell into the marker's app.
-    pid="$(${pkgs.procps}/bin/pgrep -x kodi.bin || true)"
-    if [ -n "$pid" ]; then
-      ${pkgs.util-linux}/bin/setsid ${pkgs.bash}/bin/sh -c "
-        ${pkgs.coreutils}/bin/kill -TERM $pid 2>/dev/null || true
-        ${pkgs.coreutils}/bin/sleep 5
-        ${pkgs.coreutils}/bin/kill -KILL $pid 2>/dev/null || true
-      " >/dev/null 2>&1 &
-    fi
-  '';
-  launchSteamlink = mkLaunch "steamlink";
-  launchMoonlight = mkLaunch "moonlight";
-  launchNebula = mkLaunch "nebula";
-
-  # Shipped to ~/.kodi/userdata so the streamers appear under Kodi's Favourites,
-  # navigable with the controller.
-  kodiFavourites = pkgs.writeText "favourites.xml" ''
-    <favourites>
-      <favourite name="Steam Link">System.Exec("${launchSteamlink}")</favourite>
-      <favourite name="Moonlight">System.Exec("${launchMoonlight}")</favourite>
-      <favourite name="Nebula">System.Exec("${launchNebula}")</favourite>
-    </favourites>
-  '';
-
-  # Kodi keeps addon enable-state in userdata/Database/Addons33.db (schema v33 =
-  # Kodi 21). Bundled third-party plugins land there disabled, so Kodi nags
-  # "enable add-on?" on every boot. Pre-enable our addons (jellycon + its Python
-  # deps, plus youtube/inputstream) so it never prompts.
-  kodiAddons = [
-    "plugin.video.jellycon"
-    "script.module.addon.signals"
-    "script.module.dateutil"
-    "script.module.kodi-six"
-    "script.module.six"
-    "script.module.websocket"
-    "plugin.video.youtube"
-    "script.module.inputstreamhelper"
-    "inputstream.adaptive"
-  ];
-  # Flip our addons to enabled=1 in Kodi's addon DB. We do NOT create or migrate
-  # the DB — Kodi owns its schema (and the Addons<N>.db version bumps across
-  # releases); we just upsert the enabled flag once Kodi has created it. Runs
-  # before greetd on every boot, so it takes effect on the next Kodi launch.
-  # (Caveat: the very first boot of a freshly reflashed ~/.kodi has no DB yet, so
-  # Kodi may prompt once that boot; every boot after is clean.)
-  kodiAddonSeed = pkgs.writeShellScript "kodi-addon-seed" ''
-    set -eu
-    db="$HOME/.kodi/userdata/Database/Addons33.db"
-    [ -f "$db" ] || { echo "no addon DB yet (fresh ~/.kodi); skipping"; exit 0; }
-    for a in ${lib.concatStringsSep " " kodiAddons}; do
-      ${pkgs.sqlite}/bin/sqlite3 "$db" \
-        "INSERT INTO installed (addonID,enabled,installDate,disabledReason) VALUES ('$a',1,datetime('now'),0) ON CONFLICT(addonID) DO UPDATE SET enabled=1, disabledReason=0;"
-    done
-  '';
 in
 {
   imports = [
@@ -261,17 +93,14 @@ in
     # video=...e: the display is an LG 4K TV (EDID manufacturer GSM, name
     # "LG TV SSCR2"; native timing 3840x2160@30). We deliberately force 1080p
     # rather than the native 4K — a 4K framebuffer is ~33 MiB and overruns the
-    # swiotlb pool above, and the TV upscales 1080p fine (Steam Link streams
-    # 1080p regardless). The trailing `e` ("output forced on") is the full-KMS
-    # equivalent of the legacy config.txt `hdmi_force_hotplug=1` (which
-    # vc4-kms-v3d + disable_fw_kms_setup ignore). It matters on a TV: TVs drop
-    # HPD/EDID when powered off or on another input, and without `e` a boot
-    # while the TV is off leaves the connector disconnected → vc4 builds no CRTC
-    # (`Cannot find any crtc or sizes`) → Steam Link's eglfs_kms backend crashes
-    # for want of an output, staying blank even once the TV comes back. Forcing
-    # the connector pins it to 1080p regardless of HPD state. Steam Link renders
-    # on HDMI-A-1 (eglfs picks the first forced connector); both ports are
-    # forced so the cable works in either socket.
+    # swiotlb pool above, and the TV upscales 1080p fine. The trailing `e`
+    # ("output forced on") is the full-KMS equivalent of the legacy config.txt
+    # `hdmi_force_hotplug=1`: TVs drop HPD/EDID when powered off or on another
+    # input, and without `e` a boot while the TV is off leaves the connector
+    # disconnected -> vc4 builds no CRTC (`Cannot find any crtc or sizes`) -> the
+    # eglfs/Wayland backend crashes for want of an output, staying blank even
+    # once the TV comes back. Forcing the connector pins it to 1080p regardless
+    # of HPD state. Both ports are forced so the cable works in either socket.
     boot.kernelParams = [
       "swiotlb=131072"
       "video=HDMI-A-1:1920x1080@60e"
@@ -300,6 +129,10 @@ in
       };
     };
 
+    # eros is a lean, cache-only rpi host, so it does NOT use the bundles.users
+    # multi-user machinery (that assigns groups eros lacks — docker/gamemode/
+    # libvirtd — and drags in a heavy HM baseline). The user + home-manager are
+    # wired directly below instead.
     users.users.cramt = {
       isNormalUser = true;
       extraGroups = [ "wheel" "video" "render" "input" "audio" "plugdev" ];
@@ -313,17 +146,46 @@ in
 
     security.sudo.wheelNeedsPassword = false;
 
+    # Minimal home-manager wiring. useGlobalPkgs makes HM inherit the system's
+    # aarch64 pkgs (with the rpi overlays) rather than instantiating its own
+    # nixpkgs; useUserPackages installs into /etc/profiles. The couch shell
+    # (sway + wofi launcher) lives entirely in ./home.nix.
+    home-manager = {
+      useGlobalPkgs = true;
+      useUserPackages = true;
+      # Back up (don't clobber) any pre-existing dotfile that collides with an
+      # HM-managed one. Without this, HM activation hard-fails at
+      # checkLinkTargets on the FIRST collision and writes NONE of its files —
+      # so a stray ~/.config/mozilla/firefox/profiles.ini (left by a manual
+      # Firefox run before first deploy) aborts the whole activation, leaving
+      # ~/.config/sway/config unwritten and sway falling back to its stock
+      # default config (blue wallpaper + bar, no couch shell). Backing up keeps
+      # deploys/reflashes idempotent against leftover state.
+      backupFileExtension = "hm-bak";
+      users.cramt = import ./home.nix;
+      # desktop.niri (imported unconditionally by mkSystem, like every nixos
+      # module) makes niri-flake inject its HM module into sharedModules for all
+      # users. That module carries a stylix→niri target reading config.stylix.
+      # enable, which is undeclared in HM here because eros runs stylix disabled
+      # (so stylix never injects its HM options). eros's couch shell uses none of
+      # those shared modules, so clear them.
+      sharedModules = lib.mkForce [ ];
+    };
+
     environment.systemPackages = with pkgs; [
       libraspberrypi
       raspberrypi-eeprom
       neovim
       btop
-      steamlink
-      moonlight-qt
-      kodiPkg        # the addon-bundled GBM build; also puts kodi-send on PATH
     ];
 
-    # Audio: pipewire over HDMI. Steam Link's bundled SDL3 talks to PulseAudio,
+    # Emoji + base fonts for the wofi launcher glyphs.
+    fonts = {
+      enableDefaultPackages = true;
+      packages = with pkgs; [ noto-fonts noto-fonts-color-emoji ];
+    };
+
+    # Audio: pipewire over HDMI. Steam Link's bundled SDL talks to PulseAudio,
     # which pipewire-pulse provides.
     services.pulseaudio.enable = false;
     security.rtkit.enable = true;
@@ -339,17 +201,16 @@ in
     services.udev.packages = [ steamlink ];
 
     # Steam Controller. steam-hardware ships the udev rules (also covers the
-    # 2.4 GHz dongle if it ever moves here). The gf keeps the dongle on her
-    # desktop, so eros uses the controller over Bluetooth, where it presents as
-    # a HID mouse+keyboard ("lizard mode") — perfect for driving Kodi, and Steam
-    # Link promotes it to a real gamepad for streamed Steam sessions.
+    # 2.4 GHz dongle if it ever moves here). eros uses the controller over
+    # Bluetooth, where it presents as a HID mouse+keyboard ("lizard mode") — the
+    # couch-shell launcher is driven entirely by that (trackpad->mouse, d-pad->
+    # arrows, A->enter), and Steam Link promotes it to a real gamepad for
+    # streamed sessions. No sc-controller needed.
     hardware.steam-hardware.enable = true;
     hardware.bluetooth.enable = true;
 
     # Re-seed the controller's Bluetooth bond from 1Password so the pairing
     # survives SD-card reflashes (BlueZ bonds live on the SD card otherwise).
-    # Paired once by hand; the bond's `info` file is stored at
-    # op://Homelab/SteamControllerBond/info. Requires /etc/opnix-token present.
     myNixOS.declarativeBluetooth = {
       enable = true;
       devices.steamController = {
@@ -359,63 +220,52 @@ in
       };
     };
 
-    # sway powers the Nebula browser kiosk (Firefox under sway). programs.sway
-    # gives the wrapped package + dbus + polkit; eros-shell launches it
-    # transiently for the nebula session (see the let-binding).
+    # sway is the persistent couch shell. programs.sway gives the wrapped
+    # package + dbus + polkit; greetd launches it and it never exits (the wofi
+    # supervisor loop in home.nix keeps the session alive).
     programs.sway.enable = true;
-    # ...but drop the XDG desktop portals it would pull in: xdg-desktop-portal
-    # 1.20.4 fails its own test suite on this RPi nixpkgs pin (test_dynamiclauncher
-    # + test_notification), which breaks the eros build natively AND blocks the
-    # x86 flash-eros cross-build (uncached aarch64 portal). A Firefox-only Nebula
-    # kiosk doesn't need portals (no file pickers / screen share), so force them off.
+
+    # Drop the XDG desktop portals programs.sway would pull in: xdg-desktop-
+    # portal 1.20.4 fails its own test suite on this rpi nixpkgs pin
+    # (test_dynamiclauncher + test_notification), which breaks the eros build
+    # natively AND blocks the x86 flash-eros cross-build (uncached aarch64
+    # portal). Kept force-off from v1 to preserve buildability.
+    #
+    # NOTE: if the Firefox-kiosk crash turns out to be portal-related, the fix
+    # is to re-enable portals with the failing tests skipped via an overlay
+    # (`xdg-desktop-portal.overrideAttrs (_: { doCheck = false; })`) rather than
+    # nuking them — confirm from /tmp logs on eros first.
     xdg.portal.enable = lib.mkForce false;
 
-    # Boot into the Kodi couch shell via greetd; eros-shell is the session
-    # dispatcher (see the let-binding above) that also lets Kodi favourites
-    # switch the session into Steam Link or Moonlight and back.
+    # Boot straight into sway via greetd. greetd exits whenever its session
+    # command exits, so it simply relaunches sway on any crash/quit — the TV is
+    # never stranded. App switching happens inside sway (the wofi loop), so
+    # there's no greetd churn and none of v1's Kodi kill-dance.
     services.greetd = {
       enable = true;
-      settings = {
-        initial_session = {
-          command = toString erosShell;
-          user = "cramt";
+      settings =
+        let session = { command = "${config.programs.sway.package}/bin/sway"; user = "cramt"; };
+        in {
+          initial_session = session;
+          default_session = session;
         };
-        default_session = {
-          command = toString erosShell;
-          user = "cramt";
-        };
-      };
     };
 
-    # Ship the Favourites menu (Steam Link / Moonlight launchers) into Kodi's
-    # userdata. tmpfiles creates the dirs so the symlink lands before Kodi's
-    # first run; the target is read-only in the store, which is fine for a kiosk.
-    systemd.tmpfiles.rules = [
-      "d /home/cramt/.kodi 0755 cramt users - -"
-      "d /home/cramt/.kodi/userdata 0755 cramt users - -"
-      "L+ /home/cramt/.kodi/userdata/favourites.xml - - - - ${kodiFavourites}"
-    ];
-
-    # Enable our bundled Kodi addons before Kodi starts, so it never prompts.
-    systemd.services.kodi-addon-seed = {
-      description = "Pre-enable bundled Kodi addons (no enable prompts)";
-      before = [ "greetd.service" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-        User = "cramt";
-        ExecStart = toString kodiAddonSeed;
-      };
+    # greetd launches the system sway, which reads ~/.config/sway/config written
+    # by HM activation. Order greetd after that unit so a fresh-reflash boot
+    # can't start sway before its config exists (which would drop it to the stock
+    # default config with no couch shell). home-manager-cramt.service is a
+    # oneshot RemainAfterExit unit, so `after` waits for it to finish.
+    systemd.services.greetd = {
+      after = [ "home-manager-cramt.service" ];
+      wants = [ "home-manager-cramt.service" ];
     };
 
     services.dbus.enable = true;
 
     hardware.enableRedistributableFirmware = true;
 
-    # eros tracks nixos-raspberrypi's nixos-unstable branch (release 26.11),
-    # whose nixpkgs has services.kmscon.config / services.displayManager.generic,
-    # so stylix's targets merge without stubs.
+    # eros tracks nixos-raspberrypi's nixos-unstable branch (release 26.11).
     system.stateVersion = "26.11";
   };
 }
