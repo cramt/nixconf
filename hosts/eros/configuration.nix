@@ -100,11 +100,19 @@ in
     # disconnected -> vc4 builds no CRTC (`Cannot find any crtc or sizes`) -> the
     # eglfs/Wayland backend crashes for want of an output, staying blank even
     # once the TV comes back. Forcing the connector pins it to 1080p regardless
-    # of HPD state. Both ports are forced so the cable works in either socket.
+    # of HPD state.
+    #
+    # Only HDMI-A-1 (the port the TV is actually on — EDID confirms "LG TV
+    # SSCR2") is forced. Forcing HDMI-A-2 as well manufactured a *phantom*
+    # second output on the empty socket: `e` builds a CRTC there with no display
+    # attached, sway then made that dead output the focused one, and the wofi
+    # launcher opened on it — invisible on the TV (swaybg paints the wallpaper on
+    # every output, so the TV still showed the background, which masked it). One
+    # forced port = one output = the menu always lands on the TV. If the cable
+    # ever moves to the other socket, switch this line to HDMI-A-2.
     boot.kernelParams = [
       "swiotlb=131072"
       "video=HDMI-A-1:1920x1080@60e"
-      "video=HDMI-A-2:1920x1080@60e"
     ];
 
     # Steam Link wants /dev/uinput for virtual controller emulation, and xpadneo
@@ -177,6 +185,11 @@ in
       raspberrypi-eeprom
       neovim
       btop
+      # sway's `output * bg <img>` shells out to swaybg; it isn't in
+      # programs.sway's default helper set, so without it the image bg silently
+      # no-ops to a black screen. In systemPackages (not just home.packages) so
+      # it's on the greetd-launched session's PATH.
+      swaybg
     ];
 
     # Emoji + base fonts for the wofi launcher glyphs.
