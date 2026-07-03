@@ -58,6 +58,14 @@
       nixpkgs = {
         overlays = import ../../overlays inputs;
         config.allowUnfree = true;
+        # TEMPORARY: vesktop pins pnpm_10_29_2 (insecure) as its *build-time*
+        # dep. Upstream nixpkgs already switched vesktop to pnpm_10 in commit
+        # 4b3d28a (2026-06-29), but the nixos-unstable channel hasn't advanced
+        # past it yet. This is build-time only (pnpm isn't in vesktop's runtime
+        # closure) and keeps the Hydra cache hit.
+        # NOTE TO FUTURE SELF: if you're here after bumping nixpkgs, check
+        # `nix eval` — once the channel has the fix, DELETE this line.
+        config.permittedInsecurePackages = ["pnpm-10.29.2"];
       };
     };
   };
