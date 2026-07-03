@@ -8,7 +8,14 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    # Declarative partitioning: two-SSD btrfs pool (see disko.nix).
+    inputs.disko.nixosModules.default
+    ./disko.nix
   ];
+
+  # /nix rides on the same btrfs pool as /, but keep it mounted in stage-1 so the
+  # store is available before switch-root (matches the pre-disko behaviour).
+  fileSystems."/nix".neededForBoot = true;
 
   security.polkit.enable = true;
 

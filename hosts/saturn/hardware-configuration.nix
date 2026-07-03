@@ -17,22 +17,8 @@
   boot.kernelModules = ["kvm-intel"];
   boot.extraModulePackages = [];
 
-  fileSystems."/" = {
-    device = "/dev/disk/by-uuid/c6b28ee6-1f02-4dd5-800a-2de536700724";
-    fsType = "ext4";
-  };
-
-  fileSystems."/nix" = {
-    device = "/dev/disk/by-uuid/5d9660f8-9612-4a0a-9998-32d60f80237e";
-    fsType = "ext4";
-    neededForBoot = true;
-    options = ["noatime"];
-  };
-
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/71FA-A8B1";
-    fsType = "vfat";
-  };
+  # NOTE: `/`, `/nix` and `/boot` are declared by disko.nix (two-SSD btrfs pool).
+  # Do not re-add them here or they will conflict with the disko-generated mounts.
 
   fileSystems."/mnt/amirani" = {
     device = "/dev/disk/by-uuid/fc155353-2c26-40f4-992a-204b174c270c";
