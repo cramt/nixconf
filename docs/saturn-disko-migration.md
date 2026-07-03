@@ -28,33 +28,71 @@ them) but keeps the HDD mounts.
 
 Everything on the SSDs is destroyed, but almost none of it needs backup: the nix
 store, games, `~/code`, HM dotfiles and nixarr media all re-fetch over the
-network, which is faster than these HDDs. The **only** things worth carrying are
-the bits that would otherwise cost a re-authentication:
+network, which is faster than these HDDs. Carry **only** the bits that would
+otherwise cost a re-authentication:
 
-| What | Path | Why |
-|------|------|-----|
-| Zen profile | `~/.config/zen/` (~600M) | bookmarks (`places.sqlite`), saved logins (`key4.db` + `logins.db`), website sessions (`cookies.sqlite` + `storage/`) |
-| 1Password desktop | `~/.config/1Password/` (~35M) | keeps the account registered (avoids re-adding via Secret Key / setup code) |
-| opnix token | `/etc/opnix-token` (817B, root:onepassword-secrets 0640) | bootstrap service-account token; opnix can't fetch its own token, so a fresh box has no secrets until this is back |
+| What | Path | Size | Why |
+|------|------|------|-----|
+| Zen profile | `~/.config/zen/` | ~600M | bookmarks, saved logins (`key4.db`+`logins.db`), website sessions (`cookies.sqlite`+`storage/`) |
+| 1Password desktop | `~/.config/1Password/` | ~35M | keeps the account registered (skip re-adding via Secret Key) |
+| GPG private keys | `~/.gnupg/` | 128K | `private-keys-v1.d` — **cannot be regenerated** |
+| Matrix/Element | `~/.config/Element/` | 43M | session + E2E device keys (else re-verify, risk losing encrypted history) |
+| Claude Code | `~/.claude/` + `~/.claude.json` | 118M | oauth token + auto-memory + session history |
+| GitHub CLI | `~/.config/gh/` | 12K | oauth token |
+| Copilot | `~/.config/github-copilot/` | 12K | auth token |
+| crates.io | `~/.cargo/credentials.toml` | 4K | publish token |
+| Steam login | `~/.local/share/Steam/config/{loginusers,config}.vdf` | small | skip Steam Guard re-auth (NOT `steamapps`/`htmlcache`) |
+| Thunderbird | `~/.thunderbird/` | 569M | email accounts + local mail (bulk is re-downloadable IMAP cache — optional) |
+| Heroic Epic/GOG login | `~/.config/heroic/{legendaryConfig,gog_store}/` | small | optional — skip store re-login (Epic/GOG oauth is quick anyway) |
+| opnix token | `/etc/opnix-token` | 817B | bootstrap service-account token; opnix can't fetch its own token |
+| Wi-Fi (if any) | `/etc/NetworkManager/system-connections/` | small | saved Wi-Fi PSKs (skip if saturn is ethernet-only) |
 
-Deliberately **skipped** (re-fetched, not backed up): the nix store, `~/code/*`
-(re-clone), Steam/game installs, `/var/lib/nixarr-test` media, docker/waydroid.
+**SSH:** nothing to carry — keys come from the 1Password agent
+(`IdentityAgent ~/.1password/agent.sock`) and `~/.ssh/config` is a HM symlink.
+
+Deliberately **skipped** (re-fetched/regenerated, not backed up): nix store,
+`~/code/*` (re-clone), Steam `steamapps` + `htmlcache`, Heroic/Bottles game data
+(`~/.var/app/*`, ~6.5G), `/var/lib/nixarr-test` media, docker, **waydroid**,
+Tailscale state (auto re-auths via the opnix preauth key).
 
 > Two honesty caveats: the 1Password *local vault* is encrypted with keys tied
 > to your account login, so you may still enter your account password once on
 > first unlock — restoring the dir only skips re-registering the account. Zen
 > logins survive only if no Firefox *primary password* is set (it isn't here).
 
-## 1. Back up the three paths to a HDD
+## 1. Back up the auth set to a HDD
 
 Back up to a **raw** HDD (`/mnt/amirani`), not the mergerfs union — the installer
-can mount the raw disk by-uuid but not the mergerfs.
+can mount the raw disk by-uuid but not the mergerfs. `rsync -R` preserves each
+path relative to `$HOME` so restore is a clean reverse copy.
 
 ```bash
-sudo mkdir -p /mnt/amirani/saturn-migration-backup
-rsync -aHAX --info=progress2 ~/.config/zen/       /mnt/amirani/saturn-migration-backup/zen/
-rsync -aHAX --info=progress2 ~/.config/1Password/ /mnt/amirani/saturn-migration-backup/1Password/
-sudo cp -a /etc/opnix-token /mnt/amirani/saturn-migration-backup/opnix-token
+B=/mnt/amirani/saturn-migration-backup
+mkdir -p "$B/home"
+
+# --- user auth state (run as your user) ---
+for p in \
+  .config/zen \
+  .config/1Password \
+  .gnupg \
+  .config/Element \
+  .claude .claude.json \
+  .config/gh \
+  .config/github-copilot \
+  .cargo/credentials.toml \
+  .thunderbird \
+  .config/heroic/legendaryConfig .config/heroic/gog_store \
+; do
+  [ -e "$HOME/$p" ] && rsync -aHAR --info=progress2 "$HOME/./$p" "$B/home/"
+done
+# Steam login only (never steamapps / htmlcache):
+rsync -aHAR "$HOME/./.local/share/Steam/config/loginusers.vdf" \
+            "$HOME/./.local/share/Steam/config/config.vdf" "$B/home/"
+
+# --- system auth state (root) ---
+sudo cp -a /etc/opnix-token "$B/opnix-token"
+# saved Wi-Fi PSKs — skip if saturn is ethernet-only:
+sudo rsync -aHA /etc/NetworkManager/system-connections/ "$B/nm-connections/" 2>/dev/null || true
 sync
 ```
 
@@ -112,21 +150,26 @@ HDD and restore:
 mkdir -p /mnt2 && mount /dev/disk/by-uuid/fc155353-2c26-40f4-992a-204b174c270c /mnt2  # amirani
 B=/mnt2/saturn-migration-backup
 
-# Zen + 1Password back into the user's home (created by nixos-install):
-mkdir -p /mnt/home/cramt/.config
-rsync -aHAX "$B/zen/"       /mnt/home/cramt/.config/zen/
-rsync -aHAX "$B/1Password/" /mnt/home/cramt/.config/1Password/
-nixos-enter --root /mnt -c 'chown -R cramt:users /home/cramt/.config/zen /home/cramt/.config/1Password'
+# All user auth state back into the home (nixos-install created /home/cramt):
+rsync -aHAX "$B/home/" /mnt/home/cramt/
+nixos-enter --root /mnt -c 'chown -R cramt:users /home/cramt'
 
 # opnix bootstrap token — restore BEFORE first boot so opnix can fetch secrets.
 # Fix owner/mode inside the installed system where the group exists:
 cp -a "$B/opnix-token" /mnt/etc/opnix-token
 nixos-enter --root /mnt -c 'chown root:onepassword-secrets /etc/opnix-token && chmod 0640 /etc/opnix-token'
+
+# saved Wi-Fi, if backed up:
+if [ -d "$B/nm-connections" ]; then
+  cp -a "$B/nm-connections/." /mnt/etc/NetworkManager/system-connections/
+  nixos-enter --root /mnt -c 'chmod 600 /etc/NetworkManager/system-connections/*'
+fi
 ```
 
 Reboot, remove the USB. On first boot opnix reads `/etc/opnix-token` and
-provisions all the `op://Homelab/...` secrets; Zen and 1Password come up already
-authenticated (modulo the one-time 1Password unlock noted above).
+provisions all the `op://Homelab/...` secrets; Zen, 1Password, GPG, Element,
+Steam and the rest come up already authenticated (modulo the one-time 1Password
+unlock noted above).
 
 ## 6. Reinstall Windows (League)
 
