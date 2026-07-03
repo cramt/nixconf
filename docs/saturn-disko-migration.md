@@ -42,8 +42,6 @@ otherwise cost a re-authentication:
 | Copilot | `~/.config/github-copilot/` | 12K | auth token |
 | crates.io | `~/.cargo/credentials.toml` | 4K | publish token |
 | Steam login | `~/.local/share/Steam/config/{loginusers,config}.vdf` | small | skip Steam Guard re-auth (NOT `steamapps`/`htmlcache`) |
-| Thunderbird | `~/.thunderbird/` | 569M | email accounts + local mail (bulk is re-downloadable IMAP cache — optional) |
-| Heroic Epic/GOG login | `~/.config/heroic/{legendaryConfig,gog_store}/` | small | optional — skip store re-login (Epic/GOG oauth is quick anyway) |
 | opnix token | `/etc/opnix-token` | 817B | bootstrap service-account token; opnix can't fetch its own token |
 | Wi-Fi (if any) | `/etc/NetworkManager/system-connections/` | small | saved Wi-Fi PSKs (skip if saturn is ethernet-only) |
 
@@ -80,8 +78,6 @@ for p in \
   .config/gh \
   .config/github-copilot \
   .cargo/credentials.toml \
-  .thunderbird \
-  .config/heroic/legendaryConfig .config/heroic/gog_store \
 ; do
   [ -e "$HOME/$p" ] && rsync -aHAR --info=progress2 "$HOME/./$p" "$B/home/"
 done
