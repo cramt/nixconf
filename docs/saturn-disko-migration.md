@@ -3,10 +3,12 @@
 Converts saturn's two 1TB M.2 NVMe SSDs from the old split layout to a single
 disko-managed btrfs pool, and reserves a 150G slot for a fresh Windows install.
 
-**This is a from-USB reinstall, not a live rebuild.** disko repartitions and
-**wipes both SSDs**. The three SATA HDDs (`/mnt/amirani`, `/mnt/titan`,
-`/mnt/phoebe` → mergerfs `/external_storage`) are **not touched** — they are the
-natural place to stage backups.
+**This is a full reinstall, not a live rebuild** — disko repartitions and
+**wipes both SSDs**, so it can't run against saturn's own mounted root. Primary
+method: **nixos-anywhere** driven from another machine (kexecs saturn into a RAM
+installer, then wipes + installs); fallback: a local USB install. Either way the
+three SATA HDDs (`/mnt/amirani`, `/mnt/titan`, `/mnt/phoebe` → mergerfs
+`/external_storage`) are **not touched** — they stage the backup.
 
 ## Target layout
 
@@ -98,76 +100,73 @@ And make sure the flake is on the remote (so the fresh box can build itself):
 cd ~/nixconf && git status && git log --oneline -1 && git push
 ```
 
-## 2. Boot the NixOS installer
+## 2. Deploy with nixos-anywhere (from another machine)
 
-Write a **nixos-unstable** minimal/graphical ISO to a USB (saturn tracks
-unstable). Boot it, get networking, become root, enable flakes:
+nixos-anywhere SSHes into saturn, **kexecs it into a RAM-only NixOS installer**
+(so the running root unmounts and both NVMe become wipeable), then runs disko
+(destroy + format + mount) and `nixos-install` from this flake — one command.
+The three SATA HDDs and the step-1 backup on `/mnt/amirani` are **not touched**
+(disko only names the two NVMe by-id devices).
+
+**Prerequisites:**
+
+- **SSH must be live on the *current* saturn.** saturn's config gains
+  `myNixOS.services.sshd.enable = true` + your `authorizedKeys` (same block as
+  luna/ganymede). Enable it on `main` and `nh os switch` **before** running this,
+  so the running ext4 system is reachable. (nixos-anywhere connects to the real
+  saturn first, then kexecs it.)
+- **A controller machine** (mars / a laptop) with: this flake checked out on
+  `saturn-disko`, the 1Password SSH agent loaded (it holds the authorized key),
+  and LAN reach to saturn.
+- **The step-1 backup is already on `/mnt/amirani`.** Do it while saturn is still
+  in its normal OS — the SSD-resident `~/.config/*` is gone after the wipe.
+
+**Run from the controller:**
 
 ```bash
-sudo -i
-export NIX_CONFIG="experimental-features = nix-command flakes"
-# get the flake:
-nix run nixpkgs#git -- clone https://github.com/cramt/nixconf /tmp/nixconf   # or your remote
-cd /tmp/nixconf && git checkout saturn-disko
+cd nixconf && git checkout saturn-disko && git pull
+nix run github:nix-community/nixos-anywhere -- \
+  --flake .#saturn \
+  --target-host root@<saturn-ip>
 ```
 
-## 3. Partition + format with disko (DESTRUCTIVE)
+`root@saturn` works because root inherits every home-user's `authorizedKeys`
+(`modules/bundles/nixos-users.nix:71`). Prefer a normal login? Use
+`--sudo --target-host cramt@<saturn-ip>`.
 
-Double-check the by-id paths in `hosts/saturn/disko.nix` still resolve on the
-live system (`ls -l /dev/disk/by-id/ | grep nvme`) before running:
+Optional — provision the opnix token on the *very first* boot instead of after:
+put the token at `./extra/etc/opnix-token` on the controller and add
+`--extra-files ./extra`. Otherwise it's restored in step 3 and services that
+need secrets recover on the next activation.
 
-```bash
-nix run github:nix-community/disko/latest -- \
-  --mode destroy,format,mount \
-  --flake /tmp/nixconf#saturn \
-  --yes-wipe-all-disks
-```
+## 3. Restore the auth state (on saturn, after it reboots)
 
-This wipes both SSDs, creates ESP + btrfs pool + the 150G Windows slot, and
-mounts everything under `/mnt`. Verify:
-
-```bash
-mount | grep /mnt
-btrfs filesystem show /mnt
-```
-
-## 4. Install
+nixos-anywhere reboots saturn into the finished system. Log in on a **TTY**
+(Ctrl+Alt+F3) as `cramt` — restore *before* starting Zen/1Password so nothing
+is holding the profile open. The HDDs are auto-mounted by the new config.
 
 ```bash
-nixos-install --flake /tmp/nixconf#saturn --no-root-passwd
-```
+B=/mnt/amirani/saturn-migration-backup
 
-## 5. Restore the auth state
+# user auth state back into the home:
+rsync -aHAX "$B/home/" ~/
 
-Still in the installer, with the new system mounted at `/mnt`. Mount the backup
-HDD and restore:
-
-```bash
-mkdir -p /mnt2 && mount /dev/disk/by-uuid/fc155353-2c26-40f4-992a-204b174c270c /mnt2  # amirani
-B=/mnt2/saturn-migration-backup
-
-# All user auth state back into the home (nixos-install created /home/cramt):
-rsync -aHAX "$B/home/" /mnt/home/cramt/
-nixos-enter --root /mnt -c 'chown -R cramt:users /home/cramt'
-
-# opnix bootstrap token — restore BEFORE first boot so opnix can fetch secrets.
-# Fix owner/mode inside the installed system where the group exists:
-cp -a "$B/opnix-token" /mnt/etc/opnix-token
-nixos-enter --root /mnt -c 'chown root:onepassword-secrets /etc/opnix-token && chmod 0640 /etc/opnix-token'
+# opnix bootstrap token → refetch secrets:
+sudo cp -a "$B/opnix-token" /etc/opnix-token
+sudo chown root:onepassword-secrets /etc/opnix-token && sudo chmod 0640 /etc/opnix-token
+sudo systemctl restart onepassword-secrets.service
 
 # saved Wi-Fi, if backed up:
 if [ -d "$B/nm-connections" ]; then
-  cp -a "$B/nm-connections/." /mnt/etc/NetworkManager/system-connections/
-  nixos-enter --root /mnt -c 'chmod 600 /etc/NetworkManager/system-connections/*'
+  sudo cp -a "$B/nm-connections/." /etc/NetworkManager/system-connections/
+  sudo chmod 600 /etc/NetworkManager/system-connections/*
 fi
 ```
 
-Reboot, remove the USB. On first boot opnix reads `/etc/opnix-token` and
-provisions all the `op://Homelab/...` secrets; Zen, 1Password, GPG, Element,
-Steam and the rest come up already authenticated (modulo the one-time 1Password
-unlock noted above).
+Start your graphical session — Zen, 1Password, GPG, Element, Steam come up
+authenticated (modulo the one-time 1Password unlock noted above).
 
-## 6. Reinstall Windows (League)
+## 4. Reinstall Windows (League)
 
 1. Boot the Windows installer (USB).
 2. Install into the **150G NTFS partition** on nvme1n1 (`windows` / part1). Do
@@ -179,9 +178,26 @@ pick Windows from the firmware boot menu (F-key at POST), or add a boot entry �
 e.g. `boot.loader.systemd-boot.windows` via an extra entry, or switch saturn to
 GRUB with `boot.loader.grub.useOSProber = true`. Decide this after Windows is in.
 
+## Alternative: local USB install (no second machine)
+
+If you can't drive nixos-anywhere from another host, boot a **nixos-unstable**
+USB on saturn and run it locally:
+
+```bash
+sudo -i && export NIX_CONFIG="experimental-features = nix-command flakes"
+nix run nixpkgs#git -- clone https://github.com/cramt/nixconf /tmp/nixconf
+cd /tmp/nixconf && git checkout saturn-disko
+nix run github:nix-community/disko#disko-install -- --flake .#saturn \
+  --disk ssd_a /dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S649NL1T766468L \
+  --disk ssd_b /dev/disk/by-id/nvme-Samsung_SSD_970_EVO_1TB_S5H9NS1NB05355E
+```
+
+Then restore as in step 3, but mount the backup HDD by-uuid first and use
+`nixos-enter --root /mnt` for the `chown`/token steps (system isn't booted yet).
+
 ## Rollback
 
-Until step 3 runs, nothing is destroyed — just don't `nixos-rebuild switch` or
-reboot saturn on the `saturn-disko` branch (the disko fileSystems point at a
-btrfs pool that doesn't exist yet). `git checkout main` restores the working
-ext4 config.
+Until nixos-anywhere/disko actually runs, nothing is destroyed. Don't
+`nixos-rebuild switch` or reboot saturn on the `saturn-disko` branch (its disko
+fileSystems point at a btrfs pool that doesn't exist yet). `git checkout main`
+restores the working ext4 config.
