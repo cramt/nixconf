@@ -24,40 +24,41 @@ Defined in `hosts/saturn/disko.nix`; wired via `hosts/saturn/configuration.nix`
 `hardware-configuration.nix` no longer declares `/`, `/nix`, `/boot` (disko owns
 them) but keeps the HDD mounts.
 
-## 0. Pre-flight — what must survive the wipe
+## 0. Pre-flight — back up ONLY the auth-critical state
 
-Everything on the SSDs is destroyed. Reproducible-from-flake state (the nix
-store, HM dotfiles, opnix secrets from 1Password) does **not** need backup. What
-does:
+Everything on the SSDs is destroyed, but almost none of it needs backup: the nix
+store, games, `~/code`, HM dotfiles and nixarr media all re-fetch over the
+network, which is faster than these HDDs. The **only** things worth carrying are
+the bits that would otherwise cost a re-authentication:
 
-- `/home/cramt` — anything not already pushed to a git remote (downloads,
-  scratch, un-pushed repos incl. `~/code/nixarr`). **Verify `~/code/nixarr` and
-  `~/nixconf` are pushed first.**
-- `/var/lib/nixarr-test/` — nixarr test media + state (`stateDir`, `mediaDir`).
-  Re-downloadable, but back up if you care about the current test corpus.
-- `/var/lib/docker`, `/var/lib/waydroid` — container/waydroid state (optional).
+| What | Path | Why |
+|------|------|-----|
+| Zen profile | `~/.config/zen/` (~600M) | bookmarks (`places.sqlite`), saved logins (`key4.db` + `logins.db`), website sessions (`cookies.sqlite` + `storage/`) |
+| 1Password desktop | `~/.config/1Password/` (~35M) | keeps the account registered (avoids re-adding via Secret Key / setup code) |
+| opnix token | `/etc/opnix-token` (817B, root:onepassword-secrets 0640) | bootstrap service-account token; opnix can't fetch its own token, so a fresh box has no secrets until this is back |
 
-Confirm sizes and the HDD pool has room:
+Deliberately **skipped** (re-fetched, not backed up): the nix store, `~/code/*`
+(re-clone), Steam/game installs, `/var/lib/nixarr-test` media, docker/waydroid.
 
-```bash
-sudo du -shx /home/cramt /var/lib/nixarr-test /var/lib/docker /var/lib/waydroid 2>/dev/null | sort -rh
-df -h /external_storage
-```
+> Two honesty caveats: the 1Password *local vault* is encrypted with keys tied
+> to your account login, so you may still enter your account password once on
+> first unlock — restoring the dir only skips re-registering the account. Zen
+> logins survive only if no Firefox *primary password* is set (it isn't here).
 
-## 1. Back up to the HDD pool
+## 1. Back up the three paths to a HDD
+
+Back up to a **raw** HDD (`/mnt/amirani`), not the mergerfs union — the installer
+can mount the raw disk by-uuid but not the mergerfs.
 
 ```bash
 sudo mkdir -p /mnt/amirani/saturn-migration-backup
-# Home minus regenerable caches:
-sudo rsync -aHAX --info=progress2 \
-  --exclude '.cache' --exclude '.local/share/Trash' --exclude 'Downloads/*.iso' \
-  /home/cramt/ /mnt/amirani/saturn-migration-backup/home-cramt/
-# Optional stateful services:
-sudo rsync -aHAX --info=progress2 /var/lib/nixarr-test/ /mnt/amirani/saturn-migration-backup/nixarr-test/
-# (repeat for /var/lib/docker, /var/lib/waydroid if wanted)
+rsync -aHAX --info=progress2 ~/.config/zen/       /mnt/amirani/saturn-migration-backup/zen/
+rsync -aHAX --info=progress2 ~/.config/1Password/ /mnt/amirani/saturn-migration-backup/1Password/
+sudo cp -a /etc/opnix-token /mnt/amirani/saturn-migration-backup/opnix-token
+sync
 ```
 
-Also make sure the flake is on the remote:
+And make sure the flake is on the remote (so the fresh box can build itself):
 
 ```bash
 cd ~/nixconf && git status && git log --oneline -1 && git push
@@ -102,18 +103,30 @@ btrfs filesystem show /mnt
 nixos-install --flake /tmp/nixconf#saturn --no-root-passwd
 ```
 
-## 5. Restore state
+## 5. Restore the auth state
+
+Still in the installer, with the new system mounted at `/mnt`. Mount the backup
+HDD and restore:
 
 ```bash
-# HDDs auto-mount? If not, mount amirani read-only to reach the backup:
-mount /dev/disk/by-uuid/fc155353-2c26-40f4-992a-204b174c270c /mnt2  # amirani
-rsync -aHAX /mnt2/saturn-migration-backup/home-cramt/ /mnt/home/cramt/
-rsync -aHAX /mnt2/saturn-migration-backup/nixarr-test/ /mnt/var/lib/nixarr-test/
-# fix ownership if uid changed:
-nixos-enter --root /mnt -c 'chown -R cramt:users /home/cramt'
+mkdir -p /mnt2 && mount /dev/disk/by-uuid/fc155353-2c26-40f4-992a-204b174c270c /mnt2  # amirani
+B=/mnt2/saturn-migration-backup
+
+# Zen + 1Password back into the user's home (created by nixos-install):
+mkdir -p /mnt/home/cramt/.config
+rsync -aHAX "$B/zen/"       /mnt/home/cramt/.config/zen/
+rsync -aHAX "$B/1Password/" /mnt/home/cramt/.config/1Password/
+nixos-enter --root /mnt -c 'chown -R cramt:users /home/cramt/.config/zen /home/cramt/.config/1Password'
+
+# opnix bootstrap token — restore BEFORE first boot so opnix can fetch secrets.
+# Fix owner/mode inside the installed system where the group exists:
+cp -a "$B/opnix-token" /mnt/etc/opnix-token
+nixos-enter --root /mnt -c 'chown root:onepassword-secrets /etc/opnix-token && chmod 0640 /etc/opnix-token'
 ```
 
-Reboot, remove the USB.
+Reboot, remove the USB. On first boot opnix reads `/etc/opnix-token` and
+provisions all the `op://Homelab/...` secrets; Zen and 1Password come up already
+authenticated (modulo the one-time 1Password unlock noted above).
 
 ## 6. Reinstall Windows (League)
 
