@@ -144,7 +144,10 @@
             state = ron "enum" "Enabled";
             acceleration = ron "optional" {
               profile = ron "optional" (ron "enum" "Flat");
-              speed = 0.6042271248762552;
+              # Pass as raw RON so the exact value is emitted verbatim; a bare
+              # Nix float loses precision on float→string conversion (warns
+              # "Imprecise conversion from float to string").
+              speed = ron "raw" "0.6042271248762552";
             };
           };
         };

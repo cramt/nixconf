@@ -16,7 +16,7 @@
           };
           time = { disabled = true; format = " 🕙 $time($style)\n"; style = "bright-white"; time_format = "%T"; };
           character = { error_symbol = " [×](bold red)"; success_symbol = " [╰─λ](bold red)"; };
-          status = { disabled = false; format = "[ \[ $symbol$status_common_meaning$status_signal_name$status_maybe_int\ ] ] ($style)"; map_symbol = true; pipestatus = true; symbol = "🔴"; };
+          status = { disabled = false; format = "[ \\[ $symbol$status_common_meaning$status_signal_name$status_maybe_int \\] ] ($style)"; map_symbol = true; pipestatus = true; symbol = "🔴"; };
           aws.symbol = " "; conda.symbol = " "; dart.symbol = " "; docker_context.symbol = " ";
           elixir.symbol = " "; elm.symbol = " "; git_branch.symbol = " "; golang.symbol = " ";
           hg_branch.symbol = " "; java.symbol = " "; julia.symbol = " "; nim.symbol = " ";
