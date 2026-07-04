@@ -6,6 +6,10 @@
         wl-clipboard alacritty kitty brightnessctl pavucontrol adwaita-qt gimp vlc element-desktop antigravity orca-slicer
       ];
       xdg.enable = true;
+      # Keep the Orca screen reader off declaratively. COSMIC/GDM pull in the
+      # a11y stack, and Super+Alt+S can toggle it on by accident; without this
+      # the toggle persists as runtime-only dconf state.
+      dconf.settings."org/gnome/desktop/a11y/applications".screen-reader-enabled = false;
       myHomeManager = {
         ghostty.enable = true;
         git_update_notifier.enable = false;
