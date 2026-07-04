@@ -92,6 +92,21 @@
         ];
         appearance = {
           theme.dark.gaps = ron "tuple" [ 0 1 ];
+          # The active-window highlight ("active hint") is drawn in the theme
+          # accent. COSMIC's default accent is blue and is NOT stylix-aware, so
+          # without this it stays blue and only survives as runtime state under
+          # ~/.config/cosmic (wiped on reinstall). Pin it to base0D — the same
+          # color niri uses for its focus border (#8b8683 in this scheme) — and
+          # match niri's 1px width, so the highlight is consistent across
+          # sessions and fully declarative.
+          theme.dark.accent =
+            let c = config.lib.stylix.colors;
+            in ron "optional" {
+              red = builtins.fromJSON c."base0D-dec-r";
+              green = builtins.fromJSON c."base0D-dec-g";
+              blue = builtins.fromJSON c."base0D-dec-b";
+            };
+          theme.dark.active_hint = 1;
           toolkit = {
             interface_font = {
               family = "Iosevka Nerd Font";
