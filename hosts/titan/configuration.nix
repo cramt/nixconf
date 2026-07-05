@@ -7,10 +7,11 @@
   inputs,
   ...
 }: let
-  # OpenWrt 19.07's ImageBuilder toolchain still pulls Python 2.7, which modern
-  # nixpkgs marks insecure. Whitelist it on a per-build nixpkgs instance instead
-  # of polluting the host-wide config.
-  insecurePkgs = import inputs.nixpkgs {
+  # OpenWrt 19.07's ImageBuilder toolchain still pulls Python 2.7. Unstable
+  # nixpkgs has now *removed* python2 entirely (not just marked it insecure), so
+  # pin this per-build nixpkgs instance to stable (26.05), which still ships
+  # python-2.7.18.12. The insecure whitelist is still required there.
+  insecurePkgs = import inputs.nixpkgs-stable {
     inherit (pkgs.stdenv.hostPlatform) system;
     config.permittedInsecurePackages = ["python-2.7.18.12"];
   };

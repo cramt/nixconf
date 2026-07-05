@@ -122,7 +122,13 @@
           # notification name, so another daemon (e.g. COSMIC's) can own
           # notifications without a D-Bus name fight. (background_opacity is set
           # by stylix's opacity.popups, not here.)
-          notification.enable_daemon = cfg.notifications.enable;
+          notification = {
+            enable_daemon = cfg.notifications.enable;
+            # Anchor popups bottom-left instead of the default top_right. Accepts
+            # kPanelPositions: auto/center/top_{left,center,right}/
+            # center_{left,right}/bottom_{left,center,right}.
+            position = "bottom_left";
+          };
 
           # swaybg (niri) / cosmic paint the stylix wallpaper; don't let noctalia
           # show its bundled default. (stylix sets wallpaper.default.path, which
