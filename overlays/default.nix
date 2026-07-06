@@ -83,6 +83,15 @@ inputs: [
     agentsview = prev.callPackage ../packages/agentsview {};
   })
 
+  # nixpkgs now ships its own agent-browser (0.27.0) which lags the version we
+  # track. Point pkgs.agent-browser at our local build so every consumer
+  # (development bundle, claude-code feature) resolves to the same store path
+  # and home-manager's buildEnv doesn't see two conflicting versions.
+  # Bump version + hash in ../packages/agent-browser/default.nix.
+  (final: prev: {
+    agent-browser = prev.callPackage ../packages/agent-browser {};
+  })
+
   # Replace nixpkgs' source-built zed-editor (lags upstream by days/weeks)
   # with the official prebuilt preview tarball. Bump version + hash in
   # ../packages/zed-bin/default.nix.

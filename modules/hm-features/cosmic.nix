@@ -87,7 +87,9 @@
           (noctaliaMsg "Super+c" "panel-toggle control-center")
           (noctaliaMsg "Super+b" "bar-toggle")
           (spawn "Super+Shift+b" "${config.myHomeManager.noctalia.barModeToggle}")
-          (noctaliaMsg "Super+Escape" "panel-toggle session")
+          # Super+Escape locks via COSMIC's own lock screen (cosmic-greeter),
+          # not noctalia's session panel — COSMIC owns the session here.
+          { action = ron "enum" { value = [ (ron "enum" "LockScreen") ]; variant = "System"; }; key = "Super+Escape"; }
           (noctaliaMsg "Super+F1" "session lock")
         ];
         appearance = {
