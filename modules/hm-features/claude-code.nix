@@ -7,6 +7,14 @@
   }: let
     claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
     agentBrowserPkg = pkgs.callPackage ../../packages/agent-browser {};
+
+    # Every subdir under superpowers/skills is a self-contained skill (SKILL.md
+    # + helper files). Enumerate them from the pinned source so new upstream
+    # skills flow in on `nix flake update` without touching this file.
+    superpowersSkills =
+      builtins.attrNames
+      (lib.filterAttrs (_: type: type == "directory")
+        (builtins.readDir "${inputs.superpowers}/skills"));
     mkClaudeWithConfig = name: configDir:
       pkgs.writeShellScriptBin name ''
         export CLAUDE_CONFIG_DIR="${configDir}"
@@ -60,6 +68,9 @@
       agent-browser.enable =
         lib.mkEnableOption "Vercel agent-browser CLI + Claude Code skill"
         // {default = true;};
+      superpowers.enable =
+        lib.mkEnableOption "obra/superpowers skills library (TDD, debugging, planning)"
+        // {default = true;};
     };
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
@@ -89,6 +100,17 @@
           ".claude-personal/skills/agent-browser/SKILL.md".source = skillStub;
         };
       }))
+      # Superpowers: symlink each skill dir into every config dir the three
+      # claude variants use. Skills-only install — no plugin registration, no
+      # SessionStart hook — so it stays as declarative and disposable as the
+      # agent-browser stub above.
+      (lib.mkIf cfg.superpowers.enable {
+        home.file = lib.mkMerge (lib.concatMap (base:
+          map (skill: {
+            "${base}/skills/${skill}".source = "${inputs.superpowers}/skills/${skill}";
+          })
+          superpowersSkills) [".claude" ".claude-work" ".claude-personal"]);
+      })
     ]);
   };
 }
