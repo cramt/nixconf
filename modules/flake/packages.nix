@@ -76,6 +76,30 @@
         '';
       };
 
+      # `nix run .#saturn-windows-image -- --build-only` (then `-- --deploy-only
+      # /dev/…-part1`). Builds a debloated Windows 11 image in a headless raw-qemu
+      # VM (NVMe disk so it boots on saturn unchanged, no sysprep) and flashes it
+      # onto a partition. Gets the ISO from uupdump by default (23H2 Pro — 24H2/25H2
+      # ConX setup won't honor the answer file). Body lives in
+      # scripts/saturn-windows-image.sh; capture/deploy self-sudo. See its --help.
+      saturn-windows-image = pkgs.writeShellApplication {
+        name = "saturn-windows-image";
+        runtimeInputs = with pkgs; [
+          qemu swtpm ntfs3g gptfdisk util-linux wimlib p7zip cdrkit hivex
+          git coreutils findutils gnugrep gnused gawk socat imagemagick
+          aria2 cabextract chntpw curl
+        ];
+        # strip the two `#!nix-shell` shebang lines; writeShellApplication adds its own
+        text = let
+          raw = builtins.readFile ../../scripts/saturn-windows-image.sh;
+        in lib.concatStringsSep "\n" (lib.drop 2 (lib.splitString "\n" raw));
+      };
+
+      # NOTE: scripts/windows-vm.sh (boot the physical Windows partition in a VM)
+      # is SHELVED — Windows aborts very early on the synthesized disk topology
+      # with no BSOD/log to diagnose. Kept in-tree as a reference but deliberately
+      # NOT exposed as a flake app until someone kernel-debugs the early-boot abort.
+
       # Custom / from-source derivations that Hydra never caches (overlay
       # patches, ROCm/CUDA builds). Pulled straight from saturn's overlaid
       # package set so the store paths are byte-identical to what the x86

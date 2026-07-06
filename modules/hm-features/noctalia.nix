@@ -23,43 +23,6 @@
     noctaliaPkg = pkgs.noctalia;
     noctaliaExe = lib.getExe noctaliaPkg;
 
-    # Map the active stylix base16 palette onto noctalia's Material-style color
-    # scheme so the shell matches the rest of the system theme. v5 reads custom
-    # palettes from ~/.config/noctalia/palettes/<name>.json (written below via the
-    # homeModule's `customPalettes`), as `dark`/`light` objects of m-prefixed M3
-    # color roles plus a terminal block. Stylix is dark, so both variants get the
-    # same colors as a safe fallback and theme.mode pins dark.
-    c = config.lib.stylix.colors.withHashtag;
-    stylixVariant = {
-      mPrimary = c.base0D;
-      mOnPrimary = c.base00;
-      mSecondary = c.base09;
-      mOnSecondary = c.base00;
-      mTertiary = c.base0C;
-      mOnTertiary = c.base00;
-      mError = c.base08;
-      mOnError = c.base00;
-      mSurface = c.base00;
-      mOnSurface = c.base05;
-      mSurfaceVariant = c.base01;
-      mOnSurfaceVariant = c.base04;
-      mOutline = c.base03;
-      mShadow = c.base00;
-      mHover = c.base0D;
-      mOnHover = c.base00;
-      terminal = {
-        normal = { black = c.base00; red = c.base08; green = c.base0B; yellow = c.base0A; blue = c.base0D; magenta = c.base0E; cyan = c.base0C; white = c.base05; };
-        bright = { black = c.base03; red = c.base08; green = c.base0B; yellow = c.base0A; blue = c.base0D; magenta = c.base0E; cyan = c.base0C; white = c.base07; };
-        foreground = c.base05;
-        background = c.base00;
-        selectionFg = c.base00;
-        selectionBg = c.base05;
-        cursorText = c.base00;
-        cursor = c.base05;
-      };
-    };
-    stylixPalette = { dark = stylixVariant; light = stylixVariant; };
-
     # Toggle the bar between always-visible (default, good for working) and
     # auto-hide (hidden, reveals on hover at the edge — good for gaming). v5's
     # `bar-auto-hide-set` takes an explicit on/off (no toggle verb), and the
@@ -122,17 +85,15 @@
         # config change — no manual restart.
         systemd.enable = true;
 
-        # The custom scheme that theme.source = "custom" / custom_palette resolves
-        # to. Written to ~/.config/noctalia/palettes/Stylix.json.
-        customPalettes.Stylix = stylixPalette;
-
-        # v5 config.toml. We manage only the keys we care about; the rest fall
-        # back to noctalia's defaults. validateConfig (default on) runs
-        # `noctalia config validate` at build time, so schema mistakes fail the
-        # build rather than silently breaking the shell.
+        # Theming (palette, theme.mode/source/custom_palette, fonts, per-surface
+        # opacity, wallpaper path) is driven by stylix's native noctalia target
+        # (stylix/modules/noctalia/hm.nix), so it is intentionally NOT set here.
+        #
+        # v5 config.toml. We manage only the non-theme keys we care about; the
+        # rest fall back to noctalia's / stylix's defaults. validateConfig
+        # (default on) runs `noctalia config validate` at build time, so schema
+        # mistakes fail the build rather than silently breaking the shell.
         settings = {
-          shell.font_family = config.stylix.fonts.sansSerif.name;
-
           bar.main = {
             position = "left";
             # always-visible by default; Super+Shift+B flips auto_hide via
@@ -159,21 +120,20 @@
 
           # enable_daemon = false stops noctalia from claiming the freedesktop
           # notification name, so another daemon (e.g. COSMIC's) can own
-          # notifications without a D-Bus name fight.
+          # notifications without a D-Bus name fight. (background_opacity is set
+          # by stylix's opacity.popups, not here.)
           notification = {
             enable_daemon = cfg.notifications.enable;
-            background_opacity = 0.92;
+            # Anchor popups bottom-left instead of the default top_right. Accepts
+            # kPanelPositions: auto/center/top_{left,center,right}/
+            # center_{left,right}/bottom_{left,center,right}.
+            position = "bottom_left";
           };
 
           # swaybg (niri) / cosmic paint the stylix wallpaper; don't let noctalia
-          # show its bundled default.
+          # show its bundled default. (stylix sets wallpaper.default.path, which
+          # is harmless while enabled = false.)
           wallpaper.enabled = false;
-
-          theme = {
-            mode = "dark";
-            source = "custom";
-            custom_palette = "Stylix";
-          };
         };
       };
     };

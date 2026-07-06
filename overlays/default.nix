@@ -43,15 +43,32 @@ inputs: [
   # packages (modules/flake/packages.nix) and prebuilt in CI. Keeping the
   # override here means the service modules and the prebuilt flake packages
   # resolve to the exact same store path.
-  (final: prev: {
-    llama-cpp-rocm-rpc = prev.llama-cpp.override {
+  (final: prev: let
+    # nixpkgs' llama-cpp rpcSupport post-install still runs
+    # `cp bin/rpc-server $out/bin/llama-rpc-server`, but upstream llama.cpp
+    # renamed that binary to `ggml-rpc-server` (cmake installs it under that
+    # name). Bridge the old name in the build tree so the copy succeeds and the
+    # service still finds `$out/bin/llama-rpc-server`. Guarded so it becomes a
+    # no-op once nixpkgs catches up to the rename.
+    withRpcServerFix = pkg:
+      pkg.overrideAttrs (old: {
+        postBuild =
+          (old.postBuild or "")
+          + ''
+            if [ ! -e bin/rpc-server ] && [ -e bin/ggml-rpc-server ]; then
+              ln -s ggml-rpc-server bin/rpc-server
+            fi
+          '';
+      });
+  in {
+    llama-cpp-rocm-rpc = withRpcServerFix (prev.llama-cpp.override {
       rocmSupport = true;
       rpcSupport = true;
-    };
-    llama-cpp-cuda-rpc = prev.llama-cpp.override {
+    });
+    llama-cpp-cuda-rpc = withRpcServerFix (prev.llama-cpp.override {
       cudaSupport = true;
       rpcSupport = true;
-    };
+    });
   })
 
   (final: prev: {

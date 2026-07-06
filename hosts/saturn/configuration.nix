@@ -24,6 +24,14 @@
   # memtest86+ entry in the boot menu (run it to chase the Bank-0 memory MCEs;
   # see docs/saturn-mce-bios.md). No USB stick needed.
   boot.loader.systemd-boot.memtest86.enable = true;
+  # systemd-boot doesn't reliably auto-detect the Windows Boot Manager, so add an
+  # explicit chainload entry for the League dual-boot on nvme1n1p1. Windows'
+  # \EFI\Microsoft\Boot lives on this shared ESP (put there by
+  # scripts/saturn-windows-image.sh; see docs/saturn-disko-migration.md).
+  boot.loader.systemd-boot.extraEntries."windows.conf" = ''
+    title   Windows 11
+    efi     /EFI/Microsoft/Boot/bootmgfw.efi
+  '';
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
   # Decode + log machine-check exceptions into human-readable form (which DIMM,
