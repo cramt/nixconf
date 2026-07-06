@@ -21,6 +21,35 @@
         exec ${claudeCodePkg}/bin/claude "$@"
       '';
 
+    # `linkedinclaude`: regular Claude with the stickerdaniel/linkedin-mcp-server
+    # merged in for that session only (via --mcp-config, which adds to — not
+    # replaces — the normal servers). Keeping it behind its own launcher means
+    # the plain `claude` context isn't paying for LinkedIn's tool definitions
+    # every session. Runs through Docker on purpose: the server bundles a
+    # Patchright Chromium (a downloaded, dynamically-linked binary that won't
+    # exec on NixOS) — the container carries its own working copy, so nothing
+    # patchright-shaped ever has to run against the host's linker.
+    linkedinDir = "${config.home.homeDirectory}/.linkedin-mcp";
+    linkedinMcpConfig = pkgs.writeText "linkedin-mcp.json" (builtins.toJSON {
+      mcpServers.linkedin = {
+        command = "docker";
+        # Upstream's README mounts `~/.linkedin-mcp`, but the MCP client hands
+        # args to docker without a shell, so `~` would become a literal dir
+        # named "~". Use the resolved absolute path.
+        args = [
+          "run"
+          "--rm"
+          "-i"
+          "-v"
+          "${linkedinDir}:/home/pwuser/.linkedin-mcp"
+          "stickerdaniel/linkedin-mcp-server:latest"
+        ];
+      };
+    });
+    linkedinClaudePkg = pkgs.writeShellScriptBin "linkedinclaude" ''
+      exec ${claudeCodePkg}/bin/claude --mcp-config ${linkedinMcpConfig} "$@"
+    '';
+
     cfg = config.myHomeManager.claude-code;
 
     globalClaudeMd = ''
@@ -71,13 +100,18 @@
       superpowers.enable =
         lib.mkEnableOption "obra/superpowers skills library (TDD, debugging, planning)"
         // {default = true;};
+      linkedin.enable =
+        lib.mkEnableOption "`linkedinclaude` launcher (regular Claude + LinkedIn MCP via Docker). Needs a one-time host login writing cookies to ~/.linkedin-mcp — see the module comment"
+        // {default = true;};
     };
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
-        home.packages = [
-          (mkClaudeWithConfig "claude-w" "$HOME/.claude-work")
-          (mkClaudeWithConfig "claude-p" "$HOME/.claude-personal")
-        ];
+        home.packages =
+          [
+            (mkClaudeWithConfig "claude-w" "$HOME/.claude-work")
+            (mkClaudeWithConfig "claude-p" "$HOME/.claude-personal")
+          ]
+          ++ lib.optional cfg.linkedin.enable linkedinClaudePkg;
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude-work/CLAUDE.md".text = globalClaudeMd;
