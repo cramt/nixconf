@@ -21,9 +21,14 @@
           export GPG_TTY=$(tty)
           bios_reboot() { systemctl reboot --firmware-setup }
           windows_reboot() { systemctl reboot --boot-loader-entry=auto-windows }
-          autoload -Uz edit-command-line
-          zle -N edit-command-line
-          bindkey '^x^e' edit-command-line
+          # zle widgets only exist when the line editor is actually active;
+          # guarding avoids "can't change option: zle" noise on `zsh -i -c`
+          # spawns (e.g. t3code capturing env / its embedded terminal).
+          if [[ $options[zle] = on ]]; then
+            autoload -Uz edit-command-line
+            zle -N edit-command-line
+            bindkey '^x^e' edit-command-line
+          fi
           autoload zmv
         '';
       };
