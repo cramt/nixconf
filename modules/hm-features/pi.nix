@@ -27,11 +27,24 @@
         # the bare gpt-5.4 slug resolve to the same reasoning tone — the
         # reasoning tiers tend to batch tool calls, the default is the most
         # disciplined at one-call-per-turn. Switch with `pi --model <id>`.
+        # Every slug the proxy maps to an M365 tone (mirrors MODEL_TONES /
+        # getAvailableModels in @m365-copilot/core). Switch with `pi --model <id>`.
         models = [
-          { id = "m365-copilot"; name = "M365 Copilot (default / magic)"; }
-          { id = "auto"; name = "Auto (magic)"; }
-          { id = "quick"; name = "Quick (generic)"; }
-          { id = "think-deeper"; name = "Think Deeper (generic reasoning)"; }
+          # Claude tones route AGENT-LESS (the /claude/ path) and tool-call well in
+          # practice; use Claude Code for Anthropic models normally, these are here
+          # as a fallback.
+          { id = "claude-sonnet"; name = "Claude Sonnet 4.5 (agent-less)"; }
+          { id = "claude-sonnet-4.5"; name = "Claude Sonnet 4.5 (alias)"; }
+          { id = "claude"; name = "Claude (-> Sonnet 4.5)"; }
+          { id = "claude-sonnet-think-deeper"; name = "Claude Sonnet Reasoning (agent-less)"; }
+          { id = "claude-opus"; name = "Claude Opus (agent-less, experimental)"; }
+
+          # GPT tones run WITH the tool agent. Prefer these explicit tones over the
+          # `magic` auto-router, which is high-variance at turn-1 tool-calling
+          # (hypotheses F24). gpt-5.5-think-deeper is the default and works well.
+          { id = "gpt-5.5"; name = "GPT-5.5 (chat)"; }
+          { id = "gpt-5.5-quick"; name = "GPT-5.5 Quick"; }
+          { id = "gpt-5.5-think-deeper"; name = "GPT-5.5 Think Deeper (reasoning)"; }
           { id = "gpt-5.4"; name = "GPT-5.4 (reasoning)"; }
           { id = "gpt-5.4-think-deeper"; name = "GPT-5.4 Think Deeper (reasoning)"; }
           { id = "gpt-5.4-quick"; name = "GPT-5.4 Quick"; }
@@ -68,7 +81,10 @@
           enableInstallTelemetry = false;
         } // lib.optionalAttrs m365Enabled {
           defaultProvider = "m365";
-          defaultModel = "m365-copilot";
+          # Explicit GPT reasoning tone (works well in real sessions) rather than
+          # the high-variance `magic` auto-router. Claude models are in the list too
+          # but Claude Code is the normal path for those.
+          defaultModel = "gpt-5.5-think-deeper";
         };
 
         # NB: we deliberately do NOT set the module's `models` option — its
@@ -77,6 +93,12 @@
         # models.json is pure read-only config, so home-manager owns it below
         # as a store symlink → fully declarative, refreshes every switch.
       };
+
+      # pi's GLOBAL instruction file (loaded first, before any project AGENTS.md).
+      # Same source as the Claude Code global CLAUDE.md so pi knows the machine is
+      # NixOS, how to install packages, git/clipboard conventions, etc. Not gated on
+      # the proxy — the guidance applies to every pi session.
+      home.file.".pi/agent/AGENTS.md".source = ./global-agent-instructions.md;
 
       # Register the local M365 Copilot proxy as a provider, declaratively.
       # Use it with the default model, or `pi --provider anthropic` for a one-off.
