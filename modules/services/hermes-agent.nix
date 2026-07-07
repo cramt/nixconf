@@ -1,12 +1,12 @@
 # Hermes Agent (Nous Research) — self-hosted autonomous agent, pointed at the
-# local claude-sub-proxy so Hermes' brain runs on the Claude subscription
-# (Claude Agent SDK with caller-side tool-call passthrough).
+# local M365 Copilot proxy so Hermes' brain runs through the Microsoft 365
+# Copilot-backed OpenAI-compatible endpoint.
 #
 # Runs in CONTAINER mode: a persistent writable Ubuntu layer so the agent can
 # apt/pip/npm install and self-modify. The upstream module runs the container
 # with --network=host, so 127.0.0.1:<proxy> reaches the local proxy directly.
 #
-# Pairs with myNixOS.services.claude-sub-proxy on the same host (see the
+# Pairs with myNixOS.services.m365-copilot-proxy on the same host (see the
 # assertion). LiteLLM/gpt-oss-120b remains available as an alternative backend —
 # swap settings.model.base_url back to the litellm port to use it.
 #
@@ -19,7 +19,7 @@
   flake.nixosModules."services.hermes-agent" = { config, lib, ... }:
   let
     cfg = config.myNixOS.services.hermes-agent;
-    proxyPort = config.port-selector.ports.claude-sub-proxy;
+    proxyPort = config.port-selector.ports.m365-copilot-proxy;
   in {
     imports = [ inputs.hermes-agent.nixosModules.default ];
 
@@ -53,9 +53,9 @@
 
     config = lib.mkIf cfg.enable {
       assertions = [{
-        assertion = config.myNixOS.services.claude-sub-proxy.enable;
+        assertion = config.myNixOS.services.m365-copilot-proxy.enable;
         message = ''
-          myNixOS.services.hermes-agent expects myNixOS.services.claude-sub-proxy
+          myNixOS.services.hermes-agent expects myNixOS.services.m365-copilot-proxy
           enabled on the same host — it points at the local proxy endpoint.
         '';
       }];
@@ -82,15 +82,15 @@
             { DISCORD_HOME_CHANNEL = cfg.discord.homeChannelId; };
 
         settings.model = {
-          # Sonnet, not Opus: your Sonnet weekly pool is separate and far more
-          # generous, which reduces the intermittent extra-usage misclassification
-          # and doesn't contend with Opus/session usage.
-          default = "claude-sonnet-4-6";
+          # Explicit GPT reasoning tone via the M365 Copilot proxy. This mirrors
+          # pi's default on hosts with the proxy enabled and avoids the high-variance
+          # `magic` auto-router.
+          default = "gpt-5.5-think-deeper";
           provider = "custom";   # any OpenAI-compatible endpoint
           base_url = "http://127.0.0.1:${toString proxyPort}/v1";
           # The proxy runs without auth; the OpenAI client still wants a
           # non-empty key. This is a placeholder, not a secret.
-          api_key = "sk-claude-sub-proxy-noauth";
+          api_key = "m365";
         };
 
         # Discord auto-enables in the gateway when DISCORD_BOT_TOKEN is present.
