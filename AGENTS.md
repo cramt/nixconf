@@ -104,3 +104,25 @@ Each host in `hosts/<name>/` has:
 ### Infrastructure
 
 Terraform configs live in `infra/`. Use `just tf <args>` which injects credentials from 1Password via `opnix`.
+
+## Machine & Host Facts
+
+- `saturn` — Alex's desktop (COSMIC daily driver, niri secondary). Home machine; work happens on a separate laptop.
+- `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.47. `eros` — 2GB RPi4 TV kiosk. `titan` — OpenWrt router.
+- Daily browser is Zen. Firefox, Thunderbird, and Heroic are installed but unused.
+- `/external_storage` is a mergerfs pool over slow HDDs — no heavy IO through the mergerfs mount.
+
+## Build Policy
+
+- Small config changes build locally on saturn. Chunky/uncached/aarch64 builds go through GitHub Actions (ARM runner) + cachix.
+- NEVER build or eval on eros (2GB RAM, hard-crashes). Build on saturn and deploy with `nh os switch --target-host`.
+- If Alex is gaming: `--cores 1`, run in background.
+- Flakes only see git-tracked files — `git add` new files before `nix build`.
+- "CI is failing" unqualified = the saturn build.
+
+## Deploy Workflow
+
+- Alex runs `nh os switch` herself (wl-copy it when ready). After she deploys, verify: ssh in, `systemctl --failed`, journalctl on the touched services.
+- `hermes-agent`'s container doesn't recreate on config change — `systemctl restart hermes-agent` manually.
+- Editing a 1Password secret in place requires restarting `opnix-secrets`, not just the consuming service.
+- Secrets go through opnix (`/etc/opnix-token`) — never interactive `op` prompts.

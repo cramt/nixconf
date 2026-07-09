@@ -80,6 +80,9 @@
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude-work/CLAUDE.md".text = globalClaudeMd;
           ".claude-personal/CLAUDE.md".text = globalClaudeMd;
+          ".claude/skills/status".source = ./claude-skills/status;
+          ".claude-work/skills/status".source = ./claude-skills/status;
+          ".claude-personal/skills/status".source = ./claude-skills/status;
         };
       }
       # Vercel agent-browser: the CLI is a self-contained native binary (no
