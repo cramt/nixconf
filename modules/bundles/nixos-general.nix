@@ -50,6 +50,8 @@
 
       environment.sessionVariables = {};
       environment.systemPackages = [pkgs.comma];
+      # trippy needs cap_net_raw for ICMP; this option installs a setcap wrapper
+      programs.trippy.enable = true;
       services.upower.enable = true;
 
       services.udev = {

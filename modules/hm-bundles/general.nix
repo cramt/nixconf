@@ -26,7 +26,7 @@
         fzf.enable = true;
       };
       home.packages = with pkgs; [
-        git gnupg nushell zellij eza zoxide bat ripgrep sd fd wget unzip dnsutils nix-output-monitor jq
+        git gnupg nushell zellij eza zoxide bat ripgrep sd fd wget unzip dnsutils nix-output-monitor jq gping
       ];
       home.sessionVariables = {
         NH_FLAKE = "${config.home.homeDirectory}/nixconf";
