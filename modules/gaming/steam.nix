@@ -9,6 +9,9 @@
         gamescopeSession.enable = true;
         remotePlay.openFirewall = true;
         dedicatedServer.openFirewall = true;
+        # Declarative GE-Proton: symlinked into compatibilitytools.d, shows up
+        # as a compat tool in Steam's per-game "Force compatibility" dropdown.
+        extraCompatPackages = [ pkgs.proton-ge-bin ];
       };
       environment.systemPackages = with pkgs; [
         mangohud
