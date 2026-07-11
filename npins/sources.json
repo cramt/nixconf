@@ -1,5 +1,31 @@
 {
   "pins": {
+    "NonSteamLaunchers": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "moraroy",
+        "repo": "NonSteamLaunchers-On-Steam-Deck"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "13d52ccc77202871314c2ce0cfa1302378d2c16d",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/13d52ccc77202871314c2ce0cfa1302378d2c16d.tar.gz",
+      "hash": "sha256-MF34DOZXU4vNkVbbWCdUwVF8Cgu8/u5WSHB6/UVCBdA="
+    },
+    "darkmingo-cockatrice-theme": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "mingomongo",
+        "repo": "DarkMingo-Theme-for-Cockatrice"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "46a2840a975f4564037dadd9f9e5a04fcab61881",
+      "url": "https://github.com/mingomongo/DarkMingo-Theme-for-Cockatrice/archive/46a2840a975f4564037dadd9f9e5a04fcab61881.tar.gz",
+      "hash": "sha256-FChGD7i8ybRYbHu5mHg+HQM1XVwMOtjWmkc2qH+gcxM="
+    },
     "haveagitgat/tdarr": {
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
@@ -27,6 +53,19 @@
       "artifact": "nixexprs.tar.xz",
       "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1031701.767b0d3ec98a/nixexprs.tar.xz",
       "hash": "sha256-E/v/PHozqkEfjEy5iyvJJ+aQxgH+XV6hOjle67HQ+P4="
+    },
+    "superpowers": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "obra",
+        "repo": "superpowers"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "url": "https://github.com/obra/superpowers/archive/d884ae04edebef577e82ff7c4e143debd0bbec99.tar.gz",
+      "hash": "sha256-kHdQ9e44doBk2yYW88tMSCqVG8ycYcvJSZlrIziXhpA="
     },
     "thushan/olla": {
       "type": "Container",

@@ -29,16 +29,6 @@
 
     claude-code.url = "github:sadjow/claude-code-nix";
 
-    # obra/superpowers — agentic skills library for Claude Code (TDD,
-    # systematic debugging, planning, brainstorming, code-review workflows).
-    # Not a flake; the claude-code HM module symlinks its skills/ dirs into
-    # ~/.claude/skills. We deliberately skip the plugin's SessionStart hook,
-    # so skills are auto-discovered by description rather than force-injected.
-    superpowers = {
-      url = "github:obra/superpowers";
-      flake = false;
-    };
-
     # Herdr — agent-aware terminal multiplexer ("tmux for coding agents").
     # Not in nixpkgs; the upstream flake exposes packages.default + an overlay.
     # Remote use ("herdr --remote luna") rides plain SSH like tmux — no daemon.
@@ -97,11 +87,6 @@
       };
     };
 
-    NonSteamLaunchers = {
-      url = "github:moraroy/NonSteamLaunchers-On-Steam-Deck/main";
-      flake = false;
-    };
-
     yazi.url = "github:sxyazi/yazi";
 
     home-manager = {
@@ -139,11 +124,6 @@
     };
 
     foundryvtt.url = "github:nix-foundryvtt/nix-foundryvtt";
-
-    darkmingo-cockactrice-theme = {
-      url = "github:mingomongo/DarkMingo-Theme-for-Cockatrice";
-      flake = false;
-    };
 
     homelab_system_controller = {
       url = "github:cramt/homelab_system_controller";

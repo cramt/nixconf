@@ -1,22 +1,5 @@
 {
   "nodes": {
-    "NonSteamLaunchers": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1783720800,
-        "narHash": "sha256-MF34DOZXU4vNkVbbWCdUwVF8Cgu8/u5WSHB6/UVCBdA=",
-        "owner": "moraroy",
-        "repo": "NonSteamLaunchers-On-Steam-Deck",
-        "rev": "13d52ccc77202871314c2ce0cfa1302378d2c16d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "moraroy",
-        "ref": "main",
-        "repo": "NonSteamLaunchers-On-Steam-Deck",
-        "type": "github"
-      }
-    },
     "argononed": {
       "flake": false,
       "locked": {
@@ -245,22 +228,6 @@
       "original": {
         "owner": "ipetkov",
         "repo": "crane",
-        "type": "github"
-      }
-    },
-    "darkmingo-cockactrice-theme": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1757972770,
-        "narHash": "sha256-FChGD7i8ybRYbHu5mHg+HQM1XVwMOtjWmkc2qH+gcxM=",
-        "owner": "mingomongo",
-        "repo": "DarkMingo-Theme-for-Cockatrice",
-        "rev": "46a2840a975f4564037dadd9f9e5a04fcab61881",
-        "type": "github"
-      },
-      "original": {
-        "owner": "mingomongo",
-        "repo": "DarkMingo-Theme-for-Cockatrice",
         "type": "github"
       }
     },
@@ -1995,10 +1962,8 @@
     },
     "root": {
       "inputs": {
-        "NonSteamLaunchers": "NonSteamLaunchers",
         "claude-code": "claude-code",
         "cosmic-manager": "cosmic-manager",
-        "darkmingo-cockactrice-theme": "darkmingo-cockactrice-theme",
         "dewclaw": "dewclaw",
         "disko": "disko",
         "flake-parts": "flake-parts_3",
@@ -2039,7 +2004,6 @@
         "probe-rs-rules": "probe-rs-rules",
         "quadlet-nix": "quadlet-nix",
         "stylix": "stylix",
-        "superpowers": "superpowers",
         "winapps": "winapps",
         "yazi": "yazi",
         "zen-browser": "zen-browser"
@@ -2180,22 +2144,6 @@
       "original": {
         "owner": "nix-community",
         "repo": "stylix",
-        "type": "github"
-      }
-    },
-    "superpowers": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1783029415,
-        "narHash": "sha256-kHdQ9e44doBk2yYW88tMSCqVG8ycYcvJSZlrIziXhpA=",
-        "owner": "obra",
-        "repo": "superpowers",
-        "rev": "d884ae04edebef577e82ff7c4e143debd0bbec99",
-        "type": "github"
-      },
-      "original": {
-        "owner": "obra",
-        "repo": "superpowers",
         "type": "github"
       }
     },

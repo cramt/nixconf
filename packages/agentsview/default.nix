@@ -56,7 +56,13 @@ in
     # Tests rely on testcontainers (Docker) and local agent session fixtures
     doCheck = false;
 
-    passthru.updateScript = nix-update-script {};
+    # frontend is a separate buildNpmPackage with its own npmDepsHash, so point
+    # nix-update at it too (`--subpackage frontend`) — otherwise a version bump
+    # that changes the frontend lockfile would leave that hash stale.
+    passthru.frontend = frontend;
+    passthru.updateScript = nix-update-script {
+      extraArgs = ["--subpackage" "frontend"];
+    };
 
     meta = {
       description = "Local-first session intelligence and analytics for coding agents";

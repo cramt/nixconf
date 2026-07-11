@@ -10,11 +10,12 @@
 
     # Every subdir under superpowers/skills is a self-contained skill (SKILL.md
     # + helper files). Enumerate them from the pinned source so new upstream
-    # skills flow in on `nix flake update` without touching this file.
+    # skills flow in on `npins update` without touching this file.
+    superpowers = pkgs.npinsSources.superpowers;
     superpowersSkills =
       builtins.attrNames
       (lib.filterAttrs (_: type: type == "directory")
-        (builtins.readDir "${inputs.superpowers}/skills"));
+        (builtins.readDir "${superpowers}/skills"));
     mkClaudeWithConfig = name: configDir:
       pkgs.writeShellScriptBin name ''
         export CLAUDE_CONFIG_DIR="${configDir}"
@@ -108,7 +109,7 @@
       (lib.mkIf cfg.superpowers.enable {
         home.file = lib.mkMerge (lib.concatMap (base:
           map (skill: {
-            "${base}/skills/${skill}".source = "${inputs.superpowers}/skills/${skill}";
+            "${base}/skills/${skill}".source = "${superpowers}/skills/${skill}";
           })
           superpowersSkills) [".claude" ".claude-work" ".claude-personal"]);
       })
