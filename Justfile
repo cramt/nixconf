@@ -34,7 +34,7 @@ update_gems:
 # package's upstream latest release and rewrites version + hashes in place.
 # steamlink is intentionally absent (no upstream version feed — see its default.nix).
 update_packages:
-    nix run nixpkgs#nix-update -- --flake agentsview --subpackage frontend
+    nix run nixpkgs#nix-update -- --flake agentsview
     nix run nixpkgs#nix-update -- --flake agent-browser
     nix run nixpkgs#nix-update -- --flake cockatrice
 

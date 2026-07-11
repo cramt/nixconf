@@ -15,13 +15,13 @@ stdenv.mkDerivation (finalAttrs: {
   # the `version` here is the full stable *Release* tag. `just update_packages`
   # runs nix-update, which follows GitHub's "latest release" (Development tags are
   # marked pre-release and skipped).
-  version = "2026-05-23-Release-3.0.1";
+  version = "2026-06-26-Release-3.0.2";
 
   src = fetchFromGitHub {
     owner = "Cockatrice";
     repo = "Cockatrice";
     tag = finalAttrs.version;
-    hash = "sha256-lxhjJPna76Xb/LEMMfzUXe3ZIh1xYpS4yZSZuWkaVq4=";
+    hash = "sha256-qn8pnC04uN994qLK4oXc3IiTpPMT3/gqHHBaEDkjsr4=";
   };
 
   nativeBuildInputs = [
