@@ -5,13 +5,24 @@
   cmake,
   protobuf,
   openssl,
-  src,
+  fetchFromGitHub,
+  nix-update-script,
 }:
-stdenv.mkDerivation {
+stdenv.mkDerivation (finalAttrs: {
   pname = "cockatrice";
-  version = "3.0.1";
+  # nixpkgs' cockatrice lags a full major version behind (2.10.x), so we build
+  # from source. Cockatrice tags every build YYYY-MM-DD-{Release,Development}-X.Y.Z;
+  # the `version` here is the full stable *Release* tag. `just update_packages`
+  # runs nix-update, which follows GitHub's "latest release" (Development tags are
+  # marked pre-release and skipped).
+  version = "2026-05-23-Release-3.0.1";
 
-  inherit src;
+  src = fetchFromGitHub {
+    owner = "Cockatrice";
+    repo = "Cockatrice";
+    tag = finalAttrs.version;
+    hash = "sha256-lxhjJPna76Xb/LEMMfzUXe3ZIh1xYpS4yZSZuWkaVq4=";
+  };
 
   nativeBuildInputs = [
     cmake
@@ -29,6 +40,8 @@ stdenv.mkDerivation {
     openssl
   ];
 
+  passthru.updateScript = nix-update-script {};
+
   meta = {
     homepage = "https://github.com/Cockatrice/Cockatrice";
     description = "Cross-platform virtual tabletop for multiplayer card games";
@@ -37,4 +50,4 @@ stdenv.mkDerivation {
     platforms = with lib.platforms; linux;
     mainProgram = "cockatrice";
   };
-}
+})

@@ -164,23 +164,6 @@
         "type": "github"
       }
     },
-    "cockatrice-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1779488380,
-        "narHash": "sha256-lxhjJPna76Xb/LEMMfzUXe3ZIh1xYpS4yZSZuWkaVq4=",
-        "owner": "Cockatrice",
-        "repo": "Cockatrice",
-        "rev": "b3450a78cd16bc6fcb1594b285d9b5d1926c2fd8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Cockatrice",
-        "ref": "2026-05-23-Release-3.0.1",
-        "repo": "Cockatrice",
-        "type": "github"
-      }
-    },
     "cosmic-manager": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -2014,7 +1997,6 @@
       "inputs": {
         "NonSteamLaunchers": "NonSteamLaunchers",
         "claude-code": "claude-code",
-        "cockatrice-src": "cockatrice-src",
         "cosmic-manager": "cosmic-manager",
         "darkmingo-cockactrice-theme": "darkmingo-cockactrice-theme",
         "dewclaw": "dewclaw",

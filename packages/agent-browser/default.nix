@@ -4,6 +4,7 @@
   fetchurl,
   autoPatchelfHook,
   makeWrapper,
+  nix-update-script,
   ungoogled-chromium,
   # The browser agent-browser drives via CDP. Overridable so a host can swap in
   # google-chrome etc.; defaults to the chromium that's already in our closure.
@@ -67,6 +68,10 @@ in
 
     # Expose the ready-to-symlink Claude Code skill dir for consumers.
     passthru.skillsDir = "share/agent-browser/skills";
+
+    # nix-update tracks the latest release tag off the GitHub homepage and
+    # rewrites the versioned npm tarball URL + hash.
+    passthru.updateScript = nix-update-script {};
 
     meta = {
       description = "Vercel agent-browser — fast browser-automation CLI for AI agents";

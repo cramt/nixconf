@@ -111,6 +111,17 @@
         llama-cpp-rocm-rpc
         llama-cpp-cuda-rpc
         ;
+
+      # Exposed so `nix-update --flake <name>` can locate them (it reads the
+      # package's meta.position off the flake output). Bumped by `just
+      # update_packages`. These are our locally-built overrides of packages
+      # nixpkgs either lacks or lags on.
+      inherit
+        (inputs.self.nixosConfigurations.saturn.pkgs)
+        agentsview
+        agent-browser
+        cockatrice
+        ;
     } // lib.optionalAttrs (system == "aarch64-linux") {
       # Steam Link client — aarch64 only because it's a prebuilt arm64 binary.
       steamlink = pkgs.callPackage ../../packages/steamlink {};

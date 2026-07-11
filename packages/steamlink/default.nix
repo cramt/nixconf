@@ -73,6 +73,10 @@
 }:
 
 let
+  # No nix-update entry: Steam Link ships off Valve's CDN with no release feed to
+  # discover a new version from, and the vendored bookworm .debs below are
+  # deliberately ABI-frozen (see comments). Bump `version` by hand when Valve
+  # publishes a new steamlink-rpi tarball; the app updates rarely.
   version = "1.3.25.302";
   codename = "bookworm";
   arch = "arm64";

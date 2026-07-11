@@ -29,11 +29,21 @@ update_flake:
 update_gems:
     (cd gems && bundle lock --update)
 
+# Bump the from-source / prebuilt packages that live outside flake.lock and npins
+# (hardcoded version + hash in packages/*/default.nix). nix-update follows each
+# package's upstream latest release and rewrites version + hashes in place.
+# steamlink is intentionally absent (no upstream version feed — see its default.nix).
+update_packages:
+    for pkg in agentsview agent-browser cockatrice; do \
+      nix run nixpkgs#nix-update -- --flake "$pkg" || exit 1; \
+    done
+
 update:
     fwupdmgr update -y || true
     just update_flake
     just update_gems
     npins update
+    just update_packages
     nh os switch
 
 tf *args:

@@ -72,9 +72,7 @@ inputs: [
   })
 
   (final: prev: {
-    cockatrice = prev.callPackage ../packages/cockatrice {
-      src = inputs.cockatrice-src;
-    };
+    cockatrice = prev.callPackage ../packages/cockatrice {};
   })
 
   # Not in nixpkgs; built from source (Go + embedded Svelte frontend).
@@ -90,13 +88,6 @@ inputs: [
   # Bump version + hash in ../packages/agent-browser/default.nix.
   (final: prev: {
     agent-browser = prev.callPackage ../packages/agent-browser {};
-  })
-
-  # Replace nixpkgs' source-built zed-editor (lags upstream by days/weeks)
-  # with the official prebuilt preview tarball. Bump version + hash in
-  # ../packages/zed-bin/default.nix.
-  (final: prev: {
-    zed-editor = prev.callPackage ../packages/zed-bin {};
   })
 
   (final: prev: {

@@ -3,6 +3,7 @@
   buildGoModule,
   buildNpmPackage,
   fetchFromGitHub,
+  nix-update-script,
 }: let
   version = "0.32.1";
 
@@ -54,6 +55,8 @@ in
 
     # Tests rely on testcontainers (Docker) and local agent session fixtures
     doCheck = false;
+
+    passthru.updateScript = nix-update-script {};
 
     meta = {
       description = "Local-first session intelligence and analytics for coding agents";
