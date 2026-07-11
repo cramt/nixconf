@@ -46,6 +46,16 @@
           version = 1;
           base_url = "http://localhost:8096";
           system = {};
+          # luna has an NVIDIA GPU (myNixOS.nvidia) — transcode on NVENC/NVDEC
+          # instead of pegging the CPU with libx264. Jellyfin defaults hw accel
+          # to "none", so set it declaratively here.
+          encoding = {
+            enableHardwareEncoding = true;
+            hardwareAccelerationType = "nvenc";
+            hardwareDecodingCodecs = ["h264" "hevc" "vc1" "vp8" "vp9" "av1"];
+            enableDecodingColorDepth10Hevc = true;
+            enableDecodingColorDepth10Vp9 = true;
+          };
           startup = {
             serverName = "luna-jellyfin";
             preferredMetadataLanguage = "en";
