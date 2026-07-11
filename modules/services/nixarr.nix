@@ -46,13 +46,17 @@
           version = 1;
           base_url = "http://localhost:8096";
           system = {};
-          # luna has an NVIDIA GPU (myNixOS.nvidia) — transcode on NVENC/NVDEC
+          # luna has a GeForce GTX 1660 (TU116, Turing) — transcode on NVENC/NVDEC
           # instead of pegging the CPU with libx264. Jellyfin defaults hw accel
           # to "none", so set it declaratively here.
+          # Turing NVENC = H.264 + HEVC; NVDEC = H.264/HEVC/VC1/VP8/VP9. No AV1
+          # encode or decode on this GPU (Ampere/Ada only), so it's left off the
+          # lists and AV1 stays software.
           encoding = {
             enableHardwareEncoding = true;
             hardwareAccelerationType = "nvenc";
-            hardwareDecodingCodecs = ["h264" "hevc" "vc1" "vp8" "vp9" "av1"];
+            allowHevcEncoding = true;
+            hardwareDecodingCodecs = ["h264" "hevc" "vc1" "vp8" "vp9"];
             enableDecodingColorDepth10Hevc = true;
             enableDecodingColorDepth10Vp9 = true;
           };
