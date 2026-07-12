@@ -17,9 +17,6 @@
         mangohud
         steamcmd
       ];
-      environment.sessionVariables = {
-        STEAM_EXTRA_COMPAT_TOOLS_PATHS = "\${HOME}/.steam/root/compatibilitytools.d";
-      };
       # Grant the logged-in session direct access to HOTAS/joystick raw-HID
       # nodes. evdev/js* nodes already get uaccess from logind's default
       # ID_INPUT_JOYSTICK rules, but the /dev/hidrawN node does not unless a
