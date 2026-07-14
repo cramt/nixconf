@@ -9,41 +9,6 @@
     claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
     agentBrowserPkg = pkgs.callPackage ../../packages/agent-browser {};
 
-    # `claude-m365`: Claude Code pointed at the local M365 Copilot models instead
-    # of Anthropic. Claude Code only speaks the Anthropic `/v1/messages` dialect,
-    # so it goes through LiteLLM's Anthropic bridge (modules/services/litellm.nix),
-    # which translates to the proxy's OpenAI endpoint. Only wired when both the
-    # bridge and the proxy are enabled on this host; reads litellm's port from
-    # osConfig so launcher and service can't drift (same trick as pi.nix).
-    # Caveat: M365 backends can disengage on very large tool payloads — trim MCP
-    # servers / tools if a session stops calling tools.
-    m365ClaudeReady =
-      (osConfig.myNixOS.services.litellm.enable or false)
-      && (osConfig.myNixOS.services.m365-copilot-proxy.enable or false);
-    litellmPort = osConfig.port-selector.ports.litellm or null;
-    claudeM365Pkg = pkgs.writeShellScriptBin "claude-m365" ''
-      export CLAUDE_CONFIG_DIR="$HOME/.claude-m365"
-      export ANTHROPIC_BASE_URL="http://127.0.0.1:${toString litellmPort}"
-      # LiteLLM has no master key configured, so any non-empty token passes.
-      export ANTHROPIC_AUTH_TOKEN="dummy"
-      # gpt-5.5-think-deeper (the "deep research" reasoning tone) is the default —
-      # confirmed to hold tool calls in real sessions. Swap per-session with
-      # `claude-m365 --model claude-sonnet-4.5` (or any exposed slug).
-      #
-      # Small/fast model is gpt-5.5, NOT the M365 "quick" tones: `quick` /
-      # `gpt-5.5-quick` reliably fail mid-stream with the proxy's "Failed to
-      # invoke 'Chat'" error (0/3 vs gpt-5.5's 3/3 in testing). A failed
-      # background call would bench that deployment for the router's cooldown and
-      # surface as a 429 in the session, so keep the fast slot on a tone that
-      # actually streams.
-      export ANTHROPIC_MODEL="gpt-5.5-think-deeper"
-      export ANTHROPIC_SMALL_FAST_MODEL="gpt-5.5"
-      export ANTHROPIC_DEFAULT_OPUS_MODEL="gpt-5.5-think-deeper"
-      export ANTHROPIC_DEFAULT_SONNET_MODEL="gpt-5.5-think-deeper"
-      export ANTHROPIC_DEFAULT_HAIKU_MODEL="gpt-5.5"
-      exec ${claudeCodePkg}/bin/claude "$@"
-    '';
-
     # Every subdir under superpowers/skills is a self-contained skill (SKILL.md
     # + helper files). Enumerate them from the pinned source so new upstream
     # skills flow in on `npins update` without touching this file.
@@ -127,17 +92,14 @@
             (mkClaudeWithConfig "claude-p" "$HOME/.claude-personal")
           ]
           ++ lib.optional cfg.linkedin.enable linkedinClaudePkg
-          ++ lib.optional m365ClaudeReady claudeM365Pkg
           ++ lib.optional splitterReady claudeSplitPkg;
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude-work/CLAUDE.md".text = globalClaudeMd;
           ".claude-personal/CLAUDE.md".text = globalClaudeMd;
-          ".claude-m365/CLAUDE.md".text = globalClaudeMd;
           ".claude/skills/status".source = ./claude-skills/status;
           ".claude-work/skills/status".source = ./claude-skills/status;
           ".claude-personal/skills/status".source = ./claude-skills/status;
-          ".claude-m365/skills/status".source = ./claude-skills/status;
         };
       }
       # Vercel agent-browser: the CLI is a self-contained native binary (no
@@ -154,7 +116,6 @@
           ".claude/skills/agent-browser/SKILL.md".source = skillStub;
           ".claude-work/skills/agent-browser/SKILL.md".source = skillStub;
           ".claude-personal/skills/agent-browser/SKILL.md".source = skillStub;
-          ".claude-m365/skills/agent-browser/SKILL.md".source = skillStub;
         };
       }))
       # Superpowers: symlink each skill dir into every config dir the three
@@ -166,7 +127,7 @@
           map (skill: {
             "${base}/skills/${skill}".source = "${superpowers}/skills/${skill}";
           })
-          superpowersSkills) [".claude" ".claude-work" ".claude-personal" ".claude-m365"]);
+          superpowersSkills) [".claude" ".claude-work" ".claude-personal"]);
       })
     ]);
   };
