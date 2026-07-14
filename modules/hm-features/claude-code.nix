@@ -3,10 +3,36 @@
     config,
     lib,
     pkgs,
+    osConfig,
     ...
   }: let
     claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
     agentBrowserPkg = pkgs.callPackage ../../packages/agent-browser {};
+
+    # `claude-m365`: Claude Code pointed at the local M365 Copilot models instead
+    # of Anthropic. Claude Code only speaks the Anthropic `/v1/messages` dialect,
+    # so it goes through LiteLLM's Anthropic bridge (modules/services/litellm.nix),
+    # which translates to the proxy's OpenAI endpoint. Only wired when both the
+    # bridge and the proxy are enabled on this host; reads litellm's port from
+    # osConfig so launcher and service can't drift (same trick as pi.nix).
+    # Caveat: M365 backends can disengage on very large tool payloads — trim MCP
+    # servers / tools if a session stops calling tools.
+    m365ClaudeReady =
+      (osConfig.myNixOS.services.litellm.enable or false)
+      && (osConfig.myNixOS.services.m365-copilot-proxy.enable or false);
+    litellmPort = osConfig.port-selector.ports.litellm or null;
+    claudeM365Pkg = pkgs.writeShellScriptBin "claude-m365" ''
+      export CLAUDE_CONFIG_DIR="$HOME/.claude-m365"
+      export ANTHROPIC_BASE_URL="http://127.0.0.1:${toString litellmPort}"
+      # LiteLLM has no master key configured, so any non-empty token passes.
+      export ANTHROPIC_AUTH_TOKEN="dummy"
+      export ANTHROPIC_MODEL="claude-sonnet-4.5"
+      export ANTHROPIC_SMALL_FAST_MODEL="quick"
+      export ANTHROPIC_DEFAULT_OPUS_MODEL="claude-opus"
+      export ANTHROPIC_DEFAULT_SONNET_MODEL="claude-sonnet-4.5"
+      export ANTHROPIC_DEFAULT_HAIKU_MODEL="quick"
+      exec ${claudeCodePkg}/bin/claude "$@"
+    '';
 
     # Every subdir under superpowers/skills is a self-contained skill (SKILL.md
     # + helper files). Enumerate them from the pinned source so new upstream
@@ -76,14 +102,17 @@
             (mkClaudeWithConfig "claude-w" "$HOME/.claude-work")
             (mkClaudeWithConfig "claude-p" "$HOME/.claude-personal")
           ]
-          ++ lib.optional cfg.linkedin.enable linkedinClaudePkg;
+          ++ lib.optional cfg.linkedin.enable linkedinClaudePkg
+          ++ lib.optional m365ClaudeReady claudeM365Pkg;
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude-work/CLAUDE.md".text = globalClaudeMd;
           ".claude-personal/CLAUDE.md".text = globalClaudeMd;
+          ".claude-m365/CLAUDE.md".text = globalClaudeMd;
           ".claude/skills/status".source = ./claude-skills/status;
           ".claude-work/skills/status".source = ./claude-skills/status;
           ".claude-personal/skills/status".source = ./claude-skills/status;
+          ".claude-m365/skills/status".source = ./claude-skills/status;
         };
       }
       # Vercel agent-browser: the CLI is a self-contained native binary (no
@@ -100,6 +129,7 @@
           ".claude/skills/agent-browser/SKILL.md".source = skillStub;
           ".claude-work/skills/agent-browser/SKILL.md".source = skillStub;
           ".claude-personal/skills/agent-browser/SKILL.md".source = skillStub;
+          ".claude-m365/skills/agent-browser/SKILL.md".source = skillStub;
         };
       }))
       # Superpowers: symlink each skill dir into every config dir the three
@@ -111,7 +141,7 @@
           map (skill: {
             "${base}/skills/${skill}".source = "${superpowers}/skills/${skill}";
           })
-          superpowersSkills) [".claude" ".claude-work" ".claude-personal"]);
+          superpowersSkills) [".claude" ".claude-work" ".claude-personal" ".claude-m365"]);
       })
     ]);
   };

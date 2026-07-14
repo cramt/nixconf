@@ -36,6 +36,27 @@
       model_name = modelName;
       litellm_params = { inherit model; };
     };
+
+    # When the local M365 Copilot proxy is enabled on this same host, front its
+    # OpenAI-compatible endpoint through LiteLLM as well. LiteLLM exposes an
+    # Anthropic `/v1/messages` bridge, which is the only dialect Claude Code
+    # speaks — so this is what lets `claude-m365` drive Claude Code against the
+    # M365 models. Slugs mirror the tone list documented in
+    # modules/hm-features/pi.nix; Claude tones tool-call well, `quick` is a cheap
+    # small/fast model for Claude Code's background calls.
+    m365 = config.myNixOS.services.m365-copilot-proxy;
+    m365Base = "http://127.0.0.1:${toString config.port-selector.ports.m365-copilot-proxy}/v1";
+    m365Slugs = [ "claude-sonnet-4.5" "claude-opus" "gpt-5.5" "gpt-5.5-think-deeper" "quick" ];
+    m365Deployment = slug: {
+      model_name = slug;
+      litellm_params = {
+        model = "openai/${slug}";
+        api_base = m365Base;
+        # Proxy is unauthenticated, but LiteLLM's openai provider still requires
+        # a non-empty key field.
+        api_key = "dummy";
+      };
+    };
   in {
     options.myNixOS.services.litellm = {
       enable = lib.mkEnableOption "myNixOS.services.litellm";
@@ -82,7 +103,7 @@
                 api_key = "os.environ/CLOUDFLARE_API_KEY";
               };
             }
-          ];
+          ] ++ lib.optionals m365.enable (map m365Deployment m365Slugs);
           router_settings = {
             # Spread load across the three free tiers so no single one is drained
             # first; on a 429 the deployment is benched for cooldown_time and the

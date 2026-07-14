@@ -104,6 +104,11 @@
     services = {
       sshd.enable = true;
       claude-remote-control.enable = true;
+      # Anthropic /v1/messages bridge in front of the local M365 Copilot proxy,
+      # so `claude-m365` (see modules/hm-features/claude-code.nix) can drive
+      # Claude Code against the M365 models. litellm.nix auto-adds the m365
+      # deployments whenever the proxy is enabled on the same host.
+      litellm.enable = true;
       sunshine.enable = true;
       llama-cpp-rpc = {
         enable = true;
