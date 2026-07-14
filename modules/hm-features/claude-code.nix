@@ -26,10 +26,13 @@
       export ANTHROPIC_BASE_URL="http://127.0.0.1:${toString litellmPort}"
       # LiteLLM has no master key configured, so any non-empty token passes.
       export ANTHROPIC_AUTH_TOKEN="dummy"
-      export ANTHROPIC_MODEL="claude-sonnet-4.5"
+      # gpt-5.5-think-deeper (the "deep research" reasoning tone) is the default —
+      # confirmed to hold tool calls in real sessions. Swap per-session with
+      # `claude-m365 --model claude-sonnet-4.5` (or any exposed slug).
+      export ANTHROPIC_MODEL="gpt-5.5-think-deeper"
       export ANTHROPIC_SMALL_FAST_MODEL="quick"
-      export ANTHROPIC_DEFAULT_OPUS_MODEL="claude-opus"
-      export ANTHROPIC_DEFAULT_SONNET_MODEL="claude-sonnet-4.5"
+      export ANTHROPIC_DEFAULT_OPUS_MODEL="gpt-5.5-think-deeper"
+      export ANTHROPIC_DEFAULT_SONNET_MODEL="gpt-5.5-think-deeper"
       export ANTHROPIC_DEFAULT_HAIKU_MODEL="quick"
       exec ${claudeCodePkg}/bin/claude "$@"
     '';
