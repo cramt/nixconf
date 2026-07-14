@@ -14,7 +14,8 @@ nh os switch --target-host root@<ip> -H <hostname>
 # Shortcut recipes (via just)
 just build_luna       # Deploy to luna (192.168.178.24)
 just build_ganymede   # Deploy to ganymede (192.168.178.47)
-just update           # Update fwupd, flake inputs, gems, npins, and rebuild
+just update           # Update flake inputs, gems, npins, and packages (run daily by CI's update.yml,
+                      # which maintains an `update` branch PR prebuilt into cachix — merge it to update)
 just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
 

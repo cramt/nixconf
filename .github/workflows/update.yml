@@ -1,0 +1,50 @@
+name: Update
+
+on:
+  schedule:
+    # Daily 04:00 UTC — PR is green and cached by the time anyone's awake.
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+concurrency: update-pr
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: accept-flake-config = true
+
+      - name: Update flake.lock, gems, npins, packages
+        run: nix shell nixpkgs#just nixpkgs#npins nixpkgs#bundler --command just update
+
+      # Pushes with GITHUB_TOKEN don't fire pull_request events (GitHub's
+      # recursion guard), so the build workflow is dispatched explicitly —
+      # its checks attach to the branch head and show up on the PR.
+      - name: Push update branch, ensure PR, trigger build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet; then
+            echo "Everything already up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c update
+          git commit -am "update: flake.lock, gems, npins, packages ($(date -u +%F))"
+          git push -f origin update
+          if [ "$(gh pr list --head update --state open --json number --jq length)" = 0 ]; then
+            gh pr create --head update --title "Scheduled dependency update" \
+              --body "Automated \`just update\`: flake.lock, gems, npins, and packages. Merging when green means every host toplevel is already in cachix — \`nh os switch\` after merge is pure substitution."
+          fi
+          gh workflow run build.yml --ref update

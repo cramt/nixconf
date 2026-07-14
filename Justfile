@@ -38,13 +38,14 @@ update_packages:
     nix run nixpkgs#nix-update -- --flake agent-browser
     nix run nixpkgs#nix-update -- --flake cockatrice
 
+# Bump every pinned source (flake.lock, gems, npins, packages). Run daily by
+# .github/workflows/update.yml, which pushes the result to the `update` branch
+# as a PR and prebuilds it into cachix — merge that PR to update.
 update:
-    fwupdmgr update -y || true
     just update_flake
     just update_gems
     npins update
     just update_packages
-    nh os switch
 
 tf *args:
     #!/usr/bin/env bash

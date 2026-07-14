@@ -24,7 +24,7 @@ nh os switch --target-host root@<ip> -H <hostname>
 # Shortcuts
 just build_luna       # Deploy to luna (192.168.178.24)
 just build_ganymede   # Deploy to ganymede (192.168.178.47)
-just update           # Update fwupd, flake inputs, gems, npins, and rebuild
+just update           # Update flake inputs, gems, npins, and packages (CI runs this weekly — see below)
 just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
 
@@ -35,6 +35,14 @@ just tf <args>        # Run OpenTofu in ./infra with env vars from opnix
 nix flake update
 npins update          # Update non-flake pinned sources
 ```
+
+## Updating
+
+A daily GitHub Actions workflow (`update.yml`) runs `just update`, force-pushes the
+result to the `update` branch, keeps a single open PR against `main`, and triggers
+the build workflow on that branch so every package and host toplevel lands in cachix.
+To update a machine: merge the PR when it's green, then `nh os switch` — everything
+substitutes from the cache.
 
 ## Architecture
 
