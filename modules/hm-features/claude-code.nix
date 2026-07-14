@@ -87,6 +87,20 @@
       exec ${claudeCodePkg}/bin/claude --mcp-config ${linkedinMcpConfig} "$@"
     '';
 
+    # `claude` wrapper: point the normal Claude Code at the local model-splitter
+    # (modules/services/claude-splitter.nix) instead of api.anthropic.com. No auth
+    # token is set, so Claude Code keeps using its saved subscription OAuth — the
+    # splitter forwards that verbatim to Anthropic for Claude models, and routes the
+    # M365 slugs (e.g. `/model gpt-5.5-think-deeper`) to LiteLLM. hiPrio so it wins
+    # over the raw claude-code binary the development bundle installs. Gated on the
+    # splitter being enabled on this host.
+    splitterReady = osConfig.myNixOS.services.claude-splitter.enable or false;
+    splitterPort = osConfig.port-selector.ports.claude-splitter or null;
+    claudeSplitPkg = lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
+      export ANTHROPIC_BASE_URL="http://127.0.0.1:${toString splitterPort}"
+      exec ${claudeCodePkg}/bin/claude "$@"
+    '');
+
     cfg = config.myHomeManager.claude-code;
 
     # Shared with pi (written to ~/.pi/agent/AGENTS.md by modules/hm-features/pi.nix)
@@ -113,7 +127,8 @@
             (mkClaudeWithConfig "claude-p" "$HOME/.claude-personal")
           ]
           ++ lib.optional cfg.linkedin.enable linkedinClaudePkg
-          ++ lib.optional m365ClaudeReady claudeM365Pkg;
+          ++ lib.optional m365ClaudeReady claudeM365Pkg
+          ++ lib.optional splitterReady claudeSplitPkg;
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude-work/CLAUDE.md".text = globalClaudeMd;
