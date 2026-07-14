@@ -16,15 +16,23 @@ declare -A runners=(
 # (e.g. steamlink), which would otherwise fail the build job at eval time.
 filter='set: builtins.filter (n: let r = builtins.tryEval (set.${n}.meta.available or true); in r.success && r.value) (builtins.attrNames set)'
 
+# Skipped: trivial wrappers around a cross-platform artifact. flash-eros (x86)
+# only substitutes the aarch64 eros image — it can't build it, and its own
+# eros-img leg races it in the same wave, so it fails whenever the image drv
+# changed (e.g. every update PR). The wrapper builds in seconds locally once
+# eros-img is cached, so prebuilding it adds nothing.
+skip='["flash-eros"]'
+
 include='[]'
 for system in "${!runners[@]}"; do
   names=$(nix eval --json ".#packages.${system}" --apply "$filter")
   include=$(jq -cn \
     --argjson acc "$include" \
     --argjson names "$names" \
+    --argjson skip "$skip" \
     --arg system "$system" \
     --arg runner "${runners[$system]}" \
-    '$acc + [ $names[] | { package: ., system: $system, runner: $runner } ]')
+    '$acc + [ $names[] | select(. as $n | $skip | index($n) | not) | { package: ., system: $system, runner: $runner } ]')
 done
 
 echo "matrix={\"include\":${include}}" >>"$GITHUB_OUTPUT"
