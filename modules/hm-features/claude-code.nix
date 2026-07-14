@@ -63,6 +63,12 @@
     splitterPort = osConfig.port-selector.ports.claude-splitter or null;
     claudeSplitPkg = lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
       export ANTHROPIC_BASE_URL="http://127.0.0.1:${toString splitterPort}"
+      # Surface the M365 gpt-5.5 tone in the `/model` picker. This env var adds a
+      # single custom entry *additively* (the Anthropic models stay listed) —
+      # there's no env for multiple, and the array form (availableModels) only
+      # exists in settings layers, the global one of which replaces the whole list.
+      export ANTHROPIC_CUSTOM_MODEL_OPTION="gpt-5.5-think-deeper"
+      export ANTHROPIC_CUSTOM_MODEL_OPTION_NAME="GPT-5.5 Deep Research (M365)"
       exec ${claudeCodePkg}/bin/claude "$@"
     '');
 
