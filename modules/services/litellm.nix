@@ -141,6 +141,16 @@
         };
       };
 
+      # LiteLLM's Anthropic /v1/messages bridge (what Claude Code speaks via
+      # `claude-m365`) routes `openai/*` models to the OpenAI *Responses* API by
+      # default — but the M365 Copilot proxy (and Cloudflare's /ai/v1) only
+      # implement /chat/completions, so that 404s on /v1/responses. This flag
+      # forces the bridge through /chat/completions instead. Safe globally here:
+      # every openai/ backend in this deployment is chat-completions-only.
+      # (litellm/llms/anthropic/experimental_pass_through/messages/handler.py:
+      #  _should_route_to_responses_api). Verified via A/B on litellm 1.89.0.
+      systemd.services.litellm.environment.LITELLM_USE_CHAT_COMPLETIONS_URL_FOR_ANTHROPIC_MESSAGES = "1";
+
       systemd.services.litellm.serviceConfig.EnvironmentFile = lib.mkForce [
         config.services.onepassword-secrets.secretPaths.litellmGroqEnv
         config.services.onepassword-secrets.secretPaths.litellmCerebrasEnv
