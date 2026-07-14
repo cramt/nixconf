@@ -29,11 +29,18 @@
       # gpt-5.5-think-deeper (the "deep research" reasoning tone) is the default —
       # confirmed to hold tool calls in real sessions. Swap per-session with
       # `claude-m365 --model claude-sonnet-4.5` (or any exposed slug).
+      #
+      # Small/fast model is gpt-5.5, NOT the M365 "quick" tones: `quick` /
+      # `gpt-5.5-quick` reliably fail mid-stream with the proxy's "Failed to
+      # invoke 'Chat'" error (0/3 vs gpt-5.5's 3/3 in testing). A failed
+      # background call would bench that deployment for the router's cooldown and
+      # surface as a 429 in the session, so keep the fast slot on a tone that
+      # actually streams.
       export ANTHROPIC_MODEL="gpt-5.5-think-deeper"
-      export ANTHROPIC_SMALL_FAST_MODEL="quick"
+      export ANTHROPIC_SMALL_FAST_MODEL="gpt-5.5"
       export ANTHROPIC_DEFAULT_OPUS_MODEL="gpt-5.5-think-deeper"
       export ANTHROPIC_DEFAULT_SONNET_MODEL="gpt-5.5-think-deeper"
-      export ANTHROPIC_DEFAULT_HAIKU_MODEL="quick"
+      export ANTHROPIC_DEFAULT_HAIKU_MODEL="gpt-5.5"
       exec ${claudeCodePkg}/bin/claude "$@"
     '';
 
