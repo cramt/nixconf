@@ -25,6 +25,13 @@ jobs:
           extra-conf: accept-flake-config = true
 
       - name: Update flake.lock, gems, npins, packages
+        env:
+          # ubuntu-latest ships a v1-format /etc/containers/registries.conf,
+          # which the skopeo behind npins' docker pins refuses to parse
+          # ("registries.conf must be in v2 format"). Point it at an empty v2
+          # config instead (override mechanism: containers/skopeo#2002).
+          # Remove once the runner image ships a v2 registries.conf.
+          CONTAINERS_REGISTRIES_CONF: /dev/null
         run: nix shell nixpkgs#just nixpkgs#npins nixpkgs#bundler --command just update
 
       # Pushes with GITHUB_TOKEN don't fire pull_request events (GitHub's
