@@ -50,10 +50,18 @@
     m365Deployment = slug: {
       model_name = slug;
       litellm_params = {
-        model = "openai/${slug}";
+        # hosted_vllm (not openai/) on purpose: it's the same OpenAI-compatible
+        # chat/completions client, but because the provider isn't literally
+        # "openai", LiteLLM never fires its gpt-5 reasoning->Responses-API bridge
+        # (responses_api_bridge_check in main.py). With openai/, any request
+        # carrying `thinking`/reasoning_effort — which Claude Code sends to the
+        # *-think-deeper tones — gets routed to /v1/responses, which the proxy
+        # doesn't implement (404 -> deployment benched -> "429 no deployments").
+        # hosted_vllm keeps everything (streaming + tools + thinking) on
+        # /chat/completions. A/B-verified against the live proxy.
+        model = "hosted_vllm/${slug}";
         api_base = m365Base;
-        # Proxy is unauthenticated, but LiteLLM's openai provider still requires
-        # a non-empty key field.
+        # Proxy is unauthenticated, but the client still requires a key field.
         api_key = "dummy";
       };
     };
