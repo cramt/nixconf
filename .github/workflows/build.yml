@@ -13,10 +13,26 @@ jobs:
   # Enumerate flake packages -> a build matrix consumed via fromJSON below.
   matrix:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
     outputs:
       matrix: ${{ steps.gen.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
+
+      # Dispatched runs (from update.yml) create check suites GitHub doesn't
+      # associate with PRs, so the update PR would show no checks at all.
+      # Commit statuses are SHA-based and do show in the PR merge box — post
+      # pending here, and the report job below posts the final state.
+      - name: Mark commit status pending
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state=pending -f context="Build & Cache" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
@@ -89,3 +105,21 @@ jobs:
 
       - name: Build ${{ matrix.host }}
         run: nix build ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel" --print-build-logs
+
+  # Final commit status for dispatched runs (see the pending step in matrix).
+  # Success requires prebuild AND build green, mirroring the run conclusion.
+  report:
+    needs: [prebuild, build]
+    if: ${{ always() && github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Mark final commit status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATE: ${{ (needs.prebuild.result == 'success' && needs.build.result == 'success') && 'success' || 'failure' }}
+        run: |
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state="$STATE" -f context="Build & Cache" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
