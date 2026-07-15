@@ -28,6 +28,12 @@ This is a NixOS machine. No apt/yum/brew — everything goes through nix.
 - Anything I must run/paste myself (sudo, auth flows, other apps): wl-copy it, don't just print it
 - If you want the output back, end the command with `| wl-copy`
 
+## Delegating to cheap models
+
+- A custom model `gpt-5.5-think-deeper` (M365-proxied GPT-5.5, shown in `/model` as "GPT-5.5 Deep Research (M365)") is routed through the claude-splitter. It is very cheap.
+- Reach for it in workflows and subagents via the `model` override — `agent(prompt, { model: 'gpt-5.5-think-deeper' })` — and lean on it often to keep spend down.
+- It's great at taste-free work: mechanical implementation, bulk edits, and following exact commands to the letter. Keep design, judgement calls, and anything that needs taste on Claude.
+
 ## Coding Style
 
 - If a thing can reasonably be declaratively done it should (this includes your own config), This is why we love nix
