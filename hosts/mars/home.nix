@@ -16,6 +16,7 @@
     bundles.gaming.enable = true;
 
     helium.enable = true;
+    paseo.enable = true;
     blueman.enable = true;
     cockatrice.enable = true;
     firefox.profiles = {

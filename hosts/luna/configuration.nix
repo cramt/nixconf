@@ -42,6 +42,16 @@
 
     services = {
       claude-remote-control.enable = true;
+      # Paseo daemon: offload coding-agent work to luna from the mars/saturn
+      # desktop app. Runs as cramt so agents get git/ssh + the claude/codex CLIs
+      # (dev bundle). Fronted by Caddy at https://paseo.cramt.dk. The daemon has
+      # no auth until you run `paseo daemon set-password` — do that before use,
+      # the domain is internet-reachable.
+      paseo = {
+        enable = true;
+        user = "cramt";
+        subdomain = "paseo";
+      };
       nixarr.enable = true;
       tor.enable = true;
       garage.enable = false;

@@ -45,6 +45,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Paseo — self-hosted orchestrator for coding agents (Claude Code, Codex,
+    # OpenCode, ...) with desktop/mobile/web/CLI clients. The upstream flake
+    # exposes packages (paseo daemon+CLI, and a Linux `desktop` Electron app)
+    # plus a NixOS module. Deliberately NOT following our nixpkgs: the package is
+    # a buildNpmPackage whose npmDepsHash is pinned against upstream's own
+    # nixpkgs; overriding it would break the FOD hash (upstream's package.nix
+    # documents an `.override { npmDepsHash = ... }` escape hatch for that case).
+    paseo.url = "github:getpaseo/paseo";
+
     # OpenAI-compatible proxy for M365 Copilot (Nitro service + NixOS module).
     m365-copilot-proxy = {
       url = "github:cramt/m365-copilot-proxy";
