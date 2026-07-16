@@ -8,6 +8,7 @@
   }: let
     claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
     agentBrowserPkg = pkgs.callPackage ../../packages/agent-browser {};
+    claudeSwapPkg = pkgs.callPackage ../../packages/claude-swap {};
 
     # Every subdir under superpowers/skills is a self-contained skill (SKILL.md
     # + helper files). Enumerate them from the pinned source so new upstream
@@ -17,12 +18,6 @@
       builtins.attrNames
       (lib.filterAttrs (_: type: type == "directory")
         (builtins.readDir "${superpowers}/skills"));
-    mkClaudeWithConfig = name: configDir:
-      pkgs.writeShellScriptBin name ''
-        export CLAUDE_CONFIG_DIR="${configDir}"
-        exec ${claudeCodePkg}/bin/claude "$@"
-      '';
-
     # `linkedinclaude`: regular Claude with the stickerdaniel/linkedin-mcp-server
     # merged in for that session only (via --mcp-config, which adds to — not
     # replaces — the normal servers). Keeping it behind its own launcher means
@@ -93,19 +88,37 @@
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
         home.packages =
-          [
-            (mkClaudeWithConfig "claude-w" "$HOME/.claude-work")
-            (mkClaudeWithConfig "claude-p" "$HOME/.claude-personal")
-          ]
+          [claudeSwapPkg]
           ++ lib.optional cfg.linkedin.enable linkedinClaudePkg
           ++ lib.optional splitterReady claudeSplitPkg;
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
-          ".claude-work/CLAUDE.md".text = globalClaudeMd;
-          ".claude-personal/CLAUDE.md".text = globalClaudeMd;
           ".claude/skills/status".source = ./claude-skills/status;
-          ".claude-work/skills/status".source = ./claude-skills/status;
-          ".claude-personal/skills/status".source = ./claude-skills/status;
+        };
+
+        # Rotate Claude accounts before hitting the 5h/7d usage caps. cswap keeps
+        # each account's OAuth token file-backed under ~/.local/share/claude-swap/
+        # and swaps the winning one into ~/.claude/.credentials.json — a live
+        # session picks it up on its next turn. Accounts are a one-time manual
+        # bootstrap (`cswap add` per account); until then --once just no-ops.
+        systemd.user.services.claude-swap-auto = {
+          Unit.Description = "claude-swap: rotate Claude accounts before hitting usage caps";
+          Service = {
+            Type = "oneshot";
+            ExecStart = "${claudeSwapPkg}/bin/cswap auto --once --json";
+            # 0=switched 2=nothing-to-do 3=blocked(no viable target) are all fine;
+            # only 1 (real error) should surface as a failed unit.
+            SuccessExitStatus = "0 2 3";
+          };
+        };
+        systemd.user.timers.claude-swap-auto = {
+          Unit.Description = "Periodic claude-swap usage check";
+          Timer = {
+            OnBootSec = "2min";
+            OnUnitActiveSec = "5min";
+            Persistent = true;
+          };
+          Install.WantedBy = ["timers.target"];
         };
       }
       # Vercel agent-browser: the CLI is a self-contained native binary (no
@@ -118,22 +131,17 @@
         skillStub = "${agentBrowserPkg}/share/agent-browser/skills/agent-browser/SKILL.md";
       in {
         home.packages = [agentBrowserPkg];
-        home.file = {
-          ".claude/skills/agent-browser/SKILL.md".source = skillStub;
-          ".claude-work/skills/agent-browser/SKILL.md".source = skillStub;
-          ".claude-personal/skills/agent-browser/SKILL.md".source = skillStub;
-        };
+        home.file.".claude/skills/agent-browser/SKILL.md".source = skillStub;
       }))
       # Superpowers: symlink each skill dir into every config dir the three
       # claude variants use. Skills-only install — no plugin registration, no
       # SessionStart hook — so it stays as declarative and disposable as the
       # agent-browser stub above.
       (lib.mkIf cfg.superpowers.enable {
-        home.file = lib.mkMerge (lib.concatMap (base:
-          map (skill: {
-            "${base}/skills/${skill}".source = "${superpowers}/skills/${skill}";
+        home.file = lib.mkMerge (map (skill: {
+            ".claude/skills/${skill}".source = "${superpowers}/skills/${skill}";
           })
-          superpowersSkills) [".claude" ".claude-work" ".claude-personal"]);
+          superpowersSkills);
       })
     ]);
   };
