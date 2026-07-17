@@ -15,6 +15,7 @@
     bundles.graphical.enable = true;
     bundles.gaming.enable = true;
     helium.enable = true;
+    paseo.enable = true;
     agentsview.enable = true;
     agentsview.service.enable = true;
     obs.enable = true;
