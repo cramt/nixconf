@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "5488f893c47da33742b546b7eb826a8bc15041c3",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/5488f893c47da33742b546b7eb826a8bc15041c3.tar.gz",
-      "hash": "sha256-oDHVi8cDhv6mU6C4x5KJy4diJWHaKum4+TK0BuVQmEc="
+      "revision": "2298ee41bbc1e1e19bc534c2d9fe81ff71eab9f6",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/2298ee41bbc1e1e19bc534c2d9fe81ff71eab9f6.tar.gz",
+      "hash": "sha256-+K2bHQjUhRa3OM4AahZf57RVFbuK7RWYQMJ8olz+Sv4="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -30,15 +30,15 @@
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
       "image_tag": "latest",
-      "image_digest": "sha256:6153e00470667b5ed4f6f6f1bfaa016432efa4c20b1919de229d9b7265bff70b",
-      "hash": "sha256-y48zYMmSA8EhB9TtvFSCOWdHIq8FfCKsbxthEE88RbY="
+      "image_digest": "sha256:f6dc6d9246cd8e02cc8c4a342eabe6dd63cad402ba43cd00b91a14e7e31fe470",
+      "hash": "sha256-Uhwmi5yumwNdnyL+oeXoo2RfEtjdU3PokY8KSOpy9GU="
     },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:57996c2affb9323b31f4bc523dab4f4d6fbd6b679071e17c1089d4d157d46e8d",
-      "hash": "sha256-pn9mnSfMsHAqi5ApEhkw28WtqRTJOu8273MkXPCAv1E="
+      "image_digest": "sha256:2a79f31d22df856d0a9d7cdfdaa0fd7f9791e160fe8478e8493dbd3781392c9c",
+      "hash": "sha256-NmvqOK4+Dy7VLF0UJwKgp+0D1TxZExyrsG8rM0EqaWQ="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -51,8 +51,8 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1032970.716c7a2664ca/nixexprs.tar.xz",
-      "hash": "sha256-MMD52/T3QOqSB2V1UZgp4dw0pa4P89YEP5SbM2xuwa0="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1035929.59682e0069f0/nixexprs.tar.xz",
+      "hash": "sha256-keY82hYMWt1hWhFYWVNFYf/meYjxdMjs6AyePFzr+0I="
     },
     "superpowers": {
       "type": "Git",
