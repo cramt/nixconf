@@ -3,7 +3,7 @@ add_foundry_zips:
     ls ../nix-static/ | each { |it| nix-store --add-fixed sha256 $it.name } | each { |path| cachix push cramt $path }
     null
 
-build_luna: add_foundry_zips
+build_luna: 
     nh os switch --target-host root@192.168.178.24 -H luna -- --fallback
 
 build_ganymede:
