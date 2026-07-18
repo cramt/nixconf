@@ -1,10 +1,26 @@
 {
   config,
   pkgs,
+  lib,
+  osConfig,
   ...
 }: {
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
+
+  # The paseo daemon runs headless as cramt, so 1Password's ssh-agent and
+  # op-ssh-sign (which need the desktop app) are unavailable. Use the personal
+  # SSH key that opnix drops on-disk for both GitHub auth and commit signing so
+  # agents can actually clone/commit/push.
+  programs.ssh.matchBlocks."github.com" = {
+    identityFile = osConfig.services.onepassword-secrets.secretPaths.paseoSshKey;
+    identitiesOnly = true;
+    extraOptions.StrictHostKeyChecking = "accept-new";
+  };
+  programs.git.settings = {
+    gpg.ssh.program = lib.mkForce "${pkgs.openssh}/bin/ssh-keygen";
+    user.signingKey = lib.mkForce osConfig.services.onepassword-secrets.secretPaths.paseoSshKey;
+  };
 
   myHomeManager = {
     bundles.general.enable = true;

@@ -84,20 +84,16 @@
             // servicesIf config.services.postgresql.enable ["postgresql"]
             // ownerIf "postgres" // groupIf "postgres";
         }
-        # Paseo daemon secrets. Gated on the service so the reused personal SSH
+        # Paseo daemon SSH key. Gated on the service so this reused personal SSH
         # private key only renders on the host that runs the daemon (luna), not
-        # every opnix host. Both are owned by cramt because the daemon runs as a
-        # `systemd --user` unit that reads them as that user. No `services`
-        # restart wiring: opnix restarts *system* units, but paseo is a user
-        # unit — a dangling `services = ["paseo"]` would make opnix emit a
-        # stub system unit with no ExecStart and break activation. After
-        # rotating either secret, restart the user daemon by hand:
+        # every opnix host. Owned by cramt because the daemon runs as a
+        # `systemd --user` unit and its agents sign/push as that user. No
+        # `services` restart wiring: opnix restarts *system* units, but paseo is
+        # a user unit — a dangling `services = ["paseo"]` would make opnix emit
+        # a stub system unit with no ExecStart and break activation. After
+        # rotating the key, restart the user daemon by hand:
         #   systemctl --user -M cramt@ restart paseo
         // lib.optionalAttrs config.myNixOS.services.paseo.enable {
-          paseoEnv = {
-            reference = "op://Homelab/Paseo/envFile";
-            owner = "cramt";
-          };
           paseoSshKey = {
             reference = "op://Homelab/Paseo/sshPrivateKey";
             owner = "cramt";
