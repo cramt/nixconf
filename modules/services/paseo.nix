@@ -18,6 +18,24 @@
     cfg = config.myNixOS.services.paseo;
     paseoPkg = inputs.paseo.packages.${pkgs.stdenv.hostPlatform.system}.default;
     dataDir = "/home/${cfg.user}/.paseo";
+    # opnix/op emit the SSH key with no trailing newline, and OpenSSH then
+    # refuses to load it ("error in libcrypto: unsupported") — so agents can't
+    # auth or sign against GitHub. Re-emit the key with exactly one trailing
+    # newline into a stable path that git/ssh point at (see hosts/luna/home.nix).
+    sshKeyRaw = config.services.onepassword-secrets.secretPaths.paseoSshKey;
+    sshKey = "/home/${cfg.user}/.ssh/id_paseo";
+    normalizeSshKey = pkgs.writeShellApplication {
+      name = "paseo-normalize-ssh-key";
+      runtimeInputs = [ pkgs.coreutils ];
+      text = ''
+        install -d -m700 "${dataDir}" "/home/${cfg.user}/.ssh"
+        # `test -s` fails (→ ExecStartPre fails → systemd retries) if opnix
+        # hasn't populated the secret yet, e.g. a boot race.
+        test -s "${sshKeyRaw}"
+        umask 077
+        printf '%s\n' "$(cat "${sshKeyRaw}")" > "${sshKey}"
+      '';
+    };
   in {
     options.myNixOS.services.paseo = {
       enable = lib.mkEnableOption "myNixOS.services.paseo";
@@ -51,7 +69,7 @@
           Unit.Description = "Paseo - self-hosted daemon for AI coding agents";
           Install.WantedBy = [ "default.target" ];
           Service = {
-            ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p ${dataDir}";
+            ExecStartPre = "${normalizeSshKey}/bin/paseo-normalize-ssh-key";
             # Relay left on (upstream default) so quick-connect pairing works.
             ExecStart = "${paseoPkg}/bin/paseo-server";
             Environment = [
