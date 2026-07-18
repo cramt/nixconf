@@ -57,8 +57,13 @@
             Environment = [
               "NODE_ENV=production"
               "PASEO_HOME=${dataDir}"
-              # Loopback-only bind; the relay handles remote access.
-              "PASEO_LISTEN=127.0.0.1:6767"
+              # Loopback-only bind; the relay handles remote access. NOT paseo's
+              # default 6767 — nixarr's bazarr already owns 6767 on this host, so
+              # the daemon would fail to bind (EADDRINUSE) and `paseo daemon
+              # pair` would silently fall back to a dead offer. The `paseo` CLI
+              # auto-discovers this port from ~/.paseo/paseo.pid, so pairing
+              # needs no --host flag.
+              "PASEO_LISTEN=127.0.0.1:6776"
               # Explicit PATH so agent processes the daemon spawns find git/ssh
               # + the claude/codex CLIs. systemd --user does not reliably put
               # the per-user profile on PATH, so set it here.
