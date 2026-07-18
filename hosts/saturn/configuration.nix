@@ -119,7 +119,7 @@
         rocmVersion = "11.0.1";
         port = 50052;
       };
-      nixarr.enable = true;
+      nixarr.enable = false;
       caddy = {
         enable = false;
         cacheVolume = "/mnt/amirani/configs/caddy-cache";
