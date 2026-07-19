@@ -130,18 +130,6 @@ inputs: [
     rocmPackages = inputs.nixpkgs-stable.legacyPackages.${prev.stdenv.hostPlatform.system}.rocmPackages;
   })
 
-  # TEMPORARY: nixos-unstable's vesktop (1.6.5) builds against electron_40, which
-  # is now EOL — nixpkgs refuses electron <41 as insecure, so plain pkgs.vesktop
-  # fails to evaluate. nixpkgs PR #542528 (approved + mergeable) switches vesktop
-  # to the supported electron_42, relaxing its exact electron-major assertion to a
-  # `>=` check so the released 1.6.5 runs on 42. Pull vesktop from that PR branch
-  # (the nixpkgs-vesktop-electron42 flake input) until it lands in nixos-unstable,
-  # then DELETE this overlay + the input and go back to plain pkgs.vesktop.
-  # Track: https://github.com/NixOS/nixpkgs/pull/542528
-  (final: prev: {
-    vesktop = inputs.nixpkgs-vesktop-electron42.legacyPackages.${prev.stdenv.hostPlatform.system}.vesktop;
-  })
-
   (pkgs: prev: {
     ttyd = prev.ttyd.overrideAttrs (final: prev: {
       nativeBuildInputs =

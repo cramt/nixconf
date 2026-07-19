@@ -1461,29 +1461,13 @@
         "type": "github"
       }
     },
-    "nixpkgs-vesktop-electron42": {
-      "locked": {
-        "lastModified": 1784197724,
-        "narHash": "sha256-L9yExXxaRTN/8k0u5lAAUJBv8qO6j4YI/0cSBsmsTRA=",
-        "owner": "mothzarella",
-        "repo": "nixpkgs",
-        "rev": "ee8b23cf07c1d80f28656c20222d2c29aa44f06d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "mothzarella",
-        "ref": "vesktop-electron42",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs_10": {
       "locked": {
-        "lastModified": 1784120854,
-        "narHash": "sha256-KesHgItiZPgGX740axSiQLcIQ8D24MDqNpkKYWIek8k=",
+        "lastModified": 1784356753,
+        "narHash": "sha256-12KrbMiWLcf8m7pCvAtZh1ZrgF85ZXDXvfR/fWTKy84=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "753cc8a3a87467296ddd1fa93f0cc3e81120ee46",
+        "rev": "61b7c44c4073f0b827768aff0049561b5110ea5a",
         "type": "github"
       },
       "original": {
@@ -2060,7 +2044,6 @@
         ],
         "nixpkgs-ruby-downgrade": "nixpkgs-ruby-downgrade",
         "nixpkgs-stable": "nixpkgs-stable_2",
-        "nixpkgs-vesktop-electron42": "nixpkgs-vesktop-electron42",
         "nixvim": "nixvim",
         "noctalia-shell": "noctalia-shell",
         "nur": "nur",

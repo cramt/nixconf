@@ -23,15 +23,6 @@
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-ruby-downgrade.url = "github:nixos/nixpkgs/nixos-26.05";
 
-    # TEMPORARY: nixos-unstable's vesktop (1.6.5) still builds against electron_40,
-    # which is now EOL and refused by nixpkgs as insecure (electron <41 is marked
-    # insecure). This is the branch of nixpkgs PR #542528 (approved + mergeable),
-    # which moves vesktop to the supported electron_42 by relaxing its exact
-    # electron-major assertion to a `>=` check. overlays/default.nix pulls
-    # pkgs.vesktop from here. REMOVE this input + that overlay once #542528 reaches
-    # nixos-unstable (a `just update` will carry the fix) and go back to plain
-    # pkgs.vesktop. Track: https://github.com/NixOS/nixpkgs/pull/542528
-    nixpkgs-vesktop-electron42.url = "github:mothzarella/nixpkgs/vesktop-electron42";
     nixarr.url = "github:nix-media-server/nixarr";
     jellarr.url = "github:cramt/jellarr";
     nix-flatpak.url = "github:gmodena/nix-flatpak";
