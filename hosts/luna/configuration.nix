@@ -18,6 +18,21 @@
 
   security.polkit.enable = true;
 
+  # Paseo checks out git worktrees under ~/.paseo, each carrying a multi-GB Rust
+  # `target/` (one Windows cross-compile target alone hit 67G) — that filled
+  # luna's 228G root. Relocate the bytes to /pool (5.3T) with a bind mount, NOT
+  # a symlink: Claude Code keys its session transcripts (~/.claude/projects/<enc>)
+  # by the *realpath* of the agent's cwd, and a symlink would resolve ~/.paseo →
+  # /pool, changing that key and orphaning every existing agent's history. A bind
+  # mount is transparent to realpath, so ~/.paseo stays canonical while the data
+  # lives on /pool/paseo.
+  fileSystems."/home/cramt/.paseo" = {
+    device = "/pool/paseo";
+    fsType = "none";
+    options = ["bind"];
+    depends = ["/pool"];
+  };
+
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
   programs.hyprland = {
