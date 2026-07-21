@@ -37,6 +37,17 @@ inputs: [
     });
   })
 
+  # The brightness thread holds /dev/i2c-* fds forever, which deadlocks the
+  # kernel's DP-MST teardown on monitor unplug (hung kworker, lost output
+  # configs). Patch drops the cached DDC handles after 2s idle.
+  # Upstream: https://github.com/pop-os/cosmic-settings-daemon/issues/165
+  # Remove once a release containing the fix lands in nixpkgs.
+  (final: prev: {
+    cosmic-settings-daemon = prev.cosmic-settings-daemon.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [../patches/cosmic-settings-daemon-drop-idle-i2c-fds.patch];
+    });
+  })
+
   # Shared definitions for the GPU-accelerated llama.cpp builds used by the
   # llama-cpp / llama-cpp-rpc services. These are cache misses by construction
   # (Hydra doesn't build ROCm/CUDA variants), so they're exposed as flake
