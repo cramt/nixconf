@@ -40,6 +40,12 @@
             "privacy.userContext.ui.enabled" = true;
             "privacy.userContext.newTabContainerOnLeftClick.enabled" = true;
             "zen.view.compact.show-sidebar-and-toolbar-on-hover" = false;
+            # Let Zed's `zed://` sign-in callback hand off to the OS handler instead of
+            # stalling as an unknown in-page navigation (Firefox blocks redirects to
+            # unregistered external schemes). expose=false => treat as external protocol.
+            "network.protocol-handler.expose.zed" = false;
+            "network.protocol-handler.external.zed" = true;
+            "network.protocol-handler.warn-external.zed" = false;
           };
           mods = [ "3ff55ba7-4690-4f74-96a8-9e4416685e4e" ];
           containers = {
