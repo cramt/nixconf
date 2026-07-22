@@ -1,0 +1,19 @@
+{
+  "name": "qr-codes",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "build": "wrangler deploy --dry-run --outdir dist --minify"
+  },
+  "dependencies": {
+    "hono": "^4.7.6",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250214.0",
+    "@types/qrcode": "^1.5.5",
+    "wrangler": "^4.4.0"
+  }
+}
