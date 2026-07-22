@@ -8,7 +8,6 @@
   }: let
     claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
     agentBrowserPkg = pkgs.callPackage ../../packages/agent-browser {};
-    claudeSwapPkg = pkgs.callPackage ../../packages/claude-swap {};
 
     # Every subdir under superpowers/skills is a self-contained skill (SKILL.md
     # + helper files). Enumerate them from the pinned source so new upstream
@@ -88,37 +87,11 @@
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
         home.packages =
-          [claudeSwapPkg]
-          ++ lib.optional cfg.linkedin.enable linkedinClaudePkg
+          lib.optional cfg.linkedin.enable linkedinClaudePkg
           ++ lib.optional splitterReady claudeSplitPkg;
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude/skills/status".source = ./claude-skills/status;
-        };
-
-        # Rotate Claude accounts before hitting the 5h/7d usage caps. cswap keeps
-        # each account's OAuth token file-backed under ~/.local/share/claude-swap/
-        # and swaps the winning one into ~/.claude/.credentials.json — a live
-        # session picks it up on its next turn. Accounts are a one-time manual
-        # bootstrap (`cswap add` per account); until then --once just no-ops.
-        systemd.user.services.claude-swap-auto = {
-          Unit.Description = "claude-swap: rotate Claude accounts before hitting usage caps";
-          Service = {
-            Type = "oneshot";
-            ExecStart = "${claudeSwapPkg}/bin/cswap auto --once --json";
-            # 0=switched 2=nothing-to-do 3=blocked(no viable target) are all fine;
-            # only 1 (real error) should surface as a failed unit.
-            SuccessExitStatus = "0 2 3";
-          };
-        };
-        systemd.user.timers.claude-swap-auto = {
-          Unit.Description = "Periodic claude-swap usage check";
-          Timer = {
-            OnBootSec = "2min";
-            OnUnitActiveSec = "5min";
-            Persistent = true;
-          };
-          Install.WantedBy = ["timers.target"];
         };
       }
       # Vercel agent-browser: the CLI is a self-contained native binary (no
