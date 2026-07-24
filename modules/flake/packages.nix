@@ -110,9 +110,6 @@
         cosmic-comp
         llama-cpp-rocm-rpc
         llama-cpp-cuda-rpc
-        # from-source npm build, not in nixpkgs — CI prebuilds to cachix.
-        # Remove when paseo lands upstream (see packages/paseo).
-        paseo
         ;
 
       # Exposed so `nix-update --flake <name>` can locate them (it reads the

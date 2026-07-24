@@ -1843,11 +1843,11 @@
         "nixpkgs": "nixpkgs_12"
       },
       "locked": {
-        "lastModified": 1784275670,
-        "narHash": "sha256-easG9yO2GXaM8jam7oVuLol7ZYgvQb6VRy3CXINwxnw=",
+        "lastModified": 1784902105,
+        "narHash": "sha256-RU0MWVCn92Cq6BV/9iQIq5lLsbcOUJ0IsA8YK3bygH4=",
         "owner": "getpaseo",
         "repo": "paseo",
-        "rev": "bce2c50b9e16831ab395e1ea313698ba4dfa0b22",
+        "rev": "bb3f5c5a2d77ad92452c739848d78231083dc862",
         "type": "github"
       },
       "original": {
