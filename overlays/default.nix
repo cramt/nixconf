@@ -101,6 +101,13 @@ inputs: [
     agent-browser = prev.callPackage ../packages/agent-browser {};
   })
 
+  # paseo 0.2.0 — not in nixpkgs yet (no package, no PR as of 2026-07). We reuse
+  # upstream's own derivation from the tagged source; see packages/paseo. Remove
+  # once paseo lands in nixpkgs.
+  (final: prev: {
+    paseo = prev.callPackage ../packages/paseo {};
+  })
+
   (final: prev: {
     scaleway-cli = prev.scaleway-cli.overrideAttrs (old: {
       doCheck = false;
