@@ -29,6 +29,11 @@
         extraSpecialArgs = {
           inherit inputs;
         };
+        # Move a pre-existing real file aside (→ <name>.hm-bak) instead of
+        # aborting activation when HM wants to manage a path that already has an
+        # unmanaged file (e.g. a stale ~/.config/zen/default/user.js). Matches
+        # eros's setting.
+        backupFileExtension = "hm-bak";
         users =
           builtins.mapAttrs
           (name: user: {...}: {
