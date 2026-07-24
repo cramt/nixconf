@@ -101,6 +101,25 @@ inputs: [
     agent-browser = prev.callPackage ../packages/agent-browser {};
   })
 
+  # paseo desktop app + daemon come from inputs.paseo. Upstream's checked-in
+  # nix/npm-deps.hash was hand-updated with `[skip ci]` (commit "update lockfile
+  # signatures and Nix hash") against a different nixpkgs than paseo's flake
+  # pins, so fetchNpmDeps here produces a different FOD hash and the build dies
+  # with a hash mismatch. Override with the hash we actually compute (verified:
+  # yields /nix/store/…-paseo-0.2.0-npm-deps). The desktop drv reuses the
+  # daemon's npmDeps, so hand it the corrected daemon.
+  # Remove this override once a CI-verified upstream hash matches again — i.e.
+  # `inputs.paseo.packages.<sys>.default` builds without it.
+  (final: prev: let
+    system = prev.stdenv.hostPlatform.system;
+    paseoDaemon = inputs.paseo.packages.${system}.default.override {
+      npmDepsHash = "sha256-iu8+JvLLY7XUHCfDFpputuXEIZCe37b5aqnupJhkY28=";
+    };
+  in {
+    paseo = paseoDaemon;
+    paseo-desktop = inputs.paseo.packages.${system}.desktop.override { paseo = paseoDaemon; };
+  })
+
   (final: prev: {
     scaleway-cli = prev.scaleway-cli.overrideAttrs (old: {
       doCheck = false;

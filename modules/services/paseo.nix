@@ -12,11 +12,13 @@
 # (see `just paseo_pair`). No reverse proxy, DNS, TLS, or daemon password — the
 # one-shot pairing link *is* the capability. Binds loopback only; the relay
 # carries all remote traffic, so nothing is exposed on the LAN.
-{ inputs, ... }: {
+{ ... }: {
   flake.nixosModules."services.paseo" = { config, lib, pkgs, ... }:
   let
     cfg = config.myNixOS.services.paseo;
-    paseoPkg = inputs.paseo.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    # Daemon from inputs.paseo, npm-deps hash corrected in our overlay (upstream's
+    # `[skip ci]` sidecar hash mismatches paseo's pinned nixpkgs — see overlays/).
+    paseoPkg = pkgs.paseo;
     dataDir = "/home/${cfg.user}/.paseo";
     # opnix/op emit the SSH key with no trailing newline, and OpenSSH then
     # refuses to load it ("error in libcrypto: unsupported") — so agents can't
