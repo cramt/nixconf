@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "2298ee41bbc1e1e19bc534c2d9fe81ff71eab9f6",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/2298ee41bbc1e1e19bc534c2d9fe81ff71eab9f6.tar.gz",
-      "hash": "sha256-+K2bHQjUhRa3OM4AahZf57RVFbuK7RWYQMJ8olz+Sv4="
+      "revision": "37f888592d7f982264f0b668f9e0bdbe8de28b93",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/37f888592d7f982264f0b668f9e0bdbe8de28b93.tar.gz",
+      "hash": "sha256-DbuCVCIAVXDq4V+wm9/NutVNzYJzk/dIHI5QDFrkai8="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -30,15 +30,15 @@
       "type": "Container",
       "image_name": "ghcr.io/haveagitgat/tdarr",
       "image_tag": "latest",
-      "image_digest": "sha256:f6dc6d9246cd8e02cc8c4a342eabe6dd63cad402ba43cd00b91a14e7e31fe470",
-      "hash": "sha256-Uhwmi5yumwNdnyL+oeXoo2RfEtjdU3PokY8KSOpy9GU="
+      "image_digest": "sha256:93dd407f8a28b035b3ebece794bd3f489a9b07a810ca02b804adf72387888355",
+      "hash": "sha256-Rhw/8k0rzEeqzp2HVTNudC+WvGjRzGCDhdZIk9OpbNo="
     },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:2a79f31d22df856d0a9d7cdfdaa0fd7f9791e160fe8478e8493dbd3781392c9c",
-      "hash": "sha256-NmvqOK4+Dy7VLF0UJwKgp+0D1TxZExyrsG8rM0EqaWQ="
+      "image_digest": "sha256:de4aff9e74622157255fc230ff163edcec4a23fde1bbd87a919f3aef0aa1d300",
+      "hash": "sha256-/DmnNpeTUck4fG9nnDSdB/zeMi1aO28TKIIbe1fCHSs="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -51,8 +51,8 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1035929.59682e0069f0/nixexprs.tar.xz",
-      "hash": "sha256-keY82hYMWt1hWhFYWVNFYf/meYjxdMjs6AyePFzr+0I="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1040318.7525d999cd85/nixexprs.tar.xz",
+      "hash": "sha256-DyIgdST66pzDA+9KRFS2K3fGgskgCQ8UiBxueFC7CTw="
     },
     "superpowers": {
       "type": "Git",
@@ -63,9 +63,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "d884ae04edebef577e82ff7c4e143debd0bbec99",
-      "url": "https://github.com/obra/superpowers/archive/d884ae04edebef577e82ff7c4e143debd0bbec99.tar.gz",
-      "hash": "sha256-kHdQ9e44doBk2yYW88tMSCqVG8ycYcvJSZlrIziXhpA="
+      "revision": "3dcbd5c4b48e02263fbf4a3c01e3fe4f81d584d9",
+      "url": "https://github.com/obra/superpowers/archive/3dcbd5c4b48e02263fbf4a3c01e3fe4f81d584d9.tar.gz",
+      "hash": "sha256-F5LEk0yNWbMpan1vZSFZM76XSpsFGvA7h8q6Idrvenk="
     },
     "thushan/olla": {
       "type": "Container",
