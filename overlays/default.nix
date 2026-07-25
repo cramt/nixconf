@@ -106,14 +106,14 @@ inputs: [
   # signatures and Nix hash") against a different nixpkgs than paseo's flake
   # pins, so fetchNpmDeps here produces a different FOD hash and the build dies
   # with a hash mismatch. Override with the hash we actually compute (verified:
-  # yields /nix/store/…-paseo-0.2.0-npm-deps). The desktop drv reuses the
+  # yields /nix/store/…-paseo-0.2.1-npm-deps). The desktop drv reuses the
   # daemon's npmDeps, so hand it the corrected daemon.
   # Remove this override once a CI-verified upstream hash matches again — i.e.
   # `inputs.paseo.packages.<sys>.default` builds without it.
   (final: prev: let
     system = prev.stdenv.hostPlatform.system;
     paseoDaemon = inputs.paseo.packages.${system}.default.override {
-      npmDepsHash = "sha256-iu8+JvLLY7XUHCfDFpputuXEIZCe37b5aqnupJhkY28=";
+      npmDepsHash = "sha256-ZXSVfMuLZDB+AXI4kCqkQJoGa7xFh7AEmx+1agvSXYk=";
     };
   in {
     paseo = paseoDaemon;
@@ -124,6 +124,23 @@ inputs: [
     scaleway-cli = prev.scaleway-cli.overrideAttrs (old: {
       doCheck = false;
     });
+  })
+
+  # nixpkgs pins langfuse 4.0.2, whose wheel METADATA caps `wrapt<2.0`, but a
+  # flake update pulled wrapt up to 2.2.2 — so pythonRuntimeDepsCheck fails the
+  # build. Upstream langfuse already widened this to `wrapt>=1.14,<3` (main and
+  # PyPI 4.14.1), so wrapt 2.x is genuinely supported; the <2.0 cap in 4.0.2 was
+  # just conservative. Relax only the wrapt constraint (not the whole check).
+  # Remove once nixpkgs bumps langfuse to a release carrying the widened pin.
+  (final: prev: {
+    python3 = prev.python3.override {
+      packageOverrides = pyfinal: pyprev: {
+        langfuse = pyprev.langfuse.overridePythonAttrs (old: {
+          pythonRelaxDeps = (old.pythonRelaxDeps or []) ++ ["wrapt"];
+        });
+      };
+    };
+    python3Packages = final.python3.pkgs;
   })
 
   (final: prev: {
