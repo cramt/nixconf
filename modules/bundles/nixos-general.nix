@@ -23,6 +23,22 @@
     config = lib.mkIf cfg.enable {
       security.pam.services.hyprlock = {};
 
+      # The gnome-keyring login keyring is encrypted with the login password,
+      # and pam_gnome_keyring re-encrypts it whenever that password changes --
+      # but only if it gets to run. NixOS builds the passwd stack as
+      # `password sufficient pam_unix.so`, and `sufficient` short-circuits the
+      # rest of the stack on success, so pam_gnome_keyring never fires. Every
+      # `passwd` therefore silently orphans the keyring, and gnome-keyring
+      # prompts "Unlock Login Keyring" forever after. Demote pam_unix to a
+      # control that keeps walking the stack on success so the keyring module
+      # behind it gets its turn.
+      # Upstream: https://github.com/NixOS/nixpkgs/issues/227043
+      # Remove when nixpkgs stops using `sufficient` for the password stack.
+      security.pam.services.passwd = lib.mkIf config.services.gnome.gnome-keyring.enable {
+        enableGnomeKeyring = true;
+        rules.password.unix.control = lib.mkForce "[success=ok default=die]";
+      };
+
       nix.nixPath = ["nixpkgs=${inputs.nixpkgs}"];
 
       time.timeZone = "Europe/Copenhagen";
