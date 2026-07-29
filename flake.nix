@@ -67,6 +67,20 @@
     # overriding that risks breaking the build.
     hermes-agent.url = "github:NousResearch/hermes-agent";
 
+    # T3 Code — self-hosted coding-agent orchestrator. No upstream flake and no
+    # published binary, so we build the monorepo ourselves (packages/t3code).
+    t3code-src = {
+      url = "github:pingdotgg/t3code";
+      flake = false;
+    };
+
+    # Pure-Nix builder for pnpm v9 lockfiles; used by packages/t3code to
+    # materialize node_modules without running `pnpm install` in the sandbox.
+    pnpm2nix = {
+      url = "github:cramt/pnpm2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     winapps = {
       url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -101,6 +101,18 @@ inputs: [
     agent-browser = prev.callPackage ../packages/agent-browser {};
   })
 
+  # Not in nixpkgs and no upstream flake — the whole pnpm 11 monorepo is built
+  # from source with pnpm2nix. Chunky (the web app alone is a ~2min rolldown
+  # build on top of the full dependency farm), so let CI prebuild it into
+  # cachix rather than building on a host. Source is pinned by inputs.t3code-src
+  # and moves with `nix flake update`.
+  (final: prev: {
+    t3code = prev.callPackage ../packages/t3code {
+      pnpm2nix = inputs.pnpm2nix.lib.${prev.stdenv.hostPlatform.system};
+      src = inputs.t3code-src;
+    };
+  })
+
   # paseo desktop app + daemon come from inputs.paseo. Upstream's checked-in
   # nix/npm-deps.hash was hand-updated with `[skip ci]` (commit "update lockfile
   # signatures and Nix hash") against a different nixpkgs than paseo's flake

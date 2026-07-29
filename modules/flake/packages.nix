@@ -110,6 +110,10 @@
         cosmic-comp
         llama-cpp-rocm-rpc
         llama-cpp-cuda-rpc
+        # Built from source through pnpm2nix (whole pnpm monorepo + a ~2min
+        # rolldown build), so it wants prebuilding too. Version tracks
+        # inputs.t3code-src, so `nix flake update` bumps it, not nix-update.
+        t3code
         ;
 
       # Exposed so `nix-update --flake <name>` can locate them (it reads the
