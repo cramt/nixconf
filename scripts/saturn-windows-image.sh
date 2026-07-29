@@ -74,6 +74,9 @@ WIN_ISO=""                        # explicit --iso path (overrides everything be
 UUP_URL="https://uupdump.net/get.php?id=8383094f-2b92-47a7-bb6a-6d3c13a6de38&pack=en-us&edition=core%3Bprofessional"
 WIN11DEBLOAT_REF="2026.06.24"     # pin (date-based tags); bump deliberately
 MAX_AGE_DAYS="30"                 # deploy warns past this — roughly Patch Tuesday cadence
+# Must match an image Name in install.wim exactly (`wimlib-imagex info install.wim`).
+# verify_edition() checks this before the VM boots rather than letting Setup stall.
+WIN_EDITION="Windows 11 Professional"
 MODE="all"                        # all | build | deploy
 ASSUME_YES="0"
 DRY="0"                           # --dry-run: skip download/VM/writes, log intent
@@ -121,6 +124,7 @@ OPTIONS:
   --ram SIZE        VM RAM (default: 6G)      --cores N   VM vCPUs (default: 4)
   --rebuild         wipe the build cache and rebuild from scratch
   --max-age DAYS    warn on deploy if the cached image is older (default: 30)
+  --edition NAME    install.wim image to install (default: Windows 11 Professional)
   --dry-run         build the real image but never write to the target disk/ESP
   --yes, -y         skip the destructive-write confirmation prompt
 HELPTEXT
@@ -133,6 +137,7 @@ while [ $# -gt 0 ]; do
     --deploy-only) MODE="deploy" ;;
     --rebuild)     rm -f "$IMG" "$ESP_TAR" "$GUID_FILE"; rm -rf "$WORK" ;;
     --max-age)     MAX_AGE_DAYS="$2"; shift ;;
+    --edition)     WIN_EDITION="$2"; shift ;;
     --esp)         ESP_DIR="$2"; shift ;;
     --iso)         WIN_ISO="$2"; shift ;;
     --uup-url)     UUP_URL="$2"; shift ;;
@@ -203,6 +208,18 @@ build_autounattend() {
       </DiskConfiguration>
       <ImageInstall>
         <OSImage>
+          <!-- uupdump's "core;professional" pack yields an install.wim with TWO
+               images (Home + Pro). Without an explicit pick, Setup shows the
+               "Select the operating system you want to install" screen and
+               waits for a click — which silently breaks the whole unattend.
+               Match on /IMAGE/NAME, not /IMAGE/INDEX: the index order isn't
+               guaranteed stable across uupdump builds, the name is. -->
+          <InstallFrom>
+            <MetaData wcm:action="add">
+              <Key>/IMAGE/NAME</Key>
+              <Value>$WIN_EDITION</Value>
+            </MetaData>
+          </InstallFrom>
           <InstallTo><DiskID>0</DiskID><PartitionID>3</PartitionID></InstallTo>
           <InstallToAvailablePartition>false</InstallToAvailablePartition>
         </OSImage>
@@ -374,6 +391,17 @@ prepare_media() {
   iwim="$(find "$ex" \( -ipath '*/sources/install.wim' -o -ipath '*/sources/install.esd' \) | head -n1)"
   build="$(wimlib-imagex info "$iwim" 2>/dev/null | grep -iE '^Build:' | grep -oE '[0-9]+' | head -1)"
   [ -n "$build" ] && [ "$build" -ge 26000 ] && conx=1
+
+  # An <InstallFrom> that matches no image doesn't error — Setup just falls back
+  # to the interactive edition picker, which in a headless VM is an invisible
+  # hang until someone opens the console. Check before we boot anything.
+  if ! wimlib-imagex info "$iwim" 2>/dev/null \
+       | sed -n 's/^Name:[[:space:]]*//p' | grep -qxF "$WIN_EDITION"; then
+    warn "install.wim contains:"
+    wimlib-imagex info "$iwim" 2>/dev/null | sed -n 's/^Name:[[:space:]]*/  - /p' >&2
+    die "--edition '$WIN_EDITION' matches none of them"
+  fi
+  log "edition: $WIN_EDITION (build $build)"
 
   # boot.wim index 2 = "Windows Setup" (index 1 is bare WinPE); fall back to 1
   local idx=1
