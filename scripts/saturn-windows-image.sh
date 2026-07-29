@@ -674,13 +674,44 @@ phase_build() {
     [ -w /dev/kvm ] || warn "you may not be in the 'kvm' group; VM could be slow/fail"
     ensure_ignore_msrs
 
-    local winiso
+    local winiso stashed
     if ! winiso="$(resolve_win_iso)"; then
-      # nothing found — build one from uupdump (default 23H2 Pro)
+      # nothing found — build one from uupdump (default 23H2 Pro).
+      # NOTE this is a different release from the 25H2 media the image is
+      # normally built from, so landing here silently changes what Windows you
+      # end up with. Loud on purpose: for the unattended monthly refresh this
+      # is the difference between "rebuilt the same thing" and "quietly
+      # downgraded to an out-of-servicing release".
+      warn "no local ISO found — falling back to uupdump ($UUP_URL)"
+      warn "this builds a DIFFERENT Windows release than a local 25H2 ISO would"
       build_iso_from_uup
       winiso="$(resolve_win_iso)" || die "no Windows ISO and uupdump build failed"
     fi
     log "using Windows ISO: $winiso"
+
+    # Stash the resolved ISO into the cache the first time we see it, so later
+    # builds stop depending on wherever it happened to be found.
+    #
+    # This matters most for the unattended monthly refresh: resolve_win_iso
+    # falls back to uupdump, which is pinned to a DIFFERENT Windows release
+    # (see UUP_URL). Without stashing, clearing out ~/Downloads would silently
+    # change which Windows version the timer builds, at 4am, with nobody
+    # watching. The scan also just takes the largest .iso in $HOME, so an
+    # unrelated distro image could otherwise win.
+    #
+    # Hardlink when possible (same filesystem = free); fall back to a copy.
+    mkdir -p "$ISO_CACHE"
+    case "$winiso" in
+      "$ISO_CACHE"/*) : ;;                       # already cached
+      *)
+        stashed="$ISO_CACHE/$(basename "$winiso")"
+        if [ ! -f "$stashed" ]; then
+          log "stashing ISO into $ISO_CACHE (pins the version for future builds)"
+          ln "$winiso" "$stashed" 2>/dev/null || cp -f "$winiso" "$stashed"
+        fi
+        winiso="$stashed"
+        ;;
+    esac
 
     mkdir -p "$WORK/windows-11"
     local stage="$WORK/unattend-cd"
