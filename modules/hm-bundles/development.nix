@@ -45,7 +45,6 @@
           zig
           futhark
           agent-browser
-          t3code
           devenv
           geminicommit
           inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
