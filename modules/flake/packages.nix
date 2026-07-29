@@ -79,9 +79,19 @@
       # `nix run .#saturn-windows-image -- --build-only` (then `-- --deploy-only
       # /dev/…-part1`). Builds a debloated Windows 11 image in a headless raw-qemu
       # VM (NVMe disk so it boots on saturn unchanged, no sysprep) and flashes it
-      # onto a partition. Gets the ISO from uupdump by default (23H2 Pro — 24H2/25H2
-      # ConX setup won't honor the answer file). Body lives in
-      # scripts/saturn-windows-image.sh; capture/deploy self-sudo. See its --help.
+      # onto a partition. Ships Discord/1Password/Zen via winget at first logon;
+      # the AMD driver deliberately does NOT come from here (the build VM has no
+      # GPU) and arrives via Windows Update on first bare-metal boot.
+      #
+      # Uses any ISO it finds (~/Downloads included) before falling back to
+      # uupdump. Verified on 25H2 (26200): ConX is bypassed by forcing
+      # setup.exe /legacy, and the answer file's locale + edition are derived
+      # from install.wim rather than assumed — hardcoding en-US against
+      # "English International" (en-GB-only) media is what previously made
+      # Setup silently fall back to the interactive installer.
+      #
+      # Body lives in scripts/saturn-windows-image.sh; capture/deploy self-sudo.
+      # See its --help.
       saturn-windows-image = pkgs.writeShellApplication {
         name = "saturn-windows-image";
         runtimeInputs = with pkgs; [

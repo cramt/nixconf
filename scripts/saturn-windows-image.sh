@@ -73,6 +73,12 @@ WIN_ISO=""                        # explicit --iso path (overrides everything be
 # (not IP-blocked like the official download). Default: Windows 11 23H2 Pro amd64.
 UUP_URL="https://uupdump.net/get.php?id=8383094f-2b92-47a7-bb6a-6d3c13a6de38&pack=en-us&edition=core%3Bprofessional"
 WIN11DEBLOAT_REF="2026.06.24"     # pin (date-based tags); bump deliberately
+# Baked into the image at build time so a fresh deploy is usable immediately.
+# IDs must match winget exactly (case matters in the manifest path):
+# github.com/microsoft/winget-pkgs/tree/master/manifests. Note AMD Adrenalin is
+# NOT on winget — the GPU driver comes from Windows Update on first bare-metal
+# boot; see the RunOnce note in install-apps.ps1.
+WINGET_APPS="Discord.Discord AgileBits.1Password Zen-Team.Zen-Browser"
 MAX_AGE_DAYS="30"                 # deploy warns past this — roughly Patch Tuesday cadence
 # Must match an image Name in install.wim exactly (`wimlib-imagex info install.wim`).
 # Checked in prepare_media() before the VM boots rather than letting Setup stall.
@@ -169,6 +175,109 @@ if [ "$(id -u)" -ne 0 ]; then SUDO="sudo"; fi
 # ═════════════════════════════════════════════════════════════════════════════
 #  PHASE: BUILD
 # ═════════════════════════════════════════════════════════════════════════════
+# App installs run at first logon inside the build VM, so they land in the
+# captured image and a fresh deploy is usable straight away. Everything here is
+# hardware-independent on purpose — GPU drivers must NOT go here, because the
+# build VM has no GPU. Those come from Windows Update on first bare-metal boot.
+build_install_apps() {
+  local stage="$1" a list=""
+  for a in $WINGET_APPS; do list="$list'$a',"; done
+  {
+    # $apps is a PowerShell variable — bash must NOT expand it.
+    # shellcheck disable=SC2016
+    printf '$apps = @(%s)\n' "${list%,}"
+    cat <<'PS1'
+$log = 'C:\install-apps.log'
+# Deliberately NOT Tee-Object: it passes its input down the pipeline, so a Log
+# call inside a function becomes part of that function's return value. That
+# silently turned $winget into an array of [log-line, path] and made every
+# `& $winget install` a no-op that reported an empty exit code.
+function Log($m) {
+  $line = "$(Get-Date -f o)  $m"
+  Add-Content -Path $log -Value $line
+  Write-Host $line
+}
+
+# winget is inbox on Win11 but its App Installer package is registered lazily on
+# first logon, and the NAT'd NIC needs a moment for DHCP. Poll for both rather
+# than racing them — a failure here is silent otherwise.
+Log "waiting for network"
+$net = $false
+foreach ($i in 1..60) {
+  if (Test-Connection -ComputerName 8.8.8.8 -Count 1 -Quiet -ErrorAction SilentlyContinue) { $net = $true; break }
+  Start-Sleep 2
+}
+Log "network: $net"
+
+# Resolving winget is the fiddly part on a first logon. The App Installer
+# package IS present, but its execution alias in %LOCALAPPDATA%\...\WindowsApps
+# is created lazily per-user and simply does not exist yet — so Get-Command
+# alone finds nothing no matter how long you wait for it.
+function Resolve-Winget {
+  $c = Get-Command winget -ErrorAction SilentlyContinue
+  if ($c) { return $c.Source }
+  try {
+    Add-AppxPackage -RegisterByFamilyName `
+      -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe -ErrorAction Stop
+    Log "  registered DesktopAppInstaller for this user"
+  } catch { Log "  register failed: $($_.Exception.Message)" }
+  $c = Get-Command winget -ErrorAction SilentlyContinue
+  if ($c) { return $c.Source }
+  # Last resort: call the packaged binary by full path.
+  $d = Get-ChildItem "$env:ProgramFiles\WindowsApps" -Directory `
+         -Filter 'Microsoft.DesktopAppInstaller_*_x64__8wekyb3d8bbwe' `
+         -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
+  if ($d) {
+    $p = Join-Path $d.FullName 'winget.exe'
+    if (Test-Path $p) { return $p }
+  }
+  return $null
+}
+
+Log "resolving winget"
+$winget = $null
+foreach ($i in 1..30) {
+  $winget = Resolve-Winget
+  if ($winget) { break }
+  Start-Sleep 4
+}
+if (-not $winget) { Log "winget NOT FOUND - skipping app installs"; exit 0 }
+# Guard against the resolver ever returning something that is not a single
+# usable path — a silent no-op here is worse than an obvious abort.
+if ($winget -is [array]) { Log "resolver returned an array: $($winget -join ' | ')"; $winget = $winget[-1] }
+if (-not (Test-Path $winget)) { Log "resolved winget path does not exist: $winget"; exit 0 }
+Log "winget: $winget"
+
+foreach ($app in $apps) {
+  Log "installing $app"
+  # --disable-interactivity so nothing can ever block waiting for a human.
+  # --scope machine is a preference, not a guarantee: several of these only
+  # publish a user-scope installer and winget errors out rather than falling
+  # back, so retry without it before giving up.
+  & $winget install --id $app --exact --silent --accept-package-agreements `
+      --accept-source-agreements --disable-interactivity --scope machine 2>&1 |
+    ForEach-Object { Log "  $_" }
+  if ($LASTEXITCODE -ne 0) {
+    Log "$app scope=machine failed ($LASTEXITCODE); retrying user scope"
+    & $winget install --id $app --exact --silent --accept-package-agreements `
+        --accept-source-agreements --disable-interactivity 2>&1 |
+      ForEach-Object { Log "  $_" }
+  }
+  Log "$app exit=$LASTEXITCODE"
+}
+
+# Verify rather than assume: `winget list --id` exits non-zero when the package
+# is absent, so this is the check that actually proves the image has the apps.
+Log "--- verification ---"
+foreach ($app in $apps) {
+  & $winget list --id $app --exact --accept-source-agreements >$null 2>&1
+  if ($LASTEXITCODE -eq 0) { Log "OK      $app" } else { Log "MISSING $app" }
+}
+Log "done"
+PS1
+  } > "$stage/install-apps.ps1"
+}
+
 build_autounattend() {
   local stage="$1"
   cat > "$stage/autounattend.xml" <<EOF
@@ -254,6 +363,7 @@ build_autounattend() {
              were removed in 24H2/25H2; the unattend path was left intact. -->
         <RunSynchronousCommand wcm:action="add"><Order>9</Order><Path>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" /v BypassNRO /t REG_DWORD /d 1 /f</Path></RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add"><Order>2</Order><Path>cmd /c for %i in (D E F G H I J K) do @if exist %i:\Win11Debloat\Win11Debloat.ps1 xcopy /E /I /Y %i:\Win11Debloat C:\Win11Debloat\</Path></RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add"><Order>3</Order><Path>cmd /c for %i in (D E F G H I J K) do @if exist %i:\install-apps.ps1 copy /Y %i:\install-apps.ps1 C:\</Path></RunSynchronousCommand>
       </RunSynchronous>
     </component>
   </settings>
@@ -316,6 +426,11 @@ build_autounattend() {
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
           <Order>3</Order>
+          <CommandLine>powershell -NoProfile -ExecutionPolicy Bypass -File C:\install-apps.ps1</CommandLine>
+          <Description>winget apps</Description>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+          <Order>4</Order>
           <CommandLine>cmd /c shutdown /s /t 8 /f</CommandLine>
           <Description>shutdown so the host can capture</Description>
         </SynchronousCommand>
@@ -455,6 +570,7 @@ prepare_media() {
   # Generated here, not by the caller: it has to come after we know the media's
   # language and that the edition resolves.
   build_autounattend "$stage"
+  build_install_apps "$stage"
 
   # boot.wim index 2 = "Windows Setup" (index 1 is bare WinPE); fall back to 1
   local idx=1
@@ -473,6 +589,7 @@ prepare_media() {
   # also on the media root (legacy setup search) + Win11Debloat for the specialize copy
   cp -f "$stage/autounattend.xml" "$ex/autounattend.xml"
   rm -rf "$ex/Win11Debloat"; cp -r "$stage/Win11Debloat" "$ex/Win11Debloat"
+  cp -f "$stage/install-apps.ps1" "$ex/install-apps.ps1"
 
   log "rebuilding bootable ISO ($efisys, no boot prompt)"
   rm -f "$out"
@@ -513,7 +630,10 @@ run_vm_raw() {
     -vga none -device qxl-vga,xres=1280,yres=800 -display none \
     -device virtio-rng-pci,rng=rng0 -object rng-random,id=rng0,filename=/dev/urandom \
     -device qemu-xhci,id=xhci -device usb-kbd -device usb-tablet \
-    -netdev user,id=nic -device virtio-net-pci,netdev=nic \
+    `# e1000, not virtio-net: 25H2 ships nete1g3e.inf inbox but has no netkvm,` \
+    `# so a virtio NIC leaves the guest with no network at all — which silently` \
+    `# breaks winget during FirstLogonCommands.` \
+    -netdev user,id=nic -device e1000,netdev=nic \
     -global driver=cfi.pflash01,property=secure,value=on \
     -drive if=pflash,format=raw,unit=0,file="$code",readonly=on \
     -drive if=pflash,format=raw,unit=1,file="$vars" \
