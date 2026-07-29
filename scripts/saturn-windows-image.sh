@@ -58,8 +58,8 @@
 set -euo pipefail
 
 # ── defaults ─────────────────────────────────────────────────────────────────
-WIN_USER="alex"
-WIN_PASS="changeme"
+WIN_USER="user"
+WIN_PASS="12345"
 WIN_HOST="SATURN-WIN"
 LOCALE="en-US"
 KEYBOARD="0409:00000409"          # US; da-DK is "0406:00000406"
@@ -127,8 +127,8 @@ OPTIONS:
   --iso PATH        use a specific Windows ISO instead of building via uupdump
   --uup-url URL     uupdump get.php URL to build the ISO from (default: 23H2 Pro)
   --esp DIR         ESP mountpoint for Windows boot files (default: /boot)
-  --user NAME       local account name (default: alex)
-  --pass PASS       local account password (default: changeme)
+  --user NAME       local account name (default: user)
+  --pass PASS       local account password (default: 12345)
   --disk-size SIZE  VM disk size; must be < target partition (default: 120G)
   --ram SIZE        VM RAM (default: 6G)      --cores N   VM vCPUs (default: 4)
   --rebuild         wipe the build cache and rebuild from scratch
