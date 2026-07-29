@@ -62,6 +62,12 @@
 
   myNixOS = {
     secureboot.enable = false;
+    # Keep the cached Windows image from rotting. Rebuild only — deploying to
+    # nvme1n1p1 stays a deliberate `--deploy-only` you run yourself.
+    services.windows-image-refresh = {
+      enable = true;
+      user = "cramt";
+    };
     waydroid = {
       enable = true;
       armEmulation = "libhoudini"; # Intel CPU - libhoudini works better

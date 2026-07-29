@@ -92,18 +92,7 @@
       #
       # Body lives in scripts/saturn-windows-image.sh; capture/deploy self-sudo.
       # See its --help.
-      saturn-windows-image = pkgs.writeShellApplication {
-        name = "saturn-windows-image";
-        runtimeInputs = with pkgs; [
-          qemu swtpm ntfs3g gptfdisk util-linux wimlib p7zip cdrkit hivex
-          git coreutils findutils gnugrep gnused gawk socat imagemagick
-          aria2 cabextract chntpw curl
-        ];
-        # strip the two `#!nix-shell` shebang lines; writeShellApplication adds its own
-        text = let
-          raw = builtins.readFile ../../scripts/saturn-windows-image.sh;
-        in lib.concatStringsSep "\n" (lib.drop 2 (lib.splitString "\n" raw));
-      };
+      saturn-windows-image = pkgs.callPackage ../../packages/saturn-windows-image {};
 
       # NOTE: scripts/windows-vm.sh (boot the physical Windows partition in a VM)
       # is SHELVED — Windows aborts very early on the synthesized disk topology
