@@ -113,23 +113,15 @@ inputs: [
     };
   })
 
-  # paseo desktop app + daemon come from inputs.paseo. Upstream's checked-in
-  # nix/npm-deps.hash was hand-updated with `[skip ci]` (commit "update lockfile
-  # signatures and Nix hash") against a different nixpkgs than paseo's flake
-  # pins, so fetchNpmDeps here produces a different FOD hash and the build dies
-  # with a hash mismatch. Override with the hash we actually compute (verified:
-  # yields /nix/store/…-paseo-0.2.1-npm-deps). The desktop drv reuses the
-  # daemon's npmDeps, so hand it the corrected daemon.
-  # Remove this override once a CI-verified upstream hash matches again — i.e.
-  # `inputs.paseo.packages.<sys>.default` builds without it.
+  # paseo desktop app + daemon come from inputs.paseo, which isn't in nixpkgs.
+  # The 0.2.1 npmDepsHash override that used to live here is gone: upstream's
+  # checked-in nix/npm-deps.hash is CI-verified again as of 0.2.2, so the
+  # packages build unmodified.
   (final: prev: let
     system = prev.stdenv.hostPlatform.system;
-    paseoDaemon = inputs.paseo.packages.${system}.default.override {
-      npmDepsHash = "sha256-ZXSVfMuLZDB+AXI4kCqkQJoGa7xFh7AEmx+1agvSXYk=";
-    };
   in {
-    paseo = paseoDaemon;
-    paseo-desktop = inputs.paseo.packages.${system}.desktop.override { paseo = paseoDaemon; };
+    paseo = inputs.paseo.packages.${system}.default;
+    paseo-desktop = inputs.paseo.packages.${system}.desktop;
   })
 
   (final: prev: {
