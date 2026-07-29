@@ -73,6 +73,7 @@ WIN_ISO=""                        # explicit --iso path (overrides everything be
 # (not IP-blocked like the official download). Default: Windows 11 23H2 Pro amd64.
 UUP_URL="https://uupdump.net/get.php?id=8383094f-2b92-47a7-bb6a-6d3c13a6de38&pack=en-us&edition=core%3Bprofessional"
 WIN11DEBLOAT_REF="2026.06.24"     # pin (date-based tags); bump deliberately
+MAX_AGE_DAYS="30"                 # deploy warns past this — roughly Patch Tuesday cadence
 MODE="all"                        # all | build | deploy
 ASSUME_YES="0"
 DRY="0"                           # --dry-run: skip download/VM/writes, log intent
@@ -119,6 +120,7 @@ OPTIONS:
   --disk-size SIZE  VM disk size; must be < target partition (default: 120G)
   --ram SIZE        VM RAM (default: 6G)      --cores N   VM vCPUs (default: 4)
   --rebuild         wipe the build cache and rebuild from scratch
+  --max-age DAYS    warn on deploy if the cached image is older (default: 30)
   --dry-run         build the real image but never write to the target disk/ESP
   --yes, -y         skip the destructive-write confirmation prompt
 HELPTEXT
@@ -130,6 +132,7 @@ while [ $# -gt 0 ]; do
     --build-only)  MODE="build" ;;
     --deploy-only) MODE="deploy" ;;
     --rebuild)     rm -f "$IMG" "$ESP_TAR" "$GUID_FILE"; rm -rf "$WORK" ;;
+    --max-age)     MAX_AGE_DAYS="$2"; shift ;;
     --esp)         ESP_DIR="$2"; shift ;;
     --iso)         WIN_ISO="$2"; shift ;;
     --uup-url)     UUP_URL="$2"; shift ;;
@@ -568,16 +571,32 @@ phase_deploy() {
   # size via sysfs (world-readable, no root needed): sectors × 512
   local tgt_bytes; tgt_bytes=$(( $(cat "/sys/class/block/$(basename "$part")/size") * 512 ))
 
+  # Image staleness. The golden image only ages via Windows Update shipping
+  # patches we don't have, so this is a warning and never a hard failure — a
+  # stale image still boots correctly, it just has more to download on first
+  # run. Hard-failing here would be worse: it turns "my Windows is broken, run
+  # the script" into a mandatory 2h rebuild at exactly the wrong moment.
+  local age_days="?" built="unknown"
+  if [ -f "$IMG" ]; then
+    built="$(date -r "$IMG" '+%Y-%m-%d')"
+    age_days=$(( ( $(date +%s) - $(date -r "$IMG" +%s) ) / 86400 ))
+  fi
+
   cat <<EOF
 
   ────────────────────────────────────────────────────────────
    $([ "$DRY" = 1 ] && echo "DEPLOY PREVIEW (dry-run: no writes)" || echo "DESTRUCTIVE WRITE")
      image      : $IMG
+     built      : $built  (${age_days}d old)
      → partition: $part   (disk $disk, part $n, $((tgt_bytes/1024/1024/1024))G)
      set GUID   : $guid
      ESP target : $ESP_DIR
   ────────────────────────────────────────────────────────────
 EOF
+  if [ "$age_days" != "?" ] && [ "$age_days" -gt "$MAX_AGE_DAYS" ]; then
+    warn "image is ${age_days}d old (> ${MAX_AGE_DAYS}d) — '--rebuild' for a fresh one."
+    warn "deploying as-is is fine; it just means a longer Windows Update on first boot."
+  fi
   if [ "$ASSUME_YES" != "1" ] && [ "$DRY" != 1 ]; then
     read -r -p "  Type YES to write Windows onto $part: " ans
     [ "$ans" = "YES" ] || die "aborted"
