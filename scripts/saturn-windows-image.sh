@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i bash -p qemu swtpm ntfs3g gptfdisk util-linux wimlib p7zip cdrkit hivex git coreutils findutils gnugrep gnused gawk socat imagemagick aria2 cabextract chntpw curl
+#!nix-shell -i bash -p qemu swtpm ntfs3g gptfdisk util-linux wimlib p7zip cdrkit hivex git coreutils findutils gnugrep gnused gawk socat imagemagick aria2 cabextract chntpw curl jq
 # shellcheck shell=bash
 #
 # saturn-windows-image.sh — build a debloated Windows 11 image in a headless VM
@@ -8,9 +8,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # WHAT IT DOES
 #   Phase BUILD (runs as your user, needs KVM):
-#     1. Gets a Windows 11 ISO: --iso PATH if given, else a cached/downloaded ISO,
-#        else builds one from uupdump (--uup-url; default 23H2 Pro) which pulls
-#        UUP files straight from Microsoft (not IP-blocked like the official ISO).
+#     1. Gets a Windows 11 ISO: --iso PATH if given, else the cached one, else a
+#        local ISO (~/Downloads etc, then stashed into the cache to pin it),
+#        else builds one from uupdump — newest full build resolved from its API,
+#        pulling UUP files straight from Microsoft (not IP-blocked like the
+#        official download). Locale and edition are then read off the media
+#        rather than assumed; mismatches abort before the VM boots.
 #     2. Remasters the ISO: forces the legacy setup (winpeshl.ini -> setup.exe
 #        /legacy in boot.wim) so 24H2/25H2's "ConX" setup can't drop the
 #        specialize/oobeSystem passes, and embeds autounattend.xml inside boot.wim
@@ -50,6 +53,7 @@
 #
 #   Options: --iso PATH  --uup-url URL  --esp DIR (default /boot)  --user NAME
 #            --pass PASS  --disk-size 120G  --ram 6G  --cores 4  --rebuild
+#            --edition NAME  --locale TAG  --max-age DAYS
 #            --dry-run  --yes (skip the destructive-write confirmation)
 #
 # The Windows partition on saturn is  ssd_b / part1  (hosts/saturn/disko.nix):
@@ -70,8 +74,17 @@ ESP_DIR="/boot"
 WIN_ISO=""                        # explicit --iso path (overrides everything below)
 # uupdump "get download package" URL. With &autodl=2 it returns the Linux
 # convert package, which we run to build the ISO from Microsoft's UUP servers
-# (not IP-blocked like the official download). Default: Windows 11 23H2 Pro amd64.
-UUP_URL="https://uupdump.net/get.php?id=8383094f-2b92-47a7-bb6a-6d3c13a6de38&pack=en-us&edition=core%3Bprofessional"
+# (not IP-blocked like the official download).
+#
+# Empty = resolve the newest full build from uupdump's API at run time (see
+# resolve_uup_url). Set explicitly with --uup-url to pin a specific build.
+# Pinning by hand is how this ended up pointing at 23H2 long after 25H2
+# shipped, which is a silent downgrade rather than a visible failure.
+UUP_URL=""
+# Build family to search for. Bump when the next Windows 11 release lands;
+# "Update for Windows 11 ..." entries are cumulative-update packages, not full
+# editions, and are filtered out because they cannot produce an installable ISO.
+UUP_SEARCH="26200"
 WIN11DEBLOAT_REF="2026.06.24"     # pin (date-based tags); bump deliberately
 # Baked into the image at build time so a fresh deploy is usable immediately.
 # IDs must match winget exactly (case matters in the manifest path):
@@ -463,12 +476,36 @@ resolve_win_iso() {
 # Build a Windows ISO from a uupdump package URL (downloads UUP files from
 # Microsoft, then assembles the ISO). Result lands in $ISO_CACHE. Logs to stdout,
 # so call this OUTSIDE a command substitution. ~20-40 min the first time.
+# Newest full amd64 build for $UUP_SEARCH, as a get.php URL. Resolved at run
+# time so a cold start produces a CURRENT Windows: a hand-pinned id silently
+# rots into building an out-of-servicing release, which looks like success.
+resolve_uup_url() {
+  [ -n "$UUP_URL" ] && { printf '%s' "$UUP_URL"; return 0; }
+  local json uuid title
+  json="$(curl -fsSL "https://api.uupdump.net/listid.php?search=${UUP_SEARCH}" 2>/dev/null)" \
+    || { warn "uupdump API unreachable"; return 1; }
+  uuid="$(printf '%s' "$json" | jq -r '
+    [.response.builds[]
+     | select(.arch == "amd64")
+     | select(.title | startswith("Windows 11, version"))]
+    | sort_by(.created) | reverse | .[0].uuid // empty' 2>/dev/null)"
+  title="$(printf '%s' "$json" | jq -r '
+    [.response.builds[]
+     | select(.arch == "amd64")
+     | select(.title | startswith("Windows 11, version"))]
+    | sort_by(.created) | reverse | .[0].title // empty' 2>/dev/null)"
+  [ -n "$uuid" ] || { warn "no full build found for search=${UUP_SEARCH}"; return 1; }
+  log "uupdump: $title"
+  printf 'https://uupdump.net/get.php?id=%s&pack=en-us&edition=core%%3Bprofessional' "$uuid"
+}
+
 build_iso_from_uup() {
   mkdir -p "$ISO_CACHE"
   local d="$ISO_CACHE/uup-build"; mkdir -p "$d"
+  local url; url="$(resolve_uup_url)" || die "could not determine a uupdump build to fetch"
   if [ ! -f "$d/uup_download_linux.sh" ]; then
     log "fetching uupdump conversion package"
-    curl -fSL "${UUP_URL}&autodl=2" -o "$d/pkg.zip"
+    curl -fSL "${url}&autodl=2" -o "$d/pkg.zip"
     ( cd "$d" && 7z x -y pkg.zip >/dev/null )
   fi
   log "downloading Windows UUP files from Microsoft + assembling ISO (~20–40 min)"
@@ -682,8 +719,7 @@ phase_build() {
       # end up with. Loud on purpose: for the unattended monthly refresh this
       # is the difference between "rebuilt the same thing" and "quietly
       # downgraded to an out-of-servicing release".
-      warn "no local ISO found — falling back to uupdump ($UUP_URL)"
-      warn "this builds a DIFFERENT Windows release than a local 25H2 ISO would"
+      warn "no local ISO found — building one from uupdump (~20-40 min)"
       build_iso_from_uup
       winiso="$(resolve_win_iso)" || die "no Windows ISO and uupdump build failed"
     fi
