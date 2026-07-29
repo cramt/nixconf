@@ -75,8 +75,11 @@ UUP_URL="https://uupdump.net/get.php?id=8383094f-2b92-47a7-bb6a-6d3c13a6de38&pac
 WIN11DEBLOAT_REF="2026.06.24"     # pin (date-based tags); bump deliberately
 MAX_AGE_DAYS="30"                 # deploy warns past this — roughly Patch Tuesday cadence
 # Must match an image Name in install.wim exactly (`wimlib-imagex info install.wim`).
-# verify_edition() checks this before the VM boots rather than letting Setup stall.
-WIN_EDITION="Windows 11 Professional"
+# Checked in prepare_media() before the VM boots rather than letting Setup stall.
+# Note the name differs by ISO source: official media says "Windows 11 Pro",
+# uupdump's core;professional pack says "Windows 11 Professional".
+WIN_EDITION="Windows 11 Pro"
+LOCALE_EXPLICIT="0"               # set by --locale; otherwise we take it from the media
 MODE="all"                        # all | build | deploy
 ASSUME_YES="0"
 DRY="0"                           # --dry-run: skip download/VM/writes, log intent
@@ -138,6 +141,7 @@ while [ $# -gt 0 ]; do
     --rebuild)     rm -f "$IMG" "$ESP_TAR" "$GUID_FILE"; rm -rf "$WORK" ;;
     --max-age)     MAX_AGE_DAYS="$2"; shift ;;
     --edition)     WIN_EDITION="$2"; shift ;;
+    --locale)      LOCALE="$2"; LOCALE_EXPLICIT=1; shift ;;
     --esp)         ESP_DIR="$2"; shift ;;
     --iso)         WIN_ISO="$2"; shift ;;
     --uup-url)     UUP_URL="$2"; shift ;;
@@ -205,6 +209,9 @@ build_autounattend() {
             <ModifyPartition wcm:action="add"><Order>3</Order><PartitionID>3</PartitionID><Format>NTFS</Format><Label>Windows</Label><Letter>C</Letter></ModifyPartition>
           </ModifyPartitions>
         </Disk>
+        <!-- Without this, WillShowUI defaults to OnError and any partitioning
+             hiccup drops the headless VM into the disk-selection UI. -->
+        <WillShowUI>Never</WillShowUI>
       </DiskConfiguration>
       <ImageInstall>
         <OSImage>
@@ -222,11 +229,14 @@ build_autounattend() {
           </InstallFrom>
           <InstallTo><DiskID>0</DiskID><PartitionID>3</PartitionID></InstallTo>
           <InstallToAvailablePartition>false</InstallToAvailablePartition>
+          <WillShowUI>Never</WillShowUI>
         </OSImage>
       </ImageInstall>
       <UserData>
-        <ProductKey><Key>VK7JG-NPHTM-C97JM-9MPGT-3V66T</Key><WillShowUI>OnError</WillShowUI></ProductKey>
+        <ProductKey><Key>VK7JG-NPHTM-C97JM-9MPGT-3V66T</Key><WillShowUI>Never</WillShowUI></ProductKey>
         <AcceptEula>true</AcceptEula>
+        <FullName>$WIN_USER</FullName>
+        <Organization>saturn</Organization>
       </UserData>
     </component>
   </settings>
@@ -239,6 +249,10 @@ build_autounattend() {
     <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
       <RunSynchronous>
         <RunSynchronousCommand wcm:action="add"><Order>1</Order><Path>reg add "HKLM\SYSTEM\CurrentControlSet\Control\BitLocker" /v PreventDeviceEncryption /t REG_DWORD /d 1 /f</Path></RunSynchronousCommand>
+        <!-- 22H2+ gates OOBE behind "you must connect to a network" unless this
+             is set. The interactive escapes (bypassnro.cmd, ms-cxh:localonly)
+             were removed in 24H2/25H2; the unattend path was left intact. -->
+        <RunSynchronousCommand wcm:action="add"><Order>9</Order><Path>reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" /v BypassNRO /t REG_DWORD /d 1 /f</Path></RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add"><Order>2</Order><Path>cmd /c for %i in (D E F G H I J K) do @if exist %i:\Win11Debloat\Win11Debloat.ps1 xcopy /E /I /Y %i:\Win11Debloat C:\Win11Debloat\</Path></RunSynchronousCommand>
       </RunSynchronous>
     </component>
@@ -253,7 +267,20 @@ build_autounattend() {
       <UserLocale>${LOCALE}</UserLocale>
     </component>
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <!-- ProtectYourPC alone does NOT suppress the Win11 privacy carousel or
+           the "customize your experience" pages — Skip*OOBE is what kills them.
+           Both are deprecated and MS advises against them, but quickemu and
+           dockur both still rely on them because nothing replaced them. Safe
+           here only because we supply everything OOBE would otherwise ask for:
+           locales, LocalAccount, AutoLogon, ComputerName. -->
       <OOBE>
+        <HideLocalAccountScreen>true</HideLocalAccountScreen>
+        <NetworkLocation>Home</NetworkLocation>
+        <SkipUserOOBE>true</SkipUserOOBE>
+        <SkipMachineOOBE>true</SkipMachineOOBE>
+        <VMModeOptimizations>
+          <SkipWinREInitialization>true</SkipWinREInitialization>
+        </VMModeOptimizations>
         <HideEULAPage>true</HideEULAPage>
         <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
         <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
@@ -401,7 +428,33 @@ prepare_media() {
     wimlib-imagex info "$iwim" 2>/dev/null | sed -n 's/^Name:[[:space:]]*/  - /p' >&2
     die "--edition '$WIN_EDITION' matches none of them"
   fi
-  log "edition: $WIN_EDITION (build $build)"
+
+  # Take the locale from the media rather than assuming en-US. "English
+  # International" ISOs ship en-GB *only*; asking for a language the image
+  # doesn't contain makes Setup error, and every WillShowUI defaults to
+  # OnError — i.e. it silently degrades into the interactive installer.
+  if [ "$LOCALE_EXPLICIT" != "1" ]; then
+    local medialang
+    medialang="$(wimlib-imagex info "$iwim" 2>/dev/null \
+                 | sed -n 's/^Default Language:[[:space:]]*//p' | head -1)"
+    if [ -n "$medialang" ] && [ "$medialang" != "$LOCALE" ]; then
+      log "media language is $medialang (was assuming $LOCALE) — following the media"
+      LOCALE="$medialang"
+    fi
+  fi
+  # InputLocale accepts a language tag, but the hex IDs are what Setup logs and
+  # what every reference answer file uses, so prefer them where we know them.
+  case "$LOCALE" in
+    en-US) KEYBOARD="0409:00000409" ;;
+    en-GB) KEYBOARD="0809:00000809" ;;
+    da-DK) KEYBOARD="0406:00000406" ;;
+    *)     KEYBOARD="$LOCALE" ;;
+  esac
+  log "edition: $WIN_EDITION | locale: $LOCALE | keyboard: $KEYBOARD | build: $build"
+
+  # Generated here, not by the caller: it has to come after we know the media's
+  # language and that the edition resolves.
+  build_autounattend "$stage"
 
   # boot.wim index 2 = "Windows Setup" (index 1 is bare WinPE); fall back to 1
   local idx=1
@@ -517,9 +570,6 @@ phase_build() {
     git clone --depth 1 --branch "$WIN11DEBLOAT_REF" \
       https://github.com/Raphire/Win11Debloat "$stage/Win11Debloat"
     rm -rf "$stage/Win11Debloat/.git"
-
-    log "writing autounattend.xml"
-    build_autounattend "$stage"
 
     log "remastering ISO (legacy setup + embedded answer file)"
     prepare_media "$winiso" "$stage" "$WORK/windows-11/install.iso"
