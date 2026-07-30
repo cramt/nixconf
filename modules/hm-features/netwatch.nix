@@ -5,7 +5,14 @@
       target = lib.mkOption {
         type = lib.types.str;
         default = "1.1.1.1";
-        description = "Off-net host to probe for WAN-side loss.";
+        description = "Off-net host to probe with ICMP. Kept for comparison only: this ISP "
+                    + "deprioritises ICMP heavily, so treat its loss figures as unreliable.";
+      };
+      tcpHost = lib.mkOption {
+        type = lib.types.str;
+        default = "cloudflare.com";
+        description = "Host to time TCP handshakes against. This is the trustworthy signal, "
+                    + "since a handshake rides the same queues as real traffic.";
       };
       interval = lib.mkOption {
         type = lib.types.int;
@@ -26,6 +33,7 @@
           ExecStart = "${binary}/bin/netwatch";
           Environment = [
             "NETWATCH_TARGET=${cfg.target}"
+            "NETWATCH_TCP_HOST=${cfg.tcpHost}"
             "NETWATCH_INTERVAL=${toString cfg.interval}"
           ];
           Restart = "always";
