@@ -52,6 +52,10 @@
             personal = { id = 1; color = "red"; icon = "fingerprint"; };
             work = { id = 2; color = "blue"; icon = "briefcase"; };
           };
+          # Zen rewrites containers.json at runtime (schema version bumps), which turns the
+          # HM symlink back into a real file. Without force, activation tries to back it up
+          # and dies permanently once a .hm-bak already exists.
+          containersForce = true;
         };
       };
       xdg.mimeApps = {
