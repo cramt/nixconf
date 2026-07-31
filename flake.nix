@@ -134,7 +134,25 @@
 
     stylix = {
       url = "github:nix-community/stylix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+
+        # Stylix fetches gnome-shell's sass sources to build the themed
+        # gresource that GDM's greeter uses (saturn and mars run gdm), so this
+        # tarball is pulled during *eval* of every host. gitlab.gnome.org
+        # rate-limits GitHub Actions runners and answers with an HTML error
+        # page instead of the tarball, which nix reports as "Failed to open
+        # archive (Unrecognized archive format)" — the same locked rev fetched
+        # fine the day before. GNOME mirrors the repo to GitHub, so point at
+        # the same tag there; the narHash is unchanged, i.e. identical trees.
+        # Keep this tag in sync with stylix's own flake.nix declaration —
+        # if it bumps past ours, stylix's shell patches stop applying (loudly).
+        # Remove once stylix stops sourcing gnome-shell from gitlab.gnome.org.
+        gnome-shell = {
+          url = "github:GNOME/gnome-shell/50.1";
+          flake = false;
+        };
+      };
     };
 
     nvf = {
