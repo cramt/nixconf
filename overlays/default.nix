@@ -40,8 +40,10 @@ inputs: [
   # The brightness thread holds /dev/i2c-* fds forever, which deadlocks the
   # kernel's DP-MST teardown on monitor unplug (hung kworker, lost output
   # configs). Patch drops the cached DDC handles after 2s idle.
-  # Upstream: https://github.com/pop-os/cosmic-settings-daemon/issues/165
-  # Remove once a release containing the fix lands in nixpkgs.
+  # Upstream: https://github.com/pop-os/cosmic-settings-daemon/issues/165,
+  # fixed by pop-os/cosmic-settings-daemon#171 and released in epoch-1.5.0.
+  # nixpkgs still packages epoch-1.2.0 — remove once it bumps to >= 1.5.0
+  # (the patch will stop applying at that point anyway).
   (final: prev: {
     cosmic-settings-daemon = prev.cosmic-settings-daemon.overrideAttrs (old: {
       patches = (old.patches or []) ++ [../patches/cosmic-settings-daemon-drop-idle-i2c-fds.patch];
@@ -122,12 +124,6 @@ inputs: [
   in {
     paseo = inputs.paseo.packages.${system}.default;
     paseo-desktop = inputs.paseo.packages.${system}.desktop;
-  })
-
-  (final: prev: {
-    scaleway-cli = prev.scaleway-cli.overrideAttrs (old: {
-      doCheck = false;
-    });
   })
 
   # nixpkgs pins langfuse 4.0.2, whose wheel METADATA caps `wrapt<2.0`, but a
