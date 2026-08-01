@@ -71,11 +71,17 @@
         # Must be empty, not unset: a real key here would let Claude Code bill
         # the API directly instead of going through the pooled subscriptions.
         export ANTHROPIC_API_KEY=""
+        # claude.ai cloud connectors need the OAuth login to be the winning
+        # auth source, which it never is while we're routing through the pool.
+        # Left alone, Claude Code notices that and nags every session; opting
+        # out explicitly makes it skip the fetch instead of warning about it.
+        export ENABLE_CLAUDEAI_MCP_SERVERS=0
       else
         # Drop any inherited routing so "fallback" really means direct — a
         # stale ANTHROPIC_BASE_URL in the shell (or a nested claude session)
-        # would otherwise silently survive into the fallback path.
-        unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN
+        # would otherwise silently survive into the fallback path. Connectors
+        # do work on this path, so the opt-out goes too.
+        unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ENABLE_CLAUDEAI_MCP_SERVERS
 
         if [ "$accounts" -eq 0 ]; then
           echo "claude: cli-proxy-api has no accounts yet — using the direct OAuth login." >&2
