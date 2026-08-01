@@ -8,6 +8,7 @@
       "https://nvf.cachix.org"
       "https://nixos-raspberrypi.cachix.org"
       "https://niri.cachix.org"
+      "https://cache.numtide.com"
     ];
     extra-trusted-public-keys = [
       "cramt.cachix.org-1:F7DlWw50o0gCn5TxMuep2PPku+7L9dxTIarTnPaNvls="
@@ -15,6 +16,7 @@
       "nvf.cachix.org-1:GMQWiUhZ6ux9D5CvFFMwnc2nFrUHTeGaXRlVBXo+naI="
       "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
       "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
     ];
   };
 
@@ -29,6 +31,15 @@
     quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
 
     claude-code.url = "github:sadjow/claude-code-nix";
+
+    # numtide's package set for coding-agent tooling; we use it for
+    # `cli-proxy-api` (router-for-me/CLIProxyAPI), which ships no flake of its
+    # own. Their CI bumps the pin daily and prebuilds into cache.numtide.com
+    # (added to extra-substituters above), so this costs no local Go build.
+    # Deliberately NOT following our nixpkgs: the package pins go_1_26 to match
+    # upstream's go.mod and carries an unpinGoModVersionHook, both of which are
+    # resolved against their nixpkgs.
+    llm-agents.url = "github:numtide/llm-agents.nix";
 
     # Herdr — agent-aware terminal multiplexer ("tmux for coding agents").
     # Not in nixpkgs; the upstream flake exposes packages.default + an overlay.

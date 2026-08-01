@@ -16,6 +16,10 @@
     bundles.gaming.enable = true;
     helium.enable = true;
     paseo.enable = true;
+    # Pools the Claude subscription accounts behind one local endpoint; the
+    # `claude` wrapper in claude-code.nix picks this up automatically. Accounts
+    # are added once each with `agent-accounts add` (interactive OAuth).
+    cli-proxy-api.enable = true;
     agentsview.enable = true;
     agentsview.service.enable = true;
     # Diagnostic for the intermittent WAN loss seen 2026-07-30 (affected multiple

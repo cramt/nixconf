@@ -38,12 +38,10 @@
     };
 
     # When the local M365 Copilot proxy is enabled on this same host, front its
-    # OpenAI-compatible endpoint through LiteLLM as well. LiteLLM exposes an
-    # Anthropic `/v1/messages` bridge, which is the only dialect Claude Code
-    # speaks — so this is what lets `claude-m365` drive Claude Code against the
-    # M365 models. Slugs mirror the tone list documented in
-    # modules/hm-features/pi.nix; Claude tones tool-call well, `quick` is a cheap
-    # small/fast model for Claude Code's background calls.
+    # OpenAI-compatible endpoint through LiteLLM as well. Consumed by pi and
+    # hermes-agent, which both default to gpt-5.5-think-deeper. Slugs mirror the
+    # tone list documented in modules/hm-features/pi.nix; Claude tones tool-call
+    # well, `quick` is a cheap small/fast model.
     m365 = config.myNixOS.services.m365-copilot-proxy;
     m365Base = "http://127.0.0.1:${toString config.port-selector.ports.m365-copilot-proxy}/v1";
     m365Slugs = [ "claude-sonnet-4.5" "claude-opus" "gpt-5.5" "gpt-5.5-think-deeper" "quick" ];
@@ -149,9 +147,9 @@
         };
       };
 
-      # LiteLLM's Anthropic /v1/messages bridge (what Claude Code speaks via
-      # `claude-m365`) routes `openai/*` models to the OpenAI *Responses* API by
-      # default — but the M365 Copilot proxy (and Cloudflare's /ai/v1) only
+      # LiteLLM's Anthropic /v1/messages bridge routes `openai/*` models to the
+      # OpenAI *Responses* API by default — but the M365 Copilot proxy (and
+      # Cloudflare's /ai/v1) only
       # implement /chat/completions, so that 404s on /v1/responses. This flag
       # forces the bridge through /chat/completions instead. Safe globally here:
       # every openai/ backend in this deployment is chat-completions-only.

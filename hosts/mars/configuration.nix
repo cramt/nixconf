@@ -36,13 +36,11 @@
     onepassword.enable = true;
     opnix-secrets.enable = true;
     services.m365-copilot-proxy.enable = true;
-    # Anthropic /v1/messages bridge in front of the local M365 Copilot proxy so
-    # `claude-m365` can drive Claude Code against the M365 models. litellm.nix
-    # auto-adds the m365 deployments when the proxy is enabled on the same host.
+    # One OpenAI-compatible endpoint over the free tiers plus the local M365
+    # Copilot proxy. Consumed by pi and hermes-agent (both default to
+    # gpt-5.5-think-deeper); litellm.nix auto-adds the m365 deployments when the
+    # proxy is enabled on the same host.
     services.litellm.enable = true;
-    # Splitter so the normal `claude` (subscription OAuth) can also `/model` into
-    # the M365 gpt-5.5 tones; Claude models pass straight through to Anthropic.
-    services.claude-splitter.enable = true;
     qemu.enable = true;
     docker.enable = true;
     bluetooth.enable = true;

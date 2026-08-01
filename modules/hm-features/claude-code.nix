@@ -3,7 +3,6 @@
     config,
     lib,
     pkgs,
-    osConfig,
     ...
   }: let
     claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
@@ -46,27 +45,49 @@
       exec ${claudeCodePkg}/bin/claude --mcp-config ${linkedinMcpConfig} "$@"
     '';
 
-    # `claude` wrapper: point the normal Claude Code at the local model-splitter
-    # (modules/services/claude-splitter.nix) instead of api.anthropic.com. No auth
-    # token is set, so Claude Code keeps using its saved subscription OAuth — the
-    # splitter forwards that verbatim to Anthropic for Claude models, and routes the
-    # M365 slugs (e.g. `/model gpt-5.5-think-deeper`) to LiteLLM. hiPrio so it wins
-    # over the raw claude-code binary the development bundle installs. Gated on the
-    # splitter being enabled on this host.
-    splitterReady = osConfig.myNixOS.services.claude-splitter.enable or false;
-    splitterPort = osConfig.port-selector.ports.claude-splitter or null;
-    claudeSplitPkg = lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
-      export ANTHROPIC_BASE_URL="http://127.0.0.1:${toString splitterPort}"
-      # Surface the M365 gpt-5.5 tone in the `/model` picker. This env var adds a
-      # single custom entry *additively* (the Anthropic models stay listed) —
-      # there's no env for multiple, and the array form (availableModels) only
-      # exists in settings layers, the global one of which replaces the whole list.
-      export ANTHROPIC_CUSTOM_MODEL_OPTION="gpt-5.5-think-deeper"
-      export ANTHROPIC_CUSTOM_MODEL_OPTION_NAME="GPT-5.5 Deep Research (M365)"
+    cfg = config.myHomeManager.claude-code;
+
+    # `claude` wrapper: point Claude Code at the local cli-proxy-api (see
+    # modules/hm-features/cli-proxy-api.nix) so requests are spread over the
+    # pooled Claude accounts instead of the single OAuth login in ~/.claude.
+    # The proxy authenticates upstream with its own stored tokens, so what
+    # Claude Code sends is the proxy's local api key — ANTHROPIC_API_KEY is
+    # cleared so it can't fall back to a real Anthropic key. hiPrio to win over
+    # the raw claude-code binary the development bundle installs.
+    # Falls back to Claude Code's own OAuth whenever the pool can't serve: an
+    # empty pool is the normal state right after a deploy (accounts are added
+    # by an interactive `agent-accounts add`, which Nix can't do), and silently
+    # routing at that point would break `claude` entirely rather than degrade.
+    proxyCfg = config.myHomeManager.cli-proxy-api;
+    claudePoolPkg = lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
+      authdir="$HOME/.cli-proxy-api"
+      keyfile="$authdir/local-api-key"
+      accounts=$(find "$authdir" -maxdepth 1 -name '*.json' 2>/dev/null | wc -l)
+
+      if [ -s "$keyfile" ] && [ "$accounts" -gt 0 ] &&
+         timeout 1 bash -c '</dev/tcp/127.0.0.1/${toString proxyCfg.port}' 2>/dev/null; then
+        export ANTHROPIC_BASE_URL="http://127.0.0.1:${toString proxyCfg.port}"
+        export ANTHROPIC_AUTH_TOKEN="$(cat "$keyfile")"
+        # Must be empty, not unset: a real key here would let Claude Code bill
+        # the API directly instead of going through the pooled subscriptions.
+        export ANTHROPIC_API_KEY=""
+      else
+        # Drop any inherited routing so "fallback" really means direct — a
+        # stale ANTHROPIC_BASE_URL in the shell (or a nested claude session)
+        # would otherwise silently survive into the fallback path.
+        unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN
+
+        if [ "$accounts" -eq 0 ]; then
+          echo "claude: cli-proxy-api has no accounts yet — using the direct OAuth login." >&2
+          echo "        add one with: agent-accounts add" >&2
+        else
+          echo "claude: cli-proxy-api unreachable on 127.0.0.1:${toString proxyCfg.port} — using the direct OAuth login." >&2
+          echo "        systemctl --user status cli-proxy-api" >&2
+        fi
+      fi
+
       exec ${claudeCodePkg}/bin/claude "$@"
     '');
-
-    cfg = config.myHomeManager.claude-code;
 
     # Shared with pi (written to ~/.pi/agent/AGENTS.md by modules/hm-features/pi.nix)
     # — single source of truth so the two agents' global instructions can't drift.
@@ -88,7 +109,7 @@
       {
         home.packages =
           lib.optional cfg.linkedin.enable linkedinClaudePkg
-          ++ lib.optional splitterReady claudeSplitPkg;
+          ++ lib.optional proxyCfg.enable claudePoolPkg;
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude/skills/status".source = ./claude-skills/status;
