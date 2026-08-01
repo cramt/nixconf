@@ -82,8 +82,23 @@
       set -euo pipefail
       case "''${1:-list}" in
         add)
+          # Provider decides which upstream the credential talks to. Note that
+          # non-claude providers serve their own model ids (antigravity =>
+          # gemini-*), so reaching them from Claude Code needs ANTHROPIC_MODEL
+          # set to one of those — the pool does not alias them onto claude-*.
+          case "''${2:-claude}" in
+            claude) loginFlag=-claude-login ;;
+            antigravity) loginFlag=-antigravity-login ;;
+            codex) loginFlag=-codex-login ;;
+            kimi) loginFlag=-kimi-login ;;
+            xai) loginFlag=-xai-login ;;
+            *)
+              echo "unknown provider: $2 (claude|antigravity|codex|kimi|xai)" >&2
+              exit 2
+              ;;
+          esac
           systemctl --user stop cli-proxy-api
-          ${lib.getExe cliProxyPkg} -config ${lib.escapeShellArg configFile} -claude-login
+          ${lib.getExe cliProxyPkg} -config ${lib.escapeShellArg configFile} "$loginFlag"
           systemctl --user start cli-proxy-api
           ;;
         list)
@@ -91,7 +106,7 @@
           find ${lib.escapeShellArg authDir} -maxdepth 1 -name '*.json' -printf '  %f\n' 2>/dev/null || true
           ;;
         *)
-          echo "usage: agent-accounts [add|list]" >&2
+          echo "usage: agent-accounts [list|add [claude|antigravity|codex|kimi|xai]]" >&2
           exit 2
           ;;
       esac
