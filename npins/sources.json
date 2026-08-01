@@ -37,8 +37,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:f93293767f4d804ca7c8d106783710e0bff41338ee2ba633121976fc1586a522",
-      "hash": "sha256-QNtUcVD27fdTMuV12YRgfkWQjfiCVnnecZFAKxsOov8="
+      "image_digest": "sha256:8f735ed032b6f04bc454e4c86e0069b31eaa836005947effce65bd04adecb6ca",
+      "hash": "sha256-lDs4NYbV6aaIFmLehBSLTDpRKOoo6j4qzgmJEHCWVKE="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -51,8 +51,8 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1042268.d3498f786f97/nixexprs.tar.xz",
-      "hash": "sha256-Jww2+DH/TDKEOLOMj/MVBqeSFLTN6tFya3qCV0OfjEg="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1043539.9bc02893134c/nixexprs.tar.xz",
+      "hash": "sha256-PlAXr9kpfXhMFU0OQ7qtE8FhLQo21WXFVGqIC85UFyc="
     },
     "superpowers": {
       "type": "Git",
@@ -63,9 +63,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "3dcbd5c4b48e02263fbf4a3c01e3fe4f81d584d9",
-      "url": "https://github.com/obra/superpowers/archive/3dcbd5c4b48e02263fbf4a3c01e3fe4f81d584d9.tar.gz",
-      "hash": "sha256-F5LEk0yNWbMpan1vZSFZM76XSpsFGvA7h8q6Idrvenk="
+      "revision": "44c9b2d6e889982ac18c27d05a19fefe335194e1",
+      "url": "https://github.com/obra/superpowers/archive/44c9b2d6e889982ac18c27d05a19fefe335194e1.tar.gz",
+      "hash": "sha256-fnl+HbPL2qD5Zgz8a1NctjFJSqu6UsyHJAhQMLQNXXc="
     },
     "thushan/olla": {
       "type": "Container",
