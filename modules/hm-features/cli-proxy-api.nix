@@ -209,8 +209,16 @@
           exec ${lib.getExe cliProxyPkg} -config ${lib.escapeShellArg configFile} \
             -tui -password "$(cat ${lib.escapeShellArg mgmtKeyFile})"
           ;;
+        key)
+          # For hitting /v0/management by hand, or piping: `... | wl-copy -n`.
+          if [ ! -s ${lib.escapeShellArg mgmtKeyFile} ]; then
+            echo "no management key yet — the service generates it on first start" >&2
+            exit 1
+          fi
+          cat ${lib.escapeShellArg mgmtKeyFile}
+          ;;
         *)
-          echo "usage: agent-accounts [list|usage|dashboard|ui|add [claude|antigravity|codex|kimi|xai]]" >&2
+          echo "usage: agent-accounts [list|usage|dashboard|ui|key|add [claude|antigravity|codex|kimi|xai]]" >&2
           exit 2
           ;;
       esac
