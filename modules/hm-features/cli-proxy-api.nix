@@ -10,7 +10,11 @@
 #
 # Adding accounts is a manual one-time step per account — Nix can declare the
 # config but cannot perform an OAuth consent. See `agent-accounts` (installed
-# alongside) for the exact commands.
+# alongside) for the exact commands; it also has `usage` (per-account request
+# counts and cooldowns) and `ui` (upstream's management TUI).
+#
+# Anything changed through the TUI is ephemeral: config.yaml is rebuilt from
+# this module on every service start.
 {inputs, ...}: {
   hmModules.features.cli-proxy-api = {
     config,
@@ -30,6 +34,11 @@
     # against config.example.yaml in 7.2.113), so the config file is assembled
     # at start rather than being a pure store path.
     keyFile = "${authDir}/local-api-key";
+    # Same reasoning for the management key: it gates /v0/management, which can
+    # read the config (including the api key) and delete credentials. The server
+    # bcrypt-hashes it in memory and never persists the hash back, so the
+    # plaintext here stays the only copy.
+    mgmtKeyFile = "${authDir}/management-key";
     configFile = "${authDir}/config.yaml";
 
     settings = {
@@ -39,22 +48,15 @@
       auth-dir = authDir;
       debug = false;
 
-      # Management API is disabled outright (empty secret-key => 404 on every
-      # /v0/management route), which also stops the bundled control panel from
-      # being downloaded from GitHub at runtime.
-      remote-management = {
-        allow-remote = false;
-        secret-key = "";
-        disable-control-panel = true;
-      };
-
       routing = {
         inherit (cfg) strategy;
         session-affinity = cfg.session-affinity;
       };
     };
 
-    # Everything except api-keys is declarative; the key is spliced in at start.
+    # Everything except the two generated keys is declarative; they are spliced
+    # in at start. remote-management lives in the same splice because YAML
+    # rejects a duplicate top-level key.
     baseConfig = (pkgs.formats.yaml {}).generate "cli-proxy-api-base.yaml" settings;
 
     startScript = pkgs.writeShellScript "cli-proxy-api-start" ''
@@ -62,15 +64,24 @@
       mkdir -p ${lib.escapeShellArg authDir}
       chmod 700 ${lib.escapeShellArg authDir}
 
-      if [ ! -s ${lib.escapeShellArg keyFile} ]; then
-        ${lib.getExe pkgs.openssl} rand -hex 32 > ${lib.escapeShellArg keyFile}
-        chmod 600 ${lib.escapeShellArg keyFile}
-      fi
+      gen_key() {
+        if [ ! -s "$1" ]; then
+          ${lib.getExe pkgs.openssl} rand -hex 32 > "$1"
+          chmod 600 "$1"
+        fi
+      }
+      gen_key ${lib.escapeShellArg keyFile}
+      gen_key ${lib.escapeShellArg mgmtKeyFile}
 
       umask 077
       {
         cat ${baseConfig}
         printf 'api-keys:\n  - "%s"\n' "$(cat ${lib.escapeShellArg keyFile})"
+        # Management API is localhost-only and gated by the key above; the
+        # bundled control panel stays off so nothing is fetched from GitHub at
+        # runtime. `agent-accounts usage`/`ui` are the intended consumers.
+        printf 'remote-management:\n  allow-remote: false\n  disable-control-panel: true\n  secret-key: "%s"\n' \
+          "$(cat ${lib.escapeShellArg mgmtKeyFile})"
       } > ${lib.escapeShellArg configFile}
 
       exec ${lib.getExe cliProxyPkg} -config ${lib.escapeShellArg configFile}
@@ -105,8 +116,36 @@
           echo "accounts in ${authDir}:"
           find ${lib.escapeShellArg authDir} -maxdepth 1 -name '*.json' -printf '  %f\n' 2>/dev/null || true
           ;;
+        usage)
+          # Counters are in-memory in the proxy, so they reset when the service
+          # restarts. RETRY-AFTER is the interesting column: it's when a
+          # rate-limited account comes back into rotation.
+          ${lib.getExe pkgs.curl} -fsS --max-time 5 \
+            -H "Authorization: Bearer $(cat ${lib.escapeShellArg mgmtKeyFile})" \
+            "http://127.0.0.1:${toString cfg.port}/v0/management/auth-files" \
+            | ${lib.getExe pkgs.jq} -r '
+                def dash: if . == null or . == "" then "-" else . end;
+                ["ACCOUNT","PROVIDER","STATUS","OK","FAIL","RETRY-AFTER","MESSAGE"],
+                (.files[] | [
+                  ((.email // .name) | dash),
+                  (.provider | dash),
+                  (if .disabled then "disabled" elif .unavailable then "unavailable" else (.status | dash) end),
+                  (.success // 0),
+                  (.failed // 0),
+                  (.next_retry_after | dash),
+                  (.status_message | dash)
+                ]) | @tsv' \
+            | ${pkgs.util-linux}/bin/column -t -s "$(printf '\t')"
+          ;;
+        ui | tui)
+          # Management client against the already-running service. -password is
+          # visible in /proc/<pid>/cmdline; acceptable on a single-user box, and
+          # the alternative is retyping a 64-char key into the auth gate.
+          exec ${lib.getExe cliProxyPkg} -config ${lib.escapeShellArg configFile} \
+            -tui -password "$(cat ${lib.escapeShellArg mgmtKeyFile})"
+          ;;
         *)
-          echo "usage: agent-accounts [list|add [claude|antigravity|codex|kimi|xai]]" >&2
+          echo "usage: agent-accounts [list|usage|ui|add [claude|antigravity|codex|kimi|xai]]" >&2
           exit 2
           ;;
       esac
