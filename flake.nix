@@ -41,6 +41,16 @@
     # resolved against their nixpkgs.
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    # Web control panel for cli-proxy-api, shipped as one self-contained
+    # management.html per release. The proxy would otherwise fetch it from
+    # GitHub on first request and re-check every 3h; as an input it is locked
+    # and `just update` moves it. The URL must stay on /latest/download so
+    # relocking actually picks up new releases.
+    cli-proxy-api-panel = {
+      url = "file+https://github.com/router-for-me/Cli-Proxy-API-Management-Center/releases/latest/download/management.html";
+      flake = false;
+    };
+
     # Herdr — agent-aware terminal multiplexer ("tmux for coding agents").
     # Not in nixpkgs; the upstream flake exposes packages.default + an overlay.
     # Remote use ("herdr --remote luna") rides plain SSH like tmux — no daemon.

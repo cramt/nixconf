@@ -41,6 +41,16 @@
     mgmtKeyFile = "${authDir}/management-key";
     configFile = "${authDir}/config.yaml";
 
+    # Upstream's web control panel, pinned as the cli-proxy-api-panel flake
+    # input so the server never fetches it from GitHub at runtime.
+    # MANAGEMENT_STATIC_PATH wants either a file literally named
+    # management.html or a directory containing one, and a file input lands in
+    # the store as "source" — hence the directory.
+    managementPanel = pkgs.runCommand "cli-proxy-api-panel" {} ''
+      mkdir -p $out
+      ln -s ${inputs.cli-proxy-api-panel} $out/management.html
+    '';
+
     settings = {
       host = "127.0.0.1";
       inherit (cfg) port;
@@ -77,13 +87,13 @@
       {
         cat ${baseConfig}
         printf 'api-keys:\n  - "%s"\n' "$(cat ${lib.escapeShellArg keyFile})"
-        # Management API is localhost-only and gated by the key above; the
-        # bundled control panel stays off so nothing is fetched from GitHub at
-        # runtime. `agent-accounts usage`/`ui` are the intended consumers.
-        printf 'remote-management:\n  allow-remote: false\n  disable-control-panel: true\n  secret-key: "%s"\n' \
+        # Management API and control panel are localhost-only and gated by their
+        # own key. Auto-update is off because the panel comes from the store.
+        printf 'remote-management:\n  allow-remote: false\n  disable-control-panel: false\n  disable-auto-update-panel: true\n  secret-key: "%s"\n' \
           "$(cat ${lib.escapeShellArg mgmtKeyFile})"
       } > ${lib.escapeShellArg configFile}
 
+      export MANAGEMENT_STATIC_PATH=${managementPanel}
       exec ${lib.getExe cliProxyPkg} -config ${lib.escapeShellArg configFile}
     '';
 
@@ -91,6 +101,29 @@
     # once per account. The proxy must be stopped first — it holds auth-dir.
     accountsHelper = pkgs.writeShellScriptBin "agent-accounts" ''
       set -euo pipefail
+
+      api="http://127.0.0.1:${toString cfg.port}/v0/management"
+
+      mgmt_api() {
+        ${lib.getExe pkgs.curl} -fsS --max-time 20 \
+          -H "Authorization: Bearer $(cat ${lib.escapeShellArg mgmtKeyFile})" "$@"
+      }
+
+      # "2026-08-03T11:29:59Z" -> "2h13m", because a wall-clock timestamp needs
+      # arithmetic to be useful and this column is read at a glance.
+      relative_time() {
+        local target now delta
+        case "''${1:-}" in "" | "-" | "?") echo "-" ; return ;; esac
+        target=$(date -d "$1" +%s 2>/dev/null) || { echo "-"; return; }
+        now=$(date +%s)
+        delta=$((target - now))
+        if [ "$delta" -le 0 ]; then
+          echo "now"
+        else
+          printf '%dh%02dm\n' "$((delta / 3600))" "$(((delta % 3600) / 60))"
+        fi
+      }
+
       case "''${1:-list}" in
         add)
           # Provider decides which upstream the credential talks to. Note that
@@ -117,25 +150,57 @@
           find ${lib.escapeShellArg authDir} -maxdepth 1 -name '*.json' -printf '  %f\n' 2>/dev/null || true
           ;;
         usage)
-          # Counters are in-memory in the proxy, so they reset when the service
-          # restarts. RETRY-AFTER is the interesting column: it's when a
-          # rate-limited account comes back into rotation.
-          ${lib.getExe pkgs.curl} -fsS --max-time 5 \
-            -H "Authorization: Bearer $(cat ${lib.escapeShellArg mgmtKeyFile})" \
-            "http://127.0.0.1:${toString cfg.port}/v0/management/auth-files" \
-            | ${lib.getExe pkgs.jq} -r '
-                def dash: if . == null or . == "" then "-" else . end;
-                ["ACCOUNT","PROVIDER","STATUS","OK","FAIL","RETRY-AFTER","MESSAGE"],
-                (.files[] | [
-                  ((.email // .name) | dash),
-                  (.provider | dash),
-                  (if .disabled then "disabled" elif .unavailable then "unavailable" else (.status | dash) end),
-                  (.success // 0),
-                  (.failed // 0),
-                  (.next_retry_after | dash),
-                  (.status_message | dash)
-                ]) | @tsv' \
-            | ${pkgs.util-linux}/bin/column -t -s "$(printf '\t')"
+          # SESSION/WEEK are Anthropic's own subscription counters, the same
+          # numbers /usage shows in Claude Code. They are not in the proxy's
+          # data model: /api-call re-issues an arbitrary request with the
+          # credential's live access token substituted for $TOKEN$, which is
+          # also how the web panel gets them. OK/FAIL are the proxy's own
+          # counters and reset when the service restarts.
+          accounts=$(mgmt_api "$api/auth-files" | ${lib.getExe pkgs.jq} -r '
+            def dash: if . == null or . == "" then "-" else . end;
+            .files[] | [
+              (.auth_index | dash),
+              ((.email // .name) | dash),
+              (.provider | dash),
+              (if .disabled then "disabled" elif .unavailable then "unavailable" else (.status | dash) end),
+              (.success // 0),
+              (.failed // 0),
+              (.next_retry_after | dash)
+            ] | @tsv')
+
+          {
+            printf 'ACCOUNT\tPROVIDER\tSTATUS\tSESSION\tWEEK\tRESETS\tOK\tFAIL\tRETRY-AFTER\n'
+            while IFS="$(printf '\t')" read -r idx account provider status ok fail retry; do
+              session="-"
+              week="-"
+              resets="-"
+              # Only Claude subscriptions have this endpoint; the other
+              # providers stay "-" rather than guessing at an equivalent.
+              if [ "$provider" = "claude" ]; then
+                quota=$(mgmt_api -X POST "$api/api-call" -H 'Content-Type: application/json' \
+                  -d "{\"auth_index\":\"$idx\",\"method\":\"GET\",\"url\":\"https://api.anthropic.com/api/oauth/usage\",\"header\":{\"Authorization\":\"Bearer \$TOKEN\$\",\"anthropic-beta\":\"oauth-2025-04-20\"}}" || echo "")
+                IFS="$(printf '\t')" read -r session week resetsAt < <(
+                  printf '%s' "$quota" | ${lib.getExe pkgs.jq} -r '
+                    if .status_code == 200 then (.body | fromjson) else null end
+                    | if . == null then ["?", "?", "-"] else
+                        [ "\(.five_hour.utilization // 0 | round)%",
+                          "\(.seven_day.utilization // 0 | round)%",
+                          (.five_hour.resets_at // "-") ]
+                      end | @tsv' 2>/dev/null || printf '?\t?\t-\n'
+                )
+                resets=$(relative_time "$resetsAt")
+              fi
+              printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+                "$account" "$provider" "$status" "$session" "$week" "$resets" "$ok" "$fail" "$retry"
+            done <<< "$accounts"
+          } | ${pkgs.util-linux}/bin/column -t -s "$(printf '\t')"
+          ;;
+        dashboard | panel)
+          # Upstream's web panel. It asks for the management key on first load
+          # and keeps it in browser storage, so the clipboard copy is a one-off.
+          ${pkgs.wl-clipboard}/bin/wl-copy < ${lib.escapeShellArg mgmtKeyFile}
+          echo "management key copied to clipboard — paste it into the panel"
+          exec ${pkgs.xdg-utils}/bin/xdg-open "http://127.0.0.1:${toString cfg.port}/management.html"
           ;;
         ui | tui)
           # Management client against the already-running service. -password is
@@ -145,7 +210,7 @@
             -tui -password "$(cat ${lib.escapeShellArg mgmtKeyFile})"
           ;;
         *)
-          echo "usage: agent-accounts [list|usage|ui|add [claude|antigravity|codex|kimi|xai]]" >&2
+          echo "usage: agent-accounts [list|usage|dashboard|ui|add [claude|antigravity|codex|kimi|xai]]" >&2
           exit 2
           ;;
       esac

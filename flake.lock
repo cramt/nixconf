@@ -180,6 +180,18 @@
         "type": "github"
       }
     },
+    "cli-proxy-api-panel": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-VKR6OW/VZ8vrZqOzbxuAjkYyy0mvaq/HB5evcSOCPiQ=",
+        "type": "file",
+        "url": "https://github.com/router-for-me/Cli-Proxy-API-Management-Center/releases/latest/download/management.html"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://github.com/router-for-me/Cli-Proxy-API-Management-Center/releases/latest/download/management.html"
+      }
+    },
     "cosmic-manager": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -2145,6 +2157,7 @@
     "root": {
       "inputs": {
         "claude-code": "claude-code",
+        "cli-proxy-api-panel": "cli-proxy-api-panel",
         "cosmic-manager": "cosmic-manager",
         "dewclaw": "dewclaw",
         "disko": "disko",
