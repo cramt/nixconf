@@ -34,6 +34,25 @@
   '';
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
+  # Saturn ran swapless, so under memory pressure the only reclaimable thing was
+  # page cache — the kernel evicted mapped executables and re-faulted them off
+  # disk, freezing the desktop for minutes before the OOM killer finally fired
+  # (2026-08-05: Minecraft 12G + claude-code 10G on 32G). zram gives reclaim a
+  # cheap destination and lets systemd-oomd's swap trigger work at all.
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50;
+  };
+  boot.kernel.sysctl = {
+    # zram-backed swap is RAM-speed, so swapping beats dropping page cache.
+    "vm.swappiness" = 180;
+    # Readahead is pure waste when the "disk" is compressed RAM.
+    "vm.page-cluster" = 0;
+    "vm.watermark_boost_factor" = 0;
+    "vm.watermark_scale_factor" = 125;
+  };
+
   # Decode + log machine-check exceptions into human-readable form (which DIMM,
   # which error) and track corrected-error counts. Diagnosing CPU/RAM MCEs.
   hardware.rasdaemon.enable = true;
