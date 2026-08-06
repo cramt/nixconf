@@ -17,6 +17,9 @@
         gamescope
         mangohud
         winetricks
+        # Held on stable's 2026-05-17 snapshot; unstable moved to 2026-07-19.
+        # Pinned deliberately in 02dca98, reason unrecorded — retest on a whim,
+        # nothing else depends on it.
         inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.melonds
         prismlauncher
         lutris

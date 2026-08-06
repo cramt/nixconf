@@ -23,6 +23,10 @@
       port-selector.auto-assign = ["btopttyd"];
       services.ttyd = {
         enable = true;
+        # Iosevka has to be installed on whatever machine opens the page; we
+        # used to rebuild ttyd's web bundle purely to inline the font, which
+        # isn't worth a yarn-hash-carrying overlay. Falls back to the browser's
+        # default monospace elsewhere.
         clientOptions = {
           fontFamily = "Iosevka";
           fontSize = "16";

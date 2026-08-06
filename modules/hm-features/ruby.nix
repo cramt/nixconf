@@ -1,12 +1,10 @@
-{ inputs, ... }: {
+{ ... }: {
   hmModules.features.ruby = { config, lib, pkgs, ... }: {
     options.myHomeManager.ruby.enable = lib.mkEnableOption "myHomeManager.ruby";
     config = lib.mkIf config.myHomeManager.ruby.enable {
-      home.packages = with inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.stdenv.hostPlatform.system}; [
-        ruby_3_4
-        ((import ../../gems/default.nix) {
-          pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.stdenv.hostPlatform.system};
-        }).ruby-lsp
+      home.packages = [
+        pkgs.ruby_3_4
+        ((import ../../gems/default.nix) { inherit pkgs; }).ruby-lsp
       ];
       home.file."${config.home.homeDirectory}/.bundle/config" = {
         text = ''

@@ -26,13 +26,6 @@
       "url": "https://github.com/mingomongo/DarkMingo-Theme-for-Cockatrice/archive/46a2840a975f4564037dadd9f9e5a04fcab61881.tar.gz",
       "hash": "sha256-FChGD7i8ybRYbHu5mHg+HQM1XVwMOtjWmkc2qH+gcxM="
     },
-    "haveagitgat/tdarr": {
-      "type": "Container",
-      "image_name": "ghcr.io/haveagitgat/tdarr",
-      "image_tag": "latest",
-      "image_digest": "sha256:eaeb1b39242685915b50f299a89f15e8ec4ef47f54d4b5b5ceee7e9d2a81c412",
-      "hash": "sha256-a6RTXCcZ9khti8NzT6QXd9h0WZlZxYfo4UrrGxMWvZI="
-    },
     "itzg/minecraft-server": {
       "type": "Container",
       "image_name": "itzg/minecraft-server",
@@ -66,13 +59,6 @@
       "revision": "44c9b2d6e889982ac18c27d05a19fefe335194e1",
       "url": "https://github.com/obra/superpowers/archive/44c9b2d6e889982ac18c27d05a19fefe335194e1.tar.gz",
       "hash": "sha256-fnl+HbPL2qD5Zgz8a1NctjFJSqu6UsyHJAhQMLQNXXc="
-    },
-    "thushan/olla": {
-      "type": "Container",
-      "image_name": "ghcr.io/thushan/olla",
-      "image_tag": "latest",
-      "image_digest": "sha256:1f369f0c5aa8392aca74271cb041dc37e580baf7fc012581eb21d790ab78ee13",
-      "hash": "sha256-cqhN3Vfn6niOerQlzWwES5iaN1jBnLFtOGbHfX9kRcU="
     },
     "wolveix/satisfactory-server": {
       "type": "Container",

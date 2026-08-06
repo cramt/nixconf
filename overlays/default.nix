@@ -24,12 +24,21 @@ inputs: [
     npinsSources = builtins.mapAttrs (_: x: x {pkgs = npinspkgs;}) rest;
   })
 
+  # Pre-unlock the gpg agent by signing a throwaway payload before the TUI takes
+  # over, so signing a commit from inside lazygit never needs a pinentry prompt
+  # mid-TUI. Shadows pkgs.lazygit so every consumer gets the wrapper.
   (final: prev: {
     lazygit = prev.writeScriptBin "lazygit" ''
       echo 'a' | ${prev.gnupg}/bin/gpg --sign -u alex.cramt@gmail.com > /dev/null && ${prev.lazygit}/bin/lazygit
     '';
   })
 
+  # Permanent preference, not a workaround: the patch zeroes SSD_HEIGHT (36 -> 0)
+  # so cosmic-comp draws no server-side title bar on windows it decorates itself.
+  # Nothing upstream to track — COSMIC has no setting for this.
+  # doCheck disables rustPlatform's default (nixpkgs sets nothing) — the reason
+  # predates this comment and isn't recorded; drop the line on the next COSMIC
+  # bump and see whether the check phase actually passes.
   (final: prev: {
     cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
       patches = (old.patches or []) ++ [../patches/no_ssd.patch];
@@ -126,23 +135,6 @@ inputs: [
     paseo-desktop = inputs.paseo.packages.${system}.desktop;
   })
 
-  # nixpkgs pins langfuse 4.0.2, whose wheel METADATA caps `wrapt<2.0`, but a
-  # flake update pulled wrapt up to 2.2.2 — so pythonRuntimeDepsCheck fails the
-  # build. Upstream langfuse already widened this to `wrapt>=1.14,<3` (main and
-  # PyPI 4.14.1), so wrapt 2.x is genuinely supported; the <2.0 cap in 4.0.2 was
-  # just conservative. Relax only the wrapt constraint (not the whole check).
-  # Remove once nixpkgs bumps langfuse to a release carrying the widened pin.
-  (final: prev: {
-    python3 = prev.python3.override {
-      packageOverrides = pyfinal: pyprev: {
-        langfuse = pyprev.langfuse.overridePythonAttrs (old: {
-          pythonRelaxDeps = (old.pythonRelaxDeps or []) ++ ["wrapt"];
-        });
-      };
-    };
-    python3Packages = final.python3.pkgs;
-  })
-
   (final: prev: {
     julia = prev.julia.withPackages ["JuliaFormatter" "LanguageServer"];
   })
@@ -170,84 +162,6 @@ inputs: [
       preFixup = (old.preFixup or "") + ''
         makeWrapperArgs+=(--prefix PYTHONPATH : "$out/${py3.sitePackages}:${py3.pkgs.makePythonPath faugusDeps}")
       '';
-    });
-  })
-
-  (final: prev: {
-    rocmPackages = inputs.nixpkgs-stable.legacyPackages.${prev.stdenv.hostPlatform.system}.rocmPackages;
-  })
-
-  (pkgs: prev: {
-    ttyd = prev.ttyd.overrideAttrs (final: prev: {
-      nativeBuildInputs =
-        (prev.nativeBuildInputs or [])
-        ++ [
-          pkgs.nodejs
-          pkgs.yarn-berry_3
-        ];
-      updateAutotoolsGnuConfigScriptsPhase =
-        ''
-          cd html
-          export HOME=$(mktemp -d)
-          rm -rf ./.yarn/cache
-          mkdir -p ./.yarn
-          cp -r --reflink=auto ${pkgs.yarn-berry_3.fetchYarnBerryDeps {
-            src = "${final.src}/html";
-            hash = "sha256-2VhypFRl195JJ9+AYDC/yZhLpFjKZcSLA1sZ25IYh1g=";
-          }}/cache ./.yarn/cache
-          chmod u+w -R ./.yarn/cache
-          yarn config set enableTelemetry false
-          yarn config set enableGlobalCache false
-          yarn install --mode=skip-build --inline-builds
-          yarn run build
-          cd ..
-        ''
-        + (prev.updateAutotoolsGnuConfigScriptsPhase or "");
-      patches =
-        (prev.patches or [])
-        ++ [
-          (pkgs.writeText
-            "main.patch"
-            ''
-
-              diff --git a/html/src/style/index.scss b/html/src/style/index.scss
-              index 0f9244b..9bf0dda 100644
-              --- a/html/src/style/index.scss
-              +++ b/html/src/style/index.scss
-              @@ -11,8 +11,16 @@ body {
-                 height: 100%;
-                 margin: 0 auto;
-                 padding: 0;
-              +
-                 .terminal {
-                   padding: 5px;
-                   height: calc(100% - 10px);
-                 }
-               }
-              +
-              +@font-face {
-              +  font-family: 'Iosevka';
-              +  font-style: normal;
-              +  font-weight: normal;
-              +  src: url('${pkgs.iosevka}/share/fonts/truetype/Iosevka-Regular.ttf');
-              +}
-              diff --git a/html/webpack.config.js b/html/webpack.config.js
-              index 18bfcf3..94e0b33 100644
-              --- a/html/webpack.config.js
-              +++ b/html/webpack.config.js
-              @@ -29,6 +29,10 @@ const baseConfig = {
-                               test: /\.s?[ac]ss$/,
-                               use: [devMode ? 'style-loader' : MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
-                           },
-              +            {
-              +                test: /\.(ttf|otf|eot|woff|woff2)$/,
-              +                type: 'asset/inline',
-              +            },
-                       ],
-                   },
-                   resolve: {
-            '')
-        ];
     });
   })
 ]

@@ -36,7 +36,7 @@
           gnumake
           (lib.hiPrio gcc)
           yarn
-          inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nodejs_24
+          nodejs_24
           pnpm
           cargo
           rustfmt
@@ -46,6 +46,9 @@
           postgresql.out
           opentofu
           tflint
+          # Deliberate downgrade (stable 2.34.24 vs unstable 2.35.11) carried over
+          # from before the dendritic migration; the original reason wasn't
+          # recorded. Try dropping the pin next time work AWS access is handy.
           inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.awscli2
           gcc-arm-embedded
           zig

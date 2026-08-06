@@ -89,7 +89,7 @@ Each host in `hosts/<name>/` has:
 - **Port assignment**: `modules/base/portselector.nix` provides a `port-selector` NixOS option that deterministically assigns ports to services by hashing their names, with manual overrides via `set-ports`.
 - **Non-flake pins**: `npins/` for sources that don't have flake support.
 - **Gems**: `gems/` — Ruby gems used by scripts (locked with `bundle lock`).
-- **Packages**: `packages/` — custom packages (`declaradroid`, `cockatrice`, `steamlink`, `zed-bin`).
+- **Packages**: `packages/` — custom packages (`agent-browser`, `agentsview`, `cockatrice`, `declaradroid`, `saturn-windows-image`, `steamlink`, `t3code`).
 - **Scripts**: `scripts/` — Nix-defined scripts (`zellij_smart_start`, `sway_gaming`, `keep_awake`, etc.).
 
 ### Home Manager Bundles

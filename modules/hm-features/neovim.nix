@@ -2,7 +2,6 @@
   hmModules.features.neovim = { config, lib, pkgs, ... }: {
     options.myHomeManager.neovim.enable = lib.mkEnableOption "myHomeManager.neovim";
     config = lib.mkIf config.myHomeManager.neovim.enable {
-      stylix.targets.nixvim.enable = true;
       programs.neovide = { enable = true; settings = { fork = true; frame = "none"; vsync = false; }; };
       stylix.targets.nvf = { enable = true; transparentBackground = true; };
       programs.nvf = {

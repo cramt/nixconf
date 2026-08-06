@@ -1,8 +1,6 @@
-{ inputs, ... }: {
+{ ... }: {
   hmModules.features.zed = { config, lib, pkgs, ... }: let
-    rubyGems = (import ../../gems/default.nix) {
-      pkgs = inputs.nixpkgs-ruby-downgrade.legacyPackages.${pkgs.stdenv.hostPlatform.system};
-    };
+    rubyGems = (import ../../gems/default.nix) { inherit pkgs; };
   in {
     options.myHomeManager.zed.enable = lib.mkEnableOption "myHomeManager.zed";
     config = lib.mkIf config.myHomeManager.zed.enable {

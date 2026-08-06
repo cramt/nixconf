@@ -89,7 +89,7 @@
           popups = 0.8;
         };
         cursor = {
-          package = inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.bibata-cursors;
+          package = pkgs.bibata-cursors;
           name = "Bibata-Modern-Ice";
           size = 32;
         };

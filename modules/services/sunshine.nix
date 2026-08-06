@@ -1,4 +1,4 @@
-{ inputs, ... }: {
+{ ... }: {
   flake.nixosModules."services.sunshine" = {
     config,
     lib,
@@ -6,7 +6,6 @@
     ...
   }: let
     cfg = config.myNixOS.services.sunshine;
-    pkgs-stable = inputs.nixpkgs-stable.legacyPackages.${pkgs.system};
   in {
     options.myNixOS.services.sunshine = {
       enable = lib.mkEnableOption "myNixOS.services.sunshine";
@@ -17,7 +16,7 @@
         autoStart = true;
         capSysAdmin = true;
         openFirewall = true;
-        package = pkgs-stable.sunshine;
+        package = pkgs.sunshine;
       };
     };
   };

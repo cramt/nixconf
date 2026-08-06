@@ -7,7 +7,6 @@
     };
   in {
     imports = [
-      inputs.nixvim.homeModules.nixvim
       inputs.nvf.homeManagerModules.default
       inputs.cosmic-manager.homeManagerModules.cosmic-manager
       inputs.zen-browser.homeModules.beta
