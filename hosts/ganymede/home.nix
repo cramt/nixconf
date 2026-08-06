@@ -27,6 +27,11 @@
       url = "https://nebula.tv";
       id = 2;
     };
+    jellyfin = {
+      title = "Jellyfin";
+      url = "https://jellyfin.cramt.dk";
+      id = 3;
+    };
   };
 
   couchAddons = with pkgs.nur.repos.rycee.firefox-addons; [
@@ -62,8 +67,6 @@
         }
     )
     couchSites;
-
-  jellyfin = pkgs.jellyfin-media-player;
 in {
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
@@ -86,18 +89,7 @@ in {
     steam-shortcuts = {
       enable = true;
       shortcuts =
-        {
-          "Jellyfin" = {
-            exe = "${jellyfin}/bin/jellyfin-desktop";
-            # Jellyfin Desktop's UI is a QtWebEngine view, and Steam's overlay
-            # segfaults its renderer process on launch
-            # (gameoverlayrenderer.so, SIGSEGV in QtWebEngineProcess). Nothing
-            # here needs the overlay; the browsers keep it for the on-screen
-            # keyboard.
-            overlay = false;
-          };
-        }
-        // mapAttrs' (
+        mapAttrs' (
           profile: site:
             nameValuePair site.title {
               exe = "${couchApps.${profile}}/bin/couch-${profile}";
@@ -190,38 +182,10 @@ in {
     '';
   };
 
-  # Jellyfin Desktop ships desktop defaults: windowed, and its pointer-oriented
-  # "desktop" web layout rather than the 10-foot one. Both are wrong on a TV.
-  #
-  # Its settings live under a generated per-profile directory, so there's no
-  # static path to point home.file at — hence a merge over whatever profiles
-  # exist, which also leaves JMP free to own every other key. Boot ordering is
-  # the same as the Steam shortcuts: activation runs before the session, so
-  # this lands before Jellyfin is ever launched.
-  home.activation.jellyfinCouchSettings =
-    lib.hm.dag.entryAfter ["writeBoundary"] ''
-      for f in "$HOME"/.local/share/jellyfin-desktop/profiles/*/jellyfin-desktop.conf; do
-        [ -e "$f" ] || continue
-        ${pkgs.jq}/bin/jq '.sections.main.fullscreen    = true
-                         | .sections.main.forceAlwaysFS = true
-                         | .sections.main.layout        = "tv"
-                         | .sections.main.webMode       = "tv"' "$f" > "$f.tmp" \
-          && mv "$f.tmp" "$f"
-      done
-    '';
-
   home.packages = [
     # moonlight stays as a fallback for streaming from saturn, but ganymede has
     # its own GPU — games run locally now rather than being streamed in.
     pkgs.moonlight-qt
-
-    # Jellyfin is the one service that gets a native client instead of a tab.
-    # Browsers can't direct-play most of what's on luna, so a Jellyfin tab
-    # would push luna's 1660 into transcoding every stream; the mpv-backed
-    # client direct-plays it. Upstream renamed this Jellyfin Desktop in 2.0 —
-    # the binary is `jellyfin-desktop`, the nixpkgs attr is still the old name.
-    # If you'd rather it were a tab too, add it to couchSites above.
-    jellyfin
   ]
   ++ builtins.attrValues couchApps;
 
