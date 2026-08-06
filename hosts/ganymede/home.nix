@@ -11,6 +11,10 @@
       inherit pkgs name url;
       firefox = config.programs.firefox.finalPackage;
     };
+
+  youtube = couch "couch-youtube" "https://www.youtube.com";
+  nebula = couch "couch-nebula" "https://nebula.tv";
+  jellyfin = pkgs.jellyfin-media-player;
 in {
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
@@ -24,6 +28,18 @@ in {
         # disabled; kept so the phone still has a shutdown-adjacent control.
         suspend = {name = "Suspend"; command = "systemctl suspend";};
         lock = {name = "Lock Screen"; command = "loginctl lock-session";};
+      };
+    };
+
+    # The couch tiles, so the Big Picture library is in the repo rather than in
+    # a binary blob in the Steam profile. Games come from Steam itself; these
+    # are the things that aren't games.
+    steam-shortcuts = {
+      enable = true;
+      shortcuts = {
+        "YouTube".exe = "${youtube}/bin/couch-youtube";
+        "Nebula".exe = "${nebula}/bin/couch-nebula";
+        "Jellyfin".exe = "${jellyfin}/bin/jellyfin-desktop";
       };
     };
   };
@@ -102,10 +118,10 @@ in {
     # the binary is `jellyfin-desktop`, the nixpkgs attr is still the old name.
     # If you'd rather it were a tab too, it's `(couch "couch-jellyfin"
     # "https://jellyfin.cramt.dk")`.
-    pkgs.jellyfin-media-player
+    jellyfin
 
-    (couch "couch-youtube" "https://www.youtube.com")
-    (couch "couch-nebula" "https://nebula.tv")
+    youtube
+    nebula
   ];
 
   home.stateVersion = "26.05";
