@@ -50,10 +50,18 @@
     # desktop" target and as the fallback while autoStart is off.
     console = {
       enable = true;
-      # Flip to true once `steam-gamescope` is confirmed to start on this
-      # laptop's NVIDIA — see modules/gaming/console.nix for why it isn't
-      # on by default.
-      autoStart = false;
+      # gamescope is confirmed to init on this laptop's 1050 Ti (nested; the
+      # DRM backend the session actually uses is what this flip tests).
+      # Reverting is this one line — recoverable over SSH, since autologin
+      # means SDDM shows no session picker to escape through.
+      autoStart = true;
+
+      # The TV is on the discrete GPU: card1 (10de:1c8c, GP107M) drives
+      # HDMI-A-1, while the Intel UHD 630 only drives the internal eDP-1.
+      # Both read as connected with the lid shut, so pin both the connector
+      # and the compositing GPU rather than letting gamescope choose.
+      output = "HDMI-A-1";
+      vkDevice = "10de:1c8c";
     };
 
     services = {

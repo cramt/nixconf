@@ -38,6 +38,32 @@
           nested inside the desktop session first, then flip this.
         '';
       };
+
+      output = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "HDMI-A-1";
+        description = ''
+          Connector to prefer, passed to gamescope as --prefer-output.
+
+          Worth setting on any laptop: the internal panel is still connected
+          with the lid shut, so gamescope is free to pick it over the TV and
+          leave the screen you can actually see blank.
+        '';
+      };
+
+      vkDevice = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "10de:1c8c";
+        description = ''
+          PCI vendor:device of the GPU to composite on, passed to gamescope as
+          --prefer-vk-device.
+
+          Needed on hybrid graphics, where gamescope may otherwise composite on
+          the integrated GPU while the TV hangs off the discrete one.
+        '';
+      };
     };
 
     config = lib.mkIf cfg.enable {
@@ -48,7 +74,18 @@
       # need no separate handling here.
       myNixOS.steam.enable = true;
 
+      programs.steam.gamescopeSession.args =
+        lib.optionals (cfg.output != null) ["--prefer-output" cfg.output]
+        ++ lib.optionals (cfg.vkDevice != null) ["--prefer-vk-device" cfg.vkDevice];
+
       services.displayManager.defaultSession = lib.mkIf cfg.autoStart "steam";
+
+      # Once the session itself is Steam, steam_background is redundant by
+      # definition — steam-gamescope already runs the client, and a second
+      # launch would at best exit as a duplicate and at worst surface an
+      # "already running" dialog inside Big Picture. While autoStart is off the
+      # session is the desktop, where pre-warming Steam still earns its keep.
+      systemd.user.services.steam_background.enable = lib.mkForce (!cfg.autoStart);
     };
   };
 }
