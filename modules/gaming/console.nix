@@ -8,15 +8,17 @@
 # layouts, so the browser and the media player get real controller mappings
 # instead of a global "Tab = kill" escape hatch.
 #
-# Media apps ride along as non-Steam shortcuts. That's the one imperative step
-# in this setup — Steam owns shortcuts.vdf and rewrites it on exit, so it can't
+# This module is only the session. The tiles that go in it are per-host taste
+# and live in that host's home.nix, next to the Firefox profile they reuse.
+#
+# They ride along as non-Steam shortcuts, which is the one imperative step in
+# this setup — Steam owns shortcuts.vdf and rewrites it on exit, so it can't
 # just be a symlinked store path. Added once through the Big Picture UI:
-#   Library -> Add a Game -> Add a Non-Steam Game -> VacuumTube / jellyfin-desktop
+#   Library -> Add a Game -> Add a Non-Steam Game -> pick the couch-* wrappers
 {...}: {
   flake.nixosModules."features.console" = {
     config,
     lib,
-    pkgs,
     ...
   }: let
     cfg = config.myNixOS.console;
@@ -47,22 +49,6 @@
       myNixOS.steam.enable = true;
 
       services.displayManager.defaultSession = lib.mkIf cfg.autoStart "steam";
-
-      environment.systemPackages = [
-        # mpv-backed Jellyfin client (upstream renamed it Jellyfin Desktop in
-        # 2.0; the nixpkgs attr is still jellyfin-media-player). Native player
-        # rather than a browser tab so hardware decode and seeking actually
-        # work on a TV.
-        pkgs.jellyfin-media-player
-
-        # YouTube's leanback (TV) interface, which is the d-pad-native one and
-        # the whole point of the couch YouTube story — the desktop site assumes
-        # a pointer. Google killed the browser-accessible youtube.com/tv in
-        # 2019 and it now redirects, so a hand-rolled user-agent spoof is a
-        # dead end; VacuumTube wraps leanback in Electron and tracks Google's
-        # device checks upstream, which is the part that keeps breaking.
-        pkgs.vacuum-tube
-      ];
     };
   };
 }
