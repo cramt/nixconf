@@ -39,6 +39,16 @@
     bundles.general.enable = true;
     bundles.users.enable = true;
 
+    # Couch console (supersedes eros). Plasma below stays as the "switch to
+    # desktop" target and as the fallback while autoStart is off.
+    console = {
+      enable = true;
+      # Flip to true once `steam-gamescope` is confirmed to start on this
+      # laptop's NVIDIA — see modules/gaming/console.nix for why it isn't
+      # on by default.
+      autoStart = false;
+    };
+
     services = {
       sshd.enable = true;
     };

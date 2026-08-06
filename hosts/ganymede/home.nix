@@ -11,9 +11,10 @@
     kiosk-kdeconnect = {
       enable = true;
       commands = {
+        # `suspend` is a no-op while configuration.nix has sleep fully
+        # disabled; kept so the phone still has a shutdown-adjacent control.
         suspend = {name = "Suspend"; command = "systemctl suspend";};
         lock = {name = "Lock Screen"; command = "loginctl lock-session";};
-        open-url = {name = "Open URL from Clipboard"; command = "firefox --kiosk $(wl-paste)";};
       };
     };
   };
@@ -32,24 +33,11 @@
     };
   };
 
-  # Plasma kiosk configuration
+  # Plasma is no longer the couch shell — it's the "switch to desktop" target
+  # behind the gamescope session — so the kiosk-era KWin fullscreen rule and
+  # hidden panel are gone. Only the power settings still earn their place: a TV
+  # that blanks mid-film is just as annoying from Big Picture.
   xdg.configFile = {
-    # Force Firefox fullscreen via KWin window rule
-    "kwinrulesrc".text = ''
-      [1]
-      Description=Firefox Fullscreen
-      fullscreen=true
-      fullscreenrule=3
-      wmclass=firefox
-      wmclassmatch=1
-    '';
-
-    # Hide the panel/taskbar
-    "plasmashellrc".text = ''
-      [PlasmaViews][Panel 2]
-      panelVisibility=2
-    '';
-
     # Disable screen dimming, screen off, and sleep via PowerDevil
     "powerdevilrc".text = ''
       [AC][Display]
@@ -84,15 +72,8 @@
     '';
   };
 
-  # Autostart Firefox in kiosk mode
-  xdg.configFile."autostart/firefox-kiosk.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=Firefox Kiosk
-    Exec=firefox --kiosk
-    X-KDE-autostart-phase=2
-  '';
-
+  # moonlight stays as a fallback for streaming from saturn, but ganymede has
+  # its own GPU — games run locally now rather than being streamed in.
   home.packages = [pkgs.moonlight-qt];
 
   home.stateVersion = "26.05";
