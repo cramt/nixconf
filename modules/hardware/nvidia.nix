@@ -1,6 +1,6 @@
 # NVIDIA GPU with proprietary drivers
 { ... }: {
-  flake.nixosModules."features.nvidia" = { config, lib, pkgs, ... }:
+  flake.nixosModules."features.nvidia" = { config, lib, ... }:
   let
     driver = config.myNixOS.nvidia.package;
   in {
@@ -24,12 +24,17 @@
       };
     };
     config = lib.mkIf config.myNixOS.nvidia.enable {
-      environment.systemPackages = [
-        pkgs.linuxPackages.nvidia_x11
-      ];
-      hardware.graphics.extraPackages = [
-        pkgs.linuxPackages.nvidia_x11
-      ];
+      # Deliberately no explicit nvidia_x11 in systemPackages or
+      # graphics.extraPackages: nixpkgs' own nvidia module already adds
+      # nvidia_x11.bin and the 32/64-bit GL trees derived from
+      # hardware.nvidia.package.
+      #
+      # This used to list pkgs.linuxPackages.nvidia_x11, which is the DEFAULT
+      # kernel's STABLE driver regardless of what this host actually runs. On a
+      # host pinning another branch that put a second, mismatched userspace
+      # tree into /run/opengl-driver — 595.84 libraries over a 580 kernel
+      # module — and anything touching GL died with "Driver/library version
+      # mismatch". Steam segfaulted in steamui.so on every launch.
       boot = {
         extraModprobeConfig = ''
           options nvidia NVreg_RestrictProfilingToAdminUsers=0 NVreg_DeviceFileMode=0666
