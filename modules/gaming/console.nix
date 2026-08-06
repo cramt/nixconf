@@ -19,12 +19,33 @@
   flake.nixosModules."features.console" = {
     config,
     lib,
+    pkgs,
     ...
   }: let
     cfg = config.myNixOS.console;
   in {
     options.myNixOS.console = {
       enable = lib.mkEnableOption "myNixOS.console";
+
+      mode = lib.mkOption {
+        type = lib.types.enum ["gamescope" "bigpicture"];
+        default = "gamescope";
+        description = ''
+          How the couch UI gets on screen.
+
+          "gamescope" makes Steam's gamescope session the entire shell. Better
+          when it works — per-game render resolution, FSR upscaling, HDR — but
+          gamescope ties its DRM (scanout) device to its Vulkan (compositing)
+          device and offers no way to separate them. So it only works where the
+          GPU it can composite on is also the one the screen hangs off.
+
+          "bigpicture" leaves the desktop session in charge and auto-starts
+          Steam in Big Picture inside it. The desktop compositor handles output,
+          which means multi-GPU works properly, at the cost of gamescope's
+          scaling. Use this on hybrid graphics where the display is attached to
+          a GPU gamescope can't composite on.
+        '';
+      };
 
       autoStart = lib.mkOption {
         type = lib.types.bool;
@@ -78,14 +99,21 @@
         lib.optionals (cfg.output != null) ["--prefer-output" cfg.output]
         ++ lib.optionals (cfg.vkDevice != null) ["--prefer-vk-device" cfg.vkDevice];
 
-      services.displayManager.defaultSession = lib.mkIf cfg.autoStart "steam";
+      services.displayManager.defaultSession =
+        lib.mkIf (cfg.autoStart && cfg.mode == "gamescope") "steam";
 
-      # Once the session itself is Steam, steam_background is redundant by
-      # definition — steam-gamescope already runs the client, and a second
-      # launch would at best exit as a duplicate and at worst surface an
-      # "already running" dialog inside Big Picture. While autoStart is off the
-      # session is the desktop, where pre-warming Steam still earns its keep.
-      systemd.user.services.steam_background.enable = lib.mkForce (!cfg.autoStart);
+      # In gamescope mode the session itself is Steam, so steam_background is
+      # redundant by definition and a second launch would at best exit as a
+      # duplicate. In bigpicture mode it's the opposite: that service IS how
+      # the couch UI gets started, so point it at Big Picture rather than the
+      # silent tray client.
+      systemd.user.services.steam_background = lib.mkMerge [
+        {enable = lib.mkForce (cfg.mode == "bigpicture" || !cfg.autoStart);}
+        (lib.mkIf (cfg.mode == "bigpicture" && cfg.autoStart) {
+          serviceConfig.ExecStart =
+            lib.mkForce "${pkgs.steam}/bin/steam -tenfoot";
+        })
+      ];
     };
   };
 }

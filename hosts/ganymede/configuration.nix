@@ -16,19 +16,10 @@
     loader.efi.canTouchEfiVariables = true;
     kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
-    # Kill the internal panel. The lid is always shut, so it's never useful —
-    # but it's also what strands the console on the wrong GPU: the TV hangs off
-    # the NVIDIA (card0/HDMI-A-1) and eDP-1 off the Intel, and gamescope has no
-    # flag to pick a DRM device (only --prefer-vk-device, for compositing). It
-    # composites on the Intel, therefore scans out on the Intel, therefore lands
-    # on the laptop screen, and --prefer-output can't reach a connector that
-    # isn't on the device it opened.
-    #
-    # With eDP-1 gone the Intel has no connected output at all, so the NVIDIA's
-    # node is the only one that can drive anything. Vulkan device selection is
-    # independent of that, so the hope is it keeps compositing on the Intel —
-    # forcing Vulkan onto this Pascal card segfaults gamescope (see the
-    # vkDevice note below).
+    # Kill the internal panel: the lid is always shut, and leaving it enabled
+    # means the desktop spans a screen nobody can see and windows can open on
+    # it. With it gone the TV is the only display, so anything that starts
+    # fullscreen lands where it should without per-app placement rules.
     kernelParams = ["video=eDP-1:d"];
   };
 
@@ -71,21 +62,22 @@
       # means SDDM shows no session picker to escape through.
       autoStart = true;
 
-      # Both connectors read as connected with the lid shut, so name the one
-      # the TV is actually on. gamescope's DRM backend opens card1 (the
-      # NVIDIA) for scanout on its own, which is correct — HDMI-A-1 hangs off
-      # the discrete GPU and eDP-1 off the Intel.
-      output = "HDMI-A-1";
-
-      # Deliberately NOT setting vkDevice to the NVIDIA. Compositing on the
-      # 1050 Ti segfaults gamescope 3.16.25 inside
-      # CVulkanDevice::compileAllPipelines during device init — reproducible on
-      # the headless backend, so it's the Vulkan device and nothing to do with
-      # display or DRM:
-      #   gamescope --backend headless                          -> exit 0
-      #   gamescope --backend headless --prefer-vk-device 10de:1c8c -> SIGSEGV
-      # Left unset, gamescope composites on the Intel UHD 630 and scans out
-      # through card1. Revisit if gamescope or the 580 branch moves.
+      # gamescope can't drive this laptop's TV, so the desktop compositor does
+      # it instead. gamescope ties its DRM device to its Vulkan device, and
+      # neither choice works here:
+      #   - composite on the NVIDIA (the GPU HDMI-A-1 hangs off) and it
+      #     segfaults in CVulkanDevice::compileAllPipelines. Reproducible on
+      #     the headless backend, so it's the device, not the display:
+      #       gamescope --backend headless                              -> 0
+      #       gamescope --backend headless --prefer-vk-device 10de:1c8c -> SIGSEGV
+      #   - composite on the Intel (its default) and it opens the Intel's DRM
+      #     node, which has no HDMI on it, so it drives the internal panel —
+      #     or with that panel disabled, "cannot find any connected connector!"
+      #     and exits. It does not fall through to the other GPU.
+      # gamescope 3.16.25 has no flag or env var to pick the DRM device
+      # separately (checked --help and the binary's GAMESCOPE_* strings).
+      # Revisit if gamescope gains one, or if the NVIDIA crash is fixed.
+      mode = "bigpicture";
 
     };
 
