@@ -44,8 +44,25 @@
         enable = true;
         description = "Open Steam in the background at boot";
         wantedBy = ["graphical-session.target"];
+        # wantedBy alone only says "pull this in with the target", not "start it
+        # after the target is reached" — so Steam raced the compositor and lost.
+        # XOpenDisplay returned NULL, Steam handed that straight to
+        # glXQueryExtension without checking, and it segfaulted in
+        # XQueryExtension ~3s into every boot. It survived a manual start into
+        # an already-warm session, which is what made it look intermittent.
+        after = ["graphical-session.target"];
+        partOf = ["graphical-session.target"];
         serviceConfig = {
-          ExecStart = "${pkgs.steam}/bin/steam -nochatui -nofriendsui -silent %U";
+          # Ordering alone relies on graphical-session.target implying a
+          # *usable* X display, which isn't something the target actually
+          # promises — XWayland comes up on the compositor's schedule. So assert
+          # the real precondition instead of assuming it, since Steam's response
+          # to not having one is to segfault rather than to complain.
+          ExecStartPre = "${pkgs.bash}/bin/bash -c 'for _ in $(${pkgs.coreutils}/bin/seq 60); do ${pkgs.xorg.xdpyinfo}/bin/xdpyinfo >/dev/null 2>&1 && exit 0; ${pkgs.coreutils}/bin/sleep 1; done; exit 1'";
+          # No %U here: that's a .desktop Exec specifier meaning "URLs", but
+          # systemd expands %U to the UID, so Steam was being launched as
+          # `steam ... -silent 1000` with a stray argument.
+          ExecStart = "${pkgs.steam}/bin/steam -nochatui -nofriendsui -silent";
           Restart = "on-failure";
           RestartSec = "5s";
         };
