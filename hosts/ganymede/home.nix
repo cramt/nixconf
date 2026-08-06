@@ -3,17 +3,61 @@
   pkgs,
   ...
 }: let
-  # One Big Picture tile per service. finalPackage rather than pkgs.firefox so
-  # the kiosk inherits the profile configured below — SponsorBlock in
-  # particular is what makes couch YouTube tolerable.
-  couch = name: url:
-    import ../../scripts/couch_browser.nix {
-      inherit pkgs name url;
-      firefox = config.programs.firefox.finalPackage;
-    };
+  inherit (pkgs.lib) mapAttrs mapAttrs' nameValuePair;
 
-  youtube = couch "couch-youtube" "https://www.youtube.com";
-  nebula = couch "couch-nebula" "https://nebula.tv";
+  # One Big Picture tile per browser-based service.
+  #
+  # Each gets its OWN Firefox profile, which is load-bearing rather than tidy:
+  # the kiosks run with MOZ_NO_REMOTE so Steam sees a process that lives as long
+  # as the app, and Firefox refuses to open one profile twice. Sharing `default`
+  # meant any stray Firefox — including one Plasma restored from a previous
+  # session — held the lock and every tile failed to start. Per-site profiles
+  # also keep each service independently logged in.
+  #
+  # ids must be unique across profiles; `default` is 0.
+  couchSites = {
+    youtube = {
+      title = "YouTube";
+      url = "https://www.youtube.com";
+      id = 1;
+    };
+    nebula = {
+      title = "Nebula";
+      url = "https://nebula.tv";
+      id = 2;
+    };
+  };
+
+  couchAddons = with pkgs.nur.repos.rycee.firefox-addons; [
+    ublock-origin
+    sponsorblock
+  ];
+
+  # Kiosk niceties: --kiosk has no chrome to dismiss a prompt with, so anything
+  # modal is a dead end from the couch.
+  couchPrefs = {
+    "browser.aboutConfig.showWarning" = false;
+    "browser.tabs.warnOnClose" = false;
+    "browser.fullscreen.autohide" = true;
+    "full-screen-api.warning.timeout" = 0;
+    "browser.shell.checkDefaultBrowser" = false;
+    # Never resurrect the last session — a kiosk should always open on its
+    # own front page, not on whatever was left over.
+    "browser.sessionstore.resume_from_crash" = false;
+  };
+
+  couchApps =
+    mapAttrs (
+      profile: site:
+        import ../../scripts/couch_browser.nix {
+          inherit pkgs profile;
+          inherit (site) url;
+          name = "couch-${profile}";
+          firefox = config.programs.firefox.finalPackage;
+        }
+    )
+    couchSites;
+
   jellyfin = pkgs.jellyfin-media-player;
 in {
   home.username = "cramt";
@@ -36,42 +80,57 @@ in {
     # are the things that aren't games.
     steam-shortcuts = {
       enable = true;
-      shortcuts = {
-        "YouTube".exe = "${youtube}/bin/couch-youtube";
-        "Nebula".exe = "${nebula}/bin/couch-nebula";
-        "Jellyfin".exe = "${jellyfin}/bin/jellyfin-desktop";
-      };
+      shortcuts =
+        {
+          "Jellyfin".exe = "${jellyfin}/bin/jellyfin-desktop";
+        }
+        // mapAttrs' (
+          profile: site:
+            nameValuePair site.title {
+              exe = "${couchApps.${profile}}/bin/couch-${profile}";
+            }
+        )
+        couchSites;
     };
   };
 
   # stylix themes firefox per-profile and refuses to guess the names.
-  stylix.targets.firefox.profileNames = ["default"];
+  stylix.targets.firefox.profileNames = ["default"] ++ builtins.attrNames couchSites;
 
   programs.firefox = {
     enable = true;
-    profiles.default = {
-      extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
-        plasma-integration
-        ublock-origin
-        sponsorblock
-      ];
-      settings = {
-        # --kiosk has no chrome to dismiss a prompt with, so anything modal is
-        # a dead end from the couch.
-        "browser.aboutConfig.showWarning" = false;
-        "browser.tabs.warnOnClose" = false;
-        "browser.fullscreen.autohide" = true;
-        "full-screen-api.warning.timeout" = 0;
-        "browser.shell.checkDefaultBrowser" = false;
-      };
-    };
+    profiles =
+      {
+        default = {
+          id = 0;
+          extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
+            plasma-integration
+            ublock-origin
+            sponsorblock
+          ];
+          settings = couchPrefs;
+        };
+      }
+      // mapAttrs (_: site: {
+        inherit (site) id;
+        extensions.packages = couchAddons;
+        settings = couchPrefs // {"browser.startup.homepage" = site.url;};
+      })
+      couchSites;
   };
 
-  # Plasma is no longer the couch shell — it's the "switch to desktop" target
-  # behind the gamescope session — so the kiosk-era KWin fullscreen rule and
-  # hidden panel are gone. Only the power settings still earn their place: a TV
-  # that blanks mid-film is just as annoying from Big Picture.
+  # Plasma is the couch shell again (console.mode = "bigpicture"), but only as
+  # the thing Big Picture sits on top of — nothing else should be running.
   xdg.configFile = {
+    # Never restore the previous session. Plasma's default is to bring back
+    # whatever was open at logout, which is how a stray Firefox ended up
+    # running at boot and holding the profile lock that the kiosk tiles need.
+    # A console should come up in the same state every time.
+    "ksmserverrc".text = ''
+      [General]
+      loginMode=emptySession
+    '';
+
     # Disable screen dimming, screen off, and sleep via PowerDevil
     "powerdevilrc".text = ''
       [AC][Display]
@@ -116,13 +175,10 @@ in {
     # would push luna's 1660 into transcoding every stream; the mpv-backed
     # client direct-plays it. Upstream renamed this Jellyfin Desktop in 2.0 —
     # the binary is `jellyfin-desktop`, the nixpkgs attr is still the old name.
-    # If you'd rather it were a tab too, it's `(couch "couch-jellyfin"
-    # "https://jellyfin.cramt.dk")`.
+    # If you'd rather it were a tab too, add it to couchSites above.
     jellyfin
-
-    youtube
-    nebula
-  ];
+  ]
+  ++ builtins.attrValues couchApps;
 
   home.stateVersion = "26.05";
 }
