@@ -45,6 +45,10 @@
     # Never resurrect the last session — a kiosk should always open on its
     # own front page, not on whatever was left over.
     "browser.sessionstore.resume_from_crash" = false;
+    # Extensions dropped into a profile directory count as "sideloaded" and
+    # Firefox disables them on sight unless told otherwise. Without this the
+    # addons are installed but inert, which looks identical to missing.
+    "extensions.autoDisableScopes" = 0;
   };
 
   couchApps =
@@ -108,6 +112,18 @@ in {
 
   programs.firefox = {
     enable = true;
+
+    # Home Manager defaults this to the XDG path, .config/mozilla/firefox.
+    # Firefox only uses that when ~/.mozilla doesn't already exist, and on
+    # ganymede it does (predates this config), so Firefox reads the legacy tree
+    # while HM wrote profiles into the XDG one — the declared profiles simply
+    # weren't there, which is why the kiosks had no uBlock or SponsorBlock.
+    #
+    # Pointing HM at the legacy path is the non-destructive fix. The tidier one
+    # is to delete ~/.mozilla entirely and let both agree on XDG, since this
+    # machine's browser state is disposable; do that and this line comes out.
+    configPath = ".mozilla/firefox";
+
     profiles =
       {
         default = {
