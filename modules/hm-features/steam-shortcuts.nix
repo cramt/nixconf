@@ -13,9 +13,14 @@
 #   - Steam must have been logged into once, since the per-account userdata
 #     directory doesn't exist before that.
 #   - Steam must not be running, because it rewrites the file from memory when
-#     it exits. Note that modules/gaming/steam.nix starts Steam at login via
-#     steam_background, so on a machine using that, applying a *change* means
-#     stopping Steam and re-running `steam-shortcuts` (it's on PATH).
+#     it exits.
+#
+# Boot satisfies both by itself: home-manager-<user>.service is ordered
+# Before=systemd-user-sessions.service, so activation runs before any user
+# session exists, and therefore before steam_background can start Steam. The
+# first Steam login is the only manual step — every boot after that re-asserts
+# the list. Applying a change *without* rebooting is the one case that needs
+# Steam stopped and `steam-shortcuts` re-run by hand (it's on PATH).
 {...}: {
   hmModules.features.steam-shortcuts = {
     config,
