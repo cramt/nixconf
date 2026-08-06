@@ -15,6 +15,21 @@
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
     kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+
+    # Kill the internal panel. The lid is always shut, so it's never useful —
+    # but it's also what strands the console on the wrong GPU: the TV hangs off
+    # the NVIDIA (card0/HDMI-A-1) and eDP-1 off the Intel, and gamescope has no
+    # flag to pick a DRM device (only --prefer-vk-device, for compositing). It
+    # composites on the Intel, therefore scans out on the Intel, therefore lands
+    # on the laptop screen, and --prefer-output can't reach a connector that
+    # isn't on the device it opened.
+    #
+    # With eDP-1 gone the Intel has no connected output at all, so the NVIDIA's
+    # node is the only one that can drive anything. Vulkan device selection is
+    # independent of that, so the hope is it keeps compositing on the Intel —
+    # forcing Vulkan onto this Pascal card segfaults gamescope (see the
+    # vkDevice note below).
+    kernelParams = ["video=eDP-1:d"];
   };
 
   security.polkit.enable = true;
