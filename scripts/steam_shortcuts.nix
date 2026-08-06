@@ -65,7 +65,7 @@ pkgs.writers.writePython3Bin "steam-shortcuts" {
           "LaunchOptions": spec.get("launchOptions", ""),
           "IsHidden": 0,
           "AllowDesktopConfig": 1,
-          "AllowOverlay": 1,
+          "AllowOverlay": 1 if spec.get("overlay", True) else 0,
           "OpenVR": 0,
           "Devkit": 0,
           "DevkitGameID": "",

@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  lib,
   ...
 }: let
   inherit (pkgs.lib) mapAttrs mapAttrs' nameValuePair;
@@ -82,7 +83,15 @@ in {
       enable = true;
       shortcuts =
         {
-          "Jellyfin".exe = "${jellyfin}/bin/jellyfin-desktop";
+          "Jellyfin" = {
+            exe = "${jellyfin}/bin/jellyfin-desktop";
+            # Jellyfin Desktop's UI is a QtWebEngine view, and Steam's overlay
+            # segfaults its renderer process on launch
+            # (gameoverlayrenderer.so, SIGSEGV in QtWebEngineProcess). Nothing
+            # here needs the overlay; the browsers keep it for the on-screen
+            # keyboard.
+            overlay = false;
+          };
         }
         // mapAttrs' (
           profile: site:
@@ -164,6 +173,26 @@ in {
       LidAction=0
     '';
   };
+
+  # Jellyfin Desktop ships desktop defaults: windowed, and its pointer-oriented
+  # "desktop" web layout rather than the 10-foot one. Both are wrong on a TV.
+  #
+  # Its settings live under a generated per-profile directory, so there's no
+  # static path to point home.file at — hence a merge over whatever profiles
+  # exist, which also leaves JMP free to own every other key. Boot ordering is
+  # the same as the Steam shortcuts: activation runs before the session, so
+  # this lands before Jellyfin is ever launched.
+  home.activation.jellyfinCouchSettings =
+    lib.hm.dag.entryAfter ["writeBoundary"] ''
+      for f in "$HOME"/.local/share/jellyfin-desktop/profiles/*/jellyfin-desktop.conf; do
+        [ -e "$f" ] || continue
+        ${pkgs.jq}/bin/jq '.sections.main.fullscreen    = true
+                         | .sections.main.forceAlwaysFS = true
+                         | .sections.main.layout        = "tv"
+                         | .sections.main.webMode       = "tv"' "$f" > "$f.tmp" \
+          && mv "$f.tmp" "$f"
+      done
+    '';
 
   home.packages = [
     # moonlight stays as a fallback for streaming from saturn, but ganymede has

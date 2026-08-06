@@ -36,7 +36,7 @@
       builtins.toJSON (
         lib.mapAttrsToList (name: s: {
           inherit name;
-          inherit (s) exe icon launchOptions tags;
+          inherit (s) exe icon launchOptions tags overlay;
           startDir =
             if s.startDir != null
             then s.startDir
@@ -94,6 +94,19 @@
               type = lib.types.listOf lib.types.str;
               default = [];
               description = "Library categories to file the shortcut under.";
+            };
+            overlay = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = ''
+                Whether Steam may inject its overlay into this shortcut.
+
+                Steam's default, and worth keeping for games — it's also what
+                provides the on-screen keyboard, which is the only way to type
+                into a shortcut from a controller. But the overlay hooks the
+                graphics API, and Chromium-based apps tend not to survive it,
+                so turn it off for anything built on a web view.
+              '';
             };
           };
         });
