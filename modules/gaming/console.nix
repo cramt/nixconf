@@ -73,6 +73,24 @@
         '';
       };
 
+      audioNode = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "alsa_output.pci-0000_01_00.1.hdmi-stereo";
+        description = ''
+          PipeWire node to prefer as the default sink.
+
+          Laptops rank their built-in speakers well above HDMI — 1009 against
+          696 on ganymede — so a console wired to a TV comes up playing out of
+          the laptop. This raises the named node above everything else at the
+          session-priority level, rather than leaning on the runtime default
+          that `wpctl set-default` would leave lying in user state.
+
+          Get the name from `wpctl inspect <id>`; it embeds the PCI address, so
+          it's stable across boots.
+        '';
+      };
+
       vkDevice = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
@@ -101,6 +119,15 @@
 
       services.displayManager.defaultSession =
         lib.mkIf (cfg.autoStart && cfg.mode == "gamescope") "steam";
+
+      services.pipewire.wireplumber.extraConfig = lib.mkIf (cfg.audioNode != null) {
+        "51-console-default-sink"."monitor.alsa.rules" = [
+          {
+            matches = [{"node.name" = cfg.audioNode;}];
+            actions.update-props."priority.session" = 2000;
+          }
+        ];
+      };
 
       # In gamescope mode the session itself is Steam, so steam_background is
       # redundant by definition and a second launch would at best exit as a

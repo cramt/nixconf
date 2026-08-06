@@ -79,6 +79,11 @@
       # Revisit if gamescope gains one, or if the NVIDIA crash is fixed.
       mode = "bigpicture";
 
+      # Sound follows the picture. The 1050 Ti's HDMI audio ships with session
+      # priority 696 against the internal ALC255's 1009, so without this the
+      # console plays out of the laptop speakers with the lid shut.
+      audioNode = "alsa_output.pci-0000_01_00.1.hdmi-stereo";
+
     };
 
     services = {
