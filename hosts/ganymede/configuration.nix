@@ -34,7 +34,14 @@
   };
 
   myNixOS = {
-    nvidia.enable = true;
+    nvidia = {
+      enable = true;
+      # GTX 1050 Ti (GP107M, Pascal). NVIDIA dropped Maxwell/Pascal/Volta after
+      # the 580 branch, so `stable` (595.x) builds and deploys fine here and
+      # then can't bind the card — a dead TV, not an obvious driver error.
+      # Remove this pin only if the card is replaced with Turing or newer.
+      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
+    };
     bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.general.enable = true;
     bundles.users.enable = true;

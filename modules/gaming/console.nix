@@ -11,7 +11,7 @@
 # Media apps ride along as non-Steam shortcuts. That's the one imperative step
 # in this setup — Steam owns shortcuts.vdf and rewrites it on exit, so it can't
 # just be a symlinked store path. Added once through the Big Picture UI:
-#   Library -> Add a Game -> Add a Non-Steam Game -> youtube-tv / jellyfin-desktop
+#   Library -> Add a Game -> Add a Non-Steam Game -> VacuumTube / jellyfin-desktop
 {...}: {
   flake.nixosModules."features.console" = {
     config,
@@ -54,7 +54,14 @@
         # rather than a browser tab so hardware decode and seeking actually
         # work on a TV.
         pkgs.jellyfin-media-player
-        (import ../../scripts/youtube_tv.nix {inherit pkgs;})
+
+        # YouTube's leanback (TV) interface, which is the d-pad-native one and
+        # the whole point of the couch YouTube story — the desktop site assumes
+        # a pointer. Google killed the browser-accessible youtube.com/tv in
+        # 2019 and it now redirects, so a hand-rolled user-agent spoof is a
+        # dead end; VacuumTube wraps leanback in Electron and tracks Google's
+        # device checks upstream, which is the part that keeps breaking.
+        pkgs.vacuum-tube
       ];
     };
   };
