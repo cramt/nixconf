@@ -56,12 +56,22 @@
       # means SDDM shows no session picker to escape through.
       autoStart = true;
 
-      # The TV is on the discrete GPU: card1 (10de:1c8c, GP107M) drives
-      # HDMI-A-1, while the Intel UHD 630 only drives the internal eDP-1.
-      # Both read as connected with the lid shut, so pin both the connector
-      # and the compositing GPU rather than letting gamescope choose.
+      # Both connectors read as connected with the lid shut, so name the one
+      # the TV is actually on. gamescope's DRM backend opens card1 (the
+      # NVIDIA) for scanout on its own, which is correct — HDMI-A-1 hangs off
+      # the discrete GPU and eDP-1 off the Intel.
       output = "HDMI-A-1";
-      vkDevice = "10de:1c8c";
+
+      # Deliberately NOT setting vkDevice to the NVIDIA. Compositing on the
+      # 1050 Ti segfaults gamescope 3.16.25 inside
+      # CVulkanDevice::compileAllPipelines during device init — reproducible on
+      # the headless backend, so it's the Vulkan device and nothing to do with
+      # display or DRM:
+      #   gamescope --backend headless                          -> exit 0
+      #   gamescope --backend headless --prefer-vk-device 10de:1c8c -> SIGSEGV
+      # Left unset, gamescope composites on the Intel UHD 630 and scans out
+      # through card1. Revisit if gamescope or the 580 branch moves.
+
     };
 
     services = {
