@@ -46,34 +46,31 @@ in {
         programs.ssh = {
           enable = true;
           enableDefaultConfig = false;
-          matchBlocks = {
+          settings = {
             "*" = {
-              controlPath = "~/.ssh/control-%C";
+              ControlPath = "~/.ssh/control-%C";
             };
             # Named Host aliases so `herdr --remote luna` (and plain `ssh luna`)
             # resolve. Herdr rides regular SSH like tmux, so a Host entry is all
             # the remote multiplexer needs — no daemon or extra port on luna.
             "luna" = {
-              hostname = site.luna_internal_address;
-              user = "cramt";
-              forwardAgent = true;
+              HostName = site.luna_internal_address;
+              User = "cramt";
+              ForwardAgent = true;
             };
             # Same box over WAN (matches the remote_luna helper: public IP, port 2269).
             "luna-remote" = {
-              hostname = site.ip;
-              port = 2269;
-              user = "cramt";
-              forwardAgent = true;
+              HostName = site.ip;
+              Port = 2269;
+              User = "cramt";
+              ForwardAgent = true;
             };
           };
         };
         home.packages = (builtins.attrValues sshTargetPackages) ++ (builtins.attrValues sshTargetDesktops);
       }
       (lib.mkIf config.myHomeManager.ssh.use1Password {
-        programs.ssh.extraConfig = ''
-          Host *
-              IdentityAgent ~/.1password/agent.sock
-        '';
+        programs.ssh.settings."*".IdentityAgent = "~/.1password/agent.sock";
 
         xdg.configFile."1Password/ssh/agent.toml" = {
           text = ''

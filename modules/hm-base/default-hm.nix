@@ -16,6 +16,17 @@
       # would double-declare programs.niri.* and conflict.
       inputs.noctalia-shell.homeModules.default
       ({ lib, config, ... }: {
+        # home-manager stopped inferring cursor generation from
+        # `home.pointerCursor.{name,package}` being set and will drop the
+        # implicit path (nix-community/home-manager#6492); stylix's HM cursor
+        # module still only sets those. Declare the enable here so cursors keep
+        # generating instead of silently vanishing on a future HM bump.
+        # Remove once stylix sets `home.pointerCursor.enable` itself.
+        config = lib.mkIf config.stylix.enable {
+          home.pointerCursor.enable = true;
+        };
+      })
+      ({ lib, config, ... }: {
         config = lib.mkIf (config.stylix.enable && config.programs.neovide.enable) {
           stylix.targets.neovide.enable = lib.mkForce false;
           programs.neovide.settings.font = {

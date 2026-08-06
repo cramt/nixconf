@@ -18,6 +18,9 @@
     };
   };
 
+  # stylix themes firefox per-profile and refuses to guess the names.
+  stylix.targets.firefox.profileNames = ["default"];
+
   programs.firefox = {
     enable = true;
     profiles.default = {

@@ -13,10 +13,10 @@
   # agents can actually clone/commit/push. The path below is opnix's key
   # re-emitted with a trailing newline by the paseo module (modules/services/
   # paseo.nix) — OpenSSH rejects the raw opnix file without it.
-  programs.ssh.matchBlocks."github.com" = {
-    identityFile = "/home/cramt/.ssh/id_paseo";
-    identitiesOnly = true;
-    extraOptions.StrictHostKeyChecking = "accept-new";
+  programs.ssh.settings."github.com" = {
+    IdentityFile = "/home/cramt/.ssh/id_paseo";
+    IdentitiesOnly = true;
+    StrictHostKeyChecking = "accept-new";
   };
   programs.git.settings = {
     gpg.ssh.program = lib.mkForce "${pkgs.openssh}/bin/ssh-keygen";
