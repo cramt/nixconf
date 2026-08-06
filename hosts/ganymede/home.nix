@@ -148,6 +148,20 @@ in {
       loginMode=emptySession
     '';
 
+    # A console is watched, not used — long stretches pass with no input at
+    # all, and Plasma's locker defaults to grabbing the screen after 5 minutes
+    # of that. PowerDevil below only covers dimming/blanking/sleep; the locker
+    # is a separate daemon with its own timeout, so it kept firing regardless.
+    # Locking on request still works (kdeconnect's `loginctl lock-session`),
+    # it just never happens on a timer.
+    "kscreenlockerrc".text = ''
+      [Daemon]
+      Autolock=false
+      LockOnResume=false
+      LockOnStart=false
+      Timeout=0
+    '';
+
     # Disable screen dimming, screen off, and sleep via PowerDevil
     "powerdevilrc".text = ''
       [AC][Display]

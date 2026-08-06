@@ -20,7 +20,10 @@
     # means the desktop spans a screen nobody can see and windows can open on
     # it. With it gone the TV is the only display, so anything that starts
     # fullscreen lands where it should without per-app placement rules.
-    kernelParams = ["video=eDP-1:d"];
+    # consoleblank=0: the VT blanks itself after 10 minutes by default, which
+    # is a black TV on any boot that drops to a console or takes a while to
+    # reach the session.
+    kernelParams = ["video=eDP-1:d" "consoleblank=0"];
   };
 
   security.polkit.enable = true;
