@@ -86,21 +86,10 @@
       # priority 696 against the internal ALC255's 1009, so without this the
       # console plays out of the laptop speakers with the lid shut.
       audioNode = "alsa_output.pci-0000_01_00.1.hdmi-stereo";
-
     };
 
     services = {
       sshd.enable = true;
-    };
-
-    home-users = {
-      "cramt" = {
-        userConfig = ./home.nix;
-        authorizedKeys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
-        ];
-      };
     };
   };
 
@@ -120,7 +109,6 @@
     AllowHybridSleep = "no";
   };
 
-  networking.hostName = "ganymede";
   networking.networkmanager.enable = true;
 
   services.xserver = {

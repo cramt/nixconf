@@ -2,18 +2,6 @@
 {
   perSystem = { pkgs, lib, system, ... }: {
     packages = lib.optionalAttrs (system == "x86_64-linux") {
-      # OpenWrt sysupgrade image for the Archer C5 v2 (host: titan). The upstream
-      # ImageBuilder ships only x86_64-linux binaries, so gate accordingly.
-      titan-img = import ../../hosts/titan/configuration.nix { inherit pkgs inputs; };
-
-      # Dewclaw deployment environment for titan. `nix build .#titan-deploy`
-      # produces a buildEnv whose `bin/` contains a deploy-titan script that
-      # SSHes into the router and applies the UCI config declared in
-      # hosts/titan/dewclaw.nix.
-      titan-deploy = pkgs.callPackage inputs.dewclaw {
-        configuration = import ../../hosts/titan/dewclaw.nix;
-      };
-
       # `nix run .#flash-eros -- /dev/sdX` — flash a ready-to-boot eros SD card.
       # Builds the aarch64 SD image (substituted from cache), then bakes the
       # local /etc/opnix-token into the image's rootfs /etc *post-build* (via a

@@ -121,7 +121,6 @@ in
     boot.extraModulePackages = [ config.boot.kernelPackages.xpadneo ];
 
     networking = {
-      hostName = "eros";
       useNetworkd = true;
     };
 
@@ -144,11 +143,13 @@ in
     users.users.cramt = {
       isNormalUser = true;
       extraGroups = [ "wheel" "video" "render" "input" "audio" "plugdev" ];
-      openssh.authorizedKeys.keys = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
-      ];
+      openssh.authorizedKeys.keys = (import ../../myLib/keys.nix).alex;
     };
+
+    # bundles.users is what gives root its keys on every other host, and eros
+    # opts out of it — so wire root up directly, otherwise `just deploy` (which
+    # activates as root over SSH) can't reach this machine at all.
+    users.users.root.openssh.authorizedKeys.keys = (import ../../myLib/keys.nix).alex;
 
     users.groups.plugdev = {};
 

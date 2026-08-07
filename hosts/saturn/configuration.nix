@@ -157,24 +157,12 @@
         databaseUrl = "sqlite:/mnt/amirani/homelab_discord_bot.db?mode=rwc";
       };
     };
-
-    home-users = {
-      "cramt" = {
-        userConfig = ./home.nix;
-        authorizedKeys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
-        ];
-      };
-    };
   };
 
   nixarr = {
     mediaDir = "/var/lib/nixarr-test/media";
     stateDir = "/var/lib/nixarr-test/.state";
   };
-
-  networking.hostName = "saturn";
 
   networking.networkmanager.enable = true;
 

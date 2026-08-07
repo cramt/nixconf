@@ -55,6 +55,7 @@
     };
 
     services = {
+      sshd.enable = true;
       tailscale.enable = false;
       caddy = {
         enable = false;
@@ -75,15 +76,7 @@
         worldName = "wutwutgame3";
       };
     };
-
-    home-users = {
-      "cramt" = {
-        userConfig = ./home.nix;
-      };
-    };
   };
-
-  networking.hostName = "mars";
 
   networking.networkmanager.enable = true;
 

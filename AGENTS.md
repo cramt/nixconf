@@ -5,15 +5,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Common Commands
 
 ```bash
-# Apply system config to current host
+# Deploy the fleet (deploy-rs): builds and activates on every host answering on
+# the network right now, skipping powered-off ones. Runs from any host; the
+# machine you run it on is just another target.
+just deploy
+just deploy luna ganymede   # ...or narrow to named hosts
+
+# Apply system config to the current host only, no network
 nh os switch
 
-# Deploy to a remote host
-nh os switch --target-host root@<ip> -H <hostname>
-
 # Shortcut recipes (via just)
-just build_luna       # Deploy to luna (192.168.178.24)
-just build_ganymede   # Deploy to ganymede (192.168.178.47)
 just update           # Update flake inputs, gems, npins, and packages (run daily by CI's update.yml,
                       # which maintains an `update` branch PR prebuilt into cachix — merge it to update)
 just update_flake     # Update flake.lock only
@@ -38,12 +39,15 @@ The flake-parts plumbing lives in `modules/flake/`:
 | File | Purpose |
 |------|---------|
 | `modules/flake/lib.nix` | Instantiates `myLib` and exposes it as `_module.args.myLib` to all flake modules |
-| `modules/flake/hosts.nix` | Declares the `nixosHosts` option (hostname → `{ config; nixpkgs; }`) and builds `flake.nixosConfigurations` via `myLib.mkSystem` |
+| `modules/flake/hosts.nix` | Discovers hosts by reading `hosts/`, declares the `nixosHosts` option (hostname → `{ config; nixpkgs; address; }`) and builds `flake.nixosConfigurations` via `myLib.mkSystem` |
+| `modules/flake/deploy.nix` | Derives `flake.deploy` (deploy-rs nodes) from `nixosHosts`; driven by `just deploy` |
 | `modules/flake/systems.nix` | The `systems` list for `perSystem` |
-| `modules/flake/packages.nix` | `perSystem` packages (e.g. `eros-img`, `titan-img`) |
+| `modules/flake/packages.nix` | `perSystem` packages (e.g. `eros-img`, `flash-eros`) |
 | `modules/flake/hm-modules.nix` | Typed accumulator options (`hmModules.default/features/bundles`) wired into `flake.homeManagerModules` once, to avoid freeform merge conflicts |
 
-The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`. Each is registered in the `nixosHosts` attrset in `modules/flake/hosts.nix`. **To add a new host, add one line to `nixosHosts`** (set `nixpkgs` per-host to use a vendor cache, as `eros` does with `nixpkgs-rpi`).
+The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
+
+A host only needs `hosts/<name>/host.nix` when it deviates from that; it takes `nixpkgs` (build from a vendor cache, as `eros` does with `nixpkgs-rpi`) and `address` (when DNS can't resolve the bare hostname).
 
 ### myLib (`myLib/default.nix`)
 
@@ -76,11 +80,16 @@ Conventionally: `services/*.nix` → `myNixOS.services.<name>`, `bundles/*.nix` 
 ### Host Structure
 
 Each host in `hosts/<name>/` has:
-- `configuration.nix` — top-level NixOS config; enables `myNixOS.*` options and sets `home-users`
-- `home.nix` — Home Manager config for the user; enables `myHomeManager.*` options
+- `configuration.nix` — top-level NixOS config; enables `myNixOS.*` options
+- `home.nix` — Home Manager config for the user; enables `myHomeManager.*` options. Picked up automatically as `home-users.cramt.userConfig`
 - `hardware-configuration.nix` — auto-generated hardware config
+- `host.nix` — *optional* flake-level knobs (`nixpkgs`, `address`); only `eros` has one
 - `monitors.nix` — monitor layout (used for kernel `video=` params and wayland config)
 - `ssh.pub.nix` — host SSH public key
+
+SSH keys are not per-host: `myLib/keys.nix` is the single source, defaulted into
+`home-users.*.authorizedKeys` (which is also where root's keys come from, and therefore
+what makes `just deploy` able to reach a host at all).
 
 ### Key Subsystems
 
@@ -109,21 +118,23 @@ Terraform configs live in `infra/`. Use `just tf <args>` which injects credentia
 ## Machine & Host Facts
 
 - `saturn` — Alex's desktop (COSMIC daily driver, niri secondary). Home machine; work happens on a separate laptop.
-- `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.47. `eros` — 2GB RPi4 TV kiosk. `titan` — OpenWrt router.
+- `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.47. `eros` — 2GB RPi4 TV kiosk. `mars` — secondary desktop.
+- Fleet hostnames resolve over the router's DNS, so `just deploy` addresses hosts by name, not IP.
 - Daily browser is Zen. Firefox, Thunderbird, and Heroic are installed but unused.
 - `/external_storage` is a mergerfs pool over slow HDDs — no heavy IO through the mergerfs mount.
 
 ## Build Policy
 
 - Small config changes build locally on saturn. Chunky/uncached/aarch64 builds go through GitHub Actions (ARM runner) + cachix.
-- NEVER build or eval on eros (2GB RAM, hard-crashes). Build on saturn and deploy with `nh os switch --target-host`.
+- NEVER build or eval on eros (2GB RAM, hard-crashes). `just deploy` already builds everything locally and only copies closures out (`remoteBuild = false`), so this holds by construction.
 - If Alex is gaming: `--cores 1`, run in background.
 - Flakes only see git-tracked files — `git add` new files before `nix build`.
 - "CI is failing" unqualified = the saturn build.
 
 ## Deploy Workflow
 
-- Alex runs `nh os switch` herself (wl-copy it when ready). After she deploys, verify: ssh in, `systemctl --failed`, journalctl on the touched services.
+- Alex runs the deploy herself (wl-copy it when ready) — `just deploy` for the fleet, `nh os switch` for the local host alone. After she deploys, verify: ssh in, `systemctl --failed`, journalctl on the touched services.
+- deploy-rs activates with magic rollback: a host that loses its network mid-activation reverts itself. A deploy that "hung then rolled back" means the new config broke connectivity, not that deploy-rs failed.
 - `hermes-agent`'s container doesn't recreate on config change — `systemctl restart hermes-agent` manually.
 - Editing a 1Password secret in place requires restarting `opnix-secrets`, not just the consuming service.
 - Secrets go through opnix (`/etc/opnix-token`) — never interactive `op` prompts.

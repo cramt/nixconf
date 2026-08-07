@@ -148,19 +148,7 @@
         enable = true;
       };
     };
-
-    home-users = {
-      "cramt" = {
-        userConfig = ./home.nix;
-        authorizedKeys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
-        ];
-      };
-    };
   };
-
-  networking.hostName = "luna";
 
   networking.networkmanager.enable = true;
 

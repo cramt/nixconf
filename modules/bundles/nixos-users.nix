@@ -1,9 +1,10 @@
 # NixOS multi-user bundle with home-manager integration
 { inputs, ... }: {
-  flake.nixosModules."bundles.users" = { config, lib, pkgs, ... }:
+  flake.nixosModules."bundles.users" = { config, lib, pkgs, hostDir, ... }:
   let
     cfg = config.myNixOS;
     outputs = inputs.self.outputs;
+    hostHome = hostDir + "/home.nix";
   in {
     options.myNixOS = {
       bundles.users.enable = lib.mkEnableOption "myNixOS.bundles.users";
@@ -15,11 +16,17 @@
               example = "DP-1";
             };
             authorizedKeys = lib.mkOption {
-              default = [];
+              type = lib.types.listOf lib.types.str;
+              default = (import ../../myLib/keys.nix).alex;
             };
           };
         });
-        default = {};
+        # Single-user fleet: every host's user is cramt, configured by the
+        # home.nix sitting next to its configuration.nix. Hosts that need
+        # something else just set this themselves.
+        default = lib.optionalAttrs (builtins.pathExists hostHome) {
+          cramt.userConfig = hostHome;
+        };
       };
     };
 

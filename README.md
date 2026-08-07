@@ -15,15 +15,15 @@ My personal NixOS configuration, managing a fleet of machines using [flake-parts
 ## Common Commands
 
 ```bash
-# Apply config to current host
+# Deploy the fleet: builds and activates on every host answering right now,
+# skipping the ones that are powered off. Runs from any host, and the machine
+# you run it on is just another target.
+just deploy
+just deploy luna ganymede   # ...or narrow it to named hosts
+
+# Apply config to the current host only, without the network
 nh os switch
 
-# Deploy to a remote host
-nh os switch --target-host root@<ip> -H <hostname>
-
-# Shortcuts
-just build_luna       # Deploy to luna (192.168.178.24)
-just build_ganymede   # Deploy to ganymede (192.168.178.47)
 just update           # Update flake inputs, gems, npins, and packages (CI runs this weekly — see below)
 just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
@@ -52,10 +52,11 @@ substitutes from the cache.
 
 | Path | Purpose |
 |------|---------|
-| `modules/lib.nix` | Instantiates `myLib` and exposes it as `_module.args.myLib` |
-| `modules/hosts.nix` | Declares `nixosHosts` option and builds `nixosConfigurations` |
-| `modules/packages.nix` | Per-system packages (e.g. `eros-img`) |
-| `modules/exported-modules.nix` | Exports `nixosModules.default` and `homeManagerModules.default` |
+| `modules/flake/lib.nix` | Instantiates `myLib` and exposes it as `_module.args.myLib` |
+| `modules/flake/hosts.nix` | Discovers hosts from `hosts/` and builds `nixosConfigurations` |
+| `modules/flake/deploy.nix` | Derives the deploy-rs node set from those hosts |
+| `modules/flake/packages.nix` | Per-system packages (e.g. `eros-img`) |
+| `modules/flake/hm-modules.nix` | Typed accumulators for the Home Manager module outputs |
 
 ### Module System
 
@@ -73,13 +74,21 @@ Both `nixosModules/` and `homeManagerModules/` use `extendModules` to auto-gener
 
 ### Adding a New Host
 
-Add one line to `nixosHosts` in `modules/hosts.nix`:
+Create `hosts/<name>/` — that's it. `modules/flake/hosts.nix` reads `hosts/`, so a
+directory there becomes a `nixosConfigurations.<name>` and a `just deploy` target with
+no list to edit. Everything is derived from the folder name:
 
-```nix
-nixosHosts."myhostname" = myLib.mkSystem ./hosts/myhostname/configuration.nix;
-```
+| | derived as |
+|---|---|
+| entrypoint | `hosts/<name>/configuration.nix` |
+| `networking.hostName` | `<name>` (`mkDefault`, so a host can override) |
+| user's Home Manager config | `hosts/<name>/home.nix`, if present |
+| SSH keys (user + root) | `myLib/keys.nix` |
+| deploy address | `<name>`, resolved over LAN DNS |
 
-Then create `hosts/myhostname/configuration.nix` (and `home.nix`, `hardware-configuration.nix` as needed).
+Add `hosts/<name>/host.nix` only to deviate — it takes `nixpkgs` (build from a vendor
+cache, as `eros` does) and `address` (if DNS can't find the host). See
+`hosts/eros/host.nix`.
 
 ### Key Subsystems
 
