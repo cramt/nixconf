@@ -83,6 +83,51 @@ in {
       };
     };
 
+    # One layout for every tile, which is the whole point: YouTube, Jellyfin
+    # and Nebula independently settled on YouTube's key convention, so the
+    # same button reaches the same feature on all three without a per-site
+    # mapping to drift out of sync. Jellyfin's shortcuts were written to
+    # "follow youtube as closely as possible" and Nebula's match too.
+    #
+    # Volume is the one thing they don't agree on — YouTube and Jellyfin put it
+    # on the arrows, Nebula doesn't bind it at all — so the triggers drive the
+    # system volume instead. On a TV that's the one you actually want anyway.
+    steam-input = {
+      enable = true;
+      layouts."Couch Media" = {
+        description = "Browser tiles: YouTube, Jellyfin, Nebula.";
+        bindings = {
+          button_a = "key_press RETURN"; # activate whatever's focused
+          button_b = "key_press ESCAPE"; # back, and leaves fullscreen
+          button_x = "key_press K"; # play/pause
+          button_y = "key_press F"; # fullscreen
+
+          # Arrows navigate lists and seek ±5s once a player has focus; the
+          # stick mirrors the d-pad so either works.
+          dpad_north = "key_press UP_ARROW";
+          dpad_south = "key_press DOWN_ARROW";
+          dpad_east = "key_press RIGHT_ARROW";
+          dpad_west = "key_press LEFT_ARROW";
+          left_stick_north = "key_press UP_ARROW";
+          left_stick_south = "key_press DOWN_ARROW";
+          left_stick_east = "key_press RIGHT_ARROW";
+          left_stick_west = "key_press LEFT_ARROW";
+
+          left_bumper = "key_press J"; # seek back ~10s
+          right_bumper = "key_press L"; # seek forward ~10s
+
+          button_escape = "key_press C"; # subtitles
+          button_menu = "key_press M"; # mute
+
+          # Token spelling for the media keys is the one thing here not
+          # confirmed against a real controller — if the triggers do nothing,
+          # this is the line to look at before anything else.
+          left_trigger = "key_press VOLUME_DOWN";
+          right_trigger = "key_press VOLUME_UP";
+        };
+      };
+    };
+
     # The couch tiles, so the Big Picture library is in the repo rather than in
     # a binary blob in the Steam profile. Games come from Steam itself; these
     # are the things that aren't games.

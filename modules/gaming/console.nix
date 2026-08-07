@@ -11,10 +11,14 @@
 # This module is only the session. The tiles that go in it are per-host taste
 # and live in that host's home.nix, next to the Firefox profile they reuse.
 #
-# They ride along as non-Steam shortcuts, which is the one imperative step in
-# this setup — Steam owns shortcuts.vdf and rewrites it on exit, so it can't
-# just be a symlinked store path. Added once through the Big Picture UI:
-#   Library -> Add a Game -> Add a Non-Steam Game -> pick the couch-* wrappers
+# They ride along as non-Steam shortcuts, which nix writes itself — see
+# hm-features/steam-shortcuts.nix — as it does the controller layout those
+# tiles use, in hm-features/steam-input.nix.
+#
+# What's left by hand is picking that layout, because Steam files the choice
+# under a path it hashes itself and won't take a written-in answer:
+#   Big Picture -> the tile -> controller icon -> Templates -> "Couch Media"
+# Once per tile, after the first Steam login, and it sticks.
 {...}: {
   flake.nixosModules."features.console" = {
     config,
