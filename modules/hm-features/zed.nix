@@ -6,7 +6,7 @@
     config = lib.mkIf config.myHomeManager.zed.enable {
       programs.zed-editor = {
         enable = true;
-        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin"];
+        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "scala" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin"];
         mutableUserSettings = false;
         mutableUserKeymaps = false;
         mutableUserTasks = false;
