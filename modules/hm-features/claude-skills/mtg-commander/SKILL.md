@@ -78,7 +78,13 @@ work: `otag removal` returns ~6100 cards drawn from `removal-exile`, `removal-bo
 rest, even though the parent tag itself has no direct taggings.
 
 `otag` filters to Commander-legal cards and sorts by mana value, so its output is already
-deck-shaped. Prefer one jq or `otag` pass over many API calls; hit the live search API only
+deck-shaped.
+
+One jq footgun, since this skill pushes you toward jq: **inside `reduce`, `.` is the
+accumulator, not the input root.** Capture the root first (`. as $root | reduce …`), or every
+card lookup inside the loop silently returns null and you get a confident, empty answer.
+
+Prefer one jq or `otag` pass over many API calls; hit the live search API only
 for something genuinely not in the bulk files, and then with a `User-Agent` header and a gap
 between calls.
 
@@ -104,6 +110,17 @@ What this means in practice:
 - **Reject goodstuff piles.** Do not fill slots with staples because they're staples. Every
   card should be there for the plan, the joke, or the rules corner. (This is the same instinct
   behind the Sol Ring rule below.)
+- **Satisfying a constraint is not a reason to play a card.** When a companion or theme
+  imposes a deckbuilding restriction, the cheapest cards that technically qualify are still
+  filler. A deck full of 1-mana artifacts "because they all have activated abilities" is a
+  worse deck than one where every artifact also advances the plan.
+- **Let the engine set the curve.** If your recursion or tutor effect fetches a specific mana
+  value band, cluster the deck there deliberately — an effect that returns MV≤3 permanents
+  or grabs an MV 2–3 artifact makes the whole curve a design parameter, not an afterthought.
+  Cards outside the band are dead to your own engine.
+- **No lottery slots.** A card that only pays off when it happens to be on top, or needs three
+  other pieces first, is a slot you spent on variance. Cut it for something the deck does
+  every game.
 - **Still make it work.** Nerdy is not an excuse for a deck that can't cast its spells.
   Fixing, ramp and interaction still get their slots — the bar is "genuinely functional *and*
   deeply strange", not "strange".
@@ -202,6 +219,10 @@ the **complete 100-card list**, not a diff or an excerpt. One card per line:
   the deck actually wants (`Interaction`, `Draw`, `Ramp`, `Tutor Package`, `Land - Fixing`,
   `Land - Utility`, `Recursion`, `Graveyard Police`, and theme-specific ones). Mirror the
   user's existing category names when editing an existing list.
+- **Category names must say what the cards do.** A category has to be obvious to someone
+  reading the list cold. Invented flavour names ("Cycling Jackpot") hide what the slot is for
+  — and a category you can't name functionally is usually a sign the cards don't share a real
+  role, which is worth noticing before the list ships.
 - The commander goes in a `[Commander{top}]` category.
 - For upgrades, print the full new list, then a short cuts/adds table underneath explaining
   the reasoning. The list first, the prose second.
@@ -257,12 +278,49 @@ there is no `bc` on this machine.
   import correctly. Say plainly that the companion is the 101st card and may need setting in
   the UI.
 
+## Reference: which keywords are activated abilities
+
+Restrictions and payoffs that key off "has an activated ability" (Zirda, Lithoform-style
+copying, cost reducers) are easy to get wrong, because a grep for `:` in oracle text misses
+keyword abilities entirely and misses intrinsic ones completely. Auditing a deck by hand
+against this went wrong twice in one session — false-flagging Skullclamp, then Station — so
+start from the list instead of re-deriving it.
+
+**Are activated abilities** (keyword names as Scryfall spells them, so they can be matched
+against the index's `keywords` array): `Cycling`, `Equip`, `Crew`, `Reconfigure`, `Station`,
+`Unearth`, `Level Up`, `Channel`, `Ninjutsu`, `Outlast`, `Adapt`, `Monstrosity`, `Boast`,
+`Exhaust`, `Forecast`, `Transmute`, `Scavenge`, `Embalm`, `Eternalize`.
+
+**Are not**, despite looking like it:
+
+- `Suspend` — static plus two triggered abilities (CR 702.62). Cost reducers don't touch it
+  and it doesn't satisfy an activated-ability requirement.
+- `Flashback`, `Evoke`, `Prototype` — alternative costs / casting permissions, not abilities.
+- `Morph`, `Megamorph` — turning a face-down permanent up is a *special action*.
+- Anything phrased "when/whenever/at" (triggered) or with no cost at all (static). **Sun Titan
+  is triggered**, so it fails an activated-ability restriction even though it reads like a
+  classic recursion engine.
+
+Two more traps worth knowing:
+
+- **Intrinsic abilities count and are invisible to a text search.** Any land with a basic land
+  type has intrinsic mana abilities, so duals and Triomes qualify without printing a `:`.
+- **Granted abilities aren't printed characteristics.** A card that *gives* other cards cycling
+  doesn't itself have cycling, so it fails the check — and an ability granted while a card was
+  in hand doesn't follow it to the graveyard, which is how a "count cards with cycling in your
+  graveyard" payoff can quietly read zero.
+
 ## Deckbuilding defaults
 
 Reasonable starting ratios for a bracket 2–3 deck, to adjust rather than obey:
 
 - **35–38 lands**, trending lower with lots of cheap ramp or many MDFC land-backs (count
-  those as roughly half a land each)
+  those as roughly half a land each). **But go up, not down, when lands are also spells:** a
+  cycling deck wants **~39**, run liberally on MDFCs and cycling lands, because a land that
+  cycles is never a flooded draw. Same logic for landcycling — basic landcycling on something
+  like Ash Barrens is still cycling, so it triggers every cycling payoff *and* fetches a land.
+  Don't argue the count down on "flood turns into cards" grounds; that reasoning is what makes
+  the extra lands correct in the first place.
 - **~10 ramp pieces**, chosen by the curve rule above
 - **~10 card advantage** sources — repeatable engines beat one-shot draw
 - **8–12 interaction** spells, including 2–3 board wipes; make sure some of it answers
