@@ -221,6 +221,8 @@ cmd_check() {
   need_index
   # Default to 3: Alex builds 1-3, so the house bans apply unless told otherwise.
   local bracket=${2:-3}
+  local report
+  report=$(mktemp) && trap 'rm -f "$report"' RETURN
 
   jq -Rn --slurpfile idx "$INDEX" \
     --arg housebans "$HOUSE_BANS" \
@@ -255,32 +257,56 @@ cmd_check() {
     | ($lines | map(. + {rec: $db[(.name | keyname)]})) as $cards
     | ($cards | map(select(.rec == null) | .name))      as $unknown
     | ($cards | map(select(.rec != null)))              as $known
-    | ($known | map(select(.category | test("commander"; "i"))) | first) as $cmdr
-    | ($cmdr.rec.ci // []) as $cmdci
+    # Partners, backgrounds and Doctor/companion pairs put two cards in the
+    # command zone, and colour identity is their *union* — taking only the first
+    # would flag the other partner and its whole colour as illegal.
+    | ($known | map(select(.category | test("^commander"; "i")))) as $cmdrs
+    | ([ $cmdrs[].rec.ci[]? ] | unique) as $cmdci
+    # A companion is a 101st card outside the deck (CR 903.11), so it is counted
+    # and colour-checked separately rather than against the 100. Match on any of
+    # the conventions used for "not in the deck proper" — the label varies
+    # (Companion / Sideboard / Maybeboard) but the noDeck flag is the real signal.
+    | def outside: (.category | test("^(companion|sideboard|maybe)"; "i"))
+                   or (.category | test("nodeck"; "i"));
+      ($known | map(select(outside)))       as $comps
+    | ($known | map(select(outside | not))) as $deck
 
     | {
-        total: ($lines | map(.qty) | add // 0),
+        total: ([ $deck[] | .qty ] | add // 0),
         target_bracket: $bracket,
-        commander: ($cmdr.rec.name // null),
+        commanders: [ $cmdrs[].rec.name ],
         commander_identity: $cmdci,
+        companion: [ $comps[].rec.name ],
+        # A companion sits outside the 100 but must still be inside the
+        # combined commander colour identity (CR 903.11).
+        companion_identity_violations: [ $comps[]
+          | select((.rec.ci - $cmdci) | length > 0)
+          | {name: .rec.name, identity: .rec.ci} ],
         unknown: $unknown,
         illegal: [ $known[]
           | select(.rec.commander_legal != "legal")
           | {name: .rec.name, status: .rec.commander_legal} ],
         # Colour identity is the card-level field, never the mana cost: it also
         # covers reminder text, activated-ability costs and the back of a MDFC.
-        # Array subtraction leaves whatever the commander cannot support.
-        color_identity_violations: [ $known[]
+        # Array subtraction leaves whatever the commanders cannot support.
+        color_identity_violations: [ $deck[]
           | select((.rec.ci - $cmdci) | length > 0)
           | {name: .rec.name, identity: .rec.ci} ],
-        singleton_violations: [ $known[]
+        singleton_violations: [ $deck[]
           | select(.qty > 1)
           | select(((.rec.type_line | test("Basic Land")) or .rec.any_number) | not)
           | {name: .rec.name, qty: .qty} ],
-        game_changers: ([ $known[] | select(.rec.game_changer) | .rec.name ] | sort),
-        house_ban_violations: [ $known[]
+        game_changers: ([ $deck[] | select(.rec.game_changer) | .rec.name ] | sort),
+        house_ban_violations: [ $deck[]
           | select(.rec.name | ascii_downcase | IN($house[]))
-          | .rec.name ]
+          | .rec.name ],
+        # Computed here because an agent without `bc` on PATH will otherwise
+        # hand-roll this and get an empty answer.
+        usd_total: ([ $deck[] | (.rec.usd // "0" | tonumber) * .qty ] | add // 0
+                    | . * 100 | round / 100),
+        priciest: ([ $deck[] | select(.rec.usd != null)
+                     | {name: .rec.name, usd: (.rec.usd | tonumber)} ]
+                   | sort_by(-.usd) | .[0:8])
       }
     | .game_changer_count = (.game_changers | length)
     # Game Changers only ever set a *floor*. Mass land denial, early two-card
@@ -293,10 +319,33 @@ cmd_check() {
     | .errors = ((.unknown | length) + (.illegal | length)
                  + (.color_identity_violations | length)
                  + (.singleton_violations | length)
+                 + (.companion_identity_violations | length)
                  + (if .total == 100 then 0 else 1 end))
     | .legal = (.errors == 0)
     | .ok = (.legal and (.house_ban_violations | length) == 0)
-  ' "$1"
+    # Human-readable one-liner, duplicated to stderr by the caller. The script
+    # cannot check mass land denial, cheap combos, chained extra turns, or the
+    # deckbuilding restriction a companion imposes — say so rather than let a
+    # green verdict imply otherwise.
+    | .verdict = (if .ok then "PASS" else
+        "FAIL: " + ([
+          (if .total != 100 then "\(.total) cards, expected 100" else empty end),
+          (if (.unknown|length) > 0 then "\(.unknown|length) unknown card(s): \(.unknown|join(", "))" else empty end),
+          (if (.illegal|length) > 0 then "\(.illegal|length) not commander-legal" else empty end),
+          (if (.color_identity_violations|length) > 0 then "\(.color_identity_violations|length) outside colour identity \(.commander_identity|join(""))" else empty end),
+          (if (.singleton_violations|length) > 0 then "\(.singleton_violations|length) singleton violation(s)" else empty end),
+          (if (.companion_identity_violations|length) > 0 then "companion outside colour identity" else empty end),
+          (if (.house_ban_violations|length) > 0 then "house ban: \(.house_ban_violations|join(", "))" else empty end)
+        ] | join("; ")) end)
+    | .unchecked = "mass land denial, early two-card combos, chained extra turns, companion deckbuilding restriction"
+  ' "$1" >"$report"
+
+  cat "$report"
+  # The verdict also goes to stderr, and the exit code reflects it. A caller that
+  # pipes stdout through `jq '{some,fields}'` can drop the failure from the JSON
+  # — that has happened — but stderr still lands in front of whoever is reading.
+  jq -r '.verdict' "$report" >&2
+  jq -e '.ok' "$report" >/dev/null
 }
 
 case "${1:-}" in

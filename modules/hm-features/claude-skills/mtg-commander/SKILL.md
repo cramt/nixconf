@@ -26,7 +26,7 @@ Scryfall's answer to this is the bulk data files, and there's a helper wrapping 
 scryfall sync                     # refresh cached indexes (automatic, at most once/day)
 scryfall card "Rhystic Study"     # one card's deck-relevant fields
 scryfall gamechangers             # the live Game Changers list
-scryfall check <file> [bracket]   # validate a decklist -> JSON report
+scryfall check <file> [bracket]   # validate a decklist; PASS/FAIL to stderr, exit code, JSON to stdout
 scryfall tags [pattern]           # find Oracle tag slugs
 scryfall otag <slug> [ci] [cmc]   # cards carrying an Oracle tag
 scryfall path                     # path to the index, for arbitrary jq
@@ -221,8 +221,41 @@ failure modes that actually matter:
 - `total` — must be exactly 100 including the commander.
 - `house_ban_violations` and `game_changer_count` → bracket floor.
 
-The script cannot see mass land denial, cheap combos or chained extra turns. Those need you
-to actually read the deck, so check them by hand before claiming a bracket.
+**Read the verdict, not a projection of it.** `check` prints `PASS` or a one-line
+`FAIL: …` to **stderr** and exits non-zero, precisely because piping stdout through
+`jq '{total, unknown, illegal}'` can silently drop the field that failed. That has happened:
+a deck with 35 colour identity violations was reported as validated because the projection
+omitted `color_identity_violations`. If you filter the JSON, still read stderr.
+
+Also: **card count comes from `.total`, never `wc -l`.** Lines and cards differ the moment
+the list has a `3x Plains`.
+
+The script cannot see mass land denial, cheap combos, chained extra turns, or the
+deckbuilding restriction a companion imposes — it lists these in `.unchecked`. Those need
+you to actually read the deck, so check them by hand before claiming a bracket.
+
+`.usd_total` and `.priciest` come out of the same pass, so don't shell out for arithmetic —
+there is no `bc` on this machine.
+
+### Partners, backgrounds and companions
+
+- **Two commanders**: give each its own `[Commander{top}]` line. Colour identity is the
+  **union** of both, and `check` computes it that way — a Doctor + Doctor's-companion pair
+  like The Fifteenth Doctor (UR) + Jo Grant (W) is a WUR deck.
+- **A companion is a 101st card, not one of the 100** (CR 903.11) — and it must still be
+  inside the commanders' colour identity. Put it on its own line in a category matching
+  `Companion`/`Sideboard`/`Maybeboard` or carrying a `noDeck` flag; `check` then excludes it
+  from `.total` and reports it under `.companion`.
+- **The companion's own restriction reaches the command zone.** Zirda demands that every
+  permanent card in the starting deck have an activated ability, and the ruling is explicit
+  that this includes your commander. Verify that restriction card by card against oracle
+  text — nothing automated does it for you, and watch for cards that satisfy it *intrinsically*
+  rather than via a printed `:` (a dual land with basic land types has intrinsic mana
+  abilities, so a naive colon-grep gives false negatives).
+- Archidekt's category flags for "don't count this toward the deck" are an internal property
+  rather than a documented import modifier, so don't promise that a `{noDeck}` line will
+  import correctly. Say plainly that the companion is the 101st card and may need setting in
+  the UI.
 
 ## Deckbuilding defaults
 
