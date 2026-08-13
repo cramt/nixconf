@@ -64,6 +64,15 @@
   '';
 
   boot.binfmt.emulatedSystems = ["aarch64-linux"];
+
+  # The @root subvol came up owned by uid 777, which makes systemd-tmpfiles
+  # refuse every "unsafe path transition" out of `/` — including the
+  # `L+ /run/binfmt/aarch64-linux` rule. That symlink then keeps pointing at
+  # whichever qemu store path existed at boot while nix.conf's sandbox-paths
+  # follows the current system, so emulated builds die with ENOENT on their
+  # interpreter. `/` sorts first, so tmpfiles repairs it in the same pass.
+  systemd.tmpfiles.rules = ["z / 0755 root root - -"];
+
   nix = {
     settings = let
       caches = ["https://cache.nixos.org/" "http://192.168.0.103:5000/" "http://192.168.0.106:5000/"];
