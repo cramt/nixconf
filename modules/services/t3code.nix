@@ -25,18 +25,19 @@
     # newline into a stable path that git/ssh point at (see hosts/luna/home.nix).
     # Secret and key file keep their paseo-era names — same key, and renaming
     # would churn both the opnix path and the on-disk file for nothing.
-    sshKeyRaw = config.services.onepassword-secrets.secretPaths.paseoSshKey;
     sshKey = "/home/${cfg.user}/.ssh/id_paseo";
-    normalizeSshKey = pkgs.writeShellApplication {
-      name = "t3code-normalize-ssh-key";
+    prepare = pkgs.writeShellApplication {
+      name = "t3code-prepare";
       runtimeInputs = [ pkgs.coreutils ];
       text = ''
-        install -d -m700 "${dataDir}" "/home/${cfg.user}/.ssh"
+        install -d -m700 "${dataDir}"
+      '' + lib.optionalString cfg.onDiskSshKey.enable ''
+        install -d -m700 "/home/${cfg.user}/.ssh"
         # `test -s` fails (→ ExecStartPre fails → systemd retries) if opnix
         # hasn't populated the secret yet, e.g. a boot race.
-        test -s "${sshKeyRaw}"
+        test -s "${config.services.onepassword-secrets.secretPaths.paseoSshKey}"
         umask 077
-        printf '%s\n' "$(cat "${sshKeyRaw}")" > "${sshKey}"
+        printf '%s\n' "$(cat "${config.services.onepassword-secrets.secretPaths.paseoSshKey}")" > "${sshKey}"
       '';
     };
   in {
@@ -64,6 +65,16 @@
         default = true;
         description = "Open the server's TCP port. Pairing tokens are the auth boundary.";
       };
+      onDiskSshKey.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Render the personal SSH key from opnix to disk for agents to auth and
+          sign with. Only for headless hosts: on a host with a desktop session
+          the 1Password agent already covers this, and dropping a private key
+          on disk there buys nothing.
+        '';
+      };
     };
 
     config = lib.mkIf cfg.enable {
@@ -89,7 +100,7 @@
           Unit.Description = "T3 Code - self-hosted server for AI coding agents";
           Install.WantedBy = [ "default.target" ];
           Service = {
-            ExecStartPre = "${normalizeSshKey}/bin/t3code-normalize-ssh-key";
+            ExecStartPre = "${prepare}/bin/t3code-prepare";
             ExecStart = lib.concatStringsSep " " [
               "${pkgs.t3code}/bin/t3 serve"
               "--host ${cfg.host}"

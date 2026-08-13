@@ -138,6 +138,15 @@
     services = {
       sshd.enable = true;
       claude-remote-control.enable = true;
+      # T3 Code server as a user unit, same as luna, so saturn's agents are
+      # reachable from a phone/laptop without the desktop app being open. No
+      # on-disk SSH key: this host has a session with 1Password's agent.
+      #
+      # It shares ~/.t3 with the desktop app, which spawns its own backend on
+      # launch — nothing upstream locks the data dir (verified: two servers
+      # start happily over one), so don't run both at once. Use the web UI at
+      # this host's t3code port, or stop the unit before opening the app.
+      t3code.enable = true;
       # One OpenAI-compatible endpoint over the free tiers plus the local M365
       # Copilot proxy. Consumed by pi and hermes-agent (both default to
       # gpt-5.5-think-deeper); litellm.nix auto-adds the m365 deployments

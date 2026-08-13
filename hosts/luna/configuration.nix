@@ -63,6 +63,8 @@
       t3code = {
         enable = true;
         user = "cramt";
+        # Headless: no 1Password agent here, so agents need the key on disk.
+        onDiskSshKey.enable = true;
       };
       nixarr.enable = true;
       tor.enable = true;
