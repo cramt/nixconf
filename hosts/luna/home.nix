@@ -14,13 +14,13 @@
   # re-emitted with a trailing newline by the t3code module (modules/services/
   # t3code.nix) — OpenSSH rejects the raw opnix file without it.
   programs.ssh.settings."github.com" = {
-    IdentityFile = "/home/cramt/.ssh/id_t3code";
+    IdentityFile = "/home/cramt/.ssh/id_paseo";
     IdentitiesOnly = true;
     StrictHostKeyChecking = "accept-new";
   };
   programs.git.settings = {
     gpg.ssh.program = lib.mkForce "${pkgs.openssh}/bin/ssh-keygen";
-    user.signingKey = lib.mkForce "/home/cramt/.ssh/id_t3code";
+    user.signingKey = lib.mkForce "/home/cramt/.ssh/id_paseo";
   };
 
   myHomeManager = {

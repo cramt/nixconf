@@ -94,8 +94,9 @@
         # rotating the key, restart the user service by hand:
         #   systemctl --user -M cramt@ restart t3code
         // lib.optionalAttrs config.myNixOS.services.t3code.enable {
-          t3codeSshKey = {
-            # Item still named Paseo in 1Password; it's the same personal key.
+          # Name kept from the paseo era: same 1Password item, same key, and
+          # renaming would only churn the rendered path for no gain.
+          paseoSshKey = {
             reference = "op://Homelab/Paseo/sshPrivateKey";
             owner = "cramt";
             mode = "0600";

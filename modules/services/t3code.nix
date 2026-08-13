@@ -23,8 +23,10 @@
     # refuses to load it ("error in libcrypto: unsupported") — so agents can't
     # auth or sign against GitHub. Re-emit the key with exactly one trailing
     # newline into a stable path that git/ssh point at (see hosts/luna/home.nix).
-    sshKeyRaw = config.services.onepassword-secrets.secretPaths.t3codeSshKey;
-    sshKey = "/home/${cfg.user}/.ssh/id_t3code";
+    # Secret and key file keep their paseo-era names — same key, and renaming
+    # would churn both the opnix path and the on-disk file for nothing.
+    sshKeyRaw = config.services.onepassword-secrets.secretPaths.paseoSshKey;
+    sshKey = "/home/${cfg.user}/.ssh/id_paseo";
     normalizeSshKey = pkgs.writeShellApplication {
       name = "t3code-normalize-ssh-key";
       runtimeInputs = [ pkgs.coreutils ];
