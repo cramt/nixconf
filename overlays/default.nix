@@ -146,6 +146,22 @@ inputs: [
     };
   })
 
+  # ffmpeg 9.0 dropped AVVulkanDeviceContext's queue_family_decode_index /
+  # nb_decode_queues fields, which moonlight 6.1.0's plvk.cpp still reads, so it
+  # fails to compile against the default ffmpeg. Upstream took the same fix:
+  # https://github.com/NixOS/nixpkgs/pull/552212 (merged 2026-08-13, after our
+  # nixpkgs pin). Remove on the next `just update` — once the pin includes that
+  # commit the `ffmpeg` argument is gone and this override throws, which is the
+  # reminder.
+  # final, not prev: eros applies nixos-raspberrypi's overlays after this one,
+  # which swap in the Pi-accelerated `ffmpeg-rpi` (already 8.x, so it was never
+  # broken). Reading through `final` keeps eros on ffmpeg-rpi and leaves its
+  # moonlight derivation bit-identical; `prev` would silently downgrade the TV
+  # kiosk to a generic ffmpeg and force an aarch64 rebuild.
+  (final: prev: {
+    moonlight-qt = prev.moonlight-qt.override {ffmpeg = final.ffmpeg_8;};
+  })
+
   (final: prev: {
     julia = prev.julia.withPackages ["JuliaFormatter" "LanguageServer"];
   })
