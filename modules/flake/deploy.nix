@@ -31,6 +31,17 @@ let
   deployLibs = lib.genAttrs
     (lib.unique (map hostSystem (builtins.attrNames config.nixosHosts)))
     deployLibFor;
+
+  # Structure-only copy of the deploy tree; see the comment on `checks` below.
+  schemaOnlyDeploy = inputs.self.deploy // {
+    nodes = lib.mapAttrs
+      (_: node: node // {
+        profiles = lib.mapAttrs
+          (_: profile: profile // { path = "<activation profile>"; })
+          node.profiles;
+      })
+      inputs.self.deploy.nodes;
+  };
 in
 {
   flake.deploy = {
@@ -53,16 +64,23 @@ in
   # Schema validation for the above. Only for platforms we actually deploy to,
   # so `nix flake check` on darwin doesn't instantiate nixpkgs for nothing.
   #
+  # The check validates the *shape* of the deploy attrset, but rendering that
+  # attrset to JSON makes every node's activation profile a build-time
+  # dependency of the check — and deploy-rs runs `nix flake check` before every
+  # deploy, so `just deploy luna` ended up building the whole fleet, eros's
+  # aarch64 closure included, to validate a JSON document. The schema types
+  # `path` as a plain string, so feeding it a placeholder keeps the structural
+  # validation honest and costs nothing.
+  #
   # deployChecks also ships `deploy-activate`, which is dropped: it realises
-  # every node's activation profile, so it turns `nix flake check` into a full
-  # fleet build — including eros's aarch64 closure under binfmt. `just deploy`
-  # does that same build against the hosts it's actually deploying to, so the
-  # check buys nothing for its cost. Subtractive so upstream's future checks
-  # still run by default.
+  # every node's activation profile by design, which is the same full-fleet
+  # build. `just deploy` does that build against the hosts it's actually
+  # deploying to, so the check buys nothing for its cost. Subtractive so
+  # upstream's future checks still run by default.
   perSystem = { system, ... }: {
     checks = lib.optionalAttrs (deployLibs ? ${system})
       (builtins.removeAttrs
-        (deployLibs.${system}.deployChecks inputs.self.deploy)
+        (deployLibs.${system}.deployChecks schemaOnlyDeploy)
         [ "deploy-activate" ]);
   };
 }
