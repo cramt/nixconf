@@ -15,7 +15,6 @@
     bundles.graphical.enable = true;
     bundles.gaming.enable = true;
     helium.enable = true;
-    paseo.enable = true;
     agentsview.enable = true;
     agentsview.service.enable = true;
     # Diagnostic for the intermittent WAN loss seen 2026-07-30 (affected multiple

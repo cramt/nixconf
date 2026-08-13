@@ -55,11 +55,11 @@ deploy *hosts:
     # activation wrappers are built from, rather than the ambient registry.
     exec nix run --inputs-from . nixpkgs#deploy-rs -- --targets "${targets[@]}" -- --fallback
 
-# Print the paseo quick-connect pairing QR + link from the luna daemon.
-# Pair the desktop/phone client with this. Run as cramt so it reads the
-# daemon's ~/.paseo state; absolute binary path dodges non-interactive PATH.
-paseo_pair:
-    ssh cramt@192.168.178.24 /run/current-system/sw/bin/paseo daemon pair
+# Print a T3 Code pairing token + QR for the luna server. Pair the
+# desktop/phone client with this. Run as cramt so it reads the server's ~/.t3
+# state; absolute binary path dodges non-interactive PATH.
+t3_pair:
+    ssh cramt@192.168.178.24 /run/current-system/sw/bin/t3 pair --base-dir /home/cramt/.t3
 
 clean_ruby:
     rm -rf ~/.local/share/gem/

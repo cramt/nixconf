@@ -7,20 +7,20 @@
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
 
-  # The paseo daemon runs headless as cramt, so 1Password's ssh-agent and
+  # The T3 Code server runs headless as cramt, so 1Password's ssh-agent and
   # op-ssh-sign (which need the desktop app) are unavailable. Use the personal
   # SSH key that opnix drops on-disk for both GitHub auth and commit signing so
   # agents can actually clone/commit/push. The path below is opnix's key
-  # re-emitted with a trailing newline by the paseo module (modules/services/
-  # paseo.nix) — OpenSSH rejects the raw opnix file without it.
+  # re-emitted with a trailing newline by the t3code module (modules/services/
+  # t3code.nix) — OpenSSH rejects the raw opnix file without it.
   programs.ssh.settings."github.com" = {
-    IdentityFile = "/home/cramt/.ssh/id_paseo";
+    IdentityFile = "/home/cramt/.ssh/id_t3code";
     IdentitiesOnly = true;
     StrictHostKeyChecking = "accept-new";
   };
   programs.git.settings = {
     gpg.ssh.program = lib.mkForce "${pkgs.openssh}/bin/ssh-keygen";
-    user.signingKey = lib.mkForce "/home/cramt/.ssh/id_paseo";
+    user.signingKey = lib.mkForce "/home/cramt/.ssh/id_t3code";
   };
 
   myHomeManager = {

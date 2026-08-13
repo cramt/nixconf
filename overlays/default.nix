@@ -111,17 +111,6 @@ inputs: [
     };
   })
 
-  # paseo desktop app + daemon come from inputs.paseo, which isn't in nixpkgs.
-  # The 0.2.1 npmDepsHash override that used to live here is gone: upstream's
-  # checked-in nix/npm-deps.hash is CI-verified again as of 0.2.2, so the
-  # packages build unmodified.
-  (final: prev: let
-    system = prev.stdenv.hostPlatform.system;
-  in {
-    paseo = inputs.paseo.packages.${system}.default;
-    paseo-desktop = inputs.paseo.packages.${system}.desktop;
-  })
-
   # niri-stable (v25.08) links libdisplay-info-sys 0.2.2, which only binds a
   # system libdisplay-info of the same major.minor. nixpkgs dropped
   # `libdisplay-info_0_2` (keeping only _0_3 and the current 0.4) and left a
