@@ -78,7 +78,11 @@
     };
 
     config = lib.mkIf cfg.enable {
-      port-selector.auto-assign = ["t3code"];
+      # Pinned rather than hash-assigned: clients get bookmarked/typed by hand,
+      # so the port has to be the same everywhere and stable across renames.
+      # 3773 is upstream's own default. Still goes through port-selector so a
+      # future service that wants 3773 collides loudly at eval.
+      port-selector.set-ports."3773" = "t3code";
 
       # Headless host: enable linger so the user's systemd manager (and the
       # server) come up at boot without an interactive login.

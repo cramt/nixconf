@@ -55,11 +55,18 @@ deploy *hosts:
     # activation wrappers are built from, rather than the ambient registry.
     exec nix run --inputs-from . nixpkgs#deploy-rs -- --targets "${targets[@]}" -- --fallback
 
-# Print a T3 Code pairing token + QR for the luna server. Pair the
-# desktop/phone client with this. Run as cramt so it reads the server's ~/.t3
-# state; absolute binary path dodges non-interactive PATH.
-t3_pair:
-    ssh cramt@192.168.178.24 /run/current-system/sw/bin/t3 pair --base-dir /home/cramt/.t3
+# Runs as cramt so it reads the server's ~/.t3 state, and by absolute path
+# because a non-interactive ssh shell has no user profile on PATH.
+#
+# Print a T3 Code host's connection string, pairing token and QR (`just t3_pair saturn`)
+t3_pair host="luna":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ "{{host}}" = "$(hostname)" ]; then
+      /run/current-system/sw/bin/t3 pair --base-dir "$HOME/.t3"
+    else
+      ssh "cramt@{{host}}" /run/current-system/sw/bin/t3 pair --base-dir /home/cramt/.t3
+    fi
 
 clean_ruby:
     rm -rf ~/.local/share/gem/
