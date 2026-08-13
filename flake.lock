@@ -2427,11 +2427,11 @@
     "t3code-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1786625133,
-        "narHash": "sha256-9RU2ypxrp1kqpAR3D0SfwTzfv+RD6TA2LyN8qvJxWV4=",
+        "lastModified": 1786648108,
+        "narHash": "sha256-I9d9swPtObEKnXr3FncgLrm89lGL+epe8RufcX/IIV0=",
         "owner": "pingdotgg",
         "repo": "t3code",
-        "rev": "97db94c9bf6fa5d83f94c8fff85566d7fc96276e",
+        "rev": "1b16ed663ffe475490a644d1004873a8aae6bb90",
         "type": "github"
       },
       "original": {
