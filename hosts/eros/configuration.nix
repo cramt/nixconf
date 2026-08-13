@@ -12,6 +12,19 @@ in
     inputs.nixos-raspberrypi.nixosModules.sd-image
   ];
 
+  # eros is the one host built against nixpkgs-rpi (nvmd's vendored pin, stuck
+  # on 2026-06-26 — upstream nixos-raspberrypi hasn't moved since June), while
+  # stylix follows our much newer nixpkgs. nixpkgs has since renamed regreet's
+  # options from `programs.regreet` to `services.displayManager.regreet`, and
+  # current stylix writes the new path. Defining an undeclared option is an eval
+  # error even under stylix's `mkIf false`, so this breaks eros despite
+  # `stylix.enable = false` below. eros boots sway straight from greetd and
+  # never runs regreet, so drop the target module outright rather than shim the
+  # option. Remove once nixos-raspberrypi's nixpkgs pin catches up past the
+  # rename (NixOS/nixpkgs: programs/regreet.nix ->
+  # services/display-managers/regreet.nix).
+  disabledModules = [ "${inputs.stylix}/modules/regreet/nixos.nix" ];
+
   config = {
     # nixos-raspberrypi modules expect their own flake passed as a module arg
     # (used to pull rpi-specific kernel/firmware packages). Wire it up since
