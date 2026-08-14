@@ -9,10 +9,15 @@
 # but it also installs a self-updating launcher under ~/.t3 — Nix owns the
 # version here, so the unit is hand-rolled around `t3 serve` instead.
 #
-# Unlike paseo there is no vendor relay: the server binds an interface directly.
-# It's bound on the LAN and the firewall port is opened; the one-time pairing
-# token from `t3 pair` (see `just t3_pair`) is the capability that gets a client
-# in, and unauthenticated requests are rejected.
+# Unlike paseo the server binds an interface directly rather than dialing out to
+# a relay. It's bound on the LAN and the firewall port is opened; the one-time
+# pairing token from `t3 pair` (see `just t3_pair`) is the capability that gets a
+# client in, and unauthenticated requests are rejected.
+#
+# The build does carry T3 Connect (packages/t3code/default.nix), so a client can
+# instead sign in to Ping's Clerk and reach this host over their cloud relay —
+# that's a per-client choice made in the UI, and nothing here dials the relay on
+# its own.
 { ... }: {
   flake.nixosModules."services.t3code" = { config, lib, pkgs, ... }:
   let
