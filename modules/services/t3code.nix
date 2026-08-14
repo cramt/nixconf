@@ -30,8 +30,6 @@
       name = "t3code-prepare";
       runtimeInputs = [ pkgs.coreutils ];
       text = ''
-        install -d -m700 "${dataDir}"
-      '' + lib.optionalString cfg.onDiskSshKey.enable ''
         install -d -m700 "/home/${cfg.user}/.ssh"
         # `test -s` fails (→ ExecStartPre fails → systemd retries) if opnix
         # hasn't populated the secret yet, e.g. a boot race.
@@ -88,6 +86,17 @@
       # server) come up at boot without an interactive login.
       users.users.${cfg.user}.linger = true;
 
+      # The data dir can't be created by the user session: luna bind-mounts it
+      # onto /pool (hosts/luna/configuration.nix) and the mount unit makes that
+      # source dir root-owned, so the user's ExecStartPre can neither chmod nor
+      # write it and the unit crash-loops. Own it from the system side, which
+      # runs after local-fs.target and therefore lands on the mounted inode.
+      systemd.tmpfiles.settings."10-t3code".${dataDir}.d = {
+        user = cfg.user;
+        group = config.users.users.${cfg.user}.group;
+        mode = "0700";
+      };
+
       networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ port ];
 
       # `t3` CLI on the system PATH (stable /run/current-system/sw/bin) so
@@ -104,7 +113,6 @@
           Unit.Description = "T3 Code - self-hosted server for AI coding agents";
           Install.WantedBy = [ "default.target" ];
           Service = {
-            ExecStartPre = "${prepare}/bin/t3code-prepare";
             ExecStart = lib.concatStringsSep " " [
               "${pkgs.t3code}/bin/t3 serve"
               "--host ${cfg.host}"
@@ -130,6 +138,8 @@
             KillMode = "mixed";
             KillSignal = "SIGTERM";
             TimeoutStopSec = "15";
+          } // lib.optionalAttrs cfg.onDiskSshKey.enable {
+            ExecStartPre = "${prepare}/bin/t3code-prepare";
           };
         };
       };
