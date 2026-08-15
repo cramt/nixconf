@@ -29,6 +29,12 @@
               })
             ];
           settings = {
+            # Extension versions are nix's to pick. Left on, Zen silently downloads a newer
+            # xpi from AMO over HM's symlink; the next activation reverts it, and an addon
+            # that bumped its IndexedDB schema in between (1Password does) can no longer open
+            # its own DB. Drop these once extensions.packages installs read-only.
+            "extensions.update.enabled" = false;
+            "extensions.update.autoUpdateDefault" = false;
             "browser.disableResetPrompt" = true;
             "browser.download.panel.shown" = true;
             "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
