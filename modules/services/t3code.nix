@@ -18,6 +18,17 @@
 # instead sign in to Ping's Clerk and reach this host over their cloud relay —
 # that's a per-client choice made in the UI, and nothing here dials the relay on
 # its own.
+#
+# Once linked, though, the relay side is not declarative. The relay client
+# downloads its own cloudflared (~39MB, straight from GitHub releases) into
+# ~/.t3/tools/cloudflared/<version>/, so that binary's version is upstream's
+# choice rather than anything pinned here, and it re-downloads whenever they bump
+# it. The server bundle does read T3CODE_CLOUDFLARED_PATH, so pointing that at
+# pkgs.cloudflared should hand the job back to Nix — untested. In the same vein
+# `t3 connect` offers to "update or repair" the installed service, which means
+# dropping upstream's self-updating launcher in ~/.t3 alongside the Nix-owned
+# unit; always decline it. Worth a proper pass at some point to work out how much
+# of ~/.t3 can be owned declaratively and how much is genuinely mutable state.
 { ... }: {
   flake.nixosModules."services.t3code" = { config, lib, pkgs, ... }:
   let
