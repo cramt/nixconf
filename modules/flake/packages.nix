@@ -109,6 +109,13 @@
         cosmic-comp
         llama-cpp-rocm-rpc
         llama-cpp-cuda-rpc
+        # colibrì's GPU tiers. The HIP build compiles backend_cuda.cu through
+        # hipcc for gfx1101 and the Vulkan one runs glslc over the compute
+        # shaders — neither is anything Hydra has, and saturn is a desktop we'd
+        # rather not have compiling HIP kernels. The plain CPU `colibri` is
+        # seconds to build and deliberately left out.
+        colibri-rocm
+        colibri-vulkan
         # Built from source through pnpm2nix (whole pnpm monorepo + a ~2min
         # rolldown build), so it wants prebuilding too. Version tracks
         # inputs.t3code-src, so `nix flake update` bumps it, not nix-update.

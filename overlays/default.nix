@@ -93,6 +93,32 @@ inputs: [
     });
   })
 
+  # colibrì MoE streaming engine. Not in nixpkgs; pure C with no engine deps, so
+  # the CPU build is cheap — but the GPU tiers are ROCm/Vulkan builds Hydra
+  # never caches, the same situation as llama-cpp-rocm-rpc above. The variants
+  # are spelled out HERE rather than .override'd inside the service module for
+  # the same reason as llama.cpp's: modules/services/colibri.nix selects one of
+  # these by name, so the prebuilt flake package and the one saturn's closure
+  # references are the same store path.
+  #
+  # gfx1101 = Navi 32 = saturn's RX 7800 XT, and it is a compile-time target,
+  # not llama.cpp's runtime HSA_OVERRIDE_GFX_VERSION — RDNA3 has WMMA matrix
+  # cores, which is what rocWMMA needs to map the CUDA nvcuda::wmma kernels onto.
+  (final: prev: {
+    colibri = prev.callPackage ../packages/colibri {};
+    colibri-rocm = prev.callPackage ../packages/colibri {
+      rocmSupport = true;
+      rocmGpuTarget = "gfx1101";
+    };
+    # RADV compute path. Upstream measures the VRAM-resident int4 expert
+    # primitive ~35% faster than ROCm/HIP on RDNA4 — unmeasured on RDNA3, which
+    # is exactly why both variants are built and A/B'd rather than one being
+    # declared the winner up front (docs/saturn-llm-storage.md).
+    colibri-vulkan = prev.callPackage ../packages/colibri {
+      vulkanSupport = true;
+    };
+  })
+
   (final: prev: {
     cockatrice = prev.callPackage ../packages/cockatrice {};
   })
