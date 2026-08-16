@@ -128,20 +128,35 @@ reversible with `resize <devid>:max` right up until Phase 2.
 filesystem that still believes it owns the full device — that is the one way to
 lose data here.
 
+devid 2 is nvme0n1p2 (the 980) and devid 1 is nvme1n1p2 (the 970 EVO). No inline
+`#` comments below — saturn's zsh does not have `interactive_comments` set, so a
+trailing comment is passed to btrfs as arguments and the command fails with
+"exactly 2 arguments expected".
+
 ```bash
-sudo btrfs filesystem resize 2:730G /      # devid 2 = nvme0n1p2 = 980
-sudo btrfs filesystem resize 1:381G /      # devid 1 = nvme1n1p2 = 970 EVO
-btrfs filesystem show /                    # must read 730.00GiB and 381.00GiB
+sudo btrfs filesystem resize 2:730G /
+sudo btrfs filesystem resize 1:381G /
+btrfs filesystem show /
 ```
 
-Do not proceed until `show` reports both new sizes.
+`show` must report 730.00GiB for devid 2 and 381.00GiB for devid 1. Do not
+proceed until it does.
 
-### Phase 2 — offline
+### Phase 2 — live, then one reboot
 
-You cannot safely shrink a mounted partition's kernel-visible size on the disk
-holding `/`. Boot the same kexec/USB installer
-[saturn-disko-migration.md](saturn-disko-migration.md) uses — but this time
-nothing is wiped and there is nothing to back up.
+No installer media needed. A GPT lives in LBA 0–33 with its backup in the last 33
+sectors of the disk, and neither is inside any partition — on both drives p2 ends
+at 1953523711 with the disk running to 1953525167, so the backup header sits in
+the gap past it. `sgdisk` can therefore rewrite the table on a running system.
+
+What it *cannot* do is make the kernel re-read that table while partitions are
+mounted; it will say so and tell you to reboot. That is fine and expected here,
+because the only in-use partition being changed is p2 and btrfs has already been
+shrunk inside it — the kernel's stale, too-large view of p2 is inert until the
+reboot corrects it. Nothing writes past 730/381 GiB in the meantime.
+
+Have the earlier `--backup` files somewhere you can reach from rescue media
+anyway, since the reboot is the moment a bad table would bite.
 
 `sgdisk` is not in saturn's system closure — `nix shell nixpkgs#gptfdisk` first.
 
@@ -184,12 +199,13 @@ The partition **names are not cosmetic** — `fileSystems` mounts everything by
 existing partitions already carry and must be reproduced exactly; `disk-ssd_a-llm`
 and `disk-ssd_b-llm` are what the new config expects.
 
-Then the filesystems, matching what disko would have created (`-m 0`, no other
-flags):
+`sgdisk` will warn that the kernel is still using the old table. Reboot normally
+into NixOS — no rescue media — and it comes up with the new one. Then the
+filesystems, matching what disko would have created (`-m 0`, no other flags):
 
 ```bash
-mkfs.ext4 -m 0 /dev/disk/by-partlabel/disk-ssd_a-llm
-mkfs.ext4 -m 0 /dev/disk/by-partlabel/disk-ssd_b-llm
+sudo mkfs.ext4 -m 0 /dev/disk/by-partlabel/disk-ssd_a-llm
+sudo mkfs.ext4 -m 0 /dev/disk/by-partlabel/disk-ssd_b-llm
 ```
 
 ### Phase 3 — back into NixOS
