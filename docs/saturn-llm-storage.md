@@ -5,9 +5,11 @@ runs frontier MoE models by streaming expert weights off disk instead of holding
 them in RAM. Declared in `hosts/saturn/disko.nix`; consumed by
 `myNixOS.services.colibri` (`modules/services/colibri.nix`).
 
-**Adding these partitions is a full reinstall** — disko repartitions and wipes
-both SSDs. Follow [saturn-disko-migration.md](saturn-disko-migration.md); the
-backup list and procedure there are unchanged.
+**This does not need a reinstall.** Both LLM partitions are the *last* partition
+on their drive, which is the whole point of the layout: shrinking a btrfs member
+frees space at the end of a disk, so a tail partition is the one thing that can
+be added in place. See [In place, no reinstall](#in-place-no-reinstall) below.
+Nothing gets renumbered and no existing partition moves.
 
 ## Why not just a directory on the btrfs pool
 
@@ -41,27 +43,32 @@ verify it, or read per-drive stats off it.
 
 ## Layout
 
-| Device | Partition | Size | Contents |
-|---|---|---|---|
-| nvme0n1 — Samsung **980** | p1 | 1 G | ESP (`/boot`, shared with Windows) |
-| | **p2** | **200 G** | **ext4 → `/llm/mirror`** |
-| | p3 | rest (~730 G) | btrfs pool member |
-| nvme1n1 — Samsung **970 EVO** | p1 | 150 G | NTFS slot (Windows/League) |
-| | **p2** | **400 G** | **ext4 → `/llm/primary`** |
-| | p3 | rest (~380 G) | btrfs pool member, owns the mkfs |
+| Device | Partition | Size | Contents | Changed? |
+|---|---|---|---|---|
+| nvme0n1 — Samsung **980** | p1 | 1 G | ESP (`/boot`, shared with Windows) | — |
+| | p2 | 930 G → **730 G** | btrfs pool member | shrunk |
+| | **p3** | **~200 G** | **ext4 → `/llm/mirror`** | **new** |
+| nvme1n1 — Samsung **970 EVO** | p1 | 150 G | NTFS slot (Windows/League) | — |
+| | p2 | 780 G → **381 G** | btrfs pool member, owns the mkfs | shrunk |
+| | **p3** | **~400 G** | **ext4 → `/llm/primary`** | **new** |
 
 btrfs pool drops from ~1.7 TB to ~1.1 TB usable.
 
-Partition **numbers are load-bearing** and every partition now carries an
-explicit `priority`. disko orders by priority and falls back to attribute-name
-order for ties, and `builtins.sort` guarantees no stability — so leaving ties to
-break by name would make the numbering an implementation detail. Two things
-depend on it:
+**Nothing is renumbered.** The ESP stays p1, Windows stays `nvme1n1p1` (named in
+`configuration.nix` and `scripts/saturn-windows-image.sh`), and the btrfs
+`extraArgs` still points at `${ssdA}-part2`. That falls out of putting the LLM
+partitions last, which is also what makes the in-place migration possible.
 
-- the btrfs `extraArgs` reference to `${ssdA}-part3` (was `-part2`)
-- `nvme1n1p1` for Windows, named in `configuration.nix` and
-  `scripts/saturn-windows-image.sh` — which is why the NTFS slot keeps
-  priority 100 and the LLM partition goes *after* it
+The pool members carry explicit sizes rather than `size = "100%"` — a 100%
+partition sorts last in disko and nothing can follow it. The LLM partitions take
+`100%` instead, absorbing whatever the drive actually has past the pool; the
+exact usable capacity of a "1 TB" NVMe isn't worth hardcoding, and a few hundred
+MiB either way is noise against a 167 G model.
+
+Every partition also carries an explicit `priority`: disko orders by priority and
+falls back to attribute-name order for ties, and `builtins.sort` guarantees no
+stability, so leaving ties to break by name would make the numbering an
+implementation detail.
 
 ### Why the sizes are asymmetric
 
@@ -85,6 +92,113 @@ Both are PCIe 3.0 (~3.5 GB/s each), so a full split tops out around 7 GB/s.
 
 colibrì weights routing by *measured* per-drive bandwidth, so it handles the
 asymmetric pair itself — no manual `COLI_DISK_WEIGHTS` needed.
+
+## In place, no reinstall
+
+**Deploying this config does not repartition anything.** `nixos-rebuild` / `nh os
+switch` never runs disko's format script — that only happens during a fresh
+install via nixos-anywhere or `disko-install`. Switching to this config on the
+running saturn just adds two `fileSystems` entries, both `nofail`, which sit
+inert until the filesystems exist. The surgery below is what brings the disk into
+agreement with what `disko.nix` already declares.
+
+### Precondition
+
+Both members shrink — 930 G → 730 G and 780 G → 381 G, about 600 G off a ~1.7 TB
+pool, leaving ~1.11 TB. Check it fits *first*:
+
+```bash
+btrfs filesystem usage /
+```
+
+`Used` needs to be comfortably under 1.1 TiB. Data is `-d single` so it only has
+to fit somewhere; metadata is `-m raid1`, so both members need room for a
+mirrored copy.
+
+### Phase 1 — online, on the running system
+
+btrfs shrinks a member device while mounted, relocating chunks off the tail. This
+is the slow part and the only part that moves data. It is interruptible and
+restartable, and reversible with `resize <devid>:max` right up until Phase 2.
+
+```bash
+btrfs filesystem show /            # note the devid of each drive
+sudo btrfs filesystem resize <devid-980>:730G /
+sudo btrfs filesystem resize <devid-970>:381G /
+btrfs filesystem show /            # confirm the new sizes before rebooting
+```
+
+### Phase 2 — offline
+
+You cannot safely shrink a mounted partition's kernel-visible size on the disk
+holding `/`. Boot the same kexec/USB installer
+[saturn-disko-migration.md](saturn-disko-migration.md) uses — but this time
+nothing is wiped and there is nothing to back up.
+
+Take a partition table backup, then record the existing p2 start sectors, because
+p2 must be recreated at *exactly* the same start:
+
+```bash
+sgdisk --backup=/tmp/nvme0n1.gpt /dev/nvme0n1     # --load-backup= to undo
+sgdisk --backup=/tmp/nvme1n1.gpt /dev/nvme1n1
+sgdisk --info=2 /dev/nvme0n1                       # note "First sector"
+sgdisk --info=2 /dev/nvme1n1
+```
+
+`sgdisk --delete` only rewrites the partition table; it does not touch filesystem
+data. Recreating p2 at an identical start sector with a smaller size leaves the
+btrfs member exactly where it was.
+
+```bash
+# 980 / nvme0n1 → LLM mirror
+sgdisk --align-end --delete=2 \
+       --new=2:<START2>:+730G --typecode=2:8300 --change-name=2:disk-ssd_a-pool \
+       --new=3:0:-0           --typecode=3:8300 --change-name=3:disk-ssd_a-llm \
+       /dev/nvme0n1
+
+# 970 EVO / nvme1n1 → LLM primary
+sgdisk --align-end --delete=2 \
+       --new=2:<START2>:+381G --typecode=2:8300 --change-name=2:disk-ssd_b-pool \
+       --new=3:0:-0           --typecode=3:8300 --change-name=3:disk-ssd_b-llm \
+       /dev/nvme1n1
+```
+
+The partition **names are not cosmetic** — `fileSystems` mounts everything by
+`by-partlabel`. `disk-ssd_a-pool` and `disk-ssd_b-pool` are the labels the
+existing partitions already carry and must be reproduced exactly; `disk-ssd_a-llm`
+and `disk-ssd_b-llm` are what the new config expects.
+
+Then the filesystems, matching what disko would have created (`-m 0`, no other
+flags):
+
+```bash
+mkfs.ext4 -m 0 /dev/disk/by-partlabel/disk-ssd_a-llm
+mkfs.ext4 -m 0 /dev/disk/by-partlabel/disk-ssd_b-llm
+```
+
+### Phase 3 — back into NixOS
+
+```bash
+nh os switch
+findmnt /llm/primary /llm/mirror
+btrfs filesystem show /
+```
+
+### If it goes wrong
+
+Phase 1 is fully reversible until Phase 2 rewrites the table. The one step worth
+re-reading before pressing enter is the p2 start sector: get it wrong and the
+pool won't mount, because btrfs will be looking at the wrong offset. No data has
+moved at that point, so restoring the correct start — or
+`sgdisk --load-backup=/tmp/nvme0n1.gpt` — brings it straight back. Do not run
+`mkfs` on anything but p3.
+
+## Or: from scratch
+
+A fresh install via nixos-anywhere produces the identical layout with no manual
+steps, since `disko.nix` declares exactly what Phase 2 builds by hand. Follow
+[saturn-disko-migration.md](saturn-disko-migration.md) as written. Only worth it
+if saturn is being rebuilt for other reasons.
 
 ## Start with DeepSeek V4 Flash
 

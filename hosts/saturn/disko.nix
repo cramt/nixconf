@@ -81,12 +81,11 @@ in {
       content = {
         type = "gpt";
         partitions = {
-          # Explicit priorities everywhere below. disko orders partitions by
-          # `priority` and falls back to attribute-name order for ties, and
-          # builtins.sort makes no stability guarantee — so leaving two 1000s to
-          # tie-break by name would make the partition NUMBERS depend on an
-          # implementation detail. They are load-bearing here (see the btrfs
-          # extraArgs below, and nvme1n1p1 in configuration.nix), so pin them.
+          # Explicit priorities. disko orders partitions by `priority` and falls
+          # back to attribute-name order for ties, and builtins.sort makes no
+          # stability guarantee — so leaving ties to break by name would make
+          # partition NUMBERS an implementation detail. They are load-bearing
+          # (the btrfs extraArgs below, nvme1n1p1 in configuration.nix).
           ESP = {
             priority = 100;
             size = "1G";
@@ -98,10 +97,29 @@ in {
               mountOptions = ["umask=0077"];
             };
           };
-          # LLM mirror — the DRAM-less 980, so the smaller/secondary copy.
-          llm = {
+          # Secondary btrfs member, referenced by ssd_b's mkfs below. Explicitly
+          # sized rather than 100% so the LLM partition can follow it — see the
+          # note on ordering above `llm`.
+          pool = {
             priority = 200;
-            size = "200G";
+            size = "730G";
+          };
+          # LLM mirror — the DRAM-less 980, so the smaller/secondary copy.
+          #
+          # This is LAST on the disk, and that is the whole reason saturn can get
+          # these partitions without a reinstall: shrinking a btrfs member frees
+          # space at the END of the drive, so a new tail partition is the only
+          # thing that can be added in place. Putting it before the pool would
+          # mean moving the pool's start sector, i.e. relocating a terabyte.
+          # Keeping it last also leaves the ESP, Windows and both pool members on
+          # their existing partition numbers.
+          #
+          # 100% (not an explicit 200G) so it absorbs whatever the drive actually
+          # has past the pool — the exact usable capacity of a "1TB" NVMe is not
+          # worth hardcoding, and a few hundred MiB either way is noise against a
+          # 167G model. Works out to ~200G.
+          llm = {
+            size = "100%";
             content = {
               type = "filesystem";
               format = "ext4";
@@ -110,7 +128,6 @@ in {
               extraArgs = llmExtraArgs;
             };
           };
-          pool = {size = "100%";}; # secondary btrfs member (part3), referenced by ssd_b below
         };
       };
     };
@@ -130,21 +147,11 @@ in {
             size = "150G";
             type = "0700"; # Microsoft basic data (NTFS)
           };
-          # LLM primary — the 970 EVO has DRAM, so it takes the full model and
-          # serves every expert the mirror doesn't hold.
-          llm = {
-            priority = 200;
-            size = "400G";
-            content = {
-              type = "filesystem";
-              format = "ext4";
-              mountpoint = "/llm/primary";
-              mountOptions = llmMountOptions;
-              extraArgs = llmExtraArgs;
-            };
-          };
+          # Primary btrfs member; owns the mkfs for the whole pool. Explicitly
+          # sized so the LLM partition can be the tail one (see ssd_a's `llm`).
           pool = {
-            size = "100%";
+            priority = 200;
+            size = "381G";
             content = {
               type = "btrfs";
               extraArgs = [
@@ -154,9 +161,9 @@ in {
                 "single"
                 "-m"
                 "raid1"
-                # part3, not part2 — the LLM partition now sits between the ESP
-                # and the pool member on ssd_a.
-                "${ssdA}-part3"
+                # Still part2: both LLM partitions go at the END of their drives,
+                # so nothing here gets renumbered.
+                "${ssdA}-part2"
               ];
               subvolumes = {
                 "@root" = {
@@ -172,6 +179,19 @@ in {
                   mountOptions = btrfsMountOptions;
                 };
               };
+            };
+          };
+          # LLM primary — the 970 EVO has DRAM, so it takes the full model and
+          # serves every expert the mirror doesn't hold. Tail partition for the
+          # same reason as ssd_a's; works out to ~400G.
+          llm = {
+            size = "100%";
+            content = {
+              type = "filesystem";
+              format = "ext4";
+              mountpoint = "/llm/primary";
+              mountOptions = llmMountOptions;
+              extraArgs = llmExtraArgs;
             };
           };
         };
