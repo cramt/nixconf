@@ -102,31 +102,39 @@ running saturn just adds two `fileSystems` entries, both `nofail`, which sit
 inert until the filesystems exist. The surgery below is what brings the disk into
 agreement with what `disko.nix` already declares.
 
-### Precondition
+### Precondition — measured 2026-08-16
 
-Both members shrink — 930 G → 730 G and 780 G → 381 G, about 600 G off a ~1.7 TB
-pool, leaving ~1.11 TB. Check it fits *first*:
-
-```bash
-btrfs filesystem usage /
+```
+Device size: 1.67TiB   Used: 516.57GiB   (data 502.17G single, metadata 7.20G raid1)
+devid 1  /dev/nvme1n1p2  (970 EVO)  size 781.51GiB  used 198.01GiB
+devid 2  /dev/nvme0n1p2  (980)      size 930.51GiB  used 348.01GiB
 ```
 
-`Used` needs to be comfortably under 1.1 TiB. Data is `-d single` so it only has
-to fit somewhere; metadata is `-m raid1`, so both members need room for a
-mirrored copy.
+Post-shrink the pool is 730 + 381 = 1111 GiB against 502 GiB of data, leaving
+~595 GiB free, and both members have 580+ GiB unallocated for btrfs to relocate
+into. It fits with a lot of room. Re-check with `btrfs filesystem usage /` before
+starting if much time has passed.
+
+> **devid 1 is the 970 EVO and devid 2 is the 980** — the opposite of what the
+> nvme0/nvme1 numbering suggests. Getting these backwards shrinks the wrong drive.
 
 ### Phase 1 — online, on the running system
 
 btrfs shrinks a member device while mounted, relocating chunks off the tail. This
-is the slow part and the only part that moves data. It is interruptible and
-restartable, and reversible with `resize <devid>:max` right up until Phase 2.
+is the only part that moves data. It is interruptible and restartable, and
+reversible with `resize <devid>:max` right up until Phase 2.
+
+**This must happen before Phase 2.** Repartitioning first would truncate a
+filesystem that still believes it owns the full device — that is the one way to
+lose data here.
 
 ```bash
-btrfs filesystem show /            # note the devid of each drive
-sudo btrfs filesystem resize <devid-980>:730G /
-sudo btrfs filesystem resize <devid-970>:381G /
-btrfs filesystem show /            # confirm the new sizes before rebooting
+sudo btrfs filesystem resize 2:730G /      # devid 2 = nvme0n1p2 = 980
+sudo btrfs filesystem resize 1:381G /      # devid 1 = nvme1n1p2 = 970 EVO
+btrfs filesystem show /                    # must read 730.00GiB and 381.00GiB
 ```
+
+Do not proceed until `show` reports both new sizes.
 
 ### Phase 2 — offline
 
@@ -135,33 +143,41 @@ holding `/`. Boot the same kexec/USB installer
 [saturn-disko-migration.md](saturn-disko-migration.md) uses — but this time
 nothing is wiped and there is nothing to back up.
 
-Take a partition table backup, then record the existing p2 start sectors, because
-p2 must be recreated at *exactly* the same start:
+`sgdisk` is not in saturn's system closure — `nix shell nixpkgs#gptfdisk` first.
+
+Back the tables up before touching anything:
 
 ```bash
 sgdisk --backup=/tmp/nvme0n1.gpt /dev/nvme0n1     # --load-backup= to undo
 sgdisk --backup=/tmp/nvme1n1.gpt /dev/nvme1n1
-sgdisk --info=2 /dev/nvme0n1                       # note "First sector"
-sgdisk --info=2 /dev/nvme1n1
 ```
 
 `sgdisk --delete` only rewrites the partition table; it does not touch filesystem
 data. Recreating p2 at an identical start sector with a smaller size leaves the
 btrfs member exactly where it was.
 
+Sectors below are absolute and measured off saturn (512-byte sectors, both drives
+ending at 1953523711). They are spelled out rather than using `+730G` so the
+arithmetic is auditable and `--align-end` cannot shift an end sector out from
+under a filesystem — every boundary here is already 1 MiB aligned.
+
 ```bash
-# 980 / nvme0n1 → LLM mirror
-sgdisk --align-end --delete=2 \
-       --new=2:<START2>:+730G --typecode=2:8300 --change-name=2:disk-ssd_a-pool \
-       --new=3:0:-0           --typecode=3:8300 --change-name=3:disk-ssd_a-llm \
+# 980 / nvme0n1 — p2 start 2099200 (1.0 GiB), p2 → 730 GiB, p3 → /llm/mirror (~200 GiB)
+sgdisk --delete=2 \
+       --new=2:2099200:1533020159    --typecode=2:8300 --change-name=2:disk-ssd_a-pool \
+       --new=3:1533020160:1953523711 --typecode=3:8300 --change-name=3:disk-ssd_a-llm \
        /dev/nvme0n1
 
-# 970 EVO / nvme1n1 → LLM primary
-sgdisk --align-end --delete=2 \
-       --new=2:<START2>:+381G --typecode=2:8300 --change-name=2:disk-ssd_b-pool \
-       --new=3:0:-0           --typecode=3:8300 --change-name=3:disk-ssd_b-llm \
+# 970 EVO / nvme1n1 — p2 start 314574848 (150.0 GiB), p2 → 381 GiB, p3 → /llm/primary (~400 GiB)
+sgdisk --delete=2 \
+       --new=2:314574848:1113589759  --typecode=2:8300 --change-name=2:disk-ssd_b-pool \
+       --new=3:1113589760:1953523711 --typecode=3:8300 --change-name=3:disk-ssd_b-llm \
        /dev/nvme1n1
 ```
+
+The p2 start sectors (2099200 and 314574848) are the load-bearing values — they
+must match what the drives already have, and they are what `sgdisk --info=2`
+reported. The p2 end sectors give exactly 730 and 381 GiB, matching Phase 1.
 
 The partition **names are not cosmetic** — `fileSystems` mounts everything by
 `by-partlabel`. `disk-ssd_a-pool` and `disk-ssd_b-pool` are the labels the
@@ -258,12 +274,18 @@ the DRAM-less 980. `serve.direct` is off by default for that reason. Note this
 knob is per-*service*, not per-drive, so if the two disagree the mirror split
 itself is what to re-examine.
 
-**Whether 32 GB of RAM is the real ceiling.** V4 Flash wants 16 GB minimum, 22
-comfortable, on a desktop that also runs COSMIC and games, with
-`vm.swappiness = 180` and zram in the mix. `serve.memoryMax` exists precisely so
-an overshoot degrades instead of taking the session down. Saturn also has the
-unresolved Bank-0 MCEs (see `saturn-mce-bios.md`) — holding 20+ GB resident for
-hours is a good way to find out whether those are still there.
+**Whether 31 GiB of RAM is the real ceiling.** Measured free on an idle-ish
+desktop: 22 GiB available of 31 GiB total, plus 15 GiB of zram. V4 Flash wants 16
+GB minimum / 22 comfortable, which fits; GLM-5.2 wants 24 comfortable, which does
+not without closing things; Inkling wants ~25 GB even with the reduced dense
+container, so it is the marginal one despite fitting on disk. `serve.memoryMax`
+exists precisely so an overshoot degrades instead of taking the session down.
+Saturn also has the unresolved Bank-0 MCEs (see `saturn-mce-bios.md`) — holding
+20+ GB resident for hours is a good way to find out whether those are still there.
+
+**Not** open: the `march` question. Saturn is an i7-10700K (Comet Lake) with AVX2
+but no AVX-512 and no AVX-VNNI, so there is no VNNI dot kernel to unlock and the
+package's `x86-64-v3` default is already the correct target.
 
 ## Expected throughput
 
