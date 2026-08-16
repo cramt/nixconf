@@ -141,6 +141,21 @@
         rocmVersion = "11.0.1";
         port = 50052;
       };
+      # colibrì streams MoE expert weights off the dedicated /llm partitions
+      # (hosts/saturn/disko.nix). The CLI ships now because staging the weights
+      # NEEDS it — `coli convert`/`download` populate /llm/primary, and
+      # `coli doctor`/`plan`/`tune` are how you find out what this box actually
+      # does before committing a tuned profile.
+      #
+      # serve.enable stays false until /llm/primary holds a model: the daemon
+      # would otherwise crash-loop against an empty mountpoint. Flip it, set
+      # model/mirror, and put whatever `coli tune` measures into
+      # serve.environment. See docs/saturn-llm-storage.md.
+      colibri = {
+        enable = true;
+        backend = "rocm";
+        serve.enable = false;
+      };
       nixarr.enable = false;
       caddy = {
         enable = false;

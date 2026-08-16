@@ -112,6 +112,7 @@ Terraform configs live in `infra/`. Use `just tf <args>` which injects credentia
 - `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.47. `eros` — 2GB RPi4 TV kiosk. `titan` — OpenWrt router.
 - Daily browser is Zen. Firefox, Thunderbird, and Heroic are installed but unused.
 - `/external_storage` is a mergerfs pool over slow HDDs — no heavy IO through the mergerfs mount.
+- saturn's `/llm/primary` (400G, 970 EVO) and `/llm/mirror` (200G, 980) are plain ext4 *outside* the btrfs pool, for colibrì expert streaming. Deliberately not on the pool: `compress=zstd:1` kills O_DIRECT, and the engine's dual-drive read splitting needs two separate filesystems. See `docs/saturn-llm-storage.md`.
 
 ## Build Policy
 
