@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "f37e9d189bbfb55f29fdffd2ca7635634d82d2be",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/f37e9d189bbfb55f29fdffd2ca7635634d82d2be.tar.gz",
-      "hash": "sha256-RQmMta0qdXM+Rdym0LHTaxd4eZ2p8qVYDtSQk+WigWw="
+      "revision": "9334333ccbc894bb12a8a087eaa7f368d117ffc2",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/9334333ccbc894bb12a8a087eaa7f368d117ffc2.tar.gz",
+      "hash": "sha256-xNC3t5X31o4R2Jd8HAwzeVR8neUdPFo3xcYgK/VdkUQ="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -30,8 +30,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:8f735ed032b6f04bc454e4c86e0069b31eaa836005947effce65bd04adecb6ca",
-      "hash": "sha256-lDs4NYbV6aaIFmLehBSLTDpRKOoo6j4qzgmJEHCWVKE="
+      "image_digest": "sha256:f1ff4b011be24d8d06231a218093e115f710c0ed108cfc30169bcd8f0f88615f",
+      "hash": "sha256-+41wOETJ1NpyhhGU5Yt8MlO8ElN8uhRmW5sycwsHVrw="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -44,8 +44,8 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1043539.9bc02893134c/nixexprs.tar.xz",
-      "hash": "sha256-PlAXr9kpfXhMFU0OQ7qtE8FhLQo21WXFVGqIC85UFyc="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1052792.044bfe75bfe4/nixexprs.tar.xz",
+      "hash": "sha256-Cwffw7dPM56d8spt4/queFQ1cKg69D9qrsp+wfwKvfo="
     },
     "superpowers": {
       "type": "Git",
@@ -56,9 +56,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "44c9b2d6e889982ac18c27d05a19fefe335194e1",
-      "url": "https://github.com/obra/superpowers/archive/44c9b2d6e889982ac18c27d05a19fefe335194e1.tar.gz",
-      "hash": "sha256-fnl+HbPL2qD5Zgz8a1NctjFJSqu6UsyHJAhQMLQNXXc="
+      "revision": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
+      "url": "https://github.com/obra/superpowers/archive/b36e0829c6d0140e93cfef2ca599b1b07d4a7797.tar.gz",
+      "hash": "sha256-EsGNO0dULWf5Bx6bGrCv2kI2Z8aKH0kRvGiuN23wChQ="
     },
     "wolveix/satisfactory-server": {
       "type": "Container",

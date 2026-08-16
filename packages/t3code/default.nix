@@ -113,11 +113,25 @@ let
     # all of them.
     appSrc = _: patchedSrc;
 
-    # vite-plus builds a reqwest HTTP client during startup and panics outright
-    # if the system trust store is empty, which it is in the sandbox. Nothing is
-    # fetched — the build has no network — this only gets it past init.
     buildEnv = {
+      # vite-plus builds a reqwest HTTP client during startup and panics outright
+      # if the system trust store is empty, which it is in the sandbox. Nothing is
+      # fetched — the build has no network — this only gets it past init.
       SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+
+      # T3 Connect (Clerk sign-in + the managed cloud relay) is compiled in from
+      # these, not configured at runtime: `scripts/lib/public-config.ts` reads
+      # them and each app's vite.config.ts bakes them into `__T3CODE_BUILD_*__`
+      # defines. Upstream's own way to turn the feature on is `cp .env.example
+      # .env`; loadRepoEnv takes process.env at higher precedence than that file,
+      # so setting them here does the same thing without patching the source.
+      # Leave any of them out and its define becomes "", which is how the feature
+      # ships disabled. Values are the public identifiers from .env.example —
+      # the same ones in official release builds, not secrets.
+      T3CODE_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsudDMuY29kZXMk";
+      T3CODE_CLERK_JWT_TEMPLATE = "t3-relay";
+      T3CODE_CLERK_CLI_OAUTH_CLIENT_ID = "hzxSgY2cH10sDU2r";
+      T3CODE_RELAY_URL = "https://relay.t3.codes";
     };
   };
 

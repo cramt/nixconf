@@ -46,19 +46,6 @@ inputs: [
     });
   })
 
-  # The brightness thread holds /dev/i2c-* fds forever, which deadlocks the
-  # kernel's DP-MST teardown on monitor unplug (hung kworker, lost output
-  # configs). Patch drops the cached DDC handles after 2s idle.
-  # Upstream: https://github.com/pop-os/cosmic-settings-daemon/issues/165,
-  # fixed by pop-os/cosmic-settings-daemon#171 and released in epoch-1.5.0.
-  # nixpkgs still packages epoch-1.2.0 — remove once it bumps to >= 1.5.0
-  # (the patch will stop applying at that point anyway).
-  (final: prev: {
-    cosmic-settings-daemon = prev.cosmic-settings-daemon.overrideAttrs (old: {
-      patches = (old.patches or []) ++ [../patches/cosmic-settings-daemon-drop-idle-i2c-fds.patch];
-    });
-  })
-
   # Shared definitions for the GPU-accelerated llama.cpp builds used by the
   # llama-cpp / llama-cpp-rpc services. These are cache misses by construction
   # (Hydra doesn't build ROCm/CUDA variants), so they're exposed as flake
@@ -150,15 +137,44 @@ inputs: [
     };
   })
 
-  # paseo desktop app + daemon come from inputs.paseo, which isn't in nixpkgs.
-  # The 0.2.1 npmDepsHash override that used to live here is gone: upstream's
-  # checked-in nix/npm-deps.hash is CI-verified again as of 0.2.2, so the
-  # packages build unmodified.
-  (final: prev: let
-    system = prev.stdenv.hostPlatform.system;
-  in {
-    paseo = inputs.paseo.packages.${system}.default;
-    paseo-desktop = inputs.paseo.packages.${system}.desktop;
+  # niri-stable (v25.08) links libdisplay-info-sys 0.2.2, which only binds a
+  # system libdisplay-info of the same major.minor. nixpkgs dropped
+  # `libdisplay-info_0_2` (keeping only _0_3 and the current 0.4) and left a
+  # *throwing* alias in its place, so niri-flake's `libdisplay-info_0_2 ?
+  # libdisplay-info` fallback never fires — callPackage still finds the
+  # attribute — and its `assert libdisplay-info_0_2.version == "0.2.0"` blows up
+  # during eval of every host with niri enabled. Rebuilding 0.2.0 (rather than
+  # pointing at _0_3) is deliberate: 0.3 would be an ABI mismatch for the crate.
+  # Upstream: https://github.com/sodiboo/niri-flake/issues/1851, fix in flight as
+  # https://github.com/sodiboo/niri-flake/pull/1853, which resurrects 0.2.0 the
+  # same way. Remove once that PR lands and our niri-flake pin includes it.
+  (final: prev: {
+    libdisplay-info_0_2 = prev.libdisplay-info.overrideAttrs {
+      version = "0.2.0";
+      src = prev.fetchFromGitLab {
+        domain = "gitlab.freedesktop.org";
+        owner = "emersion";
+        repo = "libdisplay-info";
+        rev = "0.2.0";
+        hash = "sha256-6xmWBrPHghjok43eIDGeshpUEQTuwWLXNHg7CnBUt3Q=";
+      };
+    };
+  })
+
+  # ffmpeg 9.0 dropped AVVulkanDeviceContext's queue_family_decode_index /
+  # nb_decode_queues fields, which moonlight 6.1.0's plvk.cpp still reads, so it
+  # fails to compile against the default ffmpeg. Upstream took the same fix:
+  # https://github.com/NixOS/nixpkgs/pull/552212 (merged 2026-08-13, after our
+  # nixpkgs pin). Remove on the next `just update` — once the pin includes that
+  # commit the `ffmpeg` argument is gone and this override throws, which is the
+  # reminder.
+  # final, not prev: eros applies nixos-raspberrypi's overlays after this one,
+  # which swap in the Pi-accelerated `ffmpeg-rpi` (already 8.x, so it was never
+  # broken). Reading through `final` keeps eros on ffmpeg-rpi and leaves its
+  # moonlight derivation bit-identical; `prev` would silently downgrade the TV
+  # kiosk to a generic ffmpeg and force an aarch64 rebuild.
+  (final: prev: {
+    moonlight-qt = prev.moonlight-qt.override {ffmpeg = final.ffmpeg_8;};
   })
 
   (final: prev: {

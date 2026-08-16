@@ -24,6 +24,7 @@
         cli-proxy-api.enable = true;
         pi.enable = true;
         java.enable = true;
+        scala.enable = true;
         ruby.enable = true;
         codex.enable = true;
         herdr.enable = true;

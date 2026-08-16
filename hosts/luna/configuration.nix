@@ -18,16 +18,16 @@
 
   security.polkit.enable = true;
 
-  # Paseo checks out git worktrees under ~/.paseo, each carrying a multi-GB Rust
+  # T3 Code checks out git worktrees under ~/.t3, each carrying a multi-GB Rust
   # `target/` (one Windows cross-compile target alone hit 67G) — that filled
   # luna's 228G root. Relocate the bytes to /pool (5.3T) with a bind mount, NOT
   # a symlink: Claude Code keys its session transcripts (~/.claude/projects/<enc>)
-  # by the *realpath* of the agent's cwd, and a symlink would resolve ~/.paseo →
+  # by the *realpath* of the agent's cwd, and a symlink would resolve ~/.t3 →
   # /pool, changing that key and orphaning every existing agent's history. A bind
-  # mount is transparent to realpath, so ~/.paseo stays canonical while the data
-  # lives on /pool/paseo.
-  fileSystems."/home/cramt/.paseo" = {
-    device = "/pool/paseo";
+  # mount is transparent to realpath, so ~/.t3 stays canonical while the data
+  # lives on /pool/t3code.
+  fileSystems."/home/cramt/.t3" = {
+    device = "/pool/t3code";
     fsType = "none";
     options = ["bind"];
     depends = ["/pool"];
@@ -57,13 +57,14 @@
 
     services = {
       claude-remote-control.enable = true;
-      # Paseo daemon: offload coding-agent work to luna from the mars/saturn
+      # T3 Code server: offload coding-agent work to luna from the mars/saturn
       # desktop app. Runs as cramt so agents get git/ssh + the claude/codex CLIs
-      # (dev bundle). Quick-connect via paseo's relay — pair a client with
-      # `just paseo_pair`.
-      paseo = {
+      # (dev bundle). Bound on the LAN — pair a client with `just t3_pair`.
+      t3code = {
         enable = true;
         user = "cramt";
+        # Headless: no 1Password agent here, so agents need the key on disk.
+        onDiskSshKey.enable = true;
       };
       nixarr.enable = true;
       tor.enable = true;
@@ -148,19 +149,7 @@
         enable = true;
       };
     };
-
-    home-users = {
-      "cramt" = {
-        userConfig = ./home.nix;
-        authorizedKeys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
-        ];
-      };
-    };
   };
-
-  networking.hostName = "luna";
 
   networking.networkmanager.enable = true;
 

@@ -98,6 +98,16 @@
     # Shared with pi (written to ~/.pi/agent/AGENTS.md by modules/hm-features/pi.nix)
     # — single source of truth so the two agents' global instructions can't drift.
     globalClaudeMd = builtins.readFile ./global-agent-instructions.md;
+
+    # The mtg-commander skill leans on this helper for every card lookup, so it
+    # gets a real derivation with its deps closed over rather than a bare script
+    # in the skill dir: an agent that can't find `jq` would silently fall back to
+    # guessing card data from memory, which is the one thing the skill forbids.
+    scryfallPkg = pkgs.writeShellApplication {
+      name = "scryfall";
+      runtimeInputs = with pkgs; [curl jq gzip util-linux];
+      text = builtins.readFile ./claude-skills/mtg-commander/scryfall.sh;
+    };
   in {
     options.myHomeManager.claude-code = {
       enable = lib.mkEnableOption "myHomeManager.claude-code";
@@ -109,6 +119,9 @@
         // {default = true;};
       linkedin.enable =
         lib.mkEnableOption "`linkedinclaude` launcher (regular Claude + LinkedIn MCP via Docker). Needs a one-time host login writing cookies to ~/.linkedin-mcp — see the module comment"
+        // {default = true;};
+      mtg-commander.enable =
+        lib.mkEnableOption "MTG Commander deckbuilding skill + `scryfall` bulk-data CLI"
         // {default = true;};
     };
     config = lib.mkIf cfg.enable (lib.mkMerge [
@@ -133,6 +146,11 @@
         home.packages = [agentBrowserPkg];
         home.file.".claude/skills/agent-browser/SKILL.md".source = skillStub;
       }))
+      (lib.mkIf cfg.mtg-commander.enable {
+        home.packages = [scryfallPkg];
+        home.file.".claude/skills/mtg-commander/SKILL.md".source =
+          ./claude-skills/mtg-commander/SKILL.md;
+      })
       # Superpowers: symlink each skill dir into every config dir the three
       # claude variants use. Skills-only install — no plugin registration, no
       # SessionStart hook — so it stays as declarative and disposable as the

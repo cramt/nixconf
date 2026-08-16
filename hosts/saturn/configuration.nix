@@ -64,6 +64,15 @@
   '';
 
   boot.binfmt.emulatedSystems = ["aarch64-linux"];
+
+  # The @root subvol came up owned by uid 777, which makes systemd-tmpfiles
+  # refuse every "unsafe path transition" out of `/` — including the
+  # `L+ /run/binfmt/aarch64-linux` rule. That symlink then keeps pointing at
+  # whichever qemu store path existed at boot while nix.conf's sandbox-paths
+  # follows the current system, so emulated builds die with ENOENT on their
+  # interpreter. `/` sorts first, so tmpfiles repairs it in the same pass.
+  systemd.tmpfiles.rules = ["z / 0755 root root - -"];
+
   nix = {
     settings = let
       caches = ["https://cache.nixos.org/" "http://192.168.0.103:5000/" "http://192.168.0.106:5000/"];
@@ -129,6 +138,15 @@
     services = {
       sshd.enable = true;
       claude-remote-control.enable = true;
+      # T3 Code server as a user unit, same as luna, so saturn's agents are
+      # reachable from a phone/laptop without the desktop app being open. No
+      # on-disk SSH key: this host has a session with 1Password's agent.
+      #
+      # It shares ~/.t3 with the desktop app, which spawns its own backend on
+      # launch — nothing upstream locks the data dir (verified: two servers
+      # start happily over one), so don't run both at once. Use the web UI at
+      # this host's t3code port, or stop the unit before opening the app.
+      t3code.enable = true;
       # One OpenAI-compatible endpoint over the free tiers plus the local M365
       # Copilot proxy. Consumed by pi and hermes-agent (both default to
       # gpt-5.5-think-deeper); litellm.nix auto-adds the m365 deployments
@@ -172,24 +190,12 @@
         databaseUrl = "sqlite:/mnt/amirani/homelab_discord_bot.db?mode=rwc";
       };
     };
-
-    home-users = {
-      "cramt" = {
-        userConfig = ./home.nix;
-        authorizedKeys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIwaPHqAJyayzLGfkEhwoDskUUyTr0aEovcc1Nzg2zXH alex.cramt@gmail.com"
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I alex.cramt@gmail.com"
-        ];
-      };
-    };
   };
 
   nixarr = {
     mediaDir = "/var/lib/nixarr-test/media";
     stateDir = "/var/lib/nixarr-test/.state";
   };
-
-  networking.hostName = "saturn";
 
   networking.networkmanager.enable = true;
 

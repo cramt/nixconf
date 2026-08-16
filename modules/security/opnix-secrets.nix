@@ -84,16 +84,19 @@
             // servicesIf config.services.postgresql.enable ["postgresql"]
             // ownerIf "postgres" // groupIf "postgres";
         }
-        # Paseo daemon SSH key. Gated on the service so this reused personal SSH
-        # private key only renders on the host that runs the daemon (luna), not
-        # every opnix host. Owned by cramt because the daemon runs as a
+        # Coding-agent SSH key. Gated on the headless-key opt-in so this reused
+        # personal SSH private key only renders where agents actually need it
+        # on disk (luna) — not on desktop hosts that also run the server but
+        # have 1Password's agent, and not on every other opnix host. Owned by cramt because the server runs as a
         # `systemd --user` unit and its agents sign/push as that user. No
-        # `services` restart wiring: opnix restarts *system* units, but paseo is
-        # a user unit — a dangling `services = ["paseo"]` would make opnix emit
+        # `services` restart wiring: opnix restarts *system* units, but t3code is
+        # a user unit — a dangling `services = ["t3code"]` would make opnix emit
         # a stub system unit with no ExecStart and break activation. After
-        # rotating the key, restart the user daemon by hand:
-        #   systemctl --user -M cramt@ restart paseo
-        // lib.optionalAttrs config.myNixOS.services.paseo.enable {
+        # rotating the key, restart the user service by hand:
+        #   systemctl --user -M cramt@ restart t3code
+        // lib.optionalAttrs config.myNixOS.services.t3code.onDiskSshKey.enable {
+          # Name kept from the paseo era: same 1Password item, same key, and
+          # renaming would only churn the rendered path for no gain.
           paseoSshKey = {
             reference = "op://Homelab/Paseo/sshPrivateKey";
             owner = "cramt";
