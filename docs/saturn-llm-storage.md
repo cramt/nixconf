@@ -257,15 +257,31 @@ coli plan --model /llm/primary/deepseek-v4-flash   # planned VRAM/RAM/disk place
 # 2. Stage the weights onto the primary (one-time, ~167 GB).
 coli convert --model /llm/primary/deepseek-v4-flash
 
-# 3. Mirror onto the second drive. V4 Flash fits whole, so this is a full copy;
-#    `plan` ranks shards by how hot their experts are for the partial case.
-coli mirror plan   --model /llm/primary/... --mirror /llm/mirror/...
-coli mirror stage  --model /llm/primary/... --mirror /llm/mirror/...
-coli mirror verify --model /llm/primary/... --mirror /llm/mirror/...
+# 3. Run some REPRESENTATIVE prompts before mirroring. The engine records which
+#    experts your workload actually routes to in .coli_usage, updated every turn,
+#    and the partial-mirror planner ranks shards off that history. Staging on a
+#    cold .coli_usage ranks on nothing.
+coli chat
 
-# 4. Measure. Do not guess.
+# 4. Mirror the hottest half onto the second drive. GLM-5.2 is 372G against a
+#    200G mirror, so this is necessarily partial. Staging never touches the
+#    primary: it copies through temp files, SHA-256s every shard, honours the
+#    free-space reserve, never deletes an existing mirror shard, and publishes a
+#    receipt only once the selected set is complete.
+coli mirror plan   --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4 \
+  --budget-gib 180 --reserve-gib 10
+coli mirror stage  --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4 \
+  --budget-gib 180 --reserve-gib 10
+coli mirror verify --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4
+
+# 5. Measure. Do not guess.
 coli tune
 ```
+
+`--budget-gib 180 --reserve-gib 10` fits the 200.5 GiB mirror partition with room
+for ext4 overhead. The mirror is re-stageable at any time and gets *better* the
+longer colibrì has been used, since `.coli_usage` keeps learning — so restaging
+after a few weeks of real work is worth doing.
 
 Then set `serve.enable = true`, point `model`/`mirror` at those paths, and put
 whatever `tune` measured into `serve.environment` so the tuned profile is
