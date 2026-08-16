@@ -14,12 +14,30 @@ three SATA HDDs (`/mnt/amirani`, `/mnt/titan`, `/mnt/phoebe` → mergerfs
 
 | Device | Old | New |
 |--------|-----|-----|
-| nvme0n1 (Samsung 980) | `/boot` (512M) + `/` ext4 | `1G ESP (/boot)` + btrfs member |
-| nvme1n1 (Samsung 970 EVO) | `/nix` ext4 + Windows NTFS | btrfs member + `150G NTFS` (Windows) |
+| nvme0n1 (Samsung 980) | `/boot` (512M) + `/` ext4 | `1G ESP (/boot)` + `730G` btrfs member + `~200G ext4 (/llm/mirror)` |
+| nvme1n1 (Samsung 970 EVO) | `/nix` ext4 + Windows NTFS | `150G NTFS` (Windows) + `381G` btrfs member + `~400G ext4 (/llm/primary)` |
 
 Result: one btrfs filesystem `nvme-pool`, `-d single -m raid1`, subvolumes
-`@root → /`, `@nix → /nix`, `@home → /home`, ~1.7TB usable shared across all
+`@root → /`, `@nix → /nix`, `@home → /home`, ~1.1TB usable shared across all
 three. Windows dual-boots off the shared ESP on nvme0n1.
+
+The two trailing ext4 partitions are the colibrì expert-streaming tier and sit
+*outside* the pool on purpose — plain ext4 so O_DIRECT works and nothing
+compresses the weights, on separate physical drives so the engine can split
+expert reads across both. Rationale and sizing are in
+[saturn-llm-storage.md](saturn-llm-storage.md).
+
+Partition numbers are unchanged from the original two-SSD layout: the LLM
+partitions are appended as p3 on each drive, so the ESP, Windows and both pool
+members keep their positions and the btrfs `extraArgs` still references
+`${ssdA}-part2`. Every partition now carries an explicit disko `priority` so the
+numbering is pinned rather than falling out of attribute-name ordering.
+
+> **This full reinstall is no longer the only route.** Because both LLM
+> partitions are trailing, they can be added to a live saturn by shrinking the
+> btrfs members and creating the tail partitions in the freed space — no wipe, no
+> restore. See [saturn-llm-storage.md](saturn-llm-storage.md#in-place-no-reinstall).
+> Follow the procedure below only if saturn is being rebuilt for other reasons.
 
 Defined in `hosts/saturn/disko.nix`; wired via `hosts/saturn/configuration.nix`
 (imports `inputs.disko.nixosModules.default` + `./disko.nix`).
