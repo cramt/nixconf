@@ -178,12 +178,23 @@ in
       # succeeds, installs, and just runs several times slower forever. Every
       # supported `march` value here is v3 or better, so AVX2 encodings must be
       # present in all three engines.
+      #
+      # Disassemble to a FILE rather than piping into `grep -q`. grep -q exits at
+      # the first match, which SIGPIPEs objdump mid-write, and stdenv/setup.sh
+      # runs with `set -o pipefail` — so the pipeline reports 141 and this
+      # assertion fires on a binary that is completely fine. Whether objdump has
+      # finished writing before grep bails is a race, so it passed locally and
+      # failed in CI on a byte-identical derivation. Against a file there is no
+      # pipe, and a genuinely broken objdump now trips `set -e` instead of
+      # masquerading as a missing-AVX2 result.
       for engine in colibri deepseek_v4 olmoe; do
-        if ! objdump -d "$out/libexec/colibri/$engine" | grep -qE 'vfmadd|ymm'; then
+        objdump -d "$out/libexec/colibri/$engine" > disasm-check.txt
+        if ! grep -qE 'vfmadd|ymm' disasm-check.txt; then
           echo "colibri: $engine has no AVX2 instructions — -march=${march} did not reach the compiler" >&2
           exit 1
         fi
       done
+      rm -f disasm-check.txt
       runHook postInstallCheck
     '';
 
