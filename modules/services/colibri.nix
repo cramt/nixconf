@@ -97,6 +97,23 @@
           example = "20G";
         };
 
+        vram = lib.mkOption {
+          type = lib.types.nullOr lib.types.number;
+          default = null;
+          description = ''
+            VRAM budget in GB for the routed-expert tier (`--vram`). null lets
+            the planner take what it wants, which on a single-GPU desktop is
+            nearly all of it — 13.3 of 16 GB measured on saturn, which is enough
+            to evict the compositor and kill Electron apps outright.
+
+            This is `memoryMax`'s counterpart for VRAM: set it below total VRAM
+            so the desktop keeps a working set. Unlike `memoryMax` it is a
+            request to the planner rather than a kernel-enforced cap, so it
+            shapes placement instead of failing a run.
+          '';
+          example = 10;
+        };
+
         port = lib.mkOption {
           type = lib.types.nullOr lib.types.port;
           default = null;
@@ -176,19 +193,45 @@
             // lib.optionalAttrs cfg.serve.direct {
               DIRECT = "1";
             }
+            // lib.optionalAttrs (cfg.backend != "cpu") {
+              # The VRAM expert tier keeps a host-RAM copy of everything it
+              # places in VRAM unless this is set, so on a single GPU the tier
+              # costs its size TWICE. On saturn that put the projected peak at
+              # 19.0 GB and the engine refused to start rather than be
+              # OOM-killed mid-generation. Upstream: "CUDA_RELEASE_HOST=1 frees
+              # them for the RAM tier and is what this topology usually
+              # wants" (#686). Listed before serve.environment so it stays
+              # overridable.
+              CUDA_RELEASE_HOST = "1";
+            }
             // cfg.serve.environment;
 
           serviceConfig =
             {
               Type = "exec";
-              ExecStart = lib.concatStringsSep " " [
-                (lib.getExe pkg)
-                "serve"
-                "--host"
-                cfg.serve.host
-                "--port"
-                (toString port)
-              ];
+              # --auto-tier is NOT optional on a GPU backend, and its absence is
+              # invisible rather than loud. On Linux a bare `coli serve` runs
+              # CPU-only even on a HIP build with a working GPU: the launcher's
+              # auto-enable path is `sys.platform == "win32"`-scoped, so nothing
+              # sets COLI_CUDA and the whole VRAM tier is silently skipped.
+              # Upstream hit the same trap hard enough to note that --gpu/--vram
+              # without --auto-tier "were silently ignored and the run started
+              # CPU-only with no warning — 'GPU' benchmarks published by
+              # mistake" (#121). `coli doctor` still reports the GPU as fine,
+              # because the PLANNER sees it; only the run doesn't use it.
+              ExecStart = lib.concatStringsSep " " ([
+                  (lib.getExe pkg)
+                  "serve"
+                  "--host"
+                  cfg.serve.host
+                  "--port"
+                  (toString port)
+                ]
+                ++ lib.optionals (cfg.backend != "cpu") ["--auto-tier"]
+                ++ lib.optionals (cfg.backend != "cpu" && cfg.serve.vram != null) [
+                  "--vram"
+                  (toString cfg.serve.vram)
+                ]);
               User = "colibri";
               Group = "colibri";
               Restart = "on-failure";

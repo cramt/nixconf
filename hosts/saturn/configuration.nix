@@ -185,6 +185,10 @@
           # This is the backstop that makes an overshoot degrade rather than take
           # the desktop session down with it — 22G leaves ~9 GiB plus zram.
           memoryMax = "22G";
+          # Leave the desktop ~6 GB of the 16 GB. Letting the planner size this
+          # itself took 13.3 GB and killed Discord outright, which is not a
+          # tradeoff worth making on the machine you are sitting at.
+          vram = 10;
           # serve.environment stays empty until `coli tune` has actually run on
           # the GPU-detected plan. The current auto-tune hints (DRAFT=0,
           # COLI_CUDA_PIPE=1) come from a plan taken before the rocm-smi fix was

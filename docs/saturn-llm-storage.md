@@ -261,8 +261,9 @@ if saturn is being rebuilt for other reasons.
   cleanly.
 - GLM-5.2 **downloaded** to `/llm/primary/glm52-i4`: all 141 shards, **minus the
   int8 MTP head**, which does not fit (problem 1).
-- **It generates tokens: 0.18 tok/s** with the GPU and mirror in play, up from
-  0.13 on the CPU-only path — see [Measured throughput](#measured-throughput).
+- **It generates tokens: 0.18 tok/s** with the mirror, up from 0.13 without.
+  Both CPU-only — a bare `coli` run does not use the GPU on Linux, see
+  [the flag trap](#the-gpu-flag-trap--read-this-before-trusting-any-number).
 - GPU detection **fixed and deployed** — `coli doctor` reports `[ok]
   accelerator.gpu`, 13.4 GB hot tier, projected residency 1% → 4% (problem 3).
 - Mirror **staged and verified** 2026-08-17: 64 of 141 shards, 193,110,254,368
@@ -367,7 +368,10 @@ coli mirror stage  --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4 \
   --budget-gib 180 --reserve-gib 10
 coli mirror verify --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4
 
-# 4. Measure. Do not guess.
+# 4. Measure. Do not guess. --auto-tier is what makes it a GPU run at all (see
+#    the flag trap under Measured throughput); `tune` sets it for you.
+COLI_MODEL_MIRROR=/llm/mirror/glm52-i4 CUDA_RELEASE_HOST=1 \
+  coli run "..." --model /llm/primary/glm52-i4 --auto-tier --vram 10
 coli tune
 ```
 
@@ -499,14 +503,15 @@ package's `x86-64-v3` default is already the correct target.
 
 ## Measured throughput
 
-Two runs, same prompt (`testing123`), 17 decoded tokens each, 2026-08-17:
+Two runs, same prompt (`testing123`), 17 decoded tokens each, 2026-08-17.
+**Both were CPU-only** — see the flag trap below; the gain is the mirror alone:
 
-| | CPU-only, no mirror | GPU + verified mirror |
-|---|---|---|
-| decode | **0.13 tok/s** | **0.18 tok/s** (+38%) |
-| expert hit rate | 2% | 2.3% (pin 0.0% + lru 2.3%) |
-| RSS | 13.7 GB | 13.69 GB |
-| MTP acceptance | — | 0% (0/0 — no head, see problem 1) |
+| | no mirror | verified mirror | GPU |
+|---|---|---|---|
+| decode | **0.13 tok/s** | **0.18 tok/s** (+38%) | not yet measured |
+| expert hit rate | 2% | 2.3% (pin 0.0% + lru 2.3%) | |
+| RSS | 13.7 GB | 13.69 GB | |
+| MTP acceptance | — | 0% (0/0 — no head, see problem 1) | |
 
 The second run's profile is the useful part:
 
@@ -550,20 +555,99 @@ projected 1% residency. Both were optimistic. The observed 2% hit rate did match
 the planner's projection closely, so its residency figure is a trustworthy
 predictor even where the throughput guesses were not.
 
+### The GPU flag trap — read this before trusting any number
+
+**On Linux a bare `coli chat` / `coli run` / `coli serve` is CPU-only, even on a
+working HIP build with the GPU correctly detected.** The launcher's GPU
+auto-enable path is scoped `sys.platform == "win32"`; on Linux nothing sets
+`COLI_CUDA` unless you pass `--auto-tier` (or `--gpu`/`--vram`, which upstream
+notes were themselves "silently ignored" without `--auto-tier`, causing "'GPU'
+benchmarks published by mistake" — #121).
+
+This is nastier than it sounds because **`coli doctor` still says
+`[ok] accelerator.gpu`**: the *planner* sees the device and prints a VRAM tier,
+while the *run* never touches it. Every number above was collected that way, and
+the two are indistinguishable from the outside unless you look for a `[CUDA]`
+line on stderr. With the flag, you get one:
+
+```
+[PLAN] RAM 8.3 GB · cap 0/layer · VRAM 13.3 GB
+[CUDA] device 0: AMD Radeon RX 7800 XT, 17.2 GB VRAM, sm_110
+[CUDA] mode: routed experts only (resident dense on CPU)
+```
+
+`modules/services/colibri.nix` therefore appends `--auto-tier` to the daemon's
+ExecStart whenever `backend != "cpu"` — without it `serve.enable = true` would
+have quietly served CPU-only forever. For manual runs, pass it yourself.
+
+Two things follow immediately, both measured on the first `--auto-tier` attempt:
+
+**The VRAM tier costs its size in host RAM as well.** `CUDA_RELEASE_HOST=0` is
+the default and on a single GPU it keeps host copies of everything placed in
+VRAM, which put the projected peak at **19.0 GB against 9.1 GB available** — and
+the engine *refused to start* rather than be OOM-killed mid-generation, which is
+the right call and worth knowing is a thing it does. Upstream:
+`CUDA_RELEASE_HOST=1` "frees them for the RAM tier and is what this topology
+usually wants" (#686). The module now sets it for every non-CPU backend.
+
+**The planner will take nearly all your VRAM.** Left to size itself it claimed
+13.3 of 16 GB and killed Discord outright. `serve.vram` exists for that: it is
+`memoryMax`'s counterpart for VRAM, set to 10 on saturn to leave the desktop ~6
+GB. Note the RAM budget in that run was only 8.3 GB *because* the desktop was
+busy — this box cannot run a 20 GB engine and a normal session at once, and
+`cap 0/layer` is what that looks like from the planner's side.
+
+### The drives are not the ones the layout assumed
+
+The first `--auto-tier` run printed a measured per-drive probe, and it inverts
+the premise of the whole 400/200 split:
+
+```
+[MIRROR] probe: primary 0.23 GB/s | mirror 0.78 GB/s
+[MIRROR] 2 drives | read split 23% / 77% (measured)
+```
+
+The **980 probes 3.4× faster than the 970 EVO**, and colibrì is routing 77% of
+expert reads to the *mirror* accordingly — the opposite of the design intent,
+which gave the 970 EVO the 400 G primary on the grounds that it was the better
+streaming drive (DRAM cache vs the 980's HMB).
+
+Do not rewrite the layout off this yet. The likely cause is that the primary is
+**100% full** — 2.7 GiB free of 394 GiB — and a full TLC drive has no SLC cache
+left to write into and a badly fragmented free list; 0.23 GB/s is also absurdly
+low against the 970 EVO's ~3.5 GB/s spec, which smells like an artefact rather
+than the drive's true ceiling. Things to separate before concluding anything:
+
+- Re-probe when the box is idle (this one ran with the desktop busy).
+- Benchmark both partitions directly (`coli iobench`, or plain `dd`/`fio` on a
+  scratch file) rather than trusting a probe taken through a full filesystem.
+- If it holds up, the fix is *not* a repartition: it is that the primary should
+  not be run at 100%, which is the same finding as problem 1 from the other end.
+
+Either way the engine is adapting on its own, which is what
+`COLI_DISK_WEIGHTS`-by-measurement was supposed to buy — so this costs
+throughput only to the extent that the *mirror* is the smaller drive.
+
 ### What is left to try, in order of measured promise
 
-1. **Use it, then restage the mirror.** The 20%-of-bytes figure above is the
-   whole argument: the ranking is currently the uploader's workload. Real
-   `.coli_usage` history should raise both that and the dead `pin` tier, and it
-   costs nothing but ~25 min of staging.
-2. **`coli tune`.** 70 s of the 95 s decode is disk *wait* at only ~2.2 GB/s of
+1. **Actually measure the GPU**, on an idle box with a closed desktop:
+   `--auto-tier` plus `CUDA_RELEASE_HOST=1`, and free RAM above ~20 GB. Nothing
+   above is a GPU number, so the size of that tier's contribution is still
+   unknown.
+2. **Use it, then restage the mirror.** The 20%-of-bytes figure is the whole
+   argument: the ranking is currently the uploader's workload. `.coli_usage` is
+   already learning — 72,600 selections at staging time, 102,000 after a bit of
+   real chat — and a restage costs nothing but ~25 min.
+3. **`coli tune`.** 70 s of the 95 s decode is disk *wait* at only ~2.2 GB/s of
    ~7 GB/s theoretical, so there is real headroom in `DIRECT`, `PIPE` /
-   `COLI_CUDA_PIPE` and queue depth. Take it on an idle box, then put the result
-   in `serve.environment`.
-3. **HIP vs Vulkan** — see [What still needs measuring](#what-still-needs-measuring).
-4. **The int8 MTP head**, last: `MTP acceptance 0% (0/0)` is currently a
+   `COLI_CUDA_PIPE` and queue depth. It sets `--auto-tier` itself, so a tune run
+   is a GPU run. Take it on an idle box, then put the result in
+   `serve.environment`.
+4. **Settle the drive-probe question** above before touching the layout.
+5. **HIP vs Vulkan** — see [What still needs measuring](#what-still-needs-measuring).
+6. **The int8 MTP head**, last: `MTP acceptance 0% (0/0)` is currently a
    tautology (there is no head), and auto-tune wants `DRAFT=0` regardless until
-   the hit rate climbs. Only worth the 10 GB once 1 and 2 have moved residency.
+   the hit rate climbs. Only worth the 10 GB once the rest have moved residency.
 
 Even at the optimistic end this stays "ask it something and come back", not chat.
 That is the honest ceiling for streaming a 744B model off consumer PCIe 3.0 NVMe,
