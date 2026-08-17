@@ -93,6 +93,22 @@ in
     # The engine, its Makefile and the `coli` launcher all live in c/.
     sourceRoot = "${finalAttrs.src.name}/c";
 
+    # `coli` finds its engines and python modules at
+    # dirname(abspath(__file__))/../libexec/colibri. abspath does NOT resolve
+    # symlinks, so when it is invoked as /run/current-system/sw/bin/coli — a
+    # symlink into a buildEnv that only links /bin and /share, never /libexec —
+    # it looks for /run/current-system/sw/libexec/colibri and dies with
+    # "ModuleNotFoundError: No module named 'doctor'". realpath resolves to the
+    # store bin/, whose parent really does contain libexec/colibri.
+    #
+    # Upstream-reportable: any packager using a symlink farm hits this, which is
+    # every distro that isn't installing straight into /usr/local.
+    postPatch = ''
+      substituteInPlace coli \
+        --replace-fail 'os.path.dirname(os.path.abspath(__file__))' \
+                       'os.path.dirname(os.path.realpath(__file__))'
+    '';
+
     # python3 is deliberately in BOTH lists. The build needs it (tools/clean.py,
     # the deepseek-v4 sub-make), and `coli` is a `#!/usr/bin/env python3` script
     # that spawns openai_server.py via sys.executable — so it must also be a
@@ -171,7 +187,26 @@ in
     installCheckPhase = ''
       runHook preInstallCheck
       $out/bin/coli --help > /dev/null
-      $out/bin/coli build --help 2>&1 | head -1 > /dev/null
+
+      # Invoke through a symlink farm that mimics environment.systemPackages:
+      # only /bin linked, no /libexec. Calling $out/bin/coli directly cannot
+      # catch the abspath-vs-realpath bug postPatch fixes, because in-store the
+      # broken lookup happens to land on the right directory anyway. `doctor`
+      # specifically, since it imports a module out of libexec rather than just
+      # exec'ing an engine.
+      mkdir -p "$TMPDIR/farm/bin"
+      ln -s "$out/bin/coli" "$TMPDIR/farm/bin/coli"
+      "$TMPDIR/farm/bin/coli" --help > /dev/null
+      # doctor exits non-zero with no model present, which is fine — we only
+      # care that it got far enough to import. Redirect to a file rather than
+      # piping into grep, same pipefail/SIGPIPE reason as the AVX2 check below.
+      "$TMPDIR/farm/bin/coli" doctor > "$TMPDIR/doctor.log" 2>&1 || true
+      if grep -q "ModuleNotFoundError" "$TMPDIR/doctor.log"; then
+        echo "colibri: launcher cannot resolve libexec when invoked via a symlink" >&2
+        cat "$TMPDIR/doctor.log" >&2
+        exit 1
+      fi
+      rm -rf "$TMPDIR/farm" "$TMPDIR/doctor.log"
 
       # Assert the vector ISA actually landed. Stripping -march is a *warning*
       # in cc-wrapper, so a baseline-SSE2 build of a matmul engine otherwise
