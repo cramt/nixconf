@@ -102,6 +102,16 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 
+    # Upstream Rust toolchains with per-target rust-std. nixpkgs' rustc ships no
+    # wasm32-wasip2 std and no wasm-component-ld, which is what Zed builds dev
+    # extensions against; without them Zed falls back to `rustup target add` and
+    # dies because there's no rustup. https://github.com/zed-industries/zed/issues/42353
+    # Drop back to pkgs.{cargo,rustc,rustfmt} if nixpkgs ever ships wasip2.
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nh.url = "github:nix-community/nh";
 
     disko = {

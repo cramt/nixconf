@@ -39,9 +39,19 @@
           yarn
           nodejs_24
           pnpm
-          cargo
-          rustfmt
-          rustc
+          # One toolchain for everything, including the wasm32-wasip2 target Zed
+          # needs to build dev extensions (see the fenix input in flake.nix).
+          (let
+            fenix = inputs.fenix.packages.${pkgs.stdenv.hostPlatform.system};
+          in
+            fenix.combine [
+              fenix.stable.rustc
+              fenix.stable.cargo
+              fenix.stable.rustfmt
+              fenix.stable.clippy
+              fenix.stable.rust-src
+              fenix.targets.wasm32-wasip2.stable.rust-std
+            ])
           just
           clang
           postgresql.out
