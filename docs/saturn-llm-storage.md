@@ -268,7 +268,9 @@ if saturn is being rebuilt for other reasons.
   accelerator.gpu`, 13.4 GB hot tier, projected residency 1% → 4% (problem 3).
 - Mirror **staged and verified** 2026-08-17: 64 of 141 shards, 193,110,254,368
   bytes on the 980, `coli mirror verify` → `ready: true`, zero failures.
-- `serve.enable` is still `false`; nothing has been through `coli tune` yet.
+- `serve.enable` is **true**, started by hand rather than at boot — see
+  [Running it as a service](#running-it-as-a-service). Nothing has been through
+  `coli tune` yet.
 
 Read [Known problems](#known-problems) before doing anything else.
 
@@ -383,9 +385,47 @@ mirror is re-stageable at any time and gets *better* the longer colibrì has bee
 used, since `.coli_usage` keeps learning — so restaging after a few weeks of real
 work is worth doing.
 
-Then set `serve.enable = true`, point `model`/`mirror` at those paths, and put
-whatever `tune` measured into `serve.environment` so the tuned profile is
-declarative rather than one machine's shell history.
+## Running it as a service
+
+`serve.enable = true` as of 2026-08-17, and this is the better way to test:
+`coli run` reloads 10.6 GB of dense weights on every invocation (~26 s) and
+discards the warm expert cache, while the daemon keeps its LRU warm across
+prompts — which at a 2% hit rate is the whole game.
+
+**It does not start at boot** (`serve.autoStart = false`). GLM-5.2 needs ~20 GB
+of *available* RAM and a logged-in session routinely leaves less, in which case
+the engine refuses to start rather than risk being OOM-killed mid-generation.
+That is a correct refusal, not a bug, and it is why the unit is started by hand:
+
+```bash
+free -g                      # `available` needs to be ~20+; close things if not
+systemctl start colibri
+journalctl -fu colibri       # watch for the [CUDA] line — that is a GPU run
+```
+
+Then talk to it — OpenAI-compatible, loopback only, port from `port-selector`:
+
+```bash
+PORT=$(systemctl show colibri -p ExecStart --value | grep -oP '(?<=--port )\d+')
+curl -s localhost:$PORT/v1/chat/completions -H 'content-type: application/json' \
+  -d '{"model":"glm52-i4","messages":[{"role":"user","content":"hi"}],"max_tokens":32}'
+```
+
+Expect minutes, not seconds. `systemctl stop colibri` gives the RAM back.
+
+Two settings worth understanding before changing them:
+
+- **`user = "cramt"`, not a system user.** `.coli_usage` lives next to the model,
+  so the daemon and an interactive `coli chat` must be the same identity or they
+  learn two separate histories — and a system user cannot write into a model
+  directory a human downloaded. For the same reason the model directory is
+  `ReadWritePaths`, not read-only: marking it read-only silently disables
+  persistence, and `coli doctor` is the only place that would tell you.
+- **`vram = 10`** of 16 GB. The planner takes 13.3 GB if you let it, which is
+  enough to evict the compositor and kill Electron apps.
+
+Put whatever `coli tune` measures into `serve.environment` so the tuned profile
+is declarative rather than one machine's shell history.
 
 ## Known problems
 
