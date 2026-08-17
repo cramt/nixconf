@@ -169,6 +169,20 @@ in
         # target.
         install -m 644 v4_dsml.py $out/libexec/colibri/v4_dsml.py
       ''
+      + lib.optionalString rocmSupport ''
+        # resource_plan.py discovers NVIDIA via nvidia-smi and AMD via rocm-smi,
+        # in that order. With neither on PATH it silently plans CPU-only and
+        # `coli doctor` reports "no supported GPU detected / no NVIDIA device
+        # detected" on a machine whose engine is a perfectly good HIP build — so
+        # the whole VRAM tier goes unused and the plan under-reports residency.
+        #
+        # Upstream marks _discover_amd_gpus "hardware-owner-needed ... authored
+        # without a ROCm host to test against" (#662), so if this still
+        # mis-detects on gfx1101, that is worth reporting back rather than
+        # working around.
+        wrapProgram $out/bin/coli \
+          --prefix PATH : ${lib.makeBinPath [rocmPackages.rocm-smi]}
+      ''
       + lib.optionalString vulkanSupport ''
         # backend_vulkan.c loads the compute shaders at runtime from
         # $COLI_VK_SHADERS, defaulting to a shaders/ dir next to the *engine*

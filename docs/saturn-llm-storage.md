@@ -22,12 +22,12 @@ a large win on drives with DRAM and bandwidth headroom (4.25 → 9.69 GB/s in
 their `iobench` on a GB10), so losing it outright is not a rounding error.
 int4 weights are incompressible noise anyway, so zstd is pure CPU cost on write
 plus a decompress step in the read hot path, and CoW + per-read csum
-verification are dead weight on a read-only 167–372 GB blob.
+verification are dead weight on a read-only 400+ GB blob.
 
 This part *could* have been solved in place with `chattr +C` on a directory —
 nodatacow, which also disables compression and checksums for files created
 inside it. It was rejected because the flag only applies to files created
-*after* it is set, so the correctness of a 372 GB download would depend on a
+*after* it is set, so the correctness of a 400+ GB download would depend on a
 tmpfiles rule having fired first. ext4 has none of these knobs to get wrong,
 which is the actual argument: the weights *cannot* end up compressed because the
 filesystem does not implement compression.
@@ -63,7 +63,7 @@ The pool members carry explicit sizes rather than `size = "100%"` — a 100%
 partition sorts last in disko and nothing can follow it. The LLM partitions take
 `100%` instead, absorbing whatever the drive actually has past the pool; the
 exact usable capacity of a "1 TB" NVMe isn't worth hardcoding, and a few hundred
-MiB either way is noise against a 167 G model.
+MiB either way is noise against a 400 G model.
 
 Every partition also carries an explicit `priority`: disko orders by priority and
 falls back to attribute-name order for ties, and `builtins.sort` guarantees no
@@ -88,7 +88,7 @@ Both are PCIe 3.0 (~3.5 GB/s each), so a full split tops out around 7 GB/s.
 | Model | Total | Active/token | Primary | Mirror |
 |---|---|---|---|---|
 | **DeepSeek V4 Flash** | 167 G | 13B | full | **full** → ~50/50 split |
-| GLM-5.2 | 372 G | 40B | full | ~54% partial |
+| **GLM-5.2** (chosen) | 419 G | 40B | full, 2.8 GB spare | ~48% partial |
 
 colibrì weights routing by *measured* per-drive bandwidth, so it handles the
 asymmetric pair itself — no manual `COLI_DISK_WEIGHTS` needed.
@@ -232,30 +232,64 @@ steps, since `disko.nix` declares exactly what Phase 2 builds by hand. Follow
 [saturn-disko-migration.md](saturn-disko-migration.md) as written. Only worth it
 if saturn is being rebuilt for other reasons.
 
-## Start with DeepSeek V4 Flash
+## Status as of 2026-08-16
 
-Not GLM-5.2, despite GLM being upstream's reference model. V4 Flash is 167 G
-rather than 372 G, wants 16 GB RAM rather than 24, and — the part that actually
-matters — activates **13B parameters per token against GLM's 40B**. Bytes
-streamed per token is what sets decode speed on a disk-bound box. It also fits
-on *both* partitions, so it gets a full mirror and a clean ~50/50 bandwidth
-split, where GLM only gets a partial one.
+Storage migration **done** — both partitions exist, mounted, and the pool
+shrank cleanly. GLM-5.2 is downloaded to `/llm/primary/glm52-i4`.
+`serve.enable` is still `false`. Open problems are listed under
+[Known problems](#known-problems) — read those before doing anything else.
 
-## After the reinstall
+## Model choice: GLM-5.2
 
-Nothing below is automated, because staging 167 GB and measuring a machine are
-not things to do from a NixOS activation script.
+Chosen over DeepSeek V4 Flash. V4 Flash is the safer fit on paper — 167 G, 16 GB
+RAM, and 13B active parameters per token against GLM's 40B, which is what sets
+decode speed on a disk-bound box — but GLM-5.2 is the strongest model this
+hardware can physically hold, and capability won out over speed.
 
-`myNixOS.services.colibri.enable = true` is already set, so `coli` is on PATH
-from first boot; `serve.enable` is deliberately `false` until weights exist.
+Kimi K3 leads the open-weight leaderboards but is 1.6 TB and cannot fit. Inkling
+(975B, 469 G) fits the disk only with a 500 G primary and wants ~25 GB RAM
+against saturn's 22 GB available, so it is out on memory regardless.
+
+**The 372 GB figure in upstream's README is wrong for this container.** The real
+`mastouri/GLM-5.2-colibri-int4-g64-with-int8-mtp` is **419.3 GB across 141
+shards** — about 390 GiB, against a 400.5 GiB partition. That is why the primary
+is now at 2.8 GB free. The 400 G partition size was chosen off the README figure;
+it fits, but with no headroom worth speaking of.
+
+## Staging the weights
+
+`coli convert` is the wrong path. It pulls `zai-org/GLM-5.2-FP8` — 756 GB of
+source shards — and requantises locally, needing numpy + torch + huggingface_hub
+and hours of CPU. The prebuilt container is the same result for half the bytes
+and no torch:
 
 ```bash
-# 1. Is this box actually ready? Read-only, safe to run before anything else.
-coli doctor
-coli plan --model /llm/primary/deepseek-v4-flash   # planned VRAM/RAM/disk placement
+nix shell nixpkgs#python3Packages.huggingface-hub
+hf download mastouri/GLM-5.2-colibri-int4-g64-with-int8-mtp \
+  --local-dir /llm/primary/glm52-i4
+```
 
-# 2. Stage the weights onto the primary (one-time, ~167 GB).
-coli convert --model /llm/primary/deepseek-v4-flash
+Resumable. **Do not run this under sudo** — see [Known problems](#known-problems).
+
+Afterwards the MTP head must be the int8 one, or speculative decoding silently
+never fires (upstream measured 0–4% draft acceptance at int4 versus 39–59%):
+
+```bash
+ls -l /llm/primary/glm52-i4/out-mtp-*
+```
+
+must be `3527131672 / 5366238584 / 1065950496`. `hf download` also leaves a
+`.cache/` staging directory in the target — safe to delete once verified, and
+worth doing at 2.8 GB free.
+
+## Bringing it up
+
+`myNixOS.services.colibri.enable = true` is already set, so `coli` is on PATH.
+
+```bash
+# 1. Is this box actually ready? Read-only, safe to run any time.
+coli doctor --deep --model /llm/primary/glm52-i4
+coli plan --model /llm/primary/glm52-i4   # planned VRAM/RAM/disk placement
 
 # 3. Run some REPRESENTATIVE prompts before mirroring. The engine records which
 #    experts your workload actually routes to in .coli_usage, updated every turn,
@@ -286,6 +320,58 @@ after a few weeks of real work is worth doing.
 Then set `serve.enable = true`, point `model`/`mirror` at those paths, and put
 whatever `tune` measured into `serve.environment` so the tuned profile is
 declarative rather than one machine's shell history.
+
+## Known problems
+
+Open as of 2026-08-16, in the order they should be dealt with.
+
+**1. `/llm/primary` has 2.8 GB free.** The container is 419.3 GB, not the 372 GB
+the README claims. Delete `.cache/` in the model directory first. If that is not
+enough, the honest options are dropping to a smaller model or re-doing the
+partition split with a larger primary (which is another live migration, not a
+config change).
+
+**2. The model directory is root-owned, so persistence is disabled.**
+`coli doctor` reports `[warn] storage.persistence  model directory is
+read-only`. That comes from downloading under `sudo`. It matters more than it
+looks: `.coli_usage` is written *next to the model*, and it is both the learning
+cache that raises the expert hit rate over time and the ranking input for
+`coli mirror plan`. Until this is fixed, colibrì cannot get faster with use and
+the mirror cannot be staged sensibly.
+
+```bash
+sudo chown -R cramt:users /llm/primary /llm/mirror
+```
+
+Note the container ships its own `.coli_usage`, so mirror planning would rank on
+the uploader's workload rather than nothing — but that is not your workload.
+
+**3. No GPU detected.** `coli doctor` says `no supported GPU detected` and the
+plan reads `VRAM no NVIDIA device detected · CPU path`, on a machine running a
+gfx1101 HIP build. `resource_plan.py` probes `nvidia-smi`, then falls back to
+`rocm-smi`; neither is on PATH, so it plans CPU-only and the entire 16 GB VRAM
+tier goes unused. The package now puts `rocm-smi` on `coli`'s PATH for the
+`rocm` variant. If it still mis-detects after that, upstream marks
+`_discover_amd_gpus` "hardware-owner-needed — authored without a ROCm host to
+test against" (#662), so it is worth reporting rather than working around.
+
+**4. Projected expert residency is 1%.** With the CPU-only plan: 20.9 GB RAM
+budget, 11.6 GB dense, 6.3 GB runtime, and only **3.1 GB of warm experts against
+404.6 GB of cold ones**, cap 1/layer. `limit disk expert misses`. Essentially
+every expert read goes to disk, so expect roughly **0.3 tok/s**, not the 1–3 this
+document estimated before any of it was measured. Fixing 3 should improve this
+materially, since the VRAM tier is currently contributing nothing.
+
+colibrì's own auto-tune, at that hit rate, recommends:
+
+```
+DRAFT=0    low hit rate: MTP widens expert union, adds disk reads
+PIPE=1     overlap disk reads with resident expert compute
+```
+
+Note `DRAFT=0` disables the MTP speculative drafting the int8 head exists for —
+at a 1% hit rate the wider expert union costs more in disk reads than the drafts
+save. That should be revisited once residency is up.
 
 ## What still needs measuring
 
@@ -321,12 +407,24 @@ package's `x86-64-v3` default is already the correct target.
 
 ## Expected throughput
 
-Roughly **1–3 tok/s** for V4 Flash on this hardware, extrapolating from
-upstream's 1.07 tok/s for a single 12 GB RTX 5070 Ti on GLM-5.2 — saturn has
-more VRAM (16 GB) and a model with a third of the active parameters, against
-slower PCIe 3.0 storage. GLM-5.2 would land lower, likely under 1 tok/s.
+No end-to-end token has been generated yet, so there is still no measured
+number. Treat everything here as an estimate until `coli tune` says otherwise.
 
-This is "ask it something and come back", not chat. That is the honest ceiling
-for streaming a frontier model off consumer SATA-class NVMe, and no amount of
-partitioning changes it — the partitions are what get you the top of that range
-instead of the bottom.
+The pre-measurement guess was 1–3 tok/s for V4 Flash and under 1 for GLM-5.2,
+extrapolated from upstream's 1.07 tok/s on a single 12 GB RTX 5070 Ti. That was
+too optimistic for the configuration as it actually stands: `coli plan` projects
+**1% expert residency** with the GPU undetected, which puts GLM-5.2 nearer
+**0.3 tok/s** — roughly 11 GB of routed experts per token off a single ~3.5 GB/s
+drive, with almost no cache absorbing it.
+
+Three things should move that number, in rough order of expected effect:
+
+1. **Getting the GPU detected** (problem 3) — the 16 GB VRAM tier currently
+   contributes nothing to residency.
+2. **Staging the mirror** — splits expert reads across both drives instead of
+   hammering the 970 EVO alone.
+3. **Letting `.coli_usage` learn** (problem 2) — residency rises as the pinned
+   hot-set matches the actual workload.
+
+Even so, this is "ask it something and come back", not chat. That is the honest
+ceiling for streaming a 744B model off consumer PCIe 3.0 NVMe.
