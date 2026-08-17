@@ -45,6 +45,36 @@
       serve = {
         enable = lib.mkEnableOption "the colibrì OpenAI-compatible API daemon";
 
+        autoStart = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = ''
+            Start at boot. Turn this off on a machine where the engine competes
+            with a desktop session for RAM: GLM-5.2 wants ~20GB free and a
+            logged-in session can easily be holding that, in which case the
+            engine refuses to start rather than be OOM-killed — and a unit that
+            refuses at boot just burns restarts. With this off the unit is still
+            fully declared, you just decide when: `systemctl start colibri`.
+          '';
+        };
+
+        user = lib.mkOption {
+          type = lib.types.str;
+          default = "colibri";
+          description = ''
+            User to run the engine as. The default creates a locked-down system
+            user, which is right for a headless host.
+
+            On a workstation, set this to the human who also runs `coli chat`.
+            `.coli_usage` — the learned expert-routing history that drives both
+            the hit rate and `coli mirror plan` — lives NEXT TO THE MODEL, so
+            the daemon and the interactive CLI must be the same identity or they
+            keep separate histories (and a system user cannot write into a
+            model directory the human downloaded).
+          '';
+          example = "cramt";
+        };
+
         # No default on purpose: a daemon with nowhere to read weights from is
         # not a state worth being able to express.
         model = lib.mkOption {
@@ -165,16 +195,20 @@
 
         networking.firewall.allowedTCPPorts = lib.optional cfg.serve.openFirewall port;
 
-        users.users.colibri = {
-          isSystemUser = true;
-          group = "colibri";
-          extraGroups = lib.optionals (cfg.backend != "cpu") ["render" "video"];
+        # Only when we own the identity: pointing serve.user at an existing human
+        # must not redeclare that account.
+        users.users = lib.optionalAttrs (cfg.serve.user == "colibri") {
+          colibri = {
+            isSystemUser = true;
+            group = "colibri";
+            extraGroups = lib.optionals (cfg.backend != "cpu") ["render" "video"];
+          };
         };
-        users.groups.colibri = {};
+        users.groups = lib.optionalAttrs (cfg.serve.user == "colibri") {colibri = {};};
 
         systemd.services.colibri = {
           description = "colibrì MoE inference server";
-          wantedBy = ["multi-user.target"];
+          wantedBy = lib.optionals cfg.serve.autoStart ["multi-user.target"];
           after = ["network.target"];
 
           # The weights live on their own filesystem and disko mounts those
@@ -232,19 +266,39 @@
                   "--vram"
                   (toString cfg.serve.vram)
                 ]);
-              User = "colibri";
-              Group = "colibri";
+              User = cfg.serve.user;
               Restart = "on-failure";
-              RestartSec = "5";
+              # Slow, and capped. "not enough free RAM" is a legitimate,
+              # persistent failure here — the engine checks its projected peak
+              # against available memory and exits rather than being OOM-killed
+              # mid-generation. Retrying that every 5s forever just spams the
+              # journal while the desktop is using the RAM, so back off and give
+              # up; `systemctl start colibri` once you have freed some.
+              RestartSec = "30";
+              StartLimitBurst = 3;
+              StartLimitIntervalSec = 300;
 
-              # The engine only reads weights and serves HTTP.
+              # The engine serves HTTP and reads weights — but it also WRITES
+              # `.coli_usage` (and KV state) into the model directory, which is
+              # the learning cache behind both the expert hit rate and
+              # `coli mirror plan`. Marking the model read-only would silently
+              # disable that: `coli doctor` reports it as
+              # `storage.persistence  model directory is read-only`, the hit
+              # rate stops improving, and a restage ranks on stale history.
+              # The mirror really is read-only — the engine only ever reads
+              # replicas, and `coli mirror stage` is a separate manual step.
               ProtectSystem = "strict";
               ProtectHome = true;
               PrivateTmp = true;
               NoNewPrivileges = true;
               RestrictAddressFamilies = ["AF_INET" "AF_INET6" "AF_UNIX"];
-              ReadOnlyPaths =
-                [cfg.serve.model] ++ lib.optional (cfg.serve.mirror != null) cfg.serve.mirror;
+              ReadWritePaths = [cfg.serve.model];
+              ReadOnlyPaths = lib.optional (cfg.serve.mirror != null) cfg.serve.mirror;
+
+              # ProtectHome=true hides /home, so an engine running as a human
+              # user still must not depend on it. Give it a state dir instead.
+              StateDirectory = "colibri";
+              Environment = ["HOME=/var/lib/colibri"];
             }
             // lib.optionalAttrs (cfg.serve.memoryMax != null) {
               MemoryMax = cfg.serve.memoryMax;

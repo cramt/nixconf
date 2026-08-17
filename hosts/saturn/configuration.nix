@@ -173,11 +173,16 @@
         enable = true;
         backend = "rocm";
         serve = {
-          # Paths are wired but the daemon is not: these are inert while
-          # `enable = false` (the module only reads them under mkIf), so flipping
-          # that bool is the whole remaining step. Both directories exist and are
-          # populated — 141 shards on the primary, the hottest 64 mirrored.
-          enable = false;
+          enable = true;
+          # NOT at boot. The engine needs ~20GB free and a logged-in COSMIC
+          # session routinely holds that, in which case it refuses to start
+          # rather than be OOM-killed — at boot that is just a failed unit.
+          # `systemctl start colibri` when you actually want it.
+          autoStart = false;
+          # Run as the human, not a system user: `.coli_usage` lives next to the
+          # model, so the daemon and an interactive `coli chat` have to be the
+          # same identity or they learn separate histories.
+          user = "cramt";
           model = "/llm/primary/glm52-i4";
           mirror = "/llm/mirror/glm52-i4";
           # Measured RSS on the first run was 13.7 GB and the planner budgets
