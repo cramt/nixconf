@@ -12,14 +12,20 @@ three SATA HDDs (`/mnt/amirani`, `/mnt/titan`, `/mnt/phoebe` → mergerfs
 
 ## Target layout
 
-| Device | Old | New |
+| Drive | Old | New |
 |--------|-----|-----|
-| nvme0n1 (Samsung 980) | `/boot` (512M) + `/` ext4 | `1G ESP (/boot)` + `730G` btrfs member + `~200G ext4 (/llm/mirror)` |
-| nvme1n1 (Samsung 970 EVO) | `/nix` ext4 + Windows NTFS | `150G NTFS` (Windows) + `381G` btrfs member + `~400G ext4 (/llm/primary)` |
+| Samsung 980 (`ssd_a`) | `/boot` (512M) + `/` ext4 | `1G ESP (/boot)` + `730G` btrfs member + `200.5G ext4 (/llm/mirror)` |
+| Samsung 970 EVO (`ssd_b`) | `/nix` ext4 + Windows NTFS | `150G NTFS` (Windows) + `381G` btrfs member + `400.5G ext4 (/llm/primary)` |
 
 Result: one btrfs filesystem `nvme-pool`, `-d single -m raid1`, subvolumes
 `@root → /`, `@nix → /nix`, `@home → /home`, ~1.1TB usable shared across all
-three. Windows dual-boots off the shared ESP on nvme0n1.
+three. Windows dual-boots off the shared ESP on the 980.
+
+> Drives are named by **model**, never `nvmeXn1`. The kernel's enumeration of the
+> two is not stable — as of 2026-08-17 the 970 EVO is `nvme0n1` and the 980 is
+> `nvme1n1`, the reverse of what this document used to say. Every command below
+> addresses disks by `/dev/disk/by-id/`, which is the only reason that never
+> mattered; keep it that way.
 
 The two trailing ext4 partitions are the colibrì expert-streaming tier and sit
 *outside* the pool on purpose — plain ext4 so O_DIRECT works and nothing
@@ -187,8 +193,9 @@ authenticated (modulo the one-time 1Password unlock noted above).
 ## 4. Reinstall Windows (League)
 
 1. Boot the Windows installer (USB).
-2. Install into the **150G NTFS partition** on nvme1n1 (`windows` / part1). Do
-   **not** let it reformat the ESP or touch the btrfs `pool` partition.
+2. Install into the **150G NTFS partition** on the 970 EVO (`ssd_b` /
+   `windows` / part1 — check the partlabel, not the device node). Do **not** let
+   it reformat the ESP or touch the btrfs `pool` partition.
 3. Windows writes its boot files to the shared ESP.
 
 **Dual-boot note:** NixOS `systemd-boot` does not auto-detect Windows. Either

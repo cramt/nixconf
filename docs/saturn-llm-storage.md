@@ -43,21 +43,32 @@ verify it, or read per-drive stats off it.
 
 ## Layout
 
-| Device | Partition | Size | Contents | Changed? |
+| Drive | Partition | Size | Contents | Changed? |
 |---|---|---|---|---|
-| nvme0n1 — Samsung **980** | p1 | 1 G | ESP (`/boot`, shared with Windows) | — |
+| Samsung **980** (`ssdA`) | p1 | 1 G | ESP (`/boot`, shared with Windows) | — |
 | | p2 | 930 G → **730 G** | btrfs pool member | shrunk |
-| | **p3** | **~200 G** | **ext4 → `/llm/mirror`** | **new** |
-| nvme1n1 — Samsung **970 EVO** | p1 | 150 G | NTFS slot (Windows/League) | — |
+| | **p3** | **200.5 G** | **ext4 → `/llm/mirror`** | **new** |
+| Samsung **970 EVO** (`ssdB`) | p1 | 150 G | NTFS slot (Windows/League) | — |
 | | p2 | 780 G → **381 G** | btrfs pool member, owns the mkfs | shrunk |
-| | **p3** | **~400 G** | **ext4 → `/llm/primary`** | **new** |
+| | **p3** | **400.5 G** | **ext4 → `/llm/primary`** | **new** |
 
 btrfs pool drops from ~1.7 TB to ~1.1 TB usable.
 
-**Nothing is renumbered.** The ESP stays p1, Windows stays `nvme1n1p1` (named in
-`configuration.nix` and `scripts/saturn-windows-image.sh`), and the btrfs
-`extraArgs` still points at `${ssdA}-part2`. That falls out of putting the LLM
-partitions last, which is also what makes the in-place migration possible.
+> **Drives are identified by model, not by `nvmeXn1`.** As of 2026-08-17 the
+> kernel enumerates the **970 EVO as `nvme0n1`** and the **980 as `nvme1n1`** —
+> the reverse of what the migration section below assumes, and the reverse of
+> what an earlier version of this table claimed. Nothing real depends on the
+> node names: `disko.nix` addresses by-id, `fileSystems` by-partlabel, and both
+> Windows scripts by `<ssd_b by-id>-part1`. But do not copy a `/dev/nvmeXn1` out
+> of this document without re-checking `lsblk -o NAME,SIZE,PARTLABEL,MOUNTPOINT`
+> first — the Phase 2 commands below are `sgdisk` invocations against whole
+> disks, and the two are not interchangeable.
+
+**Nothing is renumbered.** The ESP stays p1, Windows stays the 970 EVO's p1
+(addressed by-id in `scripts/saturn-windows-image.sh` and
+`scripts/windows-vm.sh`), and the btrfs `extraArgs` still points at
+`${ssdA}-part2`. That falls out of putting the LLM partitions last, which is also
+what makes the in-place migration possible.
 
 The pool members carry explicit sizes rather than `size = "100%"` — a 100%
 partition sorts last in disko and nothing can follow it. The LLM partitions take
@@ -88,12 +99,24 @@ Both are PCIe 3.0 (~3.5 GB/s each), so a full split tops out around 7 GB/s.
 | Model | Total | Active/token | Primary | Mirror |
 |---|---|---|---|---|
 | **DeepSeek V4 Flash** | 167 G | 13B | full | **full** → ~50/50 split |
-| **GLM-5.2** (chosen) | 419 G | 40B | full, 2.8 GB spare | ~48% partial |
+| **GLM-5.2** (chosen) | 429 G | 40B | shards only, 2.7 GiB spare | 64/141 shards |
+
+GLM-5.2 is the tight one: 419 G of shards fit the primary, the 10 G int8 MTP head
+does not, and the mirror takes the hottest 180 GiB of shards
+([Known problems](#known-problems)).
 
 colibrì weights routing by *measured* per-drive bandwidth, so it handles the
 asymmetric pair itself — no manual `COLI_DISK_WEIGHTS` needed.
 
 ## In place, no reinstall
+
+> **This was carried out on 2026-08-16 and is kept as a record, not a
+> to-do.** Both partitions exist and are mounted. Every `/dev/nvmeXn1` below is
+> the enumeration *as it was that day*, and today's is the reverse of it (see the
+> note under [Layout](#layout)) — so if this ever needs re-running on a different
+> box or after a disk swap, re-derive every node name and sector from `lsblk` and
+> `sgdisk --info` first. These are whole-disk `sgdisk` commands; the wrong node is
+> the wrong drive.
 
 **Deploying this config does not repartition anything.** `nixos-rebuild` / `nh os
 switch` never runs disko's format script — that only happens during a fresh
@@ -232,12 +255,20 @@ steps, since `disko.nix` declares exactly what Phase 2 builds by hand. Follow
 [saturn-disko-migration.md](saturn-disko-migration.md) as written. Only worth it
 if saturn is being rebuilt for other reasons.
 
-## Status as of 2026-08-16
+## Status as of 2026-08-17
 
-Storage migration **done** — both partitions exist, mounted, and the pool
-shrank cleanly. GLM-5.2 is downloaded to `/llm/primary/glm52-i4`.
-`serve.enable` is still `false`. Open problems are listed under
-[Known problems](#known-problems) — read those before doing anything else.
+- Storage migration **done** — both partitions exist, mounted, pool shrank
+  cleanly.
+- GLM-5.2 **downloaded** to `/llm/primary/glm52-i4`: all 141 shards, **minus the
+  int8 MTP head**, which does not fit (problem 1).
+- **It generates tokens.** First measured run: **0.13 tok/s** at 2% expert hit —
+  see [Measured throughput](#measured-throughput).
+- GPU detection **fixed and deployed** — `coli doctor` reports `[ok]
+  accelerator.gpu`, 13.4 GB hot tier, projected residency 1% → 4% (problem 3).
+- Mirror **staged** 2026-08-17: 64 shards / 179.8 GiB on the 980.
+- `serve.enable` is still `false`; nothing has been through `coli tune` yet.
+
+Read [Known problems](#known-problems) before doing anything else.
 
 ## Model choice: GLM-5.2
 
@@ -250,11 +281,24 @@ Kimi K3 leads the open-weight leaderboards but is 1.6 TB and cannot fit. Inkling
 (975B, 469 G) fits the disk only with a 500 G primary and wants ~25 GB RAM
 against saturn's 22 GB available, so it is out on memory regardless.
 
-**The 372 GB figure in upstream's README is wrong for this container.** The real
-`mastouri/GLM-5.2-colibri-int4-g64-with-int8-mtp` is **419.3 GB across 141
-shards** — about 390 GiB, against a 400.5 GiB partition. That is why the primary
-is now at 2.8 GB free. The 400 G partition size was chosen off the README figure;
-it fits, but with no headroom worth speaking of.
+**The 372 GB figure in upstream's README is wrong for this container, and so is
+the 419.3 GB one this document used to give.** Per the HF API, the real
+`mastouri/GLM-5.2-colibri-int4-g64-with-int8-mtp` is **429.3 GB**:
+
+| Part | Bytes | |
+|---|---|---|
+| 141 × `out-*.safetensors` | 419,316,897,273 | downloaded |
+| 1 × `out-mtp-00000.safetensors` | 9,959,321,520 | **does not fit** |
+| **total** | **429,276,218,793** | |
+
+The 400.5 GiB partition gives 394 GiB (423 GB) usable after ext4 overhead, so the
+shards alone leave **2.7 GiB free** and the MTP head is ~7 GB more than the drive
+has left. The 400 G size was chosen off the README's 372 GB; it fits the shards
+and nothing else. See [Known problems](#known-problems).
+
+`out-00136.safetensors` is **16 bytes** — an empty safetensors header (`{}`).
+That is what upstream ships (the HF API reports 16 bytes too), not a truncated
+download. Do not "repair" it.
 
 ## Staging the weights
 
@@ -271,16 +315,22 @@ hf download mastouri/GLM-5.2-colibri-int4-g64-with-int8-mtp \
 
 Resumable. **Do not run this under sudo** — see [Known problems](#known-problems).
 
-Afterwards the MTP head must be the int8 one, or speculative decoding silently
-never fires (upstream measured 0–4% draft acceptance at int4 versus 39–59%):
+The container's whole point over a plain int4 repo is that its MTP head is int8,
+without which speculative decoding silently never fires (upstream measured 0–4%
+draft acceptance at int4 versus 39–59%). It is a **single** file:
 
 ```bash
-ls -l /llm/primary/glm52-i4/out-mtp-*
+ls -l /llm/primary/glm52-i4/out-mtp-00000.safetensors   # must be 9959321520
 ```
 
-must be `3527131672 / 5366238584 / 1065950496`. `hf download` also leaves a
-`.cache/` staging directory in the target — safe to delete once verified, and
-worth doing at 2.8 GB free.
+**On saturn this file is absent** — it does not fit next to the shards, and the
+mirror partition is where it would have to live. Nothing is lost yet: at the
+current hit rate `coli plan` recommends `DRAFT=0` anyway, which disables the
+drafting the int8 head exists for. Revisit once residency is up
+([Known problems](#known-problems)).
+
+`hf download` also leaves a `.cache/` staging directory in the target — safe to
+delete once verified, and on this partition not optional.
 
 ## Bringing it up
 
@@ -291,31 +341,40 @@ worth doing at 2.8 GB free.
 coli doctor --deep --model /llm/primary/glm52-i4
 coli plan --model /llm/primary/glm52-i4   # planned VRAM/RAM/disk placement
 
-# 3. Run some REPRESENTATIVE prompts before mirroring. The engine records which
+# 2. Run some REPRESENTATIVE prompts before mirroring. The engine records which
 #    experts your workload actually routes to in .coli_usage, updated every turn,
-#    and the partial-mirror planner ranks shards off that history. Staging on a
-#    cold .coli_usage ranks on nothing.
+#    and the partial-mirror planner ranks shards off that history. The container
+#    ships its own .coli_usage, so a cold one ranks on the uploader's workload
+#    rather than on nothing — still not yours.
 coli chat
 
-# 4. Mirror the hottest half onto the second drive. GLM-5.2 is 372G against a
-#    200G mirror, so this is necessarily partial. Staging never touches the
-#    primary: it copies through temp files, SHA-256s every shard, honours the
-#    free-space reserve, never deletes an existing mirror shard, and publishes a
-#    receipt only once the selected set is complete.
+# 3. Mirror the hottest shards onto the second drive. GLM-5.2 is 419G of shards
+#    against a 200G mirror, so this is necessarily partial (64 of 141 shards at
+#    --budget-gib 180). Staging never touches the primary: it copies through temp
+#    files, SHA-256s every shard, honours the free-space reserve, never deletes an
+#    existing mirror shard, and publishes a receipt only once the selected set is
+#    complete. Budget ~25 min and expect a long silence first: it SHA-256s the
+#    whole 180 GiB source set before writing a byte, then hashes each copy in
+#    flight AND re-reads the written file to hash it again. That is three passes
+#    over 180 GiB at ~500 MB/s, which is what Comet Lake does without SHA-NI —
+#    the drives are not the limit here, the CPU is.
 coli mirror plan   --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4 \
   --budget-gib 180 --reserve-gib 10
 coli mirror stage  --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4 \
   --budget-gib 180 --reserve-gib 10
 coli mirror verify --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4
 
-# 5. Measure. Do not guess.
+# 4. Measure. Do not guess.
 coli tune
 ```
 
 `--budget-gib 180 --reserve-gib 10` fits the 200.5 GiB mirror partition with room
-for ext4 overhead. The mirror is re-stageable at any time and gets *better* the
-longer colibrì has been used, since `.coli_usage` keeps learning — so restaging
-after a few weeks of real work is worth doing.
+for ext4 overhead: measured, it selects **179.8 GiB and leaves 16.4 GiB free** —
+which is also the space the int8 MTP head would need if problem 1 gets solved
+that way, so do not raise the budget without deciding that question first. The
+mirror is re-stageable at any time and gets *better* the longer colibrì has been
+used, since `.coli_usage` keeps learning — so restaging after a few weeks of real
+work is worth doing.
 
 Then set `serve.enable = true`, point `model`/`mirror` at those paths, and put
 whatever `tune` measured into `serve.environment` so the tuned profile is
@@ -323,55 +382,83 @@ declarative rather than one machine's shell history.
 
 ## Known problems
 
-Open as of 2026-08-16, in the order they should be dealt with.
+State as of 2026-08-17, in the order they should be dealt with.
 
-**1. `/llm/primary` has 2.8 GB free.** The container is 419.3 GB, not the 372 GB
-the README claims. Delete `.cache/` in the model directory first. If that is not
-enough, the honest options are dropping to a smaller model or re-doing the
-partition split with a larger primary (which is another live migration, not a
-config change).
+**1. `/llm/primary` has 2.7 GiB free, and the int8 MTP head is what does not
+fit.** `.cache/` is already deleted and the model dir holds nothing else
+droppable. The missing `out-mtp-00000.safetensors` is 9.96 GB against 2.7 GiB
+free, so there is no rearranging the primary into fitting it — the options are:
 
-**2. The model directory is root-owned, so persistence is disabled.**
-`coli doctor` reports `[warn] storage.persistence  model directory is
-read-only`. That comes from downloading under `sudo`. It matters more than it
-looks: `.coli_usage` is written *next to the model*, and it is both the learning
-cache that raises the expert hit rate over time and the ranking input for
-`coli mirror plan`. Until this is fixed, colibrì cannot get faster with use and
-the mirror cannot be staged sensibly.
+- **Leave it out.** Costs nothing today: at this hit rate `coli plan` says
+  `DRAFT=0`, so the drafting the head enables would be off anyway.
+- **Put it on the mirror drive and symlink it in.** After staging at
+  `--budget-gib 180` the mirror has ~16.4 GiB free, which fits. The engine opens
+  weights by path, so a symlink from the model dir works, and the head's reads
+  land on the *other* drive — which is where they want to be anyway. This is the
+  move if `DRAFT=1` ever measures better.
+- Re-do the partition split with a larger primary. Another live migration, not a
+  config change, and it steals from the mirror — i.e. from lever #2.
 
-```bash
-sudo chown -R cramt:users /llm/primary /llm/mirror
+**2. ~~The model directory is root-owned~~ — fixed.** `chown -R cramt:users
+/llm/primary /llm/mirror` was applied; `.coli_usage` is now written next to the
+model and growing (95 KB, 72,600 recorded selections). Persistence is live, so
+the hit rate can improve with use and `coli mirror plan` has something to rank
+on. Note that most of those selections are the **container's shipped
+`.coli_usage`** — the uploader's workload, not yours — so restage the mirror once
+saturn has real usage behind it.
+
+**3. ~~No GPU detected~~ — fixed in `c91cc41`, deployed and verified
+2026-08-17.** `coli doctor` now reports `[ok] accelerator.gpu  GPU engine and
+devices are available`.
+
+The cause was never upstream's detection logic: `resource_plan.py` probes
+`nvidia-smi`, then falls back to `rocm-smi` (#662), and neither was on `coli`'s
+PATH — so it planned CPU-only and the whole 16 GB VRAM tier went unused, on a
+machine running a perfectly good gfx1101 HIP build.
+`packages/colibri/default.nix` now `wrapProgram`s `rocmPackages.rocm-smi` onto
+PATH for the `rocm` variant. Measured on the same engine binary, only PATH
+differing:
+
+| | without `rocm-smi` | with `rocm-smi` |
+|---|---|---|
+| VRAM | `no NVIDIA device detected · CPU path` | `13.2 GB hot tier · ~620 experts` |
+| cold experts | 404.4 GB | 391.2 GB |
+| projected residency | **1%** | **4%** |
+
+The trap worth remembering: this looks exactly like a broken build, and it is a
+missing runtime dependency of the *planner*. If it ever regresses, check
+`ls $(dirname $(readlink -f $(which coli)))` for `.coli-wrapped` before
+suspecting HIP.
+
+Two cosmetic notes on the AMD path, neither breaking: `rocm-smi` prints
+`Fail to open libdrm_amdgpu.so` on stderr, and the device name comes through as
+`0:N/A` because this SKU reports `Card Series` as `N/A` (`_discover_amd_gpus`
+prefers Series over Model). Upstream marks that function
+"hardware-owner-needed — authored without a ROCm host to test against", and it
+does parse saturn's CSV correctly, so both are worth reporting back.
+
+**4. Projected expert residency is 4%, and it is still the ceiling.** Even with
+the VRAM tier counted: 21.2 GB RAM budget, 11.6 GB dense, 6.3 GB runtime, 3.3 GB
+warm experts, cap 2/layer, against 391.2 GB of cold experts. `limit disk expert
+misses`. Nearly every expert read still reaches disk — see
+[Measured throughput](#measured-throughput) for what that measured out at.
+
+> The RAM budget is computed from **currently available** memory, not total, so
+> `coli plan` and `coli doctor` give different answers depending on what else the
+> desktop is doing — 21.2 GB budget / cap 2 per layer / 4% residency on an idle
+> box, 19.9 GB / cap 1 / 0% while a mirror stage was running. Compare plans taken
+> under the same conditions, and take the tuning ones on an idle machine.
+
+colibrì's own auto-tune recommends, at this hit rate:
+
+```
+DRAFT=0             low hit rate: MTP widens expert union, adds disk reads
+COLI_CUDA_PIPE=1    single GPU: S=1 pipeline gate
 ```
 
-Note the container ships its own `.coli_usage`, so mirror planning would rank on
-the uploader's workload rather than nothing — but that is not your workload.
-
-**3. No GPU detected.** `coli doctor` says `no supported GPU detected` and the
-plan reads `VRAM no NVIDIA device detected · CPU path`, on a machine running a
-gfx1101 HIP build. `resource_plan.py` probes `nvidia-smi`, then falls back to
-`rocm-smi`; neither is on PATH, so it plans CPU-only and the entire 16 GB VRAM
-tier goes unused. The package now puts `rocm-smi` on `coli`'s PATH for the
-`rocm` variant. If it still mis-detects after that, upstream marks
-`_discover_amd_gpus` "hardware-owner-needed — authored without a ROCm host to
-test against" (#662), so it is worth reporting rather than working around.
-
-**4. Projected expert residency is 1%.** With the CPU-only plan: 20.9 GB RAM
-budget, 11.6 GB dense, 6.3 GB runtime, and only **3.1 GB of warm experts against
-404.6 GB of cold ones**, cap 1/layer. `limit disk expert misses`. Essentially
-every expert read goes to disk, so expect roughly **0.3 tok/s**, not the 1–3 this
-document estimated before any of it was measured. Fixing 3 should improve this
-materially, since the VRAM tier is currently contributing nothing.
-
-colibrì's own auto-tune, at that hit rate, recommends:
-
-```
-DRAFT=0    low hit rate: MTP widens expert union, adds disk reads
-PIPE=1     overlap disk reads with resident expert compute
-```
-
-Note `DRAFT=0` disables the MTP speculative drafting the int8 head exists for —
-at a 1% hit rate the wider expert union costs more in disk reads than the drafts
-save. That should be revisited once residency is up.
+(`PIPE=1` was the CPU-plan recommendation; with the GPU detected it becomes
+`COLI_CUDA_PIPE=1`.) `DRAFT=0` disables the MTP speculative drafting the int8
+head exists for, which is the other reason problem 1 is not urgent.
 
 ## What still needs measuring
 
@@ -392,10 +479,12 @@ the DRAM-less 980. `serve.direct` is off by default for that reason. Note this
 knob is per-*service*, not per-drive, so if the two disagree the mirror split
 itself is what to re-examine.
 
-**Whether 31 GiB of RAM is the real ceiling.** Measured free on an idle-ish
-desktop: 22 GiB available of 31 GiB total, plus 15 GiB of zram. V4 Flash wants 16
-GB minimum / 22 comfortable, which fits; GLM-5.2 wants 24 comfortable, which does
-not without closing things; Inkling wants ~25 GB even with the reduced dense
+**Whether 31 GiB of RAM is the real ceiling.** Partly answered: the first GLM-5.2
+run sat at **13.7 GB RSS** against a 21.2 GB planned budget, on the CPU-only
+plan — so it is not RAM-starved at this residency, it is disk-starved. Measured
+free on an idle-ish desktop: 22 GiB available of 31 GiB total, plus 15 GiB of
+zram. V4 Flash wants 16 GB minimum / 22 comfortable, which fits; GLM-5.2 wants 24
+comfortable, which does not without closing things; Inkling wants ~25 GB even with the reduced dense
 container, so it is the marginal one despite fitting on disk. `serve.memoryMax`
 exists precisely so an overshoot degrades instead of taking the session down.
 Saturn also has the unresolved Bank-0 MCEs (see `saturn-mce-bios.md`) — holding
@@ -405,26 +494,37 @@ Saturn also has the unresolved Bank-0 MCEs (see `saturn-mce-bios.md`) — holdin
 but no AVX-512 and no AVX-VNNI, so there is no VNNI dot kernel to unlock and the
 package's `x86-64-v3` default is already the correct target.
 
-## Expected throughput
+## Measured throughput
 
-No end-to-end token has been generated yet, so there is still no measured
-number. Treat everything here as an estimate until `coli tune` says otherwise.
+**First real number, 2026-08-17 — `0.13 tok/s`.** `coli chat`, one short prompt:
 
-The pre-measurement guess was 1–3 tok/s for V4 Flash and under 1 for GLM-5.2,
-extrapolated from upstream's 1.07 tok/s on a single 12 GB RTX 5070 Ti. That was
-too optimistic for the configuration as it actually stands: `coli plan` projects
-**1% expert residency** with the GPU undetected, which puts GLM-5.2 nearer
-**0.3 tok/s** — roughly 11 GB of routed experts per token off a single ~3.5 GB/s
-drive, with almost no cache absorbing it.
+```
+17 tok · 0.13 tok/s · hit 2% · RSS 13.7 GB · 131s
+```
 
-Three things should move that number, in rough order of expected effect:
+That is the worst case, and worth recording as such: CPU-only plan (GPU
+undetected — problem 3), empty mirror, cold `.coli_usage`. Note the observed 2%
+hit rate matched the plan's projection almost exactly, so the planner's residency
+figure is trustworthy as a predictor here.
 
-1. **Getting the GPU detected** (problem 3) — the 16 GB VRAM tier currently
-   contributes nothing to residency.
-2. **Staging the mirror** — splits expert reads across both drives instead of
-   hammering the 970 EVO alone.
-3. **Letting `.coli_usage` learn** (problem 2) — residency rises as the pinned
-   hot-set matches the actual workload.
+For reference, the pre-measurement guesses were 1–3 tok/s (extrapolated from
+upstream's 1.07 tok/s on a 12 GB RTX 5070 Ti), then 0.3 tok/s once `coli plan`
+projected 1% residency. Both were optimistic by a wide margin. Roughly 11 GB of
+routed experts per token off a single ~3.5 GB/s drive, with almost nothing
+cached, is simply 0.1-tok/s territory.
 
-Even so, this is "ask it something and come back", not chat. That is the honest
-ceiling for streaming a 744B model off consumer PCIe 3.0 NVMe.
+Three things should move it, in rough order of expected effect:
+
+1. **Getting the GPU detected** (problem 3) — `coli plan` puts projected
+   residency at 4% rather than 1% once `rocm-smi` is on PATH. Fixed in
+   `c91cc41`; needs `nh os switch`.
+2. **The mirror** — staged 2026-08-17: 64 shards, 179.8 GiB, so expert reads
+   split across both drives instead of hammering the 970 EVO alone.
+3. **Letting `.coli_usage` learn** — now that persistence works (problem 2),
+   residency rises as the pinned hot-set matches the actual workload, and a
+   restage re-ranks the mirror onto it.
+
+Re-measure after each, and put whatever `coli tune` lands on into
+`serve.environment`. Even at the optimistic end this is "ask it something and
+come back", not chat — that is the honest ceiling for streaming a 744B model off
+consumer PCIe 3.0 NVMe.

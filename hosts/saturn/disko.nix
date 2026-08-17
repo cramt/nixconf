@@ -10,8 +10,14 @@
 #              still mounts degraded and the surviving files stay readable
 #              without a salvage operation.
 #
-# nvme1n1 (970 EVO) additionally reserves a 150G NTFS slot for a fresh Windows
-# install (League) — Windows dual-boots off the shared ESP on nvme0n1.
+# The 970 EVO additionally reserves a 150G NTFS slot for a fresh Windows install
+# (League) — Windows dual-boots off the shared ESP, which lives on the 980.
+#
+# Drives are named by MODEL here, never by nvmeXn1: the kernel's enumeration of
+# the two is not stable, and as of 2026-08-17 it is the reverse of what this file
+# used to claim (the 970 EVO is nvme0n1, the 980 is nvme1n1). Nothing real depends
+# on it — disko addresses by-id and fileSystems by-partlabel — but a comment that
+# says nvme0n1 is an invitation to point a destructive command at the wrong disk.
 #
 # Both drives also carry a plain-ext4 LLM partition outside the btrfs pool; see
 # "LLM streaming tier" below and docs/saturn-llm-storage.md. That leaves the
@@ -56,8 +62,8 @@
 # asymmetric pair on its own — no manual COLI_DISK_WEIGHTS needed.
 {...}: let
   # Stable by-id paths for the two NVMe SSDs.
-  ssdA = "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S649NL1T766468L"; # nvme0n1 — ESP + LLM mirror + btrfs member
-  ssdB = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_1TB_S5H9NS1NB05355E"; # nvme1n1 — Windows + LLM primary + btrfs member, owns the mkfs
+  ssdA = "/dev/disk/by-id/nvme-Samsung_SSD_980_1TB_S649NL1T766468L"; # 980 — ESP + LLM mirror + btrfs member
+  ssdB = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_1TB_S5H9NS1NB05355E"; # 970 EVO — Windows + LLM primary + btrfs member, owns the mkfs
 
   btrfsMountOptions = ["compress=zstd:1" "noatime"];
 
@@ -85,7 +91,7 @@ in {
           # back to attribute-name order for ties, and builtins.sort makes no
           # stability guarantee — so leaving ties to break by name would make
           # partition NUMBERS an implementation detail. They are load-bearing
-          # (the btrfs extraArgs below, nvme1n1p1 in configuration.nix).
+          # (the btrfs extraArgs below, and ssd_b's part1 for Windows).
           ESP = {
             priority = 100;
             size = "1G";
@@ -140,8 +146,9 @@ in {
         partitions = {
           # Empty NTFS-typed slot for a fresh Windows install (League). Left
           # without `content` so the Windows installer owns it; Windows boots
-          # off the shared ESP on ssd_a. This MUST stay part1: configuration.nix
-          # and scripts/saturn-windows-image.sh both address it as nvme1n1p1.
+          # off the shared ESP on ssd_a. This MUST stay part1:
+          # scripts/saturn-windows-image.sh and scripts/windows-vm.sh both
+          # address it as `<ssd_b by-id>-part1`.
           windows = {
             priority = 100;
             size = "150G";

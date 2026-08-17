@@ -25,7 +25,7 @@
   # see docs/saturn-mce-bios.md). No USB stick needed.
   boot.loader.systemd-boot.memtest86.enable = true;
   # systemd-boot doesn't reliably auto-detect the Windows Boot Manager, so add an
-  # explicit chainload entry for the League dual-boot on nvme1n1p1. Windows'
+  # explicit chainload entry for the League dual-boot on the 970 EVO's part1. Windows'
   # \EFI\Microsoft\Boot lives on this shared ESP (put there by
   # scripts/saturn-windows-image.sh; see docs/saturn-disko-migration.md).
   boot.loader.systemd-boot.extraEntries."windows.conf" = ''
@@ -91,7 +91,7 @@
   myNixOS = {
     secureboot.enable = false;
     # Keep the cached Windows image from rotting. Rebuild only — deploying to
-    # nvme1n1p1 stays a deliberate `--deploy-only` you run yourself.
+    # the real partition stays a deliberate `--deploy-only` you run yourself.
     services.windows-image-refresh = {
       enable = true;
       user = "cramt";
@@ -172,7 +172,24 @@
       colibri = {
         enable = true;
         backend = "rocm";
-        serve.enable = false;
+        serve = {
+          # Paths are wired but the daemon is not: these are inert while
+          # `enable = false` (the module only reads them under mkIf), so flipping
+          # that bool is the whole remaining step. Both directories exist and are
+          # populated — 141 shards on the primary, the hottest 64 mirrored.
+          enable = false;
+          model = "/llm/primary/glm52-i4";
+          mirror = "/llm/mirror/glm52-i4";
+          # Measured RSS on the first run was 13.7 GB and the planner budgets
+          # ~21 GB from *available* RAM, so it self-limits before this bites.
+          # This is the backstop that makes an overshoot degrade rather than take
+          # the desktop session down with it — 22G leaves ~9 GiB plus zram.
+          memoryMax = "22G";
+          # serve.environment stays empty until `coli tune` has actually run on
+          # the GPU-detected plan. The current auto-tune hints (DRAFT=0,
+          # COLI_CUDA_PIPE=1) come from a plan taken before the rocm-smi fix was
+          # deployed, and hardcoding those would be guessing with extra steps.
+        };
       };
       nixarr.enable = false;
       caddy = {
