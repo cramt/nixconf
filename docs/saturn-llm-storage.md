@@ -261,11 +261,12 @@ if saturn is being rebuilt for other reasons.
   cleanly.
 - GLM-5.2 **downloaded** to `/llm/primary/glm52-i4`: all 141 shards, **minus the
   int8 MTP head**, which does not fit (problem 1).
-- **It generates tokens.** First measured run: **0.13 tok/s** at 2% expert hit —
-  see [Measured throughput](#measured-throughput).
+- **It generates tokens: 0.18 tok/s** with the GPU and mirror in play, up from
+  0.13 on the CPU-only path — see [Measured throughput](#measured-throughput).
 - GPU detection **fixed and deployed** — `coli doctor` reports `[ok]
   accelerator.gpu`, 13.4 GB hot tier, projected residency 1% → 4% (problem 3).
-- Mirror **staged** 2026-08-17: 64 shards / 179.8 GiB on the 980.
+- Mirror **staged and verified** 2026-08-17: 64 of 141 shards, 193,110,254,368
+  bytes on the 980, `coli mirror verify` → `ready: true`, zero failures.
 - `serve.enable` is still `false`; nothing has been through `coli tune` yet.
 
 Read [Known problems](#known-problems) before doing anything else.
@@ -357,7 +358,9 @@ coli chat
 #    whole 180 GiB source set before writing a byte, then hashes each copy in
 #    flight AND re-reads the written file to hash it again. That is three passes
 #    over 180 GiB at ~500 MB/s, which is what Comet Lake does without SHA-NI —
-#    the drives are not the limit here, the CPU is.
+#    the drives are not the limit here, the CPU is. `verify` re-hashes the whole
+#    staged set against the receipt, so budget it another ~7 min; neither command
+#    prints progress, so watch `df -h /llm/mirror` if you want a pulse.
 coli mirror plan   --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4 \
   --budget-gib 180 --reserve-gib 10
 coli mirror stage  --model /llm/primary/glm52-i4 --mirror /llm/mirror/glm52-i4 \
@@ -496,35 +499,72 @@ package's `x86-64-v3` default is already the correct target.
 
 ## Measured throughput
 
-**First real number, 2026-08-17 — `0.13 tok/s`.** `coli chat`, one short prompt:
+Two runs, same prompt (`testing123`), 17 decoded tokens each, 2026-08-17:
+
+| | CPU-only, no mirror | GPU + verified mirror |
+|---|---|---|
+| decode | **0.13 tok/s** | **0.18 tok/s** (+38%) |
+| expert hit rate | 2% | 2.3% (pin 0.0% + lru 2.3%) |
+| RSS | 13.7 GB | 13.69 GB |
+| MTP acceptance | — | 0% (0/0 — no head, see problem 1) |
+
+The second run's profile is the useful part:
 
 ```
-17 tok · 0.13 tok/s · hit 2% · RSS 13.7 GB · 131s
+prefill 8 tokens in 30.69s | decode 17 tokens in 95.59s
+experts loaded/token: 600.0 (per-layer 8.00 across 75)
+PROFILE: expert-disk 479.560s service / 69.976s wait | expert-matmul 11.009s
+         | attention 11.830s | lm_head 0.000s | other 2.773s
+MIRROR: primary 220.88 GB (41724 reads) | mirror1 56.43 GB (10658 reads)
+        — 20% of expert bytes from the mirrors
 ```
 
-That is the worst case, and worth recording as such: CPU-only plan (GPU
-undetected — problem 3), empty mirror, cold `.coli_usage`. Note the observed 2%
-hit rate matched the plan's projection almost exactly, so the planner's residency
-figure is trustworthy as a predictor here.
+Three things fall out of it, none of which were guessable up front:
+
+**Compute is irrelevant and the design premise is confirmed.** Expert-disk
+service time beats expert-matmul by ~44× and attention by ~40×. 277 GB of expert
+reads for 17 tokens is **16 GB per token**, above the 11 GB this document
+estimated. Nothing about this is a compute problem.
+
+**The mirror is only pulling 20% of expert bytes while holding 45% of the
+shards** — so the split is running at less than half its potential. This is the
+`.coli_usage` caveat in problem 2 showing up as a number: the 64 shards were
+ranked "hottest" using the *container's shipped* usage history, i.e. the
+uploader's workload, and saturn's prompts route elsewhere. A restage against real
+saturn history should move that 20% up substantially, and it is the cheapest
+remaining lever — no config change, no repartition, just usage and ~25 min.
+
+**The pinned hot-set is contributing nothing** (`pin 0.0% + lru 2.3%`): the entire
+hit rate comes from LRU. Same root cause — the pin set is chosen off the same
+unrepresentative history.
+
+The drives are also not saturated: 277 GB across 126 s is ~2.2 GB/s aggregate,
+with the 970 EVO at ~1.75 GB/s against its ~3.5 GB/s ceiling, and 70 s of the
+95 s decode spent in disk *wait*. That gap is queue depth and read scatter, not
+bandwidth, which is what `DIRECT=1` and the `PIPE`/`COLI_CUDA_PIPE` knobs exist
+to attack — so `coli tune` has something real to chew on.
 
 For reference, the pre-measurement guesses were 1–3 tok/s (extrapolated from
 upstream's 1.07 tok/s on a 12 GB RTX 5070 Ti), then 0.3 tok/s once `coli plan`
-projected 1% residency. Both were optimistic by a wide margin. Roughly 11 GB of
-routed experts per token off a single ~3.5 GB/s drive, with almost nothing
-cached, is simply 0.1-tok/s territory.
+projected 1% residency. Both were optimistic. The observed 2% hit rate did match
+the planner's projection closely, so its residency figure is a trustworthy
+predictor even where the throughput guesses were not.
 
-Three things should move it, in rough order of expected effect:
+### What is left to try, in order of measured promise
 
-1. **Getting the GPU detected** (problem 3) — `coli plan` puts projected
-   residency at 4% rather than 1% once `rocm-smi` is on PATH. Fixed in
-   `c91cc41`; needs `nh os switch`.
-2. **The mirror** — staged 2026-08-17: 64 shards, 179.8 GiB, so expert reads
-   split across both drives instead of hammering the 970 EVO alone.
-3. **Letting `.coli_usage` learn** — now that persistence works (problem 2),
-   residency rises as the pinned hot-set matches the actual workload, and a
-   restage re-ranks the mirror onto it.
+1. **Use it, then restage the mirror.** The 20%-of-bytes figure above is the
+   whole argument: the ranking is currently the uploader's workload. Real
+   `.coli_usage` history should raise both that and the dead `pin` tier, and it
+   costs nothing but ~25 min of staging.
+2. **`coli tune`.** 70 s of the 95 s decode is disk *wait* at only ~2.2 GB/s of
+   ~7 GB/s theoretical, so there is real headroom in `DIRECT`, `PIPE` /
+   `COLI_CUDA_PIPE` and queue depth. Take it on an idle box, then put the result
+   in `serve.environment`.
+3. **HIP vs Vulkan** — see [What still needs measuring](#what-still-needs-measuring).
+4. **The int8 MTP head**, last: `MTP acceptance 0% (0/0)` is currently a
+   tautology (there is no head), and auto-tune wants `DRAFT=0` regardless until
+   the hit rate climbs. Only worth the 10 GB once 1 and 2 have moved residency.
 
-Re-measure after each, and put whatever `coli tune` lands on into
-`serve.environment`. Even at the optimistic end this is "ask it something and
-come back", not chat — that is the honest ceiling for streaming a 744B model off
-consumer PCIe 3.0 NVMe.
+Even at the optimistic end this stays "ask it something and come back", not chat.
+That is the honest ceiling for streaming a 744B model off consumer PCIe 3.0 NVMe,
+and 0.18 tok/s is the honest number today.
