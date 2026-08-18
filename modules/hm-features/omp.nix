@@ -2,9 +2,22 @@
   hmModules.features.omp = {
     config,
     lib,
+    pkgs,
     ...
   }: let
     cfg = config.myHomeManager.omp;
+
+    # omp generates its completions from live command/flag metadata, so they
+    # can't drift from the CLI. Upstream suggests eval-ing that from .zshrc, but
+    # the generator is a Bun process that measures at ~0.67s a run — paying that
+    # on every shell start is absurd, so bake it at build time instead. Home
+    # Manager already puts each profile's share/zsh/site-functions on fpath.
+    zshCompletions = pkgs.runCommand "omp-zsh-completions" {} ''
+      mkdir -p $out/share/zsh/site-functions
+      HOME=$TMPDIR ${lib.getExe config.programs.omp.package} completions zsh \
+        > $out/share/zsh/site-functions/_omp
+      head -1 $out/share/zsh/site-functions/_omp | grep -q '^#compdef omp$'
+    '';
   in {
     imports = [inputs.omp.homeManagerModules.default];
 
@@ -12,6 +25,8 @@
 
     config = lib.mkIf cfg.enable {
       programs.omp.enable = true;
+
+      home.packages = lib.optionals config.programs.zsh.enable [zshCompletions];
 
       # NB: `programs.omp.settings` is deliberately left unset. It renders
       # ~/.omp/agent/config.yml as a read-only store symlink, and that same file
