@@ -224,6 +224,17 @@
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/nixos-unstable";
     nixpkgs-rpi.follows = "nixos-raspberrypi/nixpkgs";
 
+    # Terasic's linux-socfpga fork — phobos's kernel. Mainline has had Agilex 5
+    # SoC support since 6.6, but socfpga_agilex5_de25_nano.dtb exists only here,
+    # so we can't just use nixpkgs' kernel. Not a flake, it's a kernel tree.
+    # A branch rather than a tag because that's all Terasic publishes; the lock
+    # pins the rev, so `just update` is what moves the board's kernel — if phobos
+    # ever boot-loops after an update PR, this input is the first suspect.
+    terasic-linux-socfpga = {
+      url = "github:terasic/linux-socfpga/de25_nano_revA_v1.0";
+      flake = false;
+    };
+
     # Fleet deployment: builds each host's toplevel locally and activates it over
     # SSH with magic rollback. Driven by `just deploy` (see modules/flake/deploy.nix).
     deploy-rs = {
