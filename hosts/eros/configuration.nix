@@ -48,14 +48,14 @@ in
       services.sshd.enable = true;
     };
 
-    # nixosModules.default ships stylix/lix/zfs/quadlet by default. None has
-    # cached aarch64 builds for nvmd's nixpkgs pin — switch off to keep
-    # cache-only. quadlet auto-enables when its enable option is null, which
-    # transitively pulls podman + matplotlib at build time; force off explicitly.
+    # nixosModules.default ships stylix/lix/zfs by default. None has cached
+    # aarch64 builds for nvmd's nixpkgs pin — switch off to keep cache-only.
+    # (quadlet needed forcing off here too; it now defaults off in
+    # modules/base/nixos-default.nix.) zfs keeps its mkForce because an input's
+    # module, not this repo, turns it on at normal priority.
     stylix.enable = lib.mkForce false;
-    nix.package = lib.mkForce pkgs.nix;
+    nix.package = pkgs.nix;
     boot.supportedFilesystems.zfs = lib.mkForce false;
-    virtualisation.quadlet.enable = false;
 
     nixpkgs = {
       hostPlatform = "aarch64-linux";

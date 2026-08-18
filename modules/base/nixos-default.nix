@@ -16,7 +16,18 @@
       systemd.user.settings.Manager.DefaultEnvironment = ''"PATH=/run/wrappers/bin:/etc/profiles/per-user/%u/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"'';
       stylix.enable = true;
       services.gnome.gcr-ssh-agent.enable = false;
-      nix.package = pkgs.lix;
+      # mkDefault, because this lands on every host including the small ARM ones
+      # (eros, mercury) that have no cached aarch64 lix and shouldn't compile a
+      # nix implementation to boot. Those set `nix.package = pkgs.nix;` plainly;
+      # without mkDefault here that's an option conflict and they'd each need a
+      # mkForce to say something this ordinary.
+      nix.package = lib.mkDefault pkgs.lix;
+
+      # quadlet-nix auto-enables when this is left null (its default), which
+      # pulls podman — and transitively matplotlib — into the build of hosts that
+      # never mentioned containers. Nothing in this repo uses quadlet today, so
+      # off unless a host asks; mkDefault keeps that a one-liner.
+      virtualisation.quadlet.enable = lib.mkDefault false;
       nix.daemonCPUSchedPolicy = "idle";
       nix.daemonIOSchedClass = "idle";
       nix.settings = {

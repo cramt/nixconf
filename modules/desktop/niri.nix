@@ -17,7 +17,8 @@
 
     options.myNixOS.niri.enable = lib.mkEnableOption "myNixOS.niri";
 
-    config = lib.mkIf cfg.enable {
+    config = lib.mkMerge [
+    (lib.mkIf cfg.enable {
       programs.niri = {
         enable = true;
         # v25.08; pairs with xwayland-satellite-stable for integrated XWayland.
@@ -42,6 +43,20 @@
         "org.freedesktop.impl.portal.Secret" = "gnome-keyring";
         "org.freedesktop.impl.portal.Settings" = "gtk";
       };
-    };
+    })
+
+    # The import above is unconditional — `imports` can't depend on config — and
+    # myLib/mkSystem feeds every nixosModule to every host, so niri-flake's
+    # homeModules.config lands in home-manager.sharedModules even on hosts that
+    # never asked for niri. That module writes ~/.config/niri/config.kdl, which
+    # references the compositor binary, so a headless box ends up building niri
+    # and its ~300 Rust crates for a file nothing will ever read. null means
+    # "don't manage the file"; mkDefault so a host can still opt back in.
+    (lib.mkIf (!cfg.enable) {
+      home-manager.sharedModules = [
+        { programs.niri.config = lib.mkDefault null; }
+      ];
+    })
+    ];
   };
 }

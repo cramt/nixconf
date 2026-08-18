@@ -146,13 +146,16 @@ in {
     '';
   };
 
-  # nixosModules.default ships lix/zfs/quadlet, none of which has cached aarch64
-  # builds worth having on a 957 MB board; quadlet auto-enables when its option
-  # is null (transitively pulling podman + matplotlib at build time). Same
-  # reasoning as eros — but note stylix deliberately stays ON here, see below.
-  nix.package = lib.mkForce pkgs.nix;
+  # nixosModules.default ships lix/zfs, neither of which has cached aarch64
+  # builds worth having on a 957 MB board. Same reasoning as eros — but note
+  # stylix deliberately stays ON here, see below. (quadlet used to need
+  # disabling too; it now defaults off in modules/base/nixos-default.nix.)
+  #
+  # zfs still needs mkForce because it's enabled at normal priority by an input's
+  # module (nixarr), not by anything in this repo — drop the mkForce if that ever
+  # becomes conditional upstream.
+  nix.package = pkgs.nix;
   boot.supportedFilesystems.zfs = lib.mkForce false;
-  virtualisation.quadlet.enable = false;
 
   myNixOS = {
     services.sshd.enable = true;
@@ -208,7 +211,7 @@ in {
     backupFileExtension = "hm-bak";
     extraSpecialArgs = {inherit inputs;};
 
-    users.cramt = {pkgs, ...}: let
+    users.cramt = _: let
       hm = inputs.self.outputs.homeManagerModules;
 
       # Exactly the features hm-bundles/general.nix switches on, and nothing
@@ -242,25 +245,19 @@ in {
           inputs.nix-index-database.homeModules.nix-index
         ]
         ++ map (n: hm.features.${n}) cliFeatures;
-
-      # niri-flake's HM module rides in on sharedModules (see below) and writes
-      # ~/.config/niri/config.kdl, which references the compositor binary — that
-      # alone makes the ARM runner build niri and ~300 Rust crates, even though
-      # programs.niri.enable is false. null means "don't manage the file".
-      programs.niri.config = lib.mkForce null;
-
-      # hm-features/git.nix hardcodes 1Password's op-ssh-sign as the SSH signing
-      # program, which puts the whole 1Password GUI in this board's closure for
-      # a machine that has no GUI and no 1Password. ssh-keygen is the stock
-      # signer and keeps signed commits working over SSH.
-      programs.git.settings.gpg.ssh.program =
-        lib.mkForce (lib.getExe' pkgs.openssh "ssh-keygen");
     };
 
     # sharedModules is deliberately left alone (eros clears it, we can't): it is
     # how stylix's HM module arrives, and hm-base/default-hm.nix reads
     # config.stylix.enable directly, so clearing it makes `attribute 'stylix'
     # missing` at eval.
+    #
+    # It is also how niri-flake's HM module arrives, which used to make this
+    # board build a whole Wayland compositor for a config.kdl it would never
+    # read; that is now neutralized centrally in modules/desktop/niri.nix for
+    # every host that doesn't set myNixOS.niri.enable. Likewise the git feature's
+    # 1Password signer, which now follows myHomeManager.ssh.use1Password —
+    # home.nix already sets that false.
   };
 
   # 4 cores and ~957 MB: this board substitutes, it never compiles. `just deploy`

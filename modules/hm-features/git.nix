@@ -13,6 +13,21 @@
         default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIWPMez5MadLlJ+NbdUJBDpd3MWCYI28gvA4Ddi5wD8I";
         description = "the ssh signing key (public key)";
       };
+      use1Password = lib.mkOption {
+        type = lib.types.bool;
+        # Follows the ssh feature: a host that already declared it has no
+        # 1Password shouldn't then get op-ssh-sign as its commit signer — that
+        # both fails at runtime and drags the whole 1Password GUI into the
+        # closure of machines with no GUI at all. `or true` keeps this working
+        # if the ssh feature isn't imported.
+        default = config.myHomeManager.ssh.use1Password or true;
+        defaultText = "config.myHomeManager.ssh.use1Password";
+        description = ''
+          Whether to sign commits through 1Password's op-ssh-sign. When false,
+          uses the stock ssh-keygen signer, which keeps signed commits working
+          over plain SSH keys.
+        '';
+      };
     };
     config = lib.mkIf cfg.enable {
       programs.gitui = {
@@ -55,7 +70,10 @@
             );
           gpg = {
             format = "ssh";
-            ssh.program = "${lib.getExe' pkgs._1password-gui "op-ssh-sign"}";
+            ssh.program =
+              if cfg.use1Password
+              then "${lib.getExe' pkgs._1password-gui "op-ssh-sign"}"
+              else "${lib.getExe' pkgs.openssh "ssh-keygen"}";
           };
           commit = { gpgsign = true; };
           push = { autoSetupRemote = true; };
