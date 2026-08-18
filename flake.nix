@@ -9,6 +9,7 @@
       "https://nixos-raspberrypi.cachix.org"
       "https://niri.cachix.org"
       "https://cache.numtide.com"
+      "https://nix-community.cachix.org"
     ];
     extra-trusted-public-keys = [
       "cramt.cachix.org-1:F7DlWw50o0gCn5TxMuep2PPku+7L9dxTIarTnPaNvls="
@@ -17,6 +18,7 @@
       "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
       "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
       "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
   };
 
@@ -65,6 +67,15 @@
       url = "github:lukasl-dev/pi.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # oh-my-pi (binary: `omp`) — can1357's fork of pi, with an official flake
+    # exposing packages.omp and homeManagerModules.default (programs.omp).
+    # Deliberately NOT following our nixpkgs: it builds a Rust core + a Bun
+    # bundle against a pinned toolchain, and upstream CI only prebuilds that
+    # exact closure into nix-community.cachix.org (added to the substituters
+    # below) — re-pointing nixpkgs would miss every cache hit and build ~80k
+    # lines of Rust locally.
+    omp.url = "github:can1357/oh-my-pi";
 
     # OpenAI-compatible proxy for M365 Copilot (Nitro service + NixOS module).
     m365-copilot-proxy = {

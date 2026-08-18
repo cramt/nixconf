@@ -23,6 +23,9 @@
         # (interactive OAuth), which Nix can't do for us.
         cli-proxy-api.enable = true;
         pi.enable = true;
+        # can1357's fork of pi (binary `omp`), installed alongside rather than
+        # instead of it: separate binary, separate ~/.omp state, no conflict.
+        omp.enable = true;
         java.enable = true;
         scala.enable = true;
         ruby.enable = true;
