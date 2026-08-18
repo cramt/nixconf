@@ -97,6 +97,20 @@ in {
     consoleLogLevel = 7;
   };
 
+  # NixOS builds its initrd for a general-purpose machine: sd-image.nix switches on
+  # hardware.enableAllHardware and kernel.nix adds its own defaults, which together
+  # ask for ~110 modules (3w-9xxx, pata_*, hid_*, ext2, tpm-crb). makeModulesClosure
+  # runs with allowMissing = false, so every one Terasic's config doesn't build is a
+  # hard build failure — 3w-9xxx, a 3ware RAID driver, is simply the first one hit.
+  # This is fixed hardware and the whole root path (Cadence SDHCI, ext4) is =y, so
+  # the honest initrd module set is empty. Dropping all-hardware also drops
+  # enableRedistributableFirmware, keeping linux-firmware out of a 957 MB board.
+  hardware.enableAllHardware = lib.mkForce false;
+  boot.initrd = {
+    includeDefaultModules = false;
+    availableKernelModules = lib.mkForce [];
+  };
+
   hardware.deviceTree = {
     enable = true;
     name = "intel/socfpga_agilex5_de25_nano.dtb";
