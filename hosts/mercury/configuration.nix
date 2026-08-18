@@ -1,4 +1,4 @@
-# phobos — Terasic DE25-Nano, an Agilex 5 SoC FPGA dev board. This configures the
+# mercury — Terasic DE25-Nano, an Agilex 5 SoC FPGA dev board. This configures the
 # HPS side only: 2x Cortex-A76 + 2x Cortex-A55, ~957 MB LPDDR4, gigabit ethernet,
 # microSD. The FPGA fabric sits alongside and is not managed from here.
 #
@@ -39,13 +39,13 @@
   # use that to keep `bridge enable` (without it the HPS<->FPGA bridges stay
   # down and any fabric access faults) and then hand off to extlinux on p2.
   bootScript =
-    pkgs.runCommand "phobos-boot.scr.uimg" {
+    pkgs.runCommand "mercury-boot.scr.uimg" {
       nativeBuildInputs = [pkgs.buildPackages.ubootTools];
     } ''
       cat > boot.cmd <<EOF
-      echo "phobos: enabling HPS<->FPGA bridges";
+      echo "mercury: enabling HPS<->FPGA bridges";
       bridge enable;
-      echo "phobos: handing off to extlinux on mmc 0:2";
+      echo "mercury: handing off to extlinux on mmc 0:2";
       sysboot mmc 0:2 any ${syslinuxAddr} /boot/extlinux/extlinux.conf;
       EOF
       mkimage -A arm64 -O linux -T script -C none -d boot.cmd "$out"
@@ -55,8 +55,11 @@
   # gives a tarball with no .git, so that suffix silently vanishes and stops
   # matching modDirVersion (which then breaks module loading). Pin it off rather
   # than encode a hash we can't reproduce.
+  # Named for the board, not the host: this feeds the kernel's `configfile`, so a
+  # host rename would otherwise change the kernel's store path and throw away a
+  # ~26 min cached ARM build for nothing.
   kernelConfig =
-    pkgs.runCommand "phobos-kernel.config" {} ''
+    pkgs.runCommand "de25-nano-kernel.config" {} ''
       sed 's/^CONFIG_LOCALVERSION_AUTO=y$/# CONFIG_LOCALVERSION_AUTO is not set/' \
         ${firmware}/kernel.config > "$out"
     '';
@@ -117,7 +120,7 @@ in {
     package = lib.mkDefault "${config.boot.kernelPackages.kernel}/dtbs";
   };
 
-  image.baseName = "phobos";
+  image.baseName = "mercury";
 
   sdImage = {
     compressImage = false;

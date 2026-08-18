@@ -64,6 +64,20 @@
         '';
       };
 
+      # Same mercury host, cross-compiled from x86 instead of built natively — for
+      # iterating on saturn without waiting on the ARM runner or emulating a
+      # thing. extendModules keeps it one config plus one line, so the two can't
+      # drift; the store paths differ, so this deliberately does NOT share cachix
+      # hits with `mercury-img`. Use it for local turnaround, trust the native one
+      # for what actually gets flashed.
+      mercury-img-cross = let
+        crossed = inputs.self.nixosConfigurations.mercury.extendModules {
+          modules = [{ nixpkgs.buildPlatform = "x86_64-linux"; }];
+        };
+      in pkgs.runCommand "mercury-img-cross" {} ''
+        cp ${crossed.config.system.build.sdImage}/sd-image/*.img $out
+      '';
+
       # `nix run .#saturn-windows-image -- --build-only` (then `-- --deploy-only
       # /dev/…-part1`). Builds a debloated Windows 11 image in a headless raw-qemu
       # VM (NVMe disk so it boots on saturn unchanged, no sysprep) and flashes it
@@ -80,20 +94,6 @@
       #
       # Body lives in scripts/saturn-windows-image.sh; capture/deploy self-sudo.
       # See its --help.
-      # Same phobos host, cross-compiled from x86 instead of built natively — for
-      # iterating on saturn without waiting on the ARM runner or emulating a
-      # thing. extendModules keeps it one config plus one line, so the two can't
-      # drift; the store paths differ, so this deliberately does NOT share cachix
-      # hits with `phobos-img`. Use it for local turnaround, trust the native one
-      # for what actually gets flashed.
-      phobos-img-cross = let
-        crossed = inputs.self.nixosConfigurations.phobos.extendModules {
-          modules = [{ nixpkgs.buildPlatform = "x86_64-linux"; }];
-        };
-      in pkgs.runCommand "phobos-img-cross" {} ''
-        cp ${crossed.config.system.build.sdImage}/sd-image/*.img $out
-      '';
-
       saturn-windows-image = pkgs.callPackage ../../packages/saturn-windows-image {};
 
       # NOTE: scripts/windows-vm.sh (boot the physical Windows partition in a VM)
@@ -147,12 +147,12 @@
           -o $out
       '';
 
-      # phobos (Terasic DE25-Nano) SD image, built natively on aarch64 — this is
+      # mercury (Terasic DE25-Nano) SD image, built natively on aarch64 — this is
       # the one CI builds on the ARM runner and pushes to cachix, per the repo's
       # build policy. sdImage.compressImage is off for this host (the flash is a
       # plain dd), so there is nothing to decompress.
-      phobos-img = pkgs.runCommand "phobos-img" {} ''
-        cp ${inputs.self.nixosConfigurations.phobos.config.system.build.sdImage}/sd-image/*.img $out
+      mercury-img = pkgs.runCommand "mercury-img" {} ''
+        cp ${inputs.self.nixosConfigurations.mercury.config.system.build.sdImage}/sd-image/*.img $out
       '';
     };
   };

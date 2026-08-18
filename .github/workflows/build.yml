@@ -87,10 +87,10 @@ jobs:
             runner: ubuntu-latest
           - host: eros
             runner: ubuntu-24.04-arm
-          # phobos builds its own kernel (Terasic's linux-socfpga fork), which
+          # mercury builds its own kernel (Terasic's linux-socfpga fork), which
           # Hydra has never seen — native on the ARM runner so the closure lands
           # in cachix and the board only ever substitutes.
-          - host: phobos
+          - host: mercury
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 350
