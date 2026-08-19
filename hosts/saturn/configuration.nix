@@ -137,7 +137,6 @@
     bundles.users.enable = true;
     services = {
       sshd.enable = true;
-      claude-remote-control.enable = true;
       # T3 Code server as a user unit, same as luna, so saturn's agents are
       # reachable from a phone/laptop without the desktop app being open. No
       # on-disk SSH key: this host has a session with 1Password's agent.

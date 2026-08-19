@@ -56,7 +56,6 @@
     bundles.users.enable = true;
 
     services = {
-      claude-remote-control.enable = true;
       # T3 Code server: offload coding-agent work to luna from the mars/saturn
       # desktop app. Runs as cramt so agents get git/ssh + the claude/codex CLIs
       # (dev bundle). Bound on the LAN — pair a client with `just t3_pair`.
