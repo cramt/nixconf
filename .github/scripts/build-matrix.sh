@@ -21,7 +21,17 @@ filter='set: builtins.filter (n: let r = builtins.tryEval (set.${n}.meta.availab
 # eros-img leg races it in the same wave, so it fails whenever the image drv
 # changed (e.g. every update PR). The wrapper builds in seconds locally once
 # eros-img is cached, so prebuilding it adds nothing.
-skip='["flash-eros"]'
+#
+# mercury-img-cross needs to *run* an aarch64 binary during evaluation: stylix's
+# paletteGenerator is indexed by hostPlatform, not buildPlatform, so a cross
+# build hands the x86 builder an aarch64 executable and IFD dies with "Exec
+# format error". The option is internal + readOnly, so it can't be overridden
+# from our config. saturn runs it fine (binfmt + extra-platforms), which is the
+# only place it's meant to run — it's a local-iteration convenience that
+# deliberately shares no store paths with mercury-img, so CI prebuilding it
+# caches nothing anything else substitutes from. Drop this once stylix indexes
+# the generator by buildPlatform (nix-community/stylix flake/modules.nix:13).
+skip='["flash-eros","mercury-img-cross"]'
 
 include='[]'
 for system in "${!runners[@]}"; do
