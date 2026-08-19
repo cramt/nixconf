@@ -962,10 +962,11 @@
         "type": "github"
       },
       "original": {
+        "host": "gitlab.gnome.org",
         "owner": "GNOME",
         "ref": "50.1",
         "repo": "gnome-shell",
-        "type": "github"
+        "type": "gitlab"
       }
     },
     "helium-browser": {
@@ -2400,15 +2401,16 @@
         "tinted-zed": "tinted-zed"
       },
       "locked": {
-        "lastModified": 1786531493,
-        "narHash": "sha256-F93yabBSW2TpxKYMcArQOnFuCqBgAdbfZsdl0w5Pojg=",
-        "owner": "nix-community",
+        "lastModified": 1787121598,
+        "narHash": "sha256-hcMVLJU0JEgkgrvLQE8bpOTrZades+tShudhbw3QhVY=",
+        "owner": "cramt",
         "repo": "stylix",
-        "rev": "1e6ccadeda179d96728b4a9f20fc9d4dcf6b6059",
+        "rev": "1eb3e4e0939df94d24b156008a6427b7d5c44d7e",
         "type": "github"
       },
       "original": {
-        "owner": "nix-community",
+        "owner": "cramt",
+        "ref": "palette-generator-build-platform",
         "repo": "stylix",
         "type": "github"
       }

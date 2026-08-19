@@ -71,11 +71,11 @@
       # hits with `mercury-img`. Use it for local turnaround, trust the native one
       # for what actually gets flashed.
       #
-      # Needs binfmt + `extra-platforms = aarch64-linux` on the builder (saturn
-      # has both): stylix indexes its paletteGenerator by hostPlatform rather
-      # than buildPlatform, so evaluating this runs an aarch64 binary at IFD
-      # time. That's also why it's in build-matrix.sh's skip list — a stock x86
-      # CI runner can't execute it.
+      # Only builds on a stock x86 machine because of the stylix fork pinned in
+      # flake.nix: upstream indexes its paletteGenerator by hostPlatform, so
+      # evaluating this used to run an aarch64 binary at IFD time and only
+      # worked on a builder with binfmt. If that pin ever goes back to upstream
+      # before the fix lands, this needs skipping in build-matrix.sh again.
       mercury-img-cross = let
         crossed = inputs.self.nixosConfigurations.mercury.extendModules {
           modules = [{ nixpkgs.buildPlatform = "x86_64-linux"; }];
