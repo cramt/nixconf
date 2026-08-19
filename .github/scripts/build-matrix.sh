@@ -21,7 +21,16 @@ filter='set: builtins.filter (n: let r = builtins.tryEval (set.${n}.meta.availab
 # eros-img leg races it in the same wave, so it fails whenever the image drv
 # changed (e.g. every update PR). The wrapper builds in seconds locally once
 # eros-img is cached, so prebuilding it adds nothing.
-skip='["flash-eros"]'
+#
+# mercury-img-cross: cross-compiling the whole mercury system from x86 doesn't
+# work yet, and it isn't what gets flashed (that's the natively-built
+# mercury-img on the ARM runner). Two blockers are fixed — stylix's
+# hostPlatform-indexed palette generator, and home-manager building its own
+# native aarch64 pkgs — but it now dies on a package in the HM closure putting
+# makeWrapper in buildInputs instead of nativeBuildInputs, which is a nixpkgs
+# bug to find and fix upstream. saturn never sees any of this because binfmt
+# lets it execute aarch64 builds anyway. Un-skip once that's resolved.
+skip='["flash-eros", "mercury-img-cross"]'
 
 include='[]'
 for system in "${!runners[@]}"; do

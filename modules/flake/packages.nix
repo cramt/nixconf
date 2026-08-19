@@ -71,14 +71,34 @@
       # hits with `mercury-img`. Use it for local turnaround, trust the native one
       # for what actually gets flashed.
       #
-      # Only builds on a stock x86 machine because of the stylix fork pinned in
-      # flake.nix: upstream indexes its paletteGenerator by hostPlatform, so
-      # evaluating this used to run an aarch64 binary at IFD time and only
-      # worked on a builder with binfmt. If that pin ever goes back to upstream
-      # before the fix lands, this needs skipping in build-matrix.sh again.
+      # NOT currently buildable on a stock x86 machine, and skipped in
+      # build-matrix.sh for that reason — saturn only gets away with it because
+      # binfmt executes the aarch64 bits. Two blockers are already fixed: the
+      # stylix fork pinned in flake.nix (upstream indexed its paletteGenerator
+      # by hostPlatform, so IFD ran an aarch64 binary at eval time) and the
+      # home-manager pkgs forcing below. What remains is a package in the HM
+      # closure with makeWrapper in buildInputs rather than nativeBuildInputs,
+      # which nixpkgs rejects when cross-compiling; that needs fixing upstream.
       mercury-img-cross = let
         crossed = inputs.self.nixosConfigurations.mercury.extendModules {
-          modules = [{ nixpkgs.buildPlatform = "x86_64-linux"; }];
+          modules = [
+            { nixpkgs.buildPlatform = "x86_64-linux"; }
+
+            # home-manager instantiates its own nixpkgs at the *host* system, so
+            # without this every HM derivation is a native aarch64 build and an
+            # x86 runner rejects the lot with "Reason: platform mismatch" — which
+            # is what broke this leg in CI. Handing it the cross package set is
+            # what `home-manager.useGlobalPkgs` does internally, but that option
+            # also imports HM's nixpkgs-disabled module, which asserts against the
+            # `nixpkgs.overlays`/`config` our hmModules.default sets. Forcing the
+            # arg gets the same pkgs without that assertion; HM's own nixpkgs
+            # settings just go unused (it only feeds the instance we replaced).
+            ({ pkgs, lib, ... }: {
+              home-manager.sharedModules = [
+                { _module.args.pkgs = lib.mkForce pkgs; }
+              ];
+            })
+          ];
         };
       in pkgs.runCommand "mercury-img-cross" {} ''
         cp ${crossed.config.system.build.sdImage}/sd-image/*.img $out
