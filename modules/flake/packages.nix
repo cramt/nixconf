@@ -73,32 +73,22 @@
       #
       # NOT currently buildable on a stock x86 machine, and skipped in
       # build-matrix.sh for that reason — saturn only gets away with it because
-      # binfmt executes the aarch64 bits. Two blockers are already fixed: the
-      # stylix fork pinned in flake.nix (upstream indexed its paletteGenerator
-      # by hostPlatform, so IFD ran an aarch64 binary at eval time) and the
-      # home-manager pkgs forcing below. What remains is a package in the HM
-      # closure with makeWrapper in buildInputs rather than nativeBuildInputs,
-      # which nixpkgs rejects when cross-compiling; that needs fixing upstream.
+      # binfmt executes the aarch64 bits. One blocker is fixed: the stylix fork
+      # pinned in flake.nix, whose paletteGenerator was indexed by hostPlatform
+      # and so ran an aarch64 binary at IFD time.
+      #
+      # The next one is home-manager instantiating its own nixpkgs at the host
+      # system, making every HM derivation a native aarch64 build that an x86
+      # runner rejects with "Reason: platform mismatch". Do NOT fix that by
+      # forcing HM's pkgs arg to the cross set: it works, but only exposes
+      # btop-nvml putting makeWrapper in buildInputs instead of
+      # nativeBuildInputs, and nixpkgs raises that at *eval* time — which fails
+      # `nix flake check` and takes `just deploy` down for every host, not just
+      # this package. Left evaluable-but-unbuildable on purpose until btop-nvml
+      # is fixed upstream.
       mercury-img-cross = let
         crossed = inputs.self.nixosConfigurations.mercury.extendModules {
-          modules = [
-            { nixpkgs.buildPlatform = "x86_64-linux"; }
-
-            # home-manager instantiates its own nixpkgs at the *host* system, so
-            # without this every HM derivation is a native aarch64 build and an
-            # x86 runner rejects the lot with "Reason: platform mismatch" — which
-            # is what broke this leg in CI. Handing it the cross package set is
-            # what `home-manager.useGlobalPkgs` does internally, but that option
-            # also imports HM's nixpkgs-disabled module, which asserts against the
-            # `nixpkgs.overlays`/`config` our hmModules.default sets. Forcing the
-            # arg gets the same pkgs without that assertion; HM's own nixpkgs
-            # settings just go unused (it only feeds the instance we replaced).
-            ({ pkgs, lib, ... }: {
-              home-manager.sharedModules = [
-                { _module.args.pkgs = lib.mkForce pkgs; }
-              ];
-            })
-          ];
+          modules = [{ nixpkgs.buildPlatform = "x86_64-linux"; }];
         };
       in pkgs.runCommand "mercury-img-cross" {} ''
         cp ${crossed.config.system.build.sdImage}/sd-image/*.img $out
