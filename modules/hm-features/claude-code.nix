@@ -8,14 +8,37 @@
     claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
     agentBrowserPkg = pkgs.callPackage ../../packages/agent-browser {};
 
-    # Every subdir under superpowers/skills is a self-contained skill (SKILL.md
-    # + helper files). Enumerate them from the pinned source so new upstream
-    # skills flow in on `npins update` without touching this file.
-    superpowers = pkgs.npinsSources.superpowers;
-    superpowersSkills =
+    # Vendored rather than pinned: upstream pstack is one tree rooted at
+    # `poteto-mode`, and only these ten stand alone. Each also needs its
+    # `disable-model-invocation` flag stripped to fire without that dispatcher,
+    # so there's nothing for a pin to track cleanly. See ./claude-skills/pstack/README.md.
+    pstackDir = ./claude-skills/pstack;
+    pstackSkills =
       builtins.attrNames
       (lib.filterAttrs (_: type: type == "directory")
-        (builtins.readDir "${superpowers}/skills"));
+        (builtins.readDir pstackDir));
+
+    # mattpocock/skills nests a category level (skills/<category>/<name>), so
+    # flatten two deep. Enumerating rather than listing means new upstream skills
+    # arrive on `just update`; the exclusion is the only thing to maintain.
+    # setup-matt-pocock-skills rewrites a repo's issue-tracker and label
+    # vocabulary to match upstream's conventions, which ours don't follow.
+    mattpocockExclude = ["setup-matt-pocock-skills"];
+    mattpocockRoot = "${inputs.mattpocock-skills}/skills";
+    dirsIn = path:
+      builtins.attrNames
+      (lib.filterAttrs (_: type: type == "directory") (builtins.readDir path));
+    mattpocockSkills =
+      lib.filter (s: !(builtins.elem s.name mattpocockExclude))
+      (lib.concatMap
+        (category:
+          map (name: {
+            inherit name;
+            path = "${mattpocockRoot}/${category}/${name}";
+          })
+          (dirsIn "${mattpocockRoot}/${category}"))
+        (dirsIn mattpocockRoot));
+
     # `linkedinclaude`: regular Claude with the stickerdaniel/linkedin-mcp-server
     # merged in for that session only (via --mcp-config, which adds to — not
     # replaces — the normal servers). Keeping it behind its own launcher means
@@ -114,8 +137,11 @@
       agent-browser.enable =
         lib.mkEnableOption "Vercel agent-browser CLI + Claude Code skill"
         // {default = true;};
-      superpowers.enable =
-        lib.mkEnableOption "obra/superpowers skills library (TDD, debugging, planning)"
+      pstack.enable =
+        lib.mkEnableOption "vendored pstack judgment skills (unslop, type-system-discipline, technical-writing, …)"
+        // {default = true;};
+      mattpocock.enable =
+        lib.mkEnableOption "mattpocock/skills engineering-process library (spec → tickets → triage → implement → review)"
         // {default = true;};
       linkedin.enable =
         lib.mkEnableOption "`linkedinclaude` launcher (regular Claude + LinkedIn MCP via Docker). Needs a one-time host login writing cookies to ~/.linkedin-mcp — see the module comment"
@@ -151,15 +177,20 @@
         home.file.".claude/skills/mtg-commander/SKILL.md".source =
           ./claude-skills/mtg-commander/SKILL.md;
       })
-      # Superpowers: symlink each skill dir into every config dir the three
-      # claude variants use. Skills-only install — no plugin registration, no
-      # SessionStart hook — so it stays as declarative and disposable as the
-      # agent-browser stub above.
-      (lib.mkIf cfg.superpowers.enable {
+      # pstack + mattpocock: symlink each skill dir in. Skills-only installs — no
+      # plugin registration, no SessionStart hook — so they stay as declarative
+      # and disposable as the agent-browser stub above.
+      (lib.mkIf cfg.pstack.enable {
         home.file = lib.mkMerge (map (skill: {
-            ".claude/skills/${skill}".source = "${superpowers}/skills/${skill}";
+            ".claude/skills/${skill}".source = "${pstackDir}/${skill}";
           })
-          superpowersSkills);
+          pstackSkills);
+      })
+      (lib.mkIf cfg.mattpocock.enable {
+        home.file = lib.mkMerge (map (skill: {
+            ".claude/skills/${skill.name}".source = skill.path;
+          })
+          mattpocockSkills);
       })
     ]);
   };

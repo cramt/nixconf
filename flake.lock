@@ -1260,6 +1260,22 @@
         "type": "github"
       }
     },
+    "mattpocock-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786953262,
+        "narHash": "sha256-CJNC5fORkc+FGd+FlCXG6rZcVv2MCqCNHCVC0AW623Q=",
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "9c9f36ccd3995266cd675468af71639c8dde1ec5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mattpocock",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "mnw": {
       "locked": {
         "lastModified": 1780772958,
@@ -2207,6 +2223,7 @@
         "lanzaboote": "lanzaboote",
         "llm-agents": "llm-agents",
         "m365-copilot-proxy": "m365-copilot-proxy",
+        "mattpocock-skills": "mattpocock-skills",
         "nh": "nh",
         "niri-flake": "niri-flake",
         "nix-colors": "nix-colors",

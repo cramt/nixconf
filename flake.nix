@@ -33,6 +33,16 @@
 
     claude-code.url = "github:sadjow/claude-code-nix";
 
+    # mattpocock/skills — engineering-process skills for Claude Code (spec →
+    # tickets → triage → implement → review, on `gh issue`). Upstream ships it
+    # through Claude Code's plugin marketplace; we take the repo directly and
+    # symlink the skill dirs ourselves, so `just update` moves them like
+    # everything else. Not a flake, just a skills tree.
+    mattpocock-skills = {
+      url = "github:mattpocock/skills";
+      flake = false;
+    };
+
     # numtide's package set for coding-agent tooling; we use it for
     # `cli-proxy-api` (router-for-me/CLIProxyAPI), which ships no flake of its
     # own. Their CI bumps the pin daily and prebuilds into cache.numtide.com

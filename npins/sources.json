@@ -47,19 +47,6 @@
       "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1052792.044bfe75bfe4/nixexprs.tar.xz",
       "hash": "sha256-Cwffw7dPM56d8spt4/queFQ1cKg69D9qrsp+wfwKvfo="
     },
-    "superpowers": {
-      "type": "Git",
-      "repository": {
-        "type": "GitHub",
-        "owner": "obra",
-        "repo": "superpowers"
-      },
-      "branch": "main",
-      "submodules": false,
-      "revision": "b36e0829c6d0140e93cfef2ca599b1b07d4a7797",
-      "url": "https://github.com/obra/superpowers/archive/b36e0829c6d0140e93cfef2ca599b1b07d4a7797.tar.gz",
-      "hash": "sha256-EsGNO0dULWf5Bx6bGrCv2kI2Z8aKH0kRvGiuN23wChQ="
-    },
     "wolveix/satisfactory-server": {
       "type": "Container",
       "image_name": "wolveix/satisfactory-server",
