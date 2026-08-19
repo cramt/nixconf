@@ -22,7 +22,9 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
-          extra-conf: accept-flake-config = true
+          extra-conf: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ github.token }}
 
       - name: Update flake.lock, gems, npins, packages
         env:

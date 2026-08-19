@@ -36,7 +36,15 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
-          extra-conf: accept-flake-config = true
+          # access-tokens authenticates flake input fetches. Anonymous
+          # api.github.com allows 60 requests/hour per IP and Actions runners
+          # share egress IPs, so tarball fetches (hermes-agent has been the
+          # usual casualty) intermittently 429 and fail the build — that is
+          # what took out luna and three prebuild legs. A token raises the
+          # limit to 5000/hour. Set on every nix-installer step in this repo.
+          extra-conf: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ github.token }}
 
       - id: gen
         run: ./.github/scripts/build-matrix.sh
@@ -59,7 +67,9 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
-          extra-conf: accept-flake-config = true
+          extra-conf: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ github.token }}
 
       - uses: cachix/cachix-action@v15
         with:
@@ -101,7 +111,9 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
-          extra-conf: accept-flake-config = true
+          extra-conf: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ github.token }}
 
       - uses: cachix/cachix-action@v15
         with:
