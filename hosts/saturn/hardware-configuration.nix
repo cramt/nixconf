@@ -33,6 +33,12 @@
     fsType = "ext4";
     options = [
       "users"
+      # `users` implies noexec, which makes titan unusable as a home for
+      # Quartus: not just the installer, but quartus_map/quartus_fit and every
+      # other tool would refuse to run from here. Must come after `users` to
+      # override it. The other pool branches stay noexec -- only titan holds
+      # anything meant to be executed.
+      "exec"
       "nofail"
     ];
   };
