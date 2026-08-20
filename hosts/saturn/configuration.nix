@@ -65,7 +65,12 @@
   # which starts hidden and hangs off graphical-session.target.
   programs.solaar = {
     enable = true;
-    userService.enable = true;
+    userService = {
+      enable = true;
+      # Solaar loses the receiver across suspend/resume and the tray icon goes
+      # stale rather than erroring, so it re-scans on wake instead.
+      extraArgs = ["--restart-on-wake-up"];
+    };
   };
 
   # Decode + log machine-check exceptions into human-readable form (which DIMM,
