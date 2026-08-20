@@ -58,7 +58,7 @@
             "wheel"
             "pipewire"
             "plugdev"
-            "dailout"
+            "dialout"
             "input"
             "audio"
             "render"

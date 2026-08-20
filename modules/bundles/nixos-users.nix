@@ -73,7 +73,7 @@
                 "storage"
                 "gamemode"
                 "plugdev"
-                "dailout"
+                "dialout"
                 "systemd-journal"
               ];
               openssh.authorizedKeys.keys = user.authorizedKeys;
