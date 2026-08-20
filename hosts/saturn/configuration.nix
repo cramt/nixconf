@@ -57,7 +57,9 @@
   # hidpp driver only surfaces a coarse capacity_level ("Normal"); the percentage
   # upower reports is synthesised from that and is tagged "should be ignored".
   # This ships solaar plus the udev rules that make the receiver's hidraw node
-  # readable without root, which is what gets an actual charge reading.
+  # readable without root. The mouse only implements HID++ feature 0x1000
+  # (BATTERY STATUS), not 0x1001 (voltage), so even solaar's number steps
+  # 100/50/20/5 rather than draining smoothly — it's finer, not continuous.
   hardware.logitech.wireless.enable = true;
   hardware.logitech.wireless.enableGraphical = true;
 
