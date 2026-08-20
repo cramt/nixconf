@@ -56,12 +56,17 @@
   # The MX Vertical talks HID++ through the Unifying receiver, and the kernel's
   # hidpp driver only surfaces a coarse capacity_level ("Normal"); the percentage
   # upower reports is synthesised from that and is tagged "should be ignored".
-  # This ships solaar plus the udev rules that make the receiver's hidraw node
-  # readable without root. The mouse only implements HID++ feature 0x1000
-  # (BATTERY STATUS), not 0x1001 (voltage), so even solaar's number steps
-  # 100/50/20/5 rather than draining smoothly — it's finer, not continuous.
-  hardware.logitech.wireless.enable = true;
-  hardware.logitech.wireless.enableGraphical = true;
+  # Solaar reads the device directly and gives a usable number — though the mouse
+  # only implements HID++ feature 0x1000 (BATTERY STATUS), not 0x1001 (voltage),
+  # so even that steps 100/50/20/5 rather than draining smoothly.
+  #
+  # enable pulls in hardware.logitech.wireless (the udev rules that make the
+  # receiver's hidraw node readable without root); userService is the tray icon,
+  # which starts hidden and hangs off graphical-session.target.
+  programs.solaar = {
+    enable = true;
+    userService.enable = true;
+  };
 
   # Decode + log machine-check exceptions into human-readable form (which DIMM,
   # which error) and track corrected-error counts. Diagnosing CPU/RAM MCEs.
