@@ -123,6 +123,43 @@ inputs: [
   # Bump version + hash in ../packages/agent-browser/default.nix.
   (final: prev: {
     agent-browser = prev.callPackage ../packages/agent-browser {};
+
+  })
+
+  (final: prev: let
+    # The revision npins actually fetched, so mkZedExtension can cross-check it
+    # against the grammar revision the extension's own manifest declares.
+    npinsRev = name: (builtins.fromJSON (builtins.readFile ../npins/sources.json)).pins.${name}.revision;
+  in {
+    # Zed extensions that aren't in its registry, so `programs.zed-editor.extensions`
+    # can't reach them. Prebuilt here into Zed's installed-extension layout and
+    # symlinked in by modules/hm-features/zed.nix. See packages/mkZedExtension.nix.
+    mkZedExtension = prev.callPackage ../packages/mkZedExtension.nix {
+      rustToolchain = let
+        fenix = inputs.fenix.packages.${prev.stdenv.hostPlatform.system};
+      in
+        fenix.combine [
+          fenix.stable.rustc
+          fenix.stable.cargo
+          fenix.targets.wasm32-wasip2.stable.rust-std
+        ];
+    };
+
+    zed-spade = final.mkZedExtension {
+      src = final.npinsSources.zed-spade;
+      grammars.spade = {
+        src = final.npinsSources.tree-sitter-spade;
+        rev = npinsRev "tree-sitter-spade";
+      };
+    };
+
+    zed-vixen = final.mkZedExtension {
+      src = final.npinsSources.vixen-zed;
+      grammars.vixen = {
+        src = final.npinsSources.tree-sitter-vixen;
+        rev = npinsRev "tree-sitter-vixen";
+      };
+    };
   })
 
   # Not in nixpkgs and no upstream flake — the whole pnpm 11 monorepo is built

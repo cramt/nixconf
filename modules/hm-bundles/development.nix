@@ -74,6 +74,13 @@
           spade
           # Spade's build tool. The zed-spade extension runs the language
           # server as `swim lsp`, so it has to be on PATH, not just spadec.
+          #
+          # The Vixen extension wants `vx` on PATH the same way, and it is
+          # deliberately NOT here: vixen has no nixpkgs package, and building
+          # it from its own flake is 287 derivations of a fast-moving project
+          # for one LSP binary. Zed resolves it through the worktree's shell
+          # env, and `load_direnv = "shell_hook"` is set, so a devshell in a
+          # vix project supplies it. Revisit if vixen lands in nixpkgs.
           swim
           npins
           nix-prefetch-docker

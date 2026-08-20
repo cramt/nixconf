@@ -4,9 +4,25 @@
   in {
     options.myHomeManager.zed.enable = lib.mkEnableOption "myHomeManager.zed";
     config = lib.mkIf config.myHomeManager.zed.enable {
+      # Neither of these is in Zed's extension registry, so the `extensions`
+      # list below can't reach them. Symlinking the prebuilt artifacts into
+      # Zed's installed-extension directory is equivalent to what
+      # `zed: install dev extension` produces, minus the manual step and the
+      # rustup/wasi-sdk downloads Zed would do at install time.
+      # recursive, so the directory stays writable and Zed's index scan — which
+      # is what actually registers the language — walks real files.
+      home.file = lib.listToAttrs (map (ext:
+        lib.nameValuePair ".local/share/zed/extensions/installed/${ext.extensionId}" {
+          source = ext;
+          recursive = true;
+        }) [
+        pkgs.zed-spade
+        pkgs.zed-vixen
+      ]);
+
       programs.zed-editor = {
         enable = true;
-        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "scala" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin"];
+        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "scala" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin" "styx"];
         mutableUserSettings = false;
         mutableUserKeymaps = false;
         mutableUserTasks = false;

@@ -47,12 +47,66 @@
       "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1052792.044bfe75bfe4/nixexprs.tar.xz",
       "hash": "sha256-Cwffw7dPM56d8spt4/queFQ1cKg69D9qrsp+wfwKvfo="
     },
+    "tree-sitter-spade": {
+      "type": "Git",
+      "repository": {
+        "type": "Forgejo",
+        "server": "https://codeberg.org/",
+        "owner": "spade-lang",
+        "repo": "tree-sitter-spade"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "d094381a5b3ad7fbff9dc850471479a391b62d1f",
+      "url": "https://codeberg.org/spade-lang/tree-sitter-spade/archive/d094381a5b3ad7fbff9dc850471479a391b62d1f.tar.gz",
+      "hash": "sha256-CF3ZDeG359PgMMvD0AfjPMvWj6egIJJ/6g1tK73B0Bc="
+    },
+    "tree-sitter-vixen": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "bearcove",
+        "repo": "tree-sitter-vixen"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "b07097fdde79f92863490d8e8b2dc9e926859578",
+      "url": "https://github.com/bearcove/tree-sitter-vixen/archive/b07097fdde79f92863490d8e8b2dc9e926859578.tar.gz",
+      "hash": "sha256-0TzeuO2GP0z7wc7AHb4LHKA3JEwriMbU5ZCEsWACmJE="
+    },
+    "vixen-zed": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "bearcove",
+        "repo": "vixen-zed"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "1c3e663d838f3874a179d57c5643a9a87c2bc1e1",
+      "url": "https://github.com/bearcove/vixen-zed/archive/1c3e663d838f3874a179d57c5643a9a87c2bc1e1.tar.gz",
+      "hash": "sha256-1PiDNNOT5fOWpE4wqlbDM5yuUkSK7En8CoVmtZlE7jg="
+    },
     "wolveix/satisfactory-server": {
       "type": "Container",
       "image_name": "wolveix/satisfactory-server",
       "image_tag": "latest",
       "image_digest": "sha256:e103700ae6ae4c50f19dac80eadb2a805c5b885e179ae2a40850e967bf189efd",
       "hash": "sha256-gbVUYyYuyU4Bubk8pfiH63n4PMw2xG5u0bCTE36IAgk="
+    },
+    "zed-spade": {
+      "type": "Git",
+      "repository": {
+        "type": "Forgejo",
+        "server": "https://codeberg.org/",
+        "owner": "spade-lang",
+        "repo": "zed-spade"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "1433237b2fcc2720e25d8bbb5fd335e701ea94cf",
+      "url": "https://codeberg.org/spade-lang/zed-spade/archive/1433237b2fcc2720e25d8bbb5fd335e701ea94cf.tar.gz",
+      "hash": "sha256-G6idqMkFiK89c+fDene3k29nIhnS7nN2jWngZ5QZai4="
     }
   },
   "version": 8
