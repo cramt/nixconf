@@ -33,16 +33,35 @@
   # fdt_addr_r (0x86000000).
   syslinuxAddr = "0x88000000";
 
+  # This U-Boot's environment has no ramdisk_addr_r, and extlinux treats that as
+  # fatal the moment an entry carries an INITRD line: it prints "missing
+  # environment variable: ramdisk_addr_r", skips the entry, and the whole target
+  # fails. NixOS always emits INITRD, and we can't drop the initrd to dodge it —
+  # extlinux.conf appends `root=fstab`, so stage-1 is what knows where root is.
+  #
+  # `saveenv` can't persist it either: this build loads its environment from FAT
+  # but saves to UBI, and there is no UBI ("Cannot find mtd partition root"), so
+  # the boot script has to set it on every boot.
+  #
+  # Placed above the kernel (37 MiB at 0x82000000), the FDT, and syslinuxAddr,
+  # with the 25 MiB initrd fitting far inside the remaining 768 MiB.
+  ramdiskAddr = "0x90000000";
+
   # Terasic's stock script hardcodes fatload+booti, which throws away NixOS
-  # generations. U-Boot scans p1 before p2 and checks extlinux before scripts
-  # *within* each partition, so a script on the FAT partition still wins — we
-  # use that to keep `bridge enable` (without it the HPS<->FPGA bridges stay
-  # down and any fabric access faults) and then hand off to extlinux on p2.
+  # generations. Replace it with a script that fixes up the environment, keeps
+  # `bridge enable` (without it the HPS<->FPGA bridges stay down and any fabric
+  # access faults), and then hands off to extlinux on p2.
+  #
+  # Getting this script *run* takes the sdImage.postBuildCommands below: U-Boot
+  # picks the partitions to scan with `part list mmc 0 -bootable`, and
+  # sd-image.nix flags only p2, so devplist is literally "2" and the FAT
+  # partition is never looked at. See the comment there.
   bootScript =
     pkgs.runCommand "mercury-boot.scr.uimg" {
       nativeBuildInputs = [pkgs.buildPackages.ubootTools];
     } ''
       cat > boot.cmd <<EOF
+      setenv ramdisk_addr_r ${ramdiskAddr};
       echo "mercury: enabling HPS<->FPGA bridges";
       bridge enable;
       echo "mercury: handing off to extlinux on mmc 0:2";
@@ -144,6 +163,22 @@ in {
       ${config.boot.loader.generic-extlinux-compatible.populateCmd} \
         -c ${config.system.build.toplevel} -d ./files/boot
     '';
+
+    # distro_bootcmd narrows its scan to bootable partitions first
+    # (`part list mmc 0 -bootable devplist`), and sd-image.nix hardcodes the flag
+    # onto p2 alone — so devplist comes back "2" and boot.scr.uimg on the FAT
+    # partition is unreachable. Flag p1 too, so it is scanned first and our
+    # script gets to set ramdisk_addr_r and enable the bridges.
+    #
+    # p2 deliberately keeps its flag as a fallback path, even though today that
+    # path is exactly the one that dies on the missing ramdisk_addr_r.
+    #
+    # An MBR boot flag is just 0x80 in the partition entry and nothing here
+    # consumes it but U-Boot's distro script — the SPL in QSPI is what actually
+    # starts this board.
+    postBuildCommands = ''
+      sfdisk --activate $img 1 2
+    '';
   };
 
   # nixosModules.default ships lix/zfs, neither of which has cached aarch64
@@ -156,6 +191,14 @@ in {
   # becomes conditional upstream.
   nix.package = pkgs.nix;
   boot.supportedFilesystems.zfs = lib.mkForce false;
+
+  # Terasic's kernel config has `# CONFIG_NF_TABLES is not set`, and NixOS's
+  # firewall drives iptables-nft, so firewall.service can only ever fail with
+  # "iptables: Failed to initialize nft: Protocol not supported" and leave the
+  # host degraded. Nothing is being filtered either way; say so honestly rather
+  # than ship a unit that cannot start. Revisit if we ever build our own kernel
+  # config instead of inheriting the vendor's.
+  networking.firewall.enable = false;
 
   myNixOS = {
     services.sshd.enable = true;
