@@ -26,6 +26,10 @@
   myHomeManager = {
     bundles.general.enable = true;
     bundles.development.enable = true;
+    # The development bundle pools Claude accounts behind cli-proxy-api, but
+    # luna is deliberately kept off the pool. The `claude` wrapper notices the
+    # proxy is not listening and falls back to the direct OAuth login.
+    cli-proxy-api.enable = lib.mkForce false;
     ssh.use1Password = false;
     gpg-agent.enableSshSupport = false;
     hyprland = {
