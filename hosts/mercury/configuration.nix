@@ -192,6 +192,13 @@ in {
   nix.package = pkgs.nix;
   boot.supportedFilesystems.zfs = lib.mkForce false;
 
+  # Alex ssh's in from Ghostty, which exports TERM=xterm-ghostty; without the
+  # matching terminfo entry every login greets her with "can't find terminal
+  # definition". Same fix luna and ganymede already carry.
+  environment.systemPackages = [
+    pkgs.ghostty.terminfo
+  ];
+
   # Terasic's kernel config has `# CONFIG_NF_TABLES is not set`, and NixOS's
   # firewall drives iptables-nft, so firewall.service can only ever fail with
   # "iptables: Failed to initialize nft: Protocol not supported" and leave the
