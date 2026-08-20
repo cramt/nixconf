@@ -57,9 +57,6 @@
               };
               binary.path = lib.getExe pkgs.nil;
             };
-            # Provided by the out-of-tree zed-spade extension (~/code/zed-spade),
-            # which has to be installed by hand via `zed: install dev extension`.
-            spade.binary.path = lib.getExe' pkgs.spade "spade-language-server";
             ruby-lsp.binary.path = lib.getExe rubyGems.ruby-lsp;
             rubocop.binary.path = lib.getExe rubyGems.rubocop;
           };

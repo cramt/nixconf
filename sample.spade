@@ -1,0 +1,59 @@
+use std::ports::new_mut_wire;
+use lib::foo::{bar, baz as qux};
+
+mod utils {
+    /// Doc comment
+    pub struct port Handshake {
+        valid: bool,
+        data: &int<8>,
+    }
+
+    pub enum State {
+        Idle,
+        Busy{count: uint<4>},
+    }
+
+    pub type Word = int<32>;
+}
+
+trait Adder<T> {
+    fn add(self, other: T) -> T;
+}
+
+impl Adder<int<8>> for int<8> {
+    fn add(self, other: int<8>) -> int<8> {
+        self + other
+    }
+}
+
+#[no_mangle(all)]
+extern entity top(clk: clock, rst: bool) -> uint<8>;
+
+pipeline(2) counter<#uint N>(clk: clock, rst: bool, en: bool) -> uint<8>
+    where N > 0
+{
+        reg;
+        let next = if en { 1u8 } else { 0u8 };
+        reg * uint<8>;
+    'output
+        let x = inst(1) counter$(clk, rst, en: true);
+        let y = x.inst compute::<int<8>>(3);
+        let arr = [0, 1, 2];
+        let t = (1, 2, 3);
+        assert next != 0;
+        decl a, b;
+        set a = b;
+        reg(clk) state reset(rst: State::Idle) initial(State::Idle) = match next {
+            0 => State::Idle,
+            1 if en => State::Busy$(count: 0),
+            _ => State::Idle,
+        };
+        stage(-1).next
+}
+
+fn helper(v: inv &bool) -> impl Adder<bool> {
+    let c = b'a';
+    let s = "hello\n";
+    let z = 0xFF_u8 + 0b1010 - 3 `custom` 4;
+    !v && (z <= 5) || (z >> 2) == 0
+}

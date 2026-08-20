@@ -72,6 +72,9 @@
           geminicommit
           inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
           spade
+          # Spade's build tool. The zed-spade extension runs the language
+          # server as `swim lsp`, so it has to be on PATH, not just spadec.
+          swim
           npins
           nix-prefetch-docker
           sshpass
