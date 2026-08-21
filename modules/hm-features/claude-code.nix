@@ -42,10 +42,12 @@
     # `m365claude`: regular Claude with the Microsoft 365 MCP merged in for that
     # session only (via --mcp-config, which adds to — not replaces — the normal
     # servers). It has to stay out of the always-on servers: all 336 of its tools
-    # cost 716K context tokens against a 66K no-MCP floor — 72% of the 1M window,
-    # gone before the first prompt. `--enabled-tools` is a regex over tool names;
-    # measured prefixes are mail 81K, mail|calendar 146K, +contact 171K, so the
-    # default stays at the one surface that has ever actually been called.
+    # cost 741K context tokens against a 42K zero-server floor — 74% of the 1M
+    # window, gone before the first prompt. `--enabled-tools` is a regex over tool
+    # names; measured costs are mail 106K, mail|calendar 170K, +contact 196K, so
+    # the default stays at the one surface that has ever actually been called.
+    # Benchmark: `claude -p 'say ok' --mcp-config <cfg> --strict-mcp-config`, then
+    # read the first request's usage out of the session transcript.
     m365McpConfig = pkgs.writeText "ms365-mcp.json" (builtins.toJSON {
       mcpServers.ms365 = {
         command = "${pkgs.nodejs}/bin/npx";
@@ -138,7 +140,7 @@
         lib.mkEnableOption "mattpocock/skills engineering-process library (spec → tickets → triage → implement → review)"
         // {default = true;};
       ms365.enable =
-        lib.mkEnableOption "`m365claude` launcher (regular Claude + Microsoft 365 MCP). Kept out of the always-on servers because its 336 tool schemas cost ~700K context tokens per session"
+        lib.mkEnableOption "`m365claude` launcher (regular Claude + Microsoft 365 MCP). Kept out of the always-on servers because its 336 tool schemas cost 741K context tokens per session"
         // {default = true;};
       ms365.enabledTools = lib.mkOption {
         type = lib.types.str;
