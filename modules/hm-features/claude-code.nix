@@ -39,33 +39,27 @@
           (dirsIn "${mattpocockRoot}/${category}"))
         (dirsIn mattpocockRoot));
 
-    # `linkedinclaude`: regular Claude with the stickerdaniel/linkedin-mcp-server
-    # merged in for that session only (via --mcp-config, which adds to — not
-    # replaces — the normal servers). Keeping it behind its own launcher means
-    # the plain `claude` context isn't paying for LinkedIn's tool definitions
-    # every session. Runs through Docker on purpose: the server bundles a
-    # Patchright Chromium (a downloaded, dynamically-linked binary that won't
-    # exec on NixOS) — the container carries its own working copy, so nothing
-    # patchright-shaped ever has to run against the host's linker.
-    linkedinDir = "${config.home.homeDirectory}/.linkedin-mcp";
-    linkedinMcpConfig = pkgs.writeText "linkedin-mcp.json" (builtins.toJSON {
-      mcpServers.linkedin = {
-        command = "docker";
-        # Upstream's README mounts `~/.linkedin-mcp`, but the MCP client hands
-        # args to docker without a shell, so `~` would become a literal dir
-        # named "~". Use the resolved absolute path.
+    # `m365claude`: regular Claude with the Microsoft 365 MCP merged in for that
+    # session only (via --mcp-config, which adds to — not replaces — the normal
+    # servers). It has to stay out of the always-on servers: all 336 of its tools
+    # cost 716K context tokens against a 66K no-MCP floor — 72% of the 1M window,
+    # gone before the first prompt. `--enabled-tools` is a regex over tool names;
+    # measured prefixes are mail 81K, mail|calendar 146K, +contact 171K, so the
+    # default stays at the one surface that has ever actually been called.
+    m365McpConfig = pkgs.writeText "ms365-mcp.json" (builtins.toJSON {
+      mcpServers.ms365 = {
+        command = "${pkgs.nodejs}/bin/npx";
         args = [
-          "run"
-          "--rm"
-          "-i"
-          "-v"
-          "${linkedinDir}:/home/pwuser/.linkedin-mcp"
-          "stickerdaniel/linkedin-mcp-server:latest"
+          "-y"
+          "@softeria/ms-365-mcp-server"
+          "--org-mode"
+          "--enabled-tools"
+          cfg.ms365.enabledTools
         ];
       };
     });
-    linkedinClaudePkg = pkgs.writeShellScriptBin "linkedinclaude" ''
-      exec ${claudeCodePkg}/bin/claude --mcp-config ${linkedinMcpConfig} "$@"
+    m365ClaudePkg = pkgs.writeShellScriptBin "m365claude" ''
+      exec ${claudeCodePkg}/bin/claude --mcp-config ${m365McpConfig} "$@"
     '';
 
     cfg = config.myHomeManager.claude-code;
@@ -143,9 +137,15 @@
       mattpocock.enable =
         lib.mkEnableOption "mattpocock/skills engineering-process library (spec → tickets → triage → implement → review)"
         // {default = true;};
-      linkedin.enable =
-        lib.mkEnableOption "`linkedinclaude` launcher (regular Claude + LinkedIn MCP via Docker). Needs a one-time host login writing cookies to ~/.linkedin-mcp — see the module comment"
+      ms365.enable =
+        lib.mkEnableOption "`m365claude` launcher (regular Claude + Microsoft 365 MCP). Kept out of the always-on servers because its 336 tool schemas cost ~700K context tokens per session"
         // {default = true;};
+      ms365.enabledTools = lib.mkOption {
+        type = lib.types.str;
+        default = "mail";
+        example = "mail|excel|todo";
+        description = "Regex handed to ms-365-mcp-server --enabled-tools, narrowing which of its 336 tools reach the context.";
+      };
       mtg-commander.enable =
         lib.mkEnableOption "MTG Commander deckbuilding skill + `scryfall` bulk-data CLI"
         // {default = true;};
@@ -153,7 +153,7 @@
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
         home.packages =
-          lib.optional cfg.linkedin.enable linkedinClaudePkg
+          lib.optional cfg.ms365.enable m365ClaudePkg
           ++ lib.optional proxyCfg.enable claudePoolPkg;
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
