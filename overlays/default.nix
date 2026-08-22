@@ -123,7 +123,12 @@ inputs: [
   # Bump version + hash in ../packages/agent-browser/default.nix.
   (final: prev: {
     agent-browser = prev.callPackage ../packages/agent-browser {};
+  })
 
+  # Multiplayer claude-code: shares the live session with a join code. Not in
+  # nixpkgs and no upstream flake — see packages/manycode/default.nix.
+  (final: prev: {
+    manycode = prev.callPackage ../packages/manycode {};
   })
 
   (final: prev: let
