@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "9334333ccbc894bb12a8a087eaa7f368d117ffc2",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/9334333ccbc894bb12a8a087eaa7f368d117ffc2.tar.gz",
-      "hash": "sha256-xNC3t5X31o4R2Jd8HAwzeVR8neUdPFo3xcYgK/VdkUQ="
+      "revision": "e647d3723bfeda5c82b0d922d312e31524d819ed",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/e647d3723bfeda5c82b0d922d312e31524d819ed.tar.gz",
+      "hash": "sha256-stLe7WNiCfB8KX6agl2jxcuOTMPAgleLJb40qq9O1zE="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -30,22 +30,22 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:f1ff4b011be24d8d06231a218093e115f710c0ed108cfc30169bcd8f0f88615f",
-      "hash": "sha256-+41wOETJ1NpyhhGU5Yt8MlO8ElN8uhRmW5sycwsHVrw="
+      "image_digest": "sha256:a92f37d19458ee70b47094e8847036a7ceddc5116225765af5430e94abd21db9",
+      "hash": "sha256-rWi/BnIl6mlagSpwfDAIyTWtoAhJ3NtU5+q4lpr6xrc="
     },
     "mbround18/valheim": {
       "type": "Container",
       "image_name": "mbround18/valheim",
       "image_tag": "latest",
-      "image_digest": "sha256:abb98466d453f128b96e41d9730cd52f2938013cae7980ce6d3dccc14168d228",
-      "hash": "sha256-r4q1M2mu/qDH5CWM5+O48YSlvQFEH+XGIWLBGas8Ykw="
+      "image_digest": "sha256:0a5839b995ee777023928ae070d57ed68e068acfcd842abd259281a40aac6898",
+      "hash": "sha256-nH5QebRGVUndTVVdprel2qeARrnNrJqmrMU3NuSg8vk="
     },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1052792.044bfe75bfe4/nixexprs.tar.xz",
-      "hash": "sha256-Cwffw7dPM56d8spt4/queFQ1cKg69D9qrsp+wfwKvfo="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1058520.391b592eb448/nixexprs.tar.xz",
+      "hash": "sha256-8Ou9WyfCXV3MdC/pQcawzeR8EnxRsPMhLoRDZG1AWik="
     },
     "tree-sitter-spade": {
       "type": "Git",
@@ -70,9 +70,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "b07097fdde79f92863490d8e8b2dc9e926859578",
-      "url": "https://github.com/bearcove/tree-sitter-vixen/archive/b07097fdde79f92863490d8e8b2dc9e926859578.tar.gz",
-      "hash": "sha256-0TzeuO2GP0z7wc7AHb4LHKA3JEwriMbU5ZCEsWACmJE="
+      "revision": "9fe14bea91399543282035090086fec8a868fb6c",
+      "url": "https://github.com/bearcove/tree-sitter-vixen/archive/9fe14bea91399543282035090086fec8a868fb6c.tar.gz",
+      "hash": "sha256-1jtqBi6oj4kIargWdW2dlyj5pxY6iE3sT3VVdjXGeNY="
     },
     "vixen-zed": {
       "type": "Git",
