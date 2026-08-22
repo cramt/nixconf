@@ -157,6 +157,9 @@
     bundles.users.enable = true;
     services = {
       sshd.enable = true;
+      # tailscaled only — the daemon joins the headscale tailnet with the opnix
+      # preauth key; no tray app on the desktop.
+      tailscale.enable = true;
       # T3 Code server as a user unit, same as luna, so saturn's agents are
       # reachable from a phone/laptop without the desktop app being open. No
       # on-disk SSH key: this host has a session with 1Password's agent.
