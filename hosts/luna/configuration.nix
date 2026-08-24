@@ -141,7 +141,9 @@
           default = {
             gpu = "cuda";
             port = 11434;
-            rpc = ["192.168.178.23:50052"]; # saturn
+            # saturn's llama-cpp-rpc worker is disabled; pointing at a dead
+            # RPC endpoint just makes this instance fail to start.
+            rpc = [];
           };
         };
       };

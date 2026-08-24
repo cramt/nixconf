@@ -157,9 +157,11 @@
     bundles.users.enable = true;
     services = {
       sshd.enable = true;
-      # tailscaled only — the daemon joins the headscale tailnet with the opnix
-      # preauth key; no tray app on the desktop.
-      tailscale.enable = true;
+      # Off: the preauth-key join kept failing, and tailscaled without
+      # `authKeyFile` is a daemon that never registers with headscale at all
+      # (the module's baseURL is an auth-key parameter, not --login-server).
+      # Flip back to true to retry the join.
+      tailscale.enable = false;
       # T3 Code server as a user unit, same as luna, so saturn's agents are
       # reachable from a phone/laptop without the desktop app being open. No
       # on-disk SSH key: this host has a session with 1Password's agent.
@@ -175,8 +177,10 @@
       # whenever the proxy is enabled on the same host.
       litellm.enable = true;
       sunshine.enable = true;
+      # Off: the RPC worker kept failing. luna's llama-cpp instance used to
+      # offload here, so its `rpc` list is empty until this comes back.
       llama-cpp-rpc = {
-        enable = true;
+        enable = false;
         gpu = "rocm";
         rocmVersion = "11.0.1";
         port = 50052;
