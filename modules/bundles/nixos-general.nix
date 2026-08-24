@@ -21,6 +21,11 @@
       };
     };
     config = lib.mkIf cfg.enable {
+      # Every host reports metrics; "which of these do I never use" is only
+      # answerable if the sample covers the whole fleet. mkDefault so a host
+      # can still opt out.
+      myNixOS.services.metrics.exporter.enable = lib.mkDefault true;
+
       security.pam.services.hyprlock = {};
 
       # The gnome-keyring login keyring is encrypted with the login password,

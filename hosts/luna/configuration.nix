@@ -66,6 +66,9 @@
         onDiskSshKey.enable = true;
       };
       nixarr.enable = true;
+      # Fleet metrics live here because luna is the only machine that's always
+      # on -- the desktops being down is data, not a gap.
+      metrics.server.enable = true;
       tor.enable = true;
       garage.enable = false;
       btopttyd.enable = false;

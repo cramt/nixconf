@@ -46,6 +46,10 @@ in
 
     myNixOS = {
       services.sshd.enable = true;
+      # eros skips bundles.general to stay cache-only on the rpi nixpkgs pin, so
+      # the exporter has to be named here. Both binaries substitute for aarch64,
+      # nothing gets built.
+      services.metrics.exporter.enable = true;
     };
 
     # nixosModules.default ships stylix/lix/zfs by default. None has cached
