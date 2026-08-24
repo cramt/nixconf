@@ -74,6 +74,9 @@
         # where every other data-heavy service on this box already lives.
         dataDir = "/pool/prometheus";
         dataDirDepends = ["/pool"];
+        # bcrypt from `caddy hash-password`; the plaintext lives in
+        # op://Homelab/Metrics/remoteWritePassword and reaches agents via opnix.
+        auth.hashedPassword = "$2a$14$np6mAmdVPkGBrPrFnV4rSeUw45WaHHvVngHupMyOSyClwwnL7444a";
       };
       tor.enable = true;
       garage.enable = false;
