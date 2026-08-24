@@ -171,11 +171,6 @@
       # start happily over one), so don't run both at once. Use the web UI at
       # this host's t3code port, or stop the unit before opening the app.
       t3code.enable = true;
-      # One OpenAI-compatible endpoint over the free tiers plus the local M365
-      # Copilot proxy. Consumed by pi and hermes-agent (both default to
-      # gpt-5.5-think-deeper); litellm.nix auto-adds the m365 deployments
-      # whenever the proxy is enabled on the same host.
-      litellm.enable = true;
       sunshine.enable = true;
       # Off: the RPC worker kept failing. luna's llama-cpp instance used to
       # offload here, so its `rpc` list is empty until this comes back.

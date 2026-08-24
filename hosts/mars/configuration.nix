@@ -36,11 +36,6 @@
     onepassword.enable = true;
     opnix-secrets.enable = true;
     services.m365-copilot-proxy.enable = true;
-    # One OpenAI-compatible endpoint over the free tiers plus the local M365
-    # Copilot proxy. Consumed by pi and hermes-agent (both default to
-    # gpt-5.5-think-deeper); litellm.nix auto-adds the m365 deployments when the
-    # proxy is enabled on the same host.
-    services.litellm.enable = true;
     qemu.enable = true;
     docker.enable = true;
     bluetooth.enable = true;

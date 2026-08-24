@@ -7,8 +7,7 @@
 # with --network=host, so 127.0.0.1:<proxy> reaches the local proxy directly.
 #
 # Pairs with myNixOS.services.m365-copilot-proxy on the same host (see the
-# assertion). LiteLLM/gpt-oss-120b remains available as an alternative backend —
-# swap settings.model.base_url back to the litellm port to use it.
+# assertion).
 #
 # Discord is off by default. To enable later:
 #   1. Create a Hermes Discord bot and store its token in 1Password:
