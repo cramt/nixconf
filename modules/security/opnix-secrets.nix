@@ -80,9 +80,12 @@
           # Shared push credential for the metrics agents. Rendered on every
           # opnix host, so the 1Password item has to exist before any of them
           # deploy -- opnix fails the whole secret render if a reference is dead.
-          metricsRemoteWritePassword = {
-            reference = "op://Homelab/Metrics/remoteWritePassword";
-          } // servicesIf config.services.prometheus.enableAgentMode ["prometheus"];
+          metricsRemoteWritePassword =
+            {
+              reference = "op://Homelab/Metrics/remoteWritePassword";
+            }
+            // servicesIf config.services.prometheus.enableAgentMode ["prometheus"]
+            // ownerIf "prometheus" // groupIf "prometheus";
           # Grafana refuses to start without one (no default since v11); it
           # signs sessions and encrypts datasource credentials. Same 1Password
           # item as the push password, different field.
