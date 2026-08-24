@@ -76,8 +76,6 @@
   # Decode + log machine-check exceptions into human-readable form (which DIMM,
   # which error) and track corrected-error counts. Diagnosing CPU/RAM MCEs.
   hardware.rasdaemon.enable = true;
-  services.scx.enable = true;
-  services.scx.scheduler = "scx_lavd";
   boot.extraModprobeConfig = ''
     options usbhid mousepoll=2
     options snd-intel-dspcfg dsp_driver=1
