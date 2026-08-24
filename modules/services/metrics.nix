@@ -3,51 +3,48 @@
 # a PromQL query instead of a guess. That's why retention is in years and why
 # the systemd/process collectors (both off by default upstream) are on.
 #
-# Exporters ride along with bundles.general, so every host reports. The server
-# runs wherever it's enabled and scrapes the whole fleet by name. Desktops that
-# are powered off just scrape-fail, and that's fine: `up == 0` is itself the
-# "was this machine even on" signal that any usage ratio has to divide by.
+# Push, not pull. Machines aren't always on the home LAN and opening an exporter
+# port on a laptop that roams onto untrusted wifi is not on, so nothing is
+# scraped across the network: exporters bind to loopback, each host runs
+# prometheus in *agent* mode against its own loopback, and the agent
+# remote_writes out to caddy over HTTPS. That's outbound-only, so NAT and
+# firewalls stop mattering and the fleet keeps reporting from anywhere.
 #
-# Known blind spot: process-exporter samples /proc on the scrape interval, so a
-# binary that runs for ten seconds between scrapes is invisible. Answering "did
-# I *ever* run this" properly needs execsnoop/auditd, not polling.
+# The cost of push is that "was this machine on" is no longer the `up` series --
+# every agent scrapes itself, so up==1 whenever it reports at all. Absence *is*
+# the signal now: no samples for a host over a window means it was off or
+# offline. `absent_over_time(up{instance="saturn"}[1h])` asks it directly.
+#
+# Known blind spot either way: process-exporter samples /proc on the scrape
+# interval, so a binary that runs for ten seconds between scrapes is invisible.
+# Answering "did I *ever* run this" properly needs execsnoop/auditd, not polling.
 { ... }: {
   flake.nixosModules."services.metrics" = {
     config,
     lib,
-    inputs,
     ...
   }: let
     cfg = config.myNixOS.services.metrics;
     ports = config.port-selector.ports;
+    site = import ../../myLib/site.nix;
 
-    hostsDir = ../../hosts;
+    hostName = config.networking.hostName;
 
-    # Same derivation as modules/flake/hosts.nix: hosts/ *is* the fleet, and a
-    # host.nix only exists to deviate from the name-derived defaults. Rereading
-    # it here keeps the scrape list from becoming a second, driftable copy of
-    # the host list.
-    hostNames = builtins.attrNames (
-      lib.filterAttrs (_: type: type == "directory") (builtins.readDir hostsDir)
-    );
+    # Pushing needs the shared credential, and that only exists where opnix
+    # does. Hosts without it still run exporters (curl-able on loopback) but
+    # stay out of the fleet view until they get an /etc/opnix-token.
+    runAgent = cfg.exporter.enable && !cfg.server.enable && config.myNixOS.opnix-secrets.enable;
 
-    addressOf = name: let
-      knobs = hostsDir + "/${name}/host.nix";
-    in
-      if builtins.pathExists knobs
-      then (import knobs {inherit inputs;}).address or name
-      else name;
-
-    # One static_config per host so every series carries a readable `host`
-    # label; prometheus' own `instance` label is the raw address:port.
-    fleetJob = jobName: port: {
+    # Every agent scrapes 127.0.0.1, so without pinning `instance` here every
+    # host would report the same target and only be tellable apart by accident.
+    localJob = jobName: port: {
       job_name = jobName;
-      static_configs =
-        builtins.map (name: {
-          targets = ["${addressOf name}:${toString port}"];
-          labels.host = name;
-        })
-        hostNames;
+      static_configs = [
+        {
+          targets = ["127.0.0.1:${toString port}"];
+          labels.instance = hostName;
+        }
+      ];
     };
   in {
     options.myNixOS.services.metrics = {
@@ -56,6 +53,39 @@
       };
       server = {
         enable = lib.mkEnableOption "myNixOS.services.metrics.server";
+        subdomain = lib.mkOption {
+          type = lib.types.str;
+          default = "metrics";
+          description = ''
+            Caddy vhost the agents push to. Needs a matching A record -- these
+            are enumerated in infra/main.tf, there's no wildcard.
+          '';
+        };
+        grafanaSubdomain = lib.mkOption {
+          type = lib.types.str;
+          default = "grafana";
+          description = "Caddy vhost for the dashboards. Also needs an A record.";
+        };
+        dataDir = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "/pool/prometheus";
+          description = ''
+            Where the TSDB actually lives. Prometheus' stateDir is always a bare
+            name under /var/lib, so pointing it at a big disk has to be a bind
+            mount; null leaves it on the root filesystem.
+          '';
+        };
+        dataDirDepends = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [];
+          example = ["/pool"];
+          description = ''
+            Mount points the bind source sits on, so the bind is ordered after
+            them. Stated rather than derived from config.fileSystems, because
+            reading that while defining a member of it is infinite recursion.
+          '';
+        };
         scrapeInterval = lib.mkOption {
           type = lib.types.str;
           default = "60s";
@@ -71,11 +101,30 @@
         };
         retentionSize = lib.mkOption {
           type = lib.types.str;
-          default = "40GB";
+          default = "200GB";
           description = ''
-            Hard cap on the TSDB so it can't eat the root filesystem. Whichever
-            of this and retentionTime bites first wins.
+            Hard cap on the TSDB. Whichever of this and retentionTime bites
+            first wins.
           '';
+        };
+        auth = {
+          username = lib.mkOption {
+            type = lib.types.str;
+            default = "fleet";
+            description = "Basic-auth user the agents push as.";
+          };
+          hashedPassword = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = ''
+              bcrypt hash of the push password, from `caddy hash-password`. A
+              hash, not a secret, so it lives in the store like btopttyd's does
+              -- the password itself comes from opnix on each agent.
+
+              This one credential also fronts grafana, which runs anonymous-
+              Admin behind it: whoever can push can also edit dashboards.
+            '';
+          };
         };
         grafana.enable = lib.mkOption {
           type = lib.types.bool;
@@ -87,9 +136,8 @@
 
     config = lib.mkMerge [
       {
-        # Reserved unconditionally rather than hash-assigned: the server has to
-        # address exporters on hosts whose config it never evaluates, so these
-        # numbers must be the same everywhere by construction.
+        # Pinned rather than hash-assigned purely so they're the familiar
+        # numbers when curl-ing an exporter by hand; nothing binds off-host.
         port-selector.set-ports = {
           "9100" = "node_exporter";
           "9256" = "process_exporter";
@@ -102,6 +150,9 @@
         services.prometheus.exporters.node = {
           enable = true;
           port = ports.node_exporter;
+          # Loopback only: these endpoints are unauthenticated and describe the
+          # machine in detail. Nothing off-host ever needs to reach them.
+          listenAddress = "127.0.0.1";
           # systemd: which units are loaded/active/failed, and for how long --
           # the direct answer to "is this service enabled but never used".
           # logind: seats and sessions, i.e. was a human actually at the machine.
@@ -114,6 +165,7 @@
         services.prometheus.exporters.process = {
           enable = true;
           port = ports.process_exporter;
+          listenAddress = "127.0.0.1";
           # Group every process by its executable's basename. Cardinality is
           # bounded by the set of distinct binaries that run (a few hundred on a
           # desktop), and the basename is what maps back to a package in the
@@ -125,51 +177,119 @@
             }
           ];
         };
+      })
 
-        # Metrics endpoints are unauthenticated and describe the machine in
-        # detail, so this is LAN-only exposure -- the same posture the rest of
-        # this fleet already takes (docker's 2375, postgres, btop-over-ttyd).
-        networking.firewall.allowedTCPPorts = [
-          ports.node_exporter
-          ports.process_exporter
-        ];
+      (lib.mkIf runAgent {
+        services.prometheus = {
+          enable = true;
+          enableAgentMode = true;
+          port = ports.prometheus;
+          listenAddress = "127.0.0.1";
+          globalConfig.scrape_interval = cfg.server.scrapeInterval;
+          scrapeConfigs = [
+            (localJob "node" ports.node_exporter)
+            (localJob "process" ports.process_exporter)
+          ];
+          remoteWrite = [
+            {
+              url = "https://${cfg.server.subdomain}.${site.domain}/api/v1/write";
+              basic_auth = {
+                username = cfg.server.auth.username;
+                # password_file, not password: keeps the credential out of the
+                # world-readable nix store.
+                password_file = config.services.onepassword-secrets.secretPaths.metricsRemoteWritePassword;
+              };
+            }
+          ];
+        };
       })
 
       (lib.mkIf cfg.server.enable {
+        # A required credential belongs in an assertion, not a placeholder
+        # string: an invalid bcrypt hash would let caddy start and then reject
+        # every agent, which looks like a network fault rather than a missing
+        # secret.
+        assertions = [
+          {
+            assertion = cfg.server.auth.hashedPassword != null;
+            message = "myNixOS.services.metrics.server.auth.hashedPassword is unset; generate one with `caddy hash-password` (the agents authenticate against it).";
+          }
+        ];
+
         services.prometheus = {
           enable = true;
           port = ports.prometheus;
+          # Caddy is the only thing that talks to it, and caddy is local.
+          listenAddress = "127.0.0.1";
           globalConfig.scrape_interval = cfg.server.scrapeInterval;
           retentionTime = cfg.server.retentionTime;
-          # The NixOS module only wires up retention.time, and a time-only
-          # bound has no idea how big the fleet's cardinality is.
-          extraFlags = ["--storage.tsdb.retention.size=${cfg.server.retentionSize}"];
+          extraFlags = [
+            # The receiving half of the push design; off by default.
+            "--web.enable-remote-write-receiver"
+            # The NixOS module only wires up retention.time, and a time-only
+            # bound has no idea how big the fleet's cardinality is.
+            "--storage.tsdb.retention.size=${cfg.server.retentionSize}"
+          ];
+          # The server has no agent, so it scrapes its own loopback exporters
+          # directly rather than pushing to itself.
           scrapeConfigs = [
-            (fleetJob "node" ports.node_exporter)
-            (fleetJob "process" ports.process_exporter)
+            (localJob "node" ports.node_exporter)
+            (localJob "process" ports.process_exporter)
           ];
         };
+
+        fileSystems = lib.mkIf (cfg.server.dataDir != null) {
+          "/var/lib/${config.services.prometheus.stateDir}" = {
+            device = cfg.server.dataDir;
+            fsType = "none";
+            options = ["bind"];
+            depends = cfg.server.dataDirDepends;
+          };
+        };
+
+        # Withheld until the credential exists, so the assertion above is what
+        # surfaces rather than a type error deep in the Caddyfile builder.
+        myNixOS.services.caddy.serviceMap = lib.optionalAttrs (cfg.server.auth.hashedPassword != null) (
+          {
+            ${cfg.server.subdomain} = {
+              port = ports.prometheus;
+              basic-auth = {
+                username = cfg.server.auth.username;
+                hashed-password = cfg.server.auth.hashedPassword;
+              };
+            };
+          }
+          // lib.optionalAttrs cfg.server.grafana.enable {
+            ${cfg.server.grafanaSubdomain} = {
+              port = ports.grafana;
+              basic-auth = {
+                username = cfg.server.auth.username;
+                hashed-password = cfg.server.auth.hashedPassword;
+              };
+            };
+          }
+        );
 
         services.grafana = lib.mkIf cfg.server.grafana.enable {
           enable = true;
           settings = {
             server = {
-              # Otherwise root_url points at localhost and grafana's own
-              # redirects break for anyone reaching it over the LAN.
-              domain = config.networking.hostName;
-              http_addr = "0.0.0.0";
+              http_addr = "127.0.0.1";
               http_port = ports.grafana;
+              domain = "${cfg.server.grafanaSubdomain}.${site.domain}";
+              root_url = "https://${cfg.server.grafanaSubdomain}.${site.domain}/";
             };
-            # Anonymous Admin instead of the stock admin/admin: there's no
-            # password to leak or rotate, and on a LAN-bound port it grants
-            # exactly what LAN reach already grants. This is load-bearing on
-            # http_addr staying off the public internet -- put it behind
-            # caddy's basic_auth before exposing it.
+            # Anonymous Admin rather than the stock admin/admin: there's no
+            # second password to leak or rotate, and caddy's basic_auth in front
+            # is already the gate. Load-bearing on http_addr staying loopback.
             "auth.anonymous" = {
               enabled = true;
               org_role = "Admin";
             };
             auth.disable_login_form = true;
+            # File provider rather than a literal: grafana reads it at start-up
+            # so the key never lands in the world-readable nix store.
+            security.secret_key = "$__file{${config.services.onepassword-secrets.secretPaths.grafanaSecretKey}}";
           };
           provision.datasources.settings = {
             apiVersion = 1;
@@ -184,12 +304,6 @@
             ];
           };
         };
-
-        # Open so an agent can hit /api/v1/query from another host on the LAN,
-        # which is the entire point of collecting this.
-        networking.firewall.allowedTCPPorts =
-          [ports.prometheus]
-          ++ lib.optional cfg.server.grafana.enable ports.grafana;
       })
     ];
   };

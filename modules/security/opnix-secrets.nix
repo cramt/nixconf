@@ -77,6 +77,21 @@
           discordBotToken = {
             reference = "op://Homelab/OpenClaw-Discord/botToken";
           };
+          # Shared push credential for the metrics agents. Rendered on every
+          # opnix host, so the 1Password item has to exist before any of them
+          # deploy -- opnix fails the whole secret render if a reference is dead.
+          metricsRemoteWritePassword = {
+            reference = "op://Homelab/Metrics/remoteWritePassword";
+          } // servicesIf config.services.prometheus.enableAgentMode ["prometheus"];
+          # Grafana refuses to start without one (no default since v11); it
+          # signs sessions and encrypts datasource credentials. Same 1Password
+          # item as the push password, different field.
+          grafanaSecretKey =
+            {
+              reference = "op://Homelab/Metrics/grafanaSecretKey";
+            }
+            // servicesIf config.services.grafana.enable ["grafana"]
+            // ownerIf "grafana" // groupIf "grafana";
           terraformRemotePassword =
             {
               reference = "op://Homelab/TerraformRemoteState/password";

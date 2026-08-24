@@ -66,9 +66,15 @@
         onDiskSshKey.enable = true;
       };
       nixarr.enable = true;
-      # Fleet metrics live here because luna is the only machine that's always
-      # on -- the desktops being down is data, not a gap.
-      metrics.server.enable = true;
+      # Fleet metrics land here: luna is the always-on host and the only one
+      # running caddy, which is what the roaming agents push through.
+      metrics.server = {
+        enable = true;
+        # 200GB of TSDB has no business on the 228G root SSD, and /pool is
+        # where every other data-heavy service on this box already lives.
+        dataDir = "/pool/prometheus";
+        dataDirDepends = ["/pool"];
+      };
       tor.enable = true;
       garage.enable = false;
       btopttyd.enable = false;
