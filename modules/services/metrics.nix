@@ -238,6 +238,16 @@
           ];
         };
 
+        # A bind mount fails outright if its source is missing, and systemd only
+        # ever creates the target -- so without this the mount fails, prometheus'
+        # StateDirectory= silently recreates /var/lib/prometheus2 on the root
+        # disk, and the TSDB lands exactly where dataDir exists to keep it from.
+        # Activation runs tmpfiles before it starts new units, so this closes the
+        # gap on switch; /pool/pgsql and /pool/t3code got theirs by hand.
+        systemd.tmpfiles.rules = lib.mkIf (cfg.server.dataDir != null) [
+          "d ${cfg.server.dataDir} 0700 prometheus prometheus -"
+        ];
+
         fileSystems = lib.mkIf (cfg.server.dataDir != null) {
           "/var/lib/${config.services.prometheus.stateDir}" = {
             device = cfg.server.dataDir;
