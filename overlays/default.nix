@@ -9,7 +9,7 @@ inputs: [
   # noctalia 5.x (native Wayland+GLES rewrite, no longer quickshell). Exposes
   # `pkgs.noctalia` (v5) — distinct from nixpkgs' older quickshell-based
   # `pkgs.noctalia-shell` (4.7.x), which is left untouched. We consume pkgs.noctalia
-  # to match the v5 homeModule we import (modules/hm-base/default-hm.nix). The v5
+  # and feed it to home-manager's own programs.noctalia module. The v5
   # shell avoids the quickshell layer-shell-over-IPC crash that cosmic-comp
   # triggers on multi-output setups.
   inputs.noctalia-shell.overlays.default
@@ -158,6 +158,11 @@ inputs: [
       };
     };
 
+    # tree-sitter-vixen is frozen in npins/sources.json: the grammar revision is
+    # dictated by vixen-zed's extension.toml, not independently updatable, and an
+    # unpinned `npins update` walks it ahead of the extension and trips the
+    # cross-check in packages/mkZedExtension.nix. Unfreeze and bump both when
+    # vixen-zed itself moves to a newer grammar.
     zed-vixen = final.mkZedExtension {
       src = final.npinsSources.vixen-zed;
       grammars.vixen = {
@@ -205,18 +210,26 @@ inputs: [
 
   # ffmpeg 9.0 dropped AVVulkanDeviceContext's queue_family_decode_index /
   # nb_decode_queues fields, which moonlight 6.1.0's plvk.cpp still reads, so it
-  # fails to compile against the default ffmpeg. Upstream took the same fix:
-  # https://github.com/NixOS/nixpkgs/pull/552212 (merged 2026-08-13, after our
-  # nixpkgs pin). Remove on the next `just update` — once the pin includes that
-  # commit the `ffmpeg` argument is gone and this override throws, which is the
-  # reminder.
+  # fails to compile against the default ffmpeg. Upstream took the same fix in
+  # https://github.com/NixOS/nixpkgs/pull/552212 (merged 2026-08-13), wiring
+  # ffmpeg_8 straight into the package and dropping the `ffmpeg` argument.
+  # Our main nixpkgs now carries that commit, but eros builds from nixpkgs-rpi,
+  # which does not — so the override is still needed there and throws
+  # everywhere else. Hence the argument probe; drop the whole block once
+  # nixpkgs-rpi catches up and the probe is false on every host.
   # final, not prev: eros applies nixos-raspberrypi's overlays after this one,
   # which swap in the Pi-accelerated `ffmpeg-rpi` (already 8.x, so it was never
   # broken). Reading through `final` keeps eros on ffmpeg-rpi and leaves its
   # moonlight derivation bit-identical; `prev` would silently downgrade the TV
   # kiosk to a generic ffmpeg and force an aarch64 rebuild.
   (final: prev: {
-    moonlight-qt = prev.moonlight-qt.override {ffmpeg = final.ffmpeg_8;};
+    # Conditional on the value, not on the attrset: gating the attribute itself
+    # forces moonlight-qt while the overlay's names are still being computed,
+    # which is infinite recursion.
+    moonlight-qt =
+      if prev.moonlight-qt.override.__functionArgs or {} ? ffmpeg
+      then prev.moonlight-qt.override {ffmpeg = final.ffmpeg_8;}
+      else prev.moonlight-qt;
   })
 
   (final: prev: {

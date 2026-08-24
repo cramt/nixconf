@@ -14,7 +14,13 @@
       # niri-flake's homeModules.config is injected into home-manager.sharedModules
       # by its nixosModule (see modules/desktop/niri.nix); importing it here too
       # would double-declare programs.niri.* and conflict.
-      inputs.noctalia-shell.homeModules.default
+      # noctalia's own homeModules.default is NOT imported: home-manager
+      # upstreamed the same module (nix-community/home-manager#9757), and both
+      # declare programs.noctalia.*, which is a duplicate-option eval error.
+      # HM's copy is the flake module verbatim apart from validateConfig ->
+      # checkConfig (we set neither) and package defaulting to pkgs.noctalia.
+      # Re-add the flake module — with disabledModules on HM's — only if
+      # noctalia starts shipping options HM's copy lacks.
       ({ lib, config, ... }: {
         # home-manager stopped inferring cursor generation from
         # `home.pointerCursor.{name,package}` being set and will drop the

@@ -189,6 +189,15 @@ let
     '';
   };
 
+  # Desktop branding moved out of apps/desktop/resources into a per-channel
+  # assets/ tree upstream (resources/ now holds only the macOS dmg backgrounds).
+  # This build is unpackaged — Electron gets a script path, so isPackaged is
+  # false and isDevelopment needs VITE_DEV_SERVER_URL, which is unset — and for
+  # that case DesktopAssets.ts resolves the window icon as
+  # <rootDir>/assets/<brand>/<universalPng>, i.e. the path below. "universal" is
+  # the non-darwin export; the macos-1024 sibling carries mac's safe-area inset.
+  desktopIconPath = "assets/prod/black-universal-1024.png";
+
   desktopItem = makeDesktopItem {
     name = "t3code";
     exec = "t3code-desktop %U";
@@ -260,9 +269,16 @@ in
       mkdir -p $desktopRoot/apps/desktop $desktopRoot/apps/server
 
       cp -r ${workspace.apps.desktop} $desktopRoot/apps/desktop/dist-electron
-      # Probed as ../resources relative to main.cjs (DesktopAssets.ts).
+      # Probed as ../resources relative to main.cjs (DesktopAssets.ts), which is
+      # now only the fallback — the icon lookup hits <rootDir>/assets first.
       cp -r ${patchedSrc}/apps/desktop/resources $desktopRoot/apps/desktop/resources
       cp ${patchedSrc}/apps/desktop/package.json $desktopRoot/apps/desktop/package.json
+      # rootDir is desktopRoot (resolve(dist-electron, "../../..")), so the
+      # prod branding has to sit here for the window icon to resolve. Only the
+      # prod channel: dev/nightly are selected by env vars a store build
+      # never sets.
+      mkdir -p $desktopRoot/assets
+      cp -r ${patchedSrc}/assets/prod $desktopRoot/assets/prod
       linkNodeModules "${workspace.nodeModules."apps/desktop"}/node_modules" \
         $desktopRoot/apps/desktop/node_modules
 
@@ -278,7 +294,7 @@ in
         --add-flags $desktopRoot/apps/desktop/dist-electron/main.cjs \
         --add-flags "\''${NIXOS_OZONE_WL:+--ozone-platform-hint=auto}"
 
-      install -Dm444 ${patchedSrc}/apps/desktop/resources/icon.png \
+      install -Dm444 ${patchedSrc}/${desktopIconPath} \
         $out/share/pixmaps/t3code.png
 
       runHook postInstall

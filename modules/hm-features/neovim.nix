@@ -77,7 +77,11 @@
             binds = { whichKey.enable = true; cheatsheet.enable = true; };
             telescope.enable = true;
             git = { enable = true; gitsigns.enable = true; gitsigns.codeActions.enable = false; };
-            minimap = { minimap-vim.enable = false; codewindow.enable = false; };
+            # nvf dropped vim.minimap.codewindow — the plugin does not support
+            # tree-sitter main branch, so nvf commented the module out. Both
+            # minimaps were off here anyway; re-add codewindow.enable only if nvf
+            # restores the module.
+            minimap.minimap-vim.enable = false;
             dashboard = { dashboard-nvim.enable = false; alpha.enable = true; };
             notify.nvim-notify.enable = true;
             utility = { ccc.enable = false; vim-wakatime.enable = false; icon-picker.enable = true; surround.enable = true; diffview-nvim.enable = true; yanky-nvim.enable = false; motion = { hop.enable = true; leap.enable = true; precognition.enable = true; }; images.image-nvim.enable = false; };
