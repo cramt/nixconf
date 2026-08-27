@@ -4,16 +4,19 @@
 #
 # The difference is whose pool. `claude` talks to the cli-proxy-api running on
 # this machine (127.0.0.1, see modules/hm-features/cli-proxy-api.nix); opencode
-# talks to the employer's, which is remote and needs a URL and an API key. Both
-# live in one 1Password field that opnix renders to
-# /var/lib/opnix/secrets/opencodeEnv as:
+# talks to the employer's, which is remote and needs a URL and an API key.
+# Those are two fields on op://Homelab/OpenCode (a 1Password field can't hold a
+# newline, so they can't share one envFile), which opnix renders as:
 #
-#   OPENCODE_URL=https://<host>/v1        # include /v1 — it's the anthropic base
-#   OPENCODE_API_KEY=<key>
+#   /var/lib/opnix/secrets/opencodeUrl      https://<host>/v1
+#   /var/lib/opnix/secrets/opencodeApiKey   <key>
 #
-# opencode.json refers to them as {env:...}, and the `opencode` wrapper sources
-# that file so they resolve. Going through env rather than baking the values
-# into settings keeps them out of the world-readable nix store.
+# The URL needs its /v1: opencode hands options.baseURL to the anthropic
+# provider whole, unlike Claude Code's ANTHROPIC_BASE_URL which appends it.
+#
+# opencode.json refers to both as {env:...}, and the `opencode` wrapper exports
+# them from those files. Going through env rather than baking the values into
+# settings keeps them out of the world-readable nix store.
 {inputs, ...}: {
   hmModules.features.opencode = {
     config,
@@ -25,7 +28,8 @@
 
     skills = import ../../myLib/agent-skills.nix {inherit lib pkgs inputs;};
 
-    envFile = "/var/lib/opnix/secrets/opencodeEnv";
+    urlFile = "/var/lib/opnix/secrets/opencodeUrl";
+    apiKeyFile = "/var/lib/opnix/secrets/opencodeApiKey";
 
     # Every model the work pool serves. They all arrive over the pool's
     # Anthropic-shaped endpoint, so the non-Claude ones are declared under the
@@ -46,18 +50,20 @@
     };
 
     # hiPrio to win over the plain binary `programs.opencode` installs.
-    # Sourcing is unconditional-but-tolerant: a host whose opnix render hasn't
-    # landed yet should still get a usable TUI (and a pointer at why it can't
-    # reach the pool) rather than an `opencode` that refuses to launch.
+    # Tolerant of a missing render: a host whose opnix secrets haven't landed
+    # yet should still get a usable TUI (and a pointer at why it can't reach the
+    # pool) rather than an `opencode` that refuses to launch. The values are
+    # read rather than sourced — they're data, not shell.
     opencodeWrapper = lib.hiPrio (pkgs.writeShellScriptBin "opencode" ''
-      if [ -r ${envFile} ]; then
-        set -a
-        . ${envFile}
-        set +a
+      if [ -r ${urlFile} ] && [ -r ${apiKeyFile} ]; then
+        OPENCODE_URL=$(< ${urlFile})
+        OPENCODE_API_KEY=$(< ${apiKeyFile})
+        export OPENCODE_URL OPENCODE_API_KEY
       else
-        echo "opencode: cannot read ${envFile} — the work pool is not configured here." >&2
-        echo "          myNixOS.opnix-secrets.enable must be on, and you must be in the" >&2
-        echo "          onepassword-secrets group (re-login after the first deploy)." >&2
+        echo "opencode: cannot read ${urlFile} / ${apiKeyFile} —" >&2
+        echo "          the work pool is not configured here. myNixOS.opnix-secrets.enable" >&2
+        echo "          must be on, and you must be in the onepassword-secrets group" >&2
+        echo "          (re-login after the first deploy)." >&2
       fi
 
       exec ${lib.getExe pkgs.opencode} "$@"

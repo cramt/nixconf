@@ -77,12 +77,19 @@
           discordBotToken = {
             reference = "op://Homelab/OpenClaw-Discord/botToken";
           };
-          # OPENCODE_URL / OPENCODE_API_KEY for the work cli-proxy-api pool,
-          # sourced by the `opencode` wrapper (modules/hm-features/opencode.nix).
-          # Group-readable so the wrapper can read it as cramt rather than root.
-          opencodeEnv =
+          # The work cli-proxy-api pool, read by the `opencode` wrapper
+          # (modules/hm-features/opencode.nix). Two fields rather than one
+          # envFile because a 1Password field can't hold a newline.
+          # Group-readable so the wrapper reads them as cramt, not root.
+          opencodeUrl =
             {
-              reference = "op://Homelab/OpenCode/envFile";
+              reference = "op://Homelab/OpenCode/url";
+              mode = "0640";
+            }
+            // groupIf "onepassword-secrets";
+          opencodeApiKey =
+            {
+              reference = "op://Homelab/OpenCode/apiKey";
               mode = "0640";
             }
             // groupIf "onepassword-secrets";
