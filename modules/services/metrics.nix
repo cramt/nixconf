@@ -110,8 +110,11 @@
         auth = {
           username = lib.mkOption {
             type = lib.types.str;
-            default = "fleet";
-            description = "Basic-auth user the agents push as.";
+            default = "admin";
+            description = ''
+              Basic-auth user the agents push as, and the name typed into the
+              browser prompt in front of prometheus and grafana.
+            '';
           };
           hashedPassword = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
