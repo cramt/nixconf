@@ -20,8 +20,8 @@
       idle_inhibitor = { format = "{icon}"; format-icons = { activated = ""; deactivated = ""; }; };
       tray = { spacing = 10; };
       clock = { tooltip-format = "{:%A %B %d %Y | %H:%M:%S}"; format = "\n{:%d\n%m\n%y\n\n%H\n%M}"; interval = 1; };
-      cpu = { format = "﬙\n{usage}%"; on-click = "alacritty -e btop"; };
-      memory = { format = "\n{}%"; on-click = "alacritty -e btop"; };
+      cpu = { format = "﬙\n{usage}%"; on-click = "ghostty -e btop"; };
+      memory = { format = "\n{}%"; on-click = "ghostty -e btop"; };
       backlight = { format = "{icon}\n{percent}%"; format-icons = ["" ""]; on-scroll-down = "${pkgs.brightnessctl}/bin/brightnessctl -c backlight set 1%-"; on-scroll-up = "${pkgs.brightnessctl}/bin/brightnessctl -c backlight set +1%"; };
       battery = { states = { warning = 30; critical = 15; }; format = "{icon}\n{capacity}%"; format-icons = ["" "" "" "" ""]; };
       network = { tooltip-format = "{ipaddr}"; format = "⚠ "; format-wifi = " "; format-ethernet = " "; format-disconnected = "⛔"; };

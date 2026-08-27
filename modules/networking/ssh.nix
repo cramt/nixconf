@@ -24,7 +24,7 @@ in {
         pkgs.makeDesktopItem {
           name = "ssh-${name}";
           desktopName = "ssh ${name}";
-          exec = "${pkgs.alacritty}/bin/alacritty -e ${pkgs.zsh}/bin/zsh -c ${value}/bin/ssh_${name}";
+          exec = "${pkgs.ghostty}/bin/ghostty -e ${pkgs.zsh}/bin/zsh -c ${value}/bin/ssh_${name}";
         })
       sshTargetPackages;
   in {

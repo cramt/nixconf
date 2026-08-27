@@ -32,7 +32,7 @@
         NH_FLAKE = "${config.home.homeDirectory}/nixconf";
         EDITOR = "nvim";
         BROWSER = "zen-beta";
-        TERMINAL = "alacritty";
+        TERMINAL = "ghostty";
       };
     };
   };

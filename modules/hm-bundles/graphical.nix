@@ -3,7 +3,7 @@
     options.myHomeManager.bundles.graphical.enable = lib.mkEnableOption "myHomeManager.bundles.graphical";
     config = lib.mkIf config.myHomeManager.bundles.graphical.enable {
       home.packages = with pkgs; [
-        wl-clipboard alacritty kitty brightnessctl pavucontrol adwaita-qt gimp vlc element-desktop antigravity orca-slicer t3code
+        wl-clipboard brightnessctl pavucontrol adwaita-qt antigravity orca-slicer t3code
       ];
       xdg.enable = true;
       # Keep the Orca screen reader off declaratively. COSMIC/GDM pull in the
@@ -12,13 +12,8 @@
       dconf.settings."org/gnome/desktop/a11y/applications".screen-reader-enabled = false;
       myHomeManager = {
         ghostty.enable = true;
-        git_update_notifier.enable = false;
-        thunderbird.enable = false;
         cosmic.enable = true;
-        alacritty.enable = true;
-        rio.enable = true;
         mako.enable = true;
-        zathura.enable = true;
         vesktop.enable = true;
         zed.enable = true;
         zen.enable = true;
