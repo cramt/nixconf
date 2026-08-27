@@ -39,7 +39,6 @@
       myHomeManager = {
         wowup.enable = true;
         cockatrice.enable = true;
-        nonsteamlauncher.enable = false;
       };
       services.xembed-sni-proxy.enable = true;
     };
