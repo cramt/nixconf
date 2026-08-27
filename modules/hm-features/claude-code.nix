@@ -6,38 +6,11 @@
     ...
   }: let
     claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
-    agentBrowserPkg = pkgs.callPackage ../../packages/agent-browser {};
 
-    # Vendored rather than pinned: upstream pstack is one tree rooted at
-    # `poteto-mode`, and only these ten stand alone. Each also needs its
-    # `disable-model-invocation` flag stripped to fire without that dispatcher,
-    # so there's nothing for a pin to track cleanly. See ./claude-skills/pstack/README.md.
-    pstackDir = ./claude-skills/pstack;
-    pstackSkills =
-      builtins.attrNames
-      (lib.filterAttrs (_: type: type == "directory")
-        (builtins.readDir pstackDir));
-
-    # mattpocock/skills nests a category level (skills/<category>/<name>), so
-    # flatten two deep. Enumerating rather than listing means new upstream skills
-    # arrive on `just update`; the exclusion is the only thing to maintain.
-    # setup-matt-pocock-skills rewrites a repo's issue-tracker and label
-    # vocabulary to match upstream's conventions, which ours don't follow.
-    mattpocockExclude = ["setup-matt-pocock-skills"];
-    mattpocockRoot = "${inputs.mattpocock-skills}/skills";
-    dirsIn = path:
-      builtins.attrNames
-      (lib.filterAttrs (_: type: type == "directory") (builtins.readDir path));
-    mattpocockSkills =
-      lib.filter (s: !(builtins.elem s.name mattpocockExclude))
-      (lib.concatMap
-        (category:
-          map (name: {
-            inherit name;
-            path = "${mattpocockRoot}/${category}/${name}";
-          })
-          (dirsIn "${mattpocockRoot}/${category}"))
-        (dirsIn mattpocockRoot));
+    # Skill libraries and helper binaries shared with opencode — see
+    # myLib/agent-skills.nix for how each set is enumerated and why.
+    skills = import ../../myLib/agent-skills.nix {inherit lib pkgs inputs;};
+    agentBrowserPkg = skills.agent-browser;
 
     # `m365claude`: regular Claude with the Microsoft 365 MCP merged in for that
     # session only (via --mcp-config, which adds to — not replaces — the normal
@@ -115,18 +88,9 @@
     '');
 
     # Shared with pi (written to ~/.pi/agent/AGENTS.md by modules/hm-features/pi.nix)
-    # — single source of truth so the two agents' global instructions can't drift.
+    # and with opencode (~/.config/opencode/AGENTS.md) — single source of truth
+    # so the agents' global instructions can't drift.
     globalClaudeMd = builtins.readFile ./global-agent-instructions.md;
-
-    # The mtg-commander skill leans on this helper for every card lookup, so it
-    # gets a real derivation with its deps closed over rather than a bare script
-    # in the skill dir: an agent that can't find `jq` would silently fall back to
-    # guessing card data from memory, which is the one thing the skill forbids.
-    scryfallPkg = pkgs.writeShellApplication {
-      name = "scryfall";
-      runtimeInputs = with pkgs; [curl jq gzip util-linux];
-      text = builtins.readFile ./claude-skills/mtg-commander/scryfall.sh;
-    };
   in {
     options.myHomeManager.claude-code = {
       enable = lib.mkEnableOption "myHomeManager.claude-code";
@@ -162,7 +126,7 @@
           ++ lib.optional proxyCfg.enable claudePoolPkg;
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
-          ".claude/skills/status".source = ./claude-skills/status;
+          ".claude/skills/status".source = skills.status.path;
         };
       }
       # Vercel agent-browser: the CLI is a self-contained native binary (no
@@ -185,24 +149,24 @@
         home.packages = [pkgs.manycode];
       })
       (lib.mkIf cfg.mtg-commander.enable {
-        home.packages = [scryfallPkg];
+        home.packages = [skills.scryfall];
         home.file.".claude/skills/mtg-commander/SKILL.md".source =
-          ./claude-skills/mtg-commander/SKILL.md;
+          skills.mtg-commander.path;
       })
       # pstack + mattpocock: symlink each skill dir in. Skills-only installs — no
       # plugin registration, no SessionStart hook — so they stay as declarative
       # and disposable as the agent-browser stub above.
       (lib.mkIf cfg.pstack.enable {
         home.file = lib.mkMerge (map (skill: {
-            ".claude/skills/${skill}".source = "${pstackDir}/${skill}";
+            ".claude/skills/${skill.name}".source = skill.path;
           })
-          pstackSkills);
+          skills.pstack);
       })
       (lib.mkIf cfg.mattpocock.enable {
         home.file = lib.mkMerge (map (skill: {
             ".claude/skills/${skill.name}".source = skill.path;
           })
-          mattpocockSkills);
+          skills.mattpocock);
       })
     ]);
   };

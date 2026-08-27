@@ -77,6 +77,15 @@
           discordBotToken = {
             reference = "op://Homelab/OpenClaw-Discord/botToken";
           };
+          # OPENCODE_URL / OPENCODE_API_KEY for the work cli-proxy-api pool,
+          # sourced by the `opencode` wrapper (modules/hm-features/opencode.nix).
+          # Group-readable so the wrapper can read it as cramt rather than root.
+          opencodeEnv =
+            {
+              reference = "op://Homelab/OpenCode/envFile";
+              mode = "0640";
+            }
+            // groupIf "onepassword-secrets";
           # Shared push credential for the metrics agents. Rendered on every
           # opnix host, so the 1Password item has to exist before any of them
           # deploy -- opnix fails the whole secret render if a reference is dead.

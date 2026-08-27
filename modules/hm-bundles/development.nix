@@ -30,6 +30,10 @@
         scala.enable = true;
         ruby.enable = true;
         codex.enable = true;
+        # Same skills and global AGENTS.md as claude-code, pointed at the work
+        # cli-proxy-api pool (URL + key from 1Password via opnix) rather than
+        # the local one.
+        opencode.enable = true;
         herdr.enable = true;
       };
       home.packages = with pkgs;
