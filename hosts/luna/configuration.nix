@@ -41,7 +41,6 @@
   };
 
   myNixOS = {
-    greetd.enable = true;
     opnix-secrets.enable = true;
     services.m365-copilot-proxy.enable = true;
     gnupg.enable = true;
