@@ -5,9 +5,9 @@
 # Runs as a real login user's `systemd --user` service (not a system unit), so
 # the server lives in a genuine user session and the agents it spawns inherit
 # that user's home-manager environment: git, ssh keys, and the agent CLIs
-# (claude, codex). Upstream's own `t3 service install` writes a user unit too,
-# but it also installs a self-updating launcher under ~/.t3 — Nix owns the
-# version here, so the unit is hand-rolled around `t3 serve` instead.
+# (claude, codex, opencode). Upstream's own `t3 service install` writes a user
+# unit too, but it also installs a self-updating launcher under ~/.t3 — Nix owns
+# the version here, so the unit is hand-rolled around `t3 serve` instead.
 #
 # Unlike paseo the server binds an interface directly rather than dialing out to
 # a relay. It's bound on the LAN and the firewall port is opened; the one-time
@@ -42,6 +42,41 @@
     # Secret and key file keep their paseo-era names — same key, and renaming
     # would churn both the opnix path and the on-disk file for nothing.
     sshKey = "/home/${cfg.user}/.ssh/id_paseo";
+    # `--base-dir` plus no dev server puts the server's mutable state here
+    # (apps/server/src/config.ts, deriveServerPaths).
+    stateDir = "${dataDir}/userdata";
+    settingsFile = "${stateDir}/settings.json";
+    # Every driver t3code ships. Guards against a typo'd key silently landing
+    # in settings.json as a phantom provider — unknown driver envelopes are
+    # preserved verbatim by design, so nothing upstream would complain.
+    knownDrivers = ["codex" "claudeAgent" "cursor" "grok" "opencode"];
+    # Both shapes, because both are live upstream: `providers.<kind>` is the
+    # legacy mirror the settings UI reads, and `providerInstances.<kind>` is
+    # the envelope the registry actually resolves — an explicit envelope wins
+    # over the mirror, so writing only one of them would leave the UI and the
+    # running server disagreeing. The instance id is the driver kind itself.
+    declaredSettings = (pkgs.formats.json {}).generate "t3code-declared-settings.json" {
+      providers = lib.mapAttrs (_: enabled: {inherit enabled;}) cfg.providers;
+      providerInstances = lib.mapAttrs (driver: enabled: {inherit driver enabled;}) cfg.providers;
+    };
+    seedSettings = pkgs.writeShellApplication {
+      name = "t3code-seed-settings";
+      runtimeInputs = [pkgs.coreutils pkgs.jq];
+      text = ''
+        install -d -m700 "${stateDir}"
+        # The UI owns everything else in this file, so merge rather than
+        # overwrite. A file the server itself would reject is worth nothing —
+        # it falls back to defaults and ignores the contents — so a parse
+        # failure starts from scratch instead of failing the unit.
+        if ! current=$(jq . "${settingsFile}" 2>/dev/null); then
+          current='{}'
+        fi
+        printf '%s' "$current" \
+          | jq --slurpfile declared ${declaredSettings} '. * $declared[0]' \
+          > "${settingsFile}.new"
+        mv "${settingsFile}.new" "${settingsFile}"
+      '';
+    };
     prepare = pkgs.writeShellApplication {
       name = "t3code-prepare";
       runtimeInputs = [ pkgs.coreutils ];
@@ -62,8 +97,8 @@
         default = "cramt";
         description = ''
           Real login user whose `systemd --user` manager runs the server. Its
-          home-manager profile (git/ssh, claude/codex CLIs) is what spawned
-          agents inherit. Must be one of this host's home-users.
+          home-manager profile (git/ssh, the claude/codex/opencode CLIs) is what
+          spawned agents inherit. Must be one of this host's home-users.
         '';
       };
       host = lib.mkOption {
@@ -79,6 +114,21 @@
         default = true;
         description = "Open the server's TCP port. Pairing tokens are the auth boundary.";
       };
+      providers = lib.mkOption {
+        type = lib.types.attrsOf lib.types.bool;
+        default = {};
+        example = {opencode = true;};
+        description = ''
+          Coding-agent providers to pin on (or off) in the server's
+          settings.json, keyed by t3code driver kind. codex and claudeAgent
+          ship enabled; cursor, grok and opencode ship disabled and are
+          otherwise only reachable through the settings UI.
+
+          Merged into settings.json on every start, so a toggle made in the UI
+          for a provider named here is undone on the next restart. Providers
+          left out are untouched and stay UI-owned.
+        '';
+      };
       onDiskSshKey.enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
@@ -92,6 +142,17 @@
     };
 
     config = lib.mkIf cfg.enable {
+      assertions = [
+        {
+          assertion = lib.all (d: lib.elem d knownDrivers) (lib.attrNames cfg.providers);
+          message = ''
+            myNixOS.services.t3code.providers has unknown driver kinds: ${
+              lib.concatStringsSep ", " (lib.subtractLists knownDrivers (lib.attrNames cfg.providers))
+            }. Known kinds: ${lib.concatStringsSep ", " knownDrivers}.
+          '';
+        }
+      ];
+
       # Pinned rather than hash-assigned: clients get bookmarked/typed by hand,
       # so the port has to be the same everywhere and stable across renames.
       # 3773 is upstream's own default. Still goes through port-selector so a
@@ -154,8 +215,9 @@
             KillMode = "mixed";
             KillSignal = "SIGTERM";
             TimeoutStopSec = "15";
-          } // lib.optionalAttrs cfg.onDiskSshKey.enable {
-            ExecStartPre = "${prepare}/bin/t3code-prepare";
+            ExecStartPre =
+              lib.optional cfg.onDiskSshKey.enable "${prepare}/bin/t3code-prepare"
+              ++ lib.optional (cfg.providers != {}) "${seedSettings}/bin/t3code-seed-settings";
           };
         };
       };

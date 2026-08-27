@@ -56,13 +56,17 @@
 
     services = {
       # T3 Code server: offload coding-agent work to luna from the mars/saturn
-      # desktop app. Runs as cramt so agents get git/ssh + the claude/codex CLIs
+      # desktop app. Runs as cramt so agents get git/ssh + the agent CLIs
       # (dev bundle). Bound on the LAN — pair a client with `just t3_pair`.
       t3code = {
         enable = true;
         user = "cramt";
         # Headless: no 1Password agent here, so agents need the key on disk.
         onDiskSshKey.enable = true;
+        # opencode ships disabled in t3code (opt-in from its settings UI). The
+        # binary it finds on the unit's PATH is the dev bundle's wrapper, which
+        # points it at the work pool — see modules/hm-features/opencode.nix.
+        providers.opencode = true;
       };
       nixarr.enable = true;
       # Fleet metrics land here: luna is the always-on host and the only one
