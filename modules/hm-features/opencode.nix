@@ -108,6 +108,12 @@
           # the read-only store and fail on every launch.
           autoupdate = false;
 
+          # opencode auto-loads its own Zen gateways, which serve most of the
+          # same model names the pool does — so the picker shows two entries
+          # per model with nothing to tell them apart. The pool is the only
+          # route this machine is meant to use.
+          disabled_providers = ["opencode" "opencode-go"];
+
           provider.anthropic = {
             options = {
               baseURL = "{env:OPENCODE_URL}";
