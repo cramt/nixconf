@@ -21,7 +21,6 @@
         # Pinned deliberately in 02dca98, reason unrecorded — retest on a whim,
         # nothing else depends on it.
         inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.melonds
-        prismlauncher
         lutris
         heroic
         # Legends of Runeterra. Riot's Packman anti-tamper rejects current wine
@@ -42,6 +41,7 @@
         overrides.settings.global.Environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
       };
       myHomeManager = {
+        prismlauncher.enable = true;
         wowup.enable = true;
         cockatrice.enable = true;
       };
