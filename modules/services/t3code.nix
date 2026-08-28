@@ -49,7 +49,12 @@
     # Every driver t3code ships. Guards against a typo'd key silently landing
     # in settings.json as a phantom provider — unknown driver envelopes are
     # preserved verbatim by design, so nothing upstream would complain.
-    knownDrivers = ["codex" "claudeAgent" "cursor" "grok" "opencode"];
+    #
+    # "pi" exists only because inputs.t3code-src is pinned to the fork carrying
+    # pingdotgg/t3code#7211 (see flake.nix). Drop it here if that pin is ever
+    # reverted without the PR having landed, or this list stops guarding
+    # anything for pi.
+    knownDrivers = ["codex" "claudeAgent" "cursor" "grok" "opencode" "pi"];
     # Both shapes, because both are live upstream: `providers.<kind>` is the
     # legacy mirror the settings UI reads, and `providerInstances.<kind>` is
     # the envelope the registry actually resolves — an explicit envelope wins

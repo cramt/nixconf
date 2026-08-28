@@ -2782,16 +2782,17 @@
     "t3code-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1787561079,
-        "narHash": "sha256-PZdbnH1B2rS5ERX8irTAfIsLFWIFygU4qeo9abvHtMQ=",
-        "owner": "pingdotgg",
+        "lastModified": 1787895234,
+        "narHash": "sha256-1ziFkACWqtSpKEdMh+6wMbFMx1UNcq7OI++pr5V8U+I=",
+        "owner": "StiensWout",
         "repo": "t3code",
-        "rev": "e9f50c3efcb02a199042364ead292e164274e716",
+        "rev": "a00565fbfc34a5fefd1222e1868f41e36cb02378",
         "type": "github"
       },
       "original": {
-        "owner": "pingdotgg",
+        "owner": "StiensWout",
         "repo": "t3code",
+        "rev": "a00565fbfc34a5fefd1222e1868f41e36cb02378",
         "type": "github"
       }
     },

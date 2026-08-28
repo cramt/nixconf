@@ -101,8 +101,36 @@
 
     # T3 Code — self-hosted coding-agent orchestrator. No upstream flake and no
     # published binary, so we build the monorepo ourselves (packages/t3code).
+    #
+    # PINNED TO A FORK for Pi provider support. Upstream ships five drivers
+    # (claude/codex/cursor/grok/opencode) and no Pi one, and shows no sign of
+    # growing one: 21 community PRs adding Pi have been opened since 2026-04
+    # and every one was closed unmerged, and no new provider driver has landed
+    # on main since Grok on 2026-06-09 — despite ~700 PRs/month merging
+    # otherwise. This rev is the head of the live attempt, pingdotgg/t3code
+    # #7211, which adds a real PiDriver + PiRpc + MCP injection and was
+    # live-tested against pi 0.84.2 (the version inputs.pi ships).
+    #
+    # It is stacked, not a one-off patch: #7211 targets the maintainer branch
+    # t3code/codex-turn-mapping (PR #2829, "introduce new orchestrator"), which
+    # is ~250 commits ahead of main and introduces apps/server/src/
+    # orchestration-v2 — the layer the Pi code is written against. So this pin
+    # drags in orchestrator v2 too, and #7211 cannot be rebased onto main.
+    #
+    # Pinning an explicit rev also freezes t3code against `just update`, which
+    # is deliberate: the fork branch gets force-pushed as its author iterates,
+    # and following it would swap the server out from under luna on an
+    # unrelated flake bump. Bump this rev by hand, after reading the diff.
+    #
+    #   https://github.com/pingdotgg/t3code/pull/7211  (Pi provider)
+    #   https://github.com/pingdotgg/t3code/pull/2829  (the base it is stacked on)
+    #
+    # REMOVE THIS PIN once #2829 lands on main and #7211 merges behind it: go
+    # back to plain `github:pingdotgg/t3code`, and revisit "pi" in
+    # knownDrivers (modules/services/t3code.nix) only if upstream ends up
+    # naming the driver kind something else.
     t3code-src = {
-      url = "github:pingdotgg/t3code";
+      url = "github:StiensWout/t3code/a00565fbfc34a5fefd1222e1868f41e36cb02378";
       flake = false;
     };
 
