@@ -118,6 +118,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Games that need more than "install it from nixpkgs" — each package carries
+    # its own workarounds. Currently Legends of Runeterra, which is blocked by
+    # Riot's Packman anti-tamper on current wine and so pins GE-Proton8-27-LoL.
+    # See https://github.com/cramt/lor-on-linux for the investigation.
+    nix-games = {
+      url = "github:cramt/nix-games";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
