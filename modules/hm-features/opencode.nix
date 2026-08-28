@@ -4,15 +4,13 @@
 #
 # The difference is whose pool. `claude` talks to the cli-proxy-api running on
 # this machine (127.0.0.1, see modules/hm-features/cli-proxy-api.nix); opencode
-# talks to the employer's, which is remote and needs a URL and an API key.
-# Those are two fields on op://Homelab/OpenCode (a 1Password field can't hold a
-# newline, so they can't share one envFile), which opnix renders as:
+# talks to the employer's, which is remote and needs a URL and an API key —
+# both from opnix; myLib/agent-pool.nix says where they come from and why they
+# never enter the store. pi and omp read the same two files.
 #
-#   /var/lib/opnix/secrets/opencodeUrl      https://<host>/v1
-#   /var/lib/opnix/secrets/opencodeApiKey   <key>
-#
-# The URL needs its /v1: opencode hands options.baseURL to the anthropic
-# provider whole, unlike Claude Code's ANTHROPIC_BASE_URL which appends it.
+# opencode is the one consumer that wants the stored URL verbatim, /v1 and all:
+# it hands options.baseURL to the anthropic provider whole, unlike Claude Code's
+# ANTHROPIC_BASE_URL (and omp's), which appends the version segment itself.
 #
 # opencode.json refers to both as {env:...}, and the `opencode` wrapper exports
 # them from those files. Going through env rather than baking the values into
@@ -28,26 +26,8 @@
 
     skills = import ../../myLib/agent-skills.nix {inherit lib pkgs inputs;};
 
-    urlFile = "/var/lib/opnix/secrets/opencodeUrl";
-    apiKeyFile = "/var/lib/opnix/secrets/opencodeApiKey";
-
-    # Every model the work pool serves. They all arrive over the pool's
-    # Anthropic-shaped endpoint, so the non-Claude ones are declared under the
-    # `anthropic` provider too — the pool does not alias them onto claude-*,
-    # and models.dev has no entry to look them up from.
-    poolModels = {
-      "claude-opus-5" = "Claude Opus 5";
-      "claude-opus-4-8" = "Claude Opus 4.8";
-      "claude-opus-4-7" = "Claude Opus 4.7";
-      "claude-opus-4-6" = "Claude Opus 4.6";
-      "claude-sonnet-5" = "Claude Sonnet 5";
-      "claude-fable-5" = "Claude Fable 5";
-      "gpt-5.6-luna" = "GPT-5.6 Luna";
-      "gpt-5.6-sol" = "GPT-5.6 Sol";
-      "gpt-5.6-terra" = "GPT-5.6 Terra";
-      "deepseek-v4-flash" = "DeepSeek V4 Flash";
-      "qwen3.8-max" = "Qwen3.8 Max";
-    };
+    pool = import ../../myLib/agent-pool.nix {inherit lib;};
+    inherit (pool) urlFile apiKeyFile;
 
     # hiPrio to win over the plain binary `programs.opencode` installs.
     # Tolerant of a missing render: a host whose opnix secrets haven't landed
@@ -102,7 +82,7 @@
         context = ./global-agent-instructions.md;
 
         settings = {
-          model = "anthropic/claude-opus-5";
+          model = "anthropic/${pool.defaultModel}";
 
           # Nix owns the binary; opencode's self-update would try to write into
           # the read-only store and fail on every launch.
@@ -119,7 +99,7 @@
               baseURL = "{env:OPENCODE_URL}";
               apiKey = "{env:OPENCODE_API_KEY}";
             };
-            models = lib.mapAttrs (_: name: {inherit name;}) poolModels;
+            models = lib.mapAttrs (_: name: {inherit name;}) pool.allModelNames;
           };
         };
 

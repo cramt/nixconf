@@ -1,6 +1,6 @@
 ---
 name: mtg-commander
-description: Use when building, upgrading, critiquing or discussing Magic: The Gathering Commander/EDH decks — "build me a commander deck", "brew around X", "upgrade this list", "what bracket is this", "is this card legal in my colors", "swap some cards in this deck". Covers Scryfall lookups, the Commander bracket system, ramp curve tuning, and Archidekt-format output.
+description: 'Use when building, upgrading, critiquing or discussing Magic: The Gathering Commander/EDH decks — "build me a commander deck", "brew around X", "upgrade this list", "what bracket is this", "is this card legal in my colors", "swap some cards in this deck". Covers Scryfall lookups, the Commander bracket system, ramp curve tuning, and Archidekt-format output.'
 ---
 
 # MTG Commander deckbuilding

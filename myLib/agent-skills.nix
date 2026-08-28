@@ -1,8 +1,10 @@
 # Skill libraries and helper binaries shared by every coding agent on this
-# machine — Claude Code (modules/hm-features/claude-code.nix) and opencode
-# (modules/hm-features/opencode.nix). Both consume the same SKILL.md dirs, so
-# the enumeration and the exclusion list live here rather than being copied
-# into each module and drifting.
+# machine — Claude Code, opencode, pi and omp (all under
+# modules/hm-features/). They all consume the same SKILL.md dirs, so the
+# enumeration and the exclusion list live here rather than being copied into
+# each module and drifting. Only the plumbing differs: ~/.claude/skills
+# symlinks, opencode's `skills` attrset, pi's repeated `--skill`, and omp's
+# skills.customDirectories.
 #
 # It lives in myLib/ rather than modules/ because import-tree turns every .nix
 # file under modules/ into a flake-parts module; this is a plain helper,

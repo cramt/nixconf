@@ -1,112 +1,163 @@
+# pi — same shape as modules/hm-features/claude-code.nix and opencode.nix: the
+# shared global agent instructions, the same skill libraries, and the work pool
+# (myLib/agent-pool.nix) instead of a per-machine login.
+#
+# The auth is opencode's, plumbed the way pi wants it rather than the way
+# opencode does:
+#
+#   key   ANTHROPIC_API_KEY, which pi's built-in `anthropic` provider resolves
+#         into an `x-api-key` header — the same header opencode's provider
+#         sends, so the pool sees an identical request.
+#   URL   models.json `providers.anthropic.baseUrl`. pi has no env equivalent
+#         (unlike Claude Code's ANTHROPIC_BASE_URL, which omp also honours), so
+#         the wrapper renders that one file at launch from the secret. It hands
+#         the value straight to @anthropic-ai/sdk, which appends /v1/messages
+#         itself — hence the trailing /v1 gets stripped off the stored URL.
+#
+# ANTHROPIC_AUTH_TOKEN has to be cleared: pi prefers it over ANTHROPIC_API_KEY
+# and sends it as `Authorization: Bearer`, so a pi launched from inside a
+# `claude` session (whose wrapper exports the local cli-proxy-api token) would
+# otherwise present that machine-local token to the work pool.
 {inputs, ...}: {
   hmModules.features.pi = {
     config,
     lib,
-    osConfig,
+    pkgs,
     ...
   }: let
     cfg = config.myHomeManager.pi;
 
-    # The proxy (when enabled on this host) registers itself with port-selector;
-    # read the same assigned port so pi and the service always agree.
-    m365Enabled = osConfig.myNixOS.services.m365-copilot-proxy.enable or false;
-    m365Port = osConfig.port-selector.ports.m365-copilot-proxy or null;
-    m365ModelsJson = builtins.toJSON {
-      providers.m365 = {
-        baseUrl = "http://localhost:${toString m365Port}/v1";
-        api = "openai-completions";
-        apiKey = "m365";
-        compat = {
-          supportsDeveloperRole = false;
-          supportsReasoningEffort = false;
-          supportsUsageInStreaming = false;
-        };
-        # All slugs the proxy maps to an M365 tone (see MODEL_TONES in
-        # @m365-copilot/core). m365-copilot is the default "magic" auto-router;
-        # the gpt-5.x slugs pin a specific backend tone. NB: "-think-deeper" and
-        # the bare gpt-5.4 slug resolve to the same reasoning tone — the
-        # reasoning tiers tend to batch tool calls, the default is the most
-        # disciplined at one-call-per-turn. Switch with `pi --model <id>`.
-        # Every slug the proxy maps to an M365 tone (mirrors MODEL_TONES /
-        # getAvailableModels in @m365-copilot/core). Switch with `pi --model <id>`.
-        models = [
-          # Claude tones route AGENT-LESS (the /claude/ path) and tool-call well in
-          # practice; use Claude Code for Anthropic models normally, these are here
-          # as a fallback.
-          { id = "claude-sonnet"; name = "Claude Sonnet 4.5 (agent-less)"; }
-          { id = "claude-sonnet-4.5"; name = "Claude Sonnet 4.5 (alias)"; }
-          { id = "claude"; name = "Claude (-> Sonnet 4.5)"; }
-          { id = "claude-sonnet-think-deeper"; name = "Claude Sonnet Reasoning (agent-less)"; }
-          { id = "claude-opus"; name = "Claude Opus (agent-less, experimental)"; }
+    pool = import ../../myLib/agent-pool.nix {inherit lib;};
+    skills = import ../../myLib/agent-skills.nix {inherit lib pkgs inputs;};
 
-          # GPT tones run WITH the tool agent. Prefer these explicit tones over the
-          # `magic` auto-router, which is high-variance at turn-1 tool-calling
-          # (hypotheses F24). gpt-5.5-think-deeper is the default and works well.
-          { id = "gpt-5.5"; name = "GPT-5.5 (chat)"; }
-          { id = "gpt-5.5-quick"; name = "GPT-5.5 Quick"; }
-          { id = "gpt-5.5-think-deeper"; name = "GPT-5.5 Think Deeper (reasoning)"; }
-          { id = "gpt-5.4"; name = "GPT-5.4 (reasoning)"; }
-          { id = "gpt-5.4-think-deeper"; name = "GPT-5.4 Think Deeper (reasoning)"; }
-          { id = "gpt-5.4-quick"; name = "GPT-5.4 Quick"; }
-          { id = "gpt-5.3"; name = "GPT-5.3 Quick"; }
-          { id = "gpt-5.3-quick"; name = "GPT-5.3 Quick"; }
-          { id = "gpt-5.3-think-deeper"; name = "GPT-5.3 Think Deeper (reasoning)"; }
-          { id = "gpt-5.2"; name = "GPT-5.2 Quick"; }
-          { id = "gpt-5.2-quick"; name = "GPT-5.2 Quick"; }
-          { id = "gpt-5.2-think-deeper"; name = "GPT-5.2 Think Deeper (reasoning)"; }
-        ];
+    # Everything about models.json except the pool's address, which is the one
+    # value that may not sit in the store. The wrapper substitutes it in.
+    #
+    # Only the non-Claude half of the pool is declared: pi's built-in catalog
+    # already carries claude-opus-5 and friends, and an entry here would shadow
+    # upstream's maintained limits with our guesses. The flip side is that the
+    # catalog also lists Claude models this pool does not serve (haiku-4-5,
+    # opus-4-5, …) — pi has no allowlist to hide them with, so picking one just
+    # fails at request time.
+    modelsTemplate = pkgs.writeText "pi-models.json.in" (builtins.toJSON {
+      providers.anthropic = {
+        baseUrl = "@POOL_BASE_URL@";
+        models =
+          lib.mapAttrsToList (id: m: {
+            inherit id;
+            inherit (m) name contextWindow maxTokens;
+            api = "anthropic-messages";
+            reasoning = true;
+            input = ["text" "image"];
+          })
+          pool.extraModels;
       };
-    };
+    });
+
+    # hiPrio to win over the plain `pi` the upstream module installs (which is
+    # itself a wrapper — cfg.finalPackage — carrying the --skill flags and the
+    # settings.json merge, so it is what we exec).
+    #
+    # Tolerant of a missing render: a host whose opnix secrets haven't landed
+    # yet should still get a usable TUI (and a pointer at why it can't reach the
+    # pool) rather than a `pi` that refuses to launch. The values are read
+    # rather than sourced — they're data, not shell.
+    piCfg = config.programs.pi.coding-agent;
+    piWrapper = lib.hiPrio (pkgs.writeShellScriptBin "pi" ''
+      export PI_CODING_AGENT_DIR="''${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}"
+
+      # Never present a nested `claude` session's local pool token upstream.
+      unset ANTHROPIC_AUTH_TOKEN ANTHROPIC_BASE_URL
+
+      if [ -r ${pool.urlFile} ] && [ -r ${pool.apiKeyFile} ]; then
+        ANTHROPIC_API_KEY=$(< ${pool.apiKeyFile})
+        export ANTHROPIC_API_KEY
+
+        # The SDK appends /v1/messages to whatever it is given, so the stored
+        # URL's own /v1 has to come off or every request lands on /v1/v1/....
+        pool_url=$(< ${pool.urlFile})
+        pool_url=''${pool_url%/}
+        pool_url=''${pool_url%/v1}
+
+        mkdir -p "$PI_CODING_AGENT_DIR"
+        umask 077
+        ${lib.getExe pkgs.gnused} "s|@POOL_BASE_URL@|$pool_url|" ${modelsTemplate} \
+          > "$PI_CODING_AGENT_DIR/models.json"
+      else
+        echo "pi: cannot read ${pool.urlFile} / ${pool.apiKeyFile} —" >&2
+        echo "    the work pool is not configured here. myNixOS.opnix-secrets.enable" >&2
+        echo "    must be on, and you must be in the onepassword-secrets group" >&2
+        echo "    (re-login after the first deploy)." >&2
+      fi
+
+      exec ${lib.getExe piCfg.finalPackage} "$@"
+    '');
   in {
     imports = [inputs.pi.homeModules.default];
 
-    options.myHomeManager.pi.enable = lib.mkEnableOption "myHomeManager.pi";
+    options.myHomeManager.pi = {
+      enable = lib.mkEnableOption "myHomeManager.pi";
+      agent-browser.enable =
+        lib.mkEnableOption "Vercel agent-browser CLI + pi skill"
+        // {default = true;};
+      pstack.enable =
+        lib.mkEnableOption "vendored pstack judgment skills (unslop, type-system-discipline, technical-writing, …)"
+        // {default = true;};
+      mattpocock.enable =
+        lib.mkEnableOption "mattpocock/skills engineering-process library (spec → tickets → triage → implement → review)"
+        // {default = true;};
+      mtg-commander.enable =
+        lib.mkEnableOption "MTG Commander deckbuilding skill + `scryfall` bulk-data CLI"
+        // {default = true;};
+    };
 
     config = lib.mkIf cfg.enable {
+      home.packages =
+        [piWrapper]
+        ++ lib.optional cfg.mtg-commander.enable skills.scryfall
+        ++ lib.optional cfg.agent-browser.enable skills.agent-browser;
+
       programs.pi.coding-agent = {
         enable = true;
 
         # ~/.pi/agent/settings.json. pi mutates this file at runtime (e.g.
         # lastChangelogVersion), so the module jq-merges our declared values
-        # over it on every launch — declared keys stay authoritative. When the
-        # M365 proxy is enabled on this host it's the default provider/model;
-        # otherwise pi falls back to anthropic.
+        # over it on every launch — declared keys stay authoritative.
         settings = {
           defaultProvider = "anthropic";
-          defaultModel = "claude-sonnet-4-6";
+          defaultModel = pool.defaultModel;
           defaultThinkingLevel = "medium";
 
           compaction.enabled = true;
 
           enableInstallTelemetry = false;
-        } // lib.optionalAttrs m365Enabled {
-          defaultProvider = "m365";
-          # Explicit GPT reasoning tone (works well in real sessions) rather than
-          # the high-variance `magic` auto-router. Claude models are in the list too
-          # but Claude Code is the normal path for those.
-          defaultModel = "gpt-5.5-think-deeper";
         };
 
-        # NB: we deliberately do NOT set the module's `models` option — its
-        # runtime installer writes ~/.pi/agent/models.json as a *mutable real
-        # file* that never updates on rebuild (it only refreshes a symlink).
-        # models.json is pure read-only config, so home-manager owns it below
-        # as a store symlink → fully declarative, refreshes every switch.
+        # NB: models.json is deliberately NOT set through the module's `models`
+        # option. Its installer only writes the file when one isn't already
+        # there, so a pool URL change would never reach an existing checkout —
+        # and the value isn't a store path to begin with. The wrapper owns it.
+
+        # Each becomes a repeated `--skill <path>`. Skills-only installs — no
+        # plugin registration, no session hook — so they stay as declarative and
+        # disposable as the ones claude-code.nix symlinks into ~/.claude/skills.
+        skills =
+          lib.optionals cfg.pstack.enable (map (s: s.path) skills.pstack)
+          ++ lib.optionals cfg.mattpocock.enable (map (s: s.path) skills.mattpocock)
+          ++ [skills.status.path]
+          ++ lib.optional cfg.mtg-commander.enable skills.mtg-commander.path
+          # The upstream SKILL.md is a discovery stub telling the agent to run
+          # `agent-browser skills get core`, so the version-matched content comes
+          # from the binary at runtime rather than from the store.
+          ++ lib.optional cfg.agent-browser.enable
+          "${skills.agent-browser}/share/agent-browser/skills/agent-browser/SKILL.md";
       };
 
-      # pi's GLOBAL instruction file (loaded first, before any project AGENTS.md).
-      # Same source as the Claude Code global CLAUDE.md so pi knows the machine is
-      # NixOS, how to install packages, git/clipboard conventions, etc. Not gated on
-      # the proxy — the guidance applies to every pi session.
+      # pi's GLOBAL instruction file, loaded before any project AGENTS.md. Same
+      # source Claude Code gets as ~/.claude/CLAUDE.md and opencode gets as its
+      # context file — one source of truth so the agents can't disagree about
+      # what this machine is.
       home.file.".pi/agent/AGENTS.md".source = ./global-agent-instructions.md;
-
-      # Register the local M365 Copilot proxy as a provider, declaratively.
-      # Use it with the default model, or `pi --provider anthropic` for a one-off.
-      # Keep the toolset lean (M365 disengages on large tool payloads), e.g.
-      # `pi --tools read,list,edit,write`.
-      home.file.".pi/agent/models.json" = lib.mkIf m365Enabled {
-        text = m365ModelsJson;
-      };
     };
   };
 }
