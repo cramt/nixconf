@@ -54,6 +54,19 @@
             "network.protocol-handler.warn-external.zed" = false;
           };
           mods = [ "3ff55ba7-4690-4f74-96a8-9e4416685e4e" ];
+          # The "Colored container tab" mod paints the selected tab from
+          # `var(--identity-tab-color, var(--tab-group-color-gray-invert))`, but Firefox
+          # calls that token --tab-group-gray-invert. Outside a container both names are
+          # unset, so the color-mix() goes invalid-at-computed-value-time and the mod's
+          # !important background-color computes to transparent — the active tab loses its
+          # highlight entirely. Define the name the mod looks for, pointed at the theme
+          # foreground so the 15%/20% mixes land near Zen's stock rgba(255,255,255,.15)
+          # selection. Drop when the mod stops referencing the old token.
+          userChrome = lib.mkAfter ''
+            :root {
+              --tab-group-color-gray-invert: ${config.lib.stylix.colors.withHashtag.base05};
+            }
+          '';
           containers = {
             personal = { id = 1; color = "red"; icon = "fingerprint"; };
             work = { id = 2; color = "blue"; icon = "briefcase"; };
