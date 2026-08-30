@@ -142,6 +142,8 @@
     };
     niri.enable = true;
     opnix-secrets.enable = true;
+    # Tunnel is declared but stays down until `systemctl start wg-quick-vxn`.
+    vpn.vxn.enable = true;
     services.m365-copilot-proxy.enable = true;
     gnupg.enable = true;
     onepassword.enable = true;

@@ -128,6 +128,17 @@
         # a stub system unit with no ExecStart and break activation. After
         # rotating the key, restart the user service by hand:
         #   systemctl --user -M cramt@ restart t3code
+        # vxn.rs WireGuard client creds. Gated: a personal VPN identity has no
+        # business being rendered on the servers, and an ungated reference would
+        # make every opnix host fail its render if the item ever goes away.
+        // lib.optionalAttrs config.myNixOS.vpn.vxn.enable {
+          vxnPrivateKey = {
+            reference = "op://Homelab/VXN-WireGuard/privateKey";
+          };
+          vxnPresharedKey = {
+            reference = "op://Homelab/VXN-WireGuard/presharedKey";
+          };
+        }
         // lib.optionalAttrs config.myNixOS.services.t3code.onDiskSshKey.enable {
           # Name kept from the paseo era: same 1Password item, same key, and
           # renaming would only churn the rendered path for no gain.
