@@ -73,6 +73,10 @@
         providers.pi = true;
       };
       nixarr.enable = true;
+      cleanuparr = {
+        enable = true;
+        dataVolume = "/pool/configs/cleanuparr";
+      };
       # Fleet metrics land here: luna is the always-on host and the only one
       # running caddy, which is what the roaming agents push through.
       metrics.server = {
