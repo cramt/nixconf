@@ -28,6 +28,18 @@
       # never mentioned containers. Nothing in this repo uses quadlet today, so
       # off unless a host asks; mkDefault keeps that a one-liner.
       virtualisation.quadlet.enable = lib.mkDefault false;
+      # systemd-hostnamed is activated two ways at once: varlink through
+      # systemd-hostnamed.socket, and D-Bus through org.freedesktop.hostname1.
+      # On a systemd bump switch-to-configuration stops both, and NetworkManager
+      # — which it restarts in the same run — asks hostname1 before the socket
+      # comes back, so systemd refuses to start the socket over an already-live
+      # service and activation exits 4 (deploy-rs then rolls the host back).
+      # Not restarting it is safe: hostnamed exits when idle, so the new binary
+      # gets picked up on the next activation anyway.
+      # https://github.com/NixOS/nixpkgs/issues/449092
+      # Drop this once that issue is closed.
+      systemd.services.systemd-hostnamed.restartIfChanged = false;
+
       nix.daemonCPUSchedPolicy = "idle";
       nix.daemonIOSchedClass = "idle";
       nix.settings = {
