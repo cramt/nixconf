@@ -204,7 +204,19 @@
 
     nix-colors.url = "github:misterio77/nix-colors";
 
-    nur.url = "github:nix-community/NUR";
+    # PINNED to the last NUR revision whose repos.json.lock predates
+    # AtaraxiaSjel/nur@f57371a8 ("fix: nixfmt and deadnix", 2026-08-25). deadnix
+    # stripped the unused `pkgs` argument from that repo's
+    # pkgs/python3Packages/default.nix, but its pkgs/default.nix still passes
+    # `pkgs = final;` when building pythonPackagesExtensions, so anything that
+    # forces python3Packages dies with
+    #   error: function 'anonymous lambda' called with unexpected argument 'pkgs'
+    # nur.repos.ataraxiasjel.waydroid-script (modules/virtualization/waydroid.nix,
+    # saturn only) forces exactly that. Both NUR revs pulled in by this update pin
+    # the broken AtaraxiaSjel commit 6a71c98f, so bumping NUR alone does not help.
+    # Unpin once NUR's repos.json.lock moves past an AtaraxiaSjel revision that
+    # takes the argument back (or adds an ellipsis).
+    nur.url = "github:nix-community/NUR/11ec9dd83f6ca438de98749608af73f6877c62c5";
 
     nix-ld = {
       url = "github:Mic92/nix-ld";

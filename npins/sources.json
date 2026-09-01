@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "e647d3723bfeda5c82b0d922d312e31524d819ed",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/e647d3723bfeda5c82b0d922d312e31524d819ed.tar.gz",
-      "hash": "sha256-stLe7WNiCfB8KX6agl2jxcuOTMPAgleLJb40qq9O1zE="
+      "revision": "25f41af5fee3d65afd0858a85d3f901773619800",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/25f41af5fee3d65afd0858a85d3f901773619800.tar.gz",
+      "hash": "sha256-xpb+iHPo+v0tyRqm1FZNJVBkm8EngBNAXxWPIW1xDUw="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -30,8 +30,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:a92f37d19458ee70b47094e8847036a7ceddc5116225765af5430e94abd21db9",
-      "hash": "sha256-rWi/BnIl6mlagSpwfDAIyTWtoAhJ3NtU5+q4lpr6xrc="
+      "image_digest": "sha256:6a1db7ac354082bf73f35dd37407707a42904c489bedfb1ee35024430c9c5a3a",
+      "hash": "sha256-Lx5lplQTQC1UXmlVYlTAl8WtpLiUL1/1XkMKpmC4bws="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -44,8 +44,8 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1059707.c8f90650c152/nixexprs.tar.xz",
-      "hash": "sha256-wS+SNrj0wobAXQONggzrpetnZ9E0FL7l0WVWDRQ77Sc="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1063758.e8be7818e19a/nixexprs.tar.xz",
+      "hash": "sha256-qeiZaY+0tpZXliRA9odCNx+sOfIOhnkcUq9t+ctPrRA="
     },
     "tree-sitter-spade": {
       "type": "Git",
@@ -105,9 +105,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "1433237b2fcc2720e25d8bbb5fd335e701ea94cf",
-      "url": "https://codeberg.org/spade-lang/zed-spade/archive/1433237b2fcc2720e25d8bbb5fd335e701ea94cf.tar.gz",
-      "hash": "sha256-G6idqMkFiK89c+fDene3k29nIhnS7nN2jWngZ5QZai4="
+      "revision": "bcab2e4132d2769df9888c03a8c45403fc4380f8",
+      "url": "https://codeberg.org/spade-lang/zed-spade/archive/bcab2e4132d2769df9888c03a8c45403fc4380f8.tar.gz",
+      "hash": "sha256-oF3oI6NoabgUIU7K/vEJwtClu9Y/LMp2Q62Mz2RLTAE="
     }
   },
   "version": 8
