@@ -34,6 +34,11 @@
   '';
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
+  # woeusb mounts its freshly-made target with `mount -t ntfs-3g` when building
+  # Windows install media, and NixOS ships no mount.ntfs-3g helper unless NTFS is
+  # declared here. Also what makes the League dual-boot partition mountable at all.
+  boot.supportedFilesystems.ntfs = true;
+
   # Saturn ran swapless, so under memory pressure the only reclaimable thing was
   # page cache — the kernel evicted mapped executables and re-faulted them off
   # disk, freezing the desktop for minutes before the OOM killer finally fired
