@@ -68,9 +68,16 @@ in {
   # gets a real derivation with its deps closed over rather than a bare script
   # in the skill dir: an agent that can't find `jq` would silently fall back to
   # guessing card data from memory, which is the one thing the skill forbids.
+  #
+  # openssl is new, for `play`: it supplies the AES-CTR keystream behind
+  # reproducible seeded deals. coreutils was already load-bearing (stat, date,
+  # mktemp, mv) but resolving off the ambient PATH, because
+  # writeShellApplication prepends runtimeInputs rather than replacing PATH;
+  # `play` adds `shuf` to that list, and a silently missing shuffler is the
+  # worst failure this script could have.
   scryfall = pkgs.writeShellApplication {
     name = "scryfall";
-    runtimeInputs = with pkgs; [curl jq gzip util-linux];
+    runtimeInputs = with pkgs; [curl jq gzip util-linux coreutils openssl];
     text = builtins.readFile "${skillsRoot}/mtg-commander/scryfall.sh";
   };
 

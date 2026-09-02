@@ -30,6 +30,7 @@ scryfall check <file> [bracket]   # validate a decklist; PASS/FAIL to stderr, ex
 scryfall tags [pattern]           # find Oracle tag slugs
 scryfall otag <slug> [ci] [cmc]   # cards carrying an Oracle tag
 scryfall path                     # path to the index, for arbitrary jq
+scryfall play new <file>          # deal a real shuffled deck and play it out
 ```
 
 The first `sync` takes about a minute and then serves everything from disk. Each card record
@@ -277,6 +278,66 @@ there is no `bc` on this machine.
   rather than a documented import modifier, so don't promise that a `{noDeck}` line will
   import correctly. Say plainly that the companion is the 101st card and may need setting in
   the UI.
+
+## Playtest it: `scryfall play`
+
+`check` proves a list is legal. It says nothing about whether the deck *functions* — whether
+the colour sources support the curve, whether the engine assembles, whether the opening hands
+are playable. For that, deal it and play it out.
+
+`play` is a shuffled deck plus honest zone bookkeeping. It is **not** a rules engine: it owns
+the randomness and where every card is, and you make every decision out loud. There is no mana
+pool, stack, priority or combat, on purpose — a harness that tracked those would invite you to
+assert a line worked instead of demonstrating it.
+
+```bash
+scryfall play new deck.txt --seed 42   # shuffle, commander to the command zone, draw seven
+scryfall play state                    # every zone, with type line and mana value
+scryfall play draw [n]                 # draw n (default 1)
+scryfall play mull                     # London: fresh seven, N owed to the bottom
+scryfall play peek [n]                 # look at the top n without moving them (scry)
+scryfall play top|bottom <card> [--from <zone>]   # reorder; --from library after a scry
+scryfall play move <card> <zone> [--from <zone>] [--tapped]
+scryfall play tap|untap <card>
+scryfall play turn [--no-draw]         # untap everything, next turn, draw
+scryfall play counter <card> <kind> <delta>
+scryfall play log                      # every action taken, in order
+scryfall play end
+```
+
+Zones are `library`, `hand`, `battlefield`, `graveyard`, `exile`, `command`. Every subcommand
+takes `--name <G>` so several games can run at once.
+
+Notes that matter in practice:
+
+- **`move` is the workhorse.** Without `--from` it searches hand, battlefield, command,
+  graveyard, exile in that order and takes the first match. The library is deliberately *not*
+  searched — it holds copies of most cards, so including it made almost every move ambiguous.
+  Use `--from library` to tutor something out.
+- **`counter` takes any counter kind**, so storage, charge and +1/+1 counters coexist:
+  `play counter "City of Shadows" storage +1`. `turn` untaps everything and leaves counters
+  alone.
+- **`--seed` makes a deal reproducible**, which is what turns "this hand was bad" into a
+  repeatable bench you can re-run after changing the list. Without it you get a fresh deal
+  from urandom.
+- **State is real and persists** between invocations, under
+  `${XDG_STATE_HOME:-~/.local/state}/scryfall/games/`. `play log` is the audit trail; quote it
+  rather than describing a line from memory.
+
+### Do not touch the shuffler without re-running the bias check
+
+Randomness here is `shuf`, never a hand-rolled PRNG. Two prototypes were written and rejected
+for producing confident wrong numbers:
+
+| Approach | Result |
+|---|---|
+| LCG shuffle in jq | 82% of opening hands had exactly 1 land. Correct answer: 16.4%. |
+| `awk srand()` keystream into `--random-source` | Mean 2.3195 lands in seven vs. a true 2.5457 — eight standard errors low. |
+
+The acceptance test is the hypergeometric distribution for the deck. For 36 lands in 99 cards
+(a 100-card deck minus the commander), n=7: **mean 2.5457, SD 1.2331**. Deal N hands, count
+lands, and check the mean sits within ~3 SE (`1.2331/sqrt(N)`). Both `shuf` and the seeded
+openssl AES-CTR keystream clear this; anything you replace them with must too.
 
 ## Reference: which keywords are activated abilities
 
