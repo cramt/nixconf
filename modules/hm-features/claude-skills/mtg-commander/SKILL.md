@@ -33,6 +33,11 @@ scryfall path                     # path to the index, for arbitrary jq
 scryfall play new <file>          # deal a real shuffled deck and play it out
 ```
 
+A second binary, `progress-engine`, answers the question neither of those does — how often the
+deck actually has its pieces by turn N. See [Test whether it functions](#test-whether-it-functions-progress-engine).
+It also owns decklist parsing outright: `check` and `play` shell out to it, so all three agree
+on what a decklist is by construction.
+
 The first `sync` takes about a minute and then serves everything from disk. Each card record
 is `{name, ci, commander_legal, game_changer, type_line, cmc, keywords, oracle, any_number,
 usd, uri}`, keyed by lowercased name under `.cards`, so open-ended questions are a jq away
@@ -224,7 +229,11 @@ the **complete 100-card list**, not a diff or an excerpt. One card per line:
   reading the list cold. Invented flavour names ("Cycling Jackpot") hide what the slot is for
   — and a category you can't name functionally is usually a sign the cards don't share a real
   role, which is worth noticing before the list ships.
-- The commander goes in a `[Commander{top}]` category.
+- **A card can carry several categories**, comma-separated inside the brackets:
+  `1x Myr Battlesphere [Big Colorless,Test]`. Use this when a card genuinely does two jobs —
+  it is what lets `odds` ask about either role — but don't scatter categories to pad the list.
+- The commander goes in a `[Commander{top}]` category. It may sit alongside others
+  (`[Ramp,Commander{top}]`) and still registers as the commander.
 - For upgrades, print the full new list, then a short cuts/adds table underneath explaining
   the reasoning. The list first, the prose second.
 
@@ -338,6 +347,66 @@ The acceptance test is the hypergeometric distribution for the deck. For 36 land
 (a 100-card deck minus the commander), n=7: **mean 2.5457, SD 1.2331**. Deal N hands, count
 lands, and check the mean sits within ~3 SE (`1.2331/sqrt(N)`). Both `shuf` and the seeded
 openssl AES-CTR keystream clear this; anything you replace them with must too.
+## Test whether it functions: `progress-engine`
+
+`check` proves a list is legal. `play` deals one game. Neither answers the question that
+decides whether a deck works: **by turn N, how often do I actually have the pieces** — where a
+"piece" may be one card or two combined, and where one card can count as several.
+
+`progress-engine test` answers that exactly. Not by simulating: it groups cards by which of
+your queries they match and enumerates the possibilities, so there is no sampling error and no
+shuffler to bias.
+
+```bash
+progress-engine parse deck.txt              # the canonical decklist parser, as JSON
+progress-engine test deck.txt criteria.js   # evaluate criteria, PASS/FAIL, exit code
+progress-engine test deck.txt c.js --draw   # model being on the draw
+progress-engine test deck.txt c.js --simulate --trials 200000 --seed 1
+```
+
+Criteria are JavaScript, so combining requirements is ordinary code:
+
+```js
+// t(n) is your position on turn n; t(0) is the opening hand. On the play, turn 1
+// draws nothing, so t(0) and t(1) see the same seven cards.
+criterion("turn-1 accelerant", (t) =>
+  t(1).count('t:land') >= 1 &&
+  t(1).count('cat:"Ramp - One Mana"') >= 1,
+  { atLeast: 0.35 });
+
+// The bar for a three-mana commander getting down on turn two.
+criterion("commander on turn 2", (t) =>
+  t(1).count('t:land') >= 1 &&
+  t(1).count('cat:"Ramp - One Mana"') >= 1 &&
+  t(2).count('t:land') >= 2,
+  { atLeast: 0.30 });
+```
+
+Card selection is a subset of Scryfall syntax — `t:land`, `o:"Add {W}"`, `mv<=2`, `id<=W`,
+`is:permanent`, `-t:creature`, `or`, parentheses — plus `cat:"..."` for the decklist's own
+categories. **Unsupported syntax is a parse error naming the term**, never a silent no-match.
+
+Notes that matter in practice:
+
+- **A criterion without `atLeast` is informational.** It reports a number and cannot fail.
+  Use thresholds for the things the deck genuinely needs, not for everything.
+- **The file decides how many turns to model.** The deepest `t(n)` you ask about sets it;
+  nothing is declared twice.
+- **Watch the query match counts.** Every run reports how many cards each query matched, and
+  says so loudly when that is zero. A misspelled category parses fine and matches nothing,
+  which yields a confident 0% rather than a complaint — that is the failure this tool exists
+  to catch, and it is the one it cannot refuse for you.
+- **Check the library size in the output.** It should be 99 for a normal Commander deck. If
+  it is higher, something that belongs outside the deck is being counted: mark sticker sheets
+  `[Sideboard]` or flag them `{noDeck}`, since a bare `[Stickers]` category is not a signal
+  any parser can read.
+- **`--simulate` is an escape hatch, not an upgrade.** It is slower and approximate, and it
+  reports standard errors precisely because you should not quote a sampled figure without
+  one. Prefer the exact default; the sampled engine exists mainly to keep the exact one honest.
+
+The same binary is what `check` and `play` use to read decklists, so all three agree on what
+a decklist is by construction rather than by comment.
+
 
 ## Reference: which keywords are activated abilities
 

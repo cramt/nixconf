@@ -22,47 +22,28 @@ TAGS="$CACHE/tags.json"
 # a game in progress is not.
 STATE="${SCRYFALL_STATE:-${XDG_STATE_HOME:-$HOME/.local/state}/scryfall/games}"
 
-# Decklist parsing, shared by `check` and `play new`. One copy of this regex,
-# not two — it is the fiddliest code in the file and the two callers must agree
-# on what a decklist *is*, or a deck could validate at 100 cards and then deal
-# a different 100.
-PARSE_JQ=$(
+# Decklist parsing lives in `progress-engine`, not here.
+#
+# `check` and `play` must agree on what a decklist *is* — a disagreement means a
+# deck validates at 100 cards and then deals a different 100 — and the only way
+# to guarantee that is one implementation, rather than one regex plus a comment
+# begging future editors not to copy it.
+#
+# It also decides `commander` and `outside` per entry and emits them as fields,
+# so the fiddly rules live in one place: a companion is a 101st card (CR 903.11),
+# "Sticker Package" is emphatically not a sideboard, and a multi-category line
+# has to be tested per category or `[Ramp,Commander{top}]` stops being a
+# commander.
+parse_decklist() {
+  [[ -r ${1:-} ]] || die "cannot read decklist: ${1:-}"
+  progress-engine parse "$1" || die "could not parse $1 — see the error above"
+}
+
+# Name normalisation, which must match how `sync` built the index or every
+# lookup misses. Prepended to the jq programs that consult it.
+JQ_PRELUDE=$(
   cat <<'JQ'
 def keyname: ascii_downcase | gsub("^\\s+|\\s+$"; "");
-
-# Archidekt line: "2x Card Name (set) 123 *F* [Category{flags}]".
-# Only quantity and name are mandatory; everything after the name is
-# optional decoration. The name is matched lazily so the trailing groups
-# win the ambiguity, which is what keeps multi-word names intact.
-def parse:
-  capture("^\\s*(?<qty>[0-9]+)\\s*[xX]?\\s+(?<name>.*?)"
-        + "(?:\\s+\\((?<set>[^)]+)\\)(?:\\s+(?<num>[^\\s\\[]+))?)?"
-        + "(?:\\s+\\*[Ff]\\*)?"
-        + "(?:\\s+\\[(?<cat>[^\\]]*)\\])?\\s*$")
-  | {qty: (.qty | tonumber),
-     name: (.name | gsub("^\\s+|\\s+$"; "")),
-     category: (.cat // "")};
-
-# A whole decklist file -> [{qty, name, category}]. Requires `jq -Rn` so that
-# `inputs` yields raw lines rather than parsed JSON.
-def decklist: [ inputs
-                | select(test("[^\\s]"))          # blank lines
-                | select(test("^\\s*//") | not)   # comment lines
-                | parse ];
-
-# In the list but not part of the 100 — a companion is a 101st card (CR
-# 903.11). The label varies (Companion / Sideboard / Maybeboard) but a noDeck
-# flag is the real signal.
-#
-# Do NOT widen this to match /sticker/: sticker *sheets* are indeed outside the
-# deck, but "Sticker Package" is a perfectly normal category for the real cards
-# that apply them (Park Bleater, Ticketomaton, ...). Matching the prefix
-# silently dropped five cards from a 100-card list and reported them as
-# companions. Categorise sheets as Sideboard, or flag them noDeck.
-def outside: (.category | test("^(companion|sideboard|maybe)"; "i"))
-             or (.category | test("nodeck"; "i"));
-
-def is_commander: (.category | test("^commander"; "i"));
 JQ
 )
 
@@ -273,18 +254,19 @@ cmd_check() {
   local report
   report=$(mktemp) && trap 'rm -f "$report"' RETURN
 
-  jq -Rn --slurpfile idx "$INDEX" \
+  local parsed
+  parsed=$(parse_decklist "$1")
+
+  jq -n --argjson lines "$parsed" --slurpfile idx "$INDEX" \
     --arg housebans "$HOUSE_BANS" \
     --argjson bracket "$bracket" \
     --argjson housemax "$HOUSE_BAN_MAX_BRACKET" \
-    "$PARSE_JQ"'
+    "$JQ_PRELUDE"'
     ($idx[0].cards) as $db
     | (if $bracket <= $housemax
        then ($housebans | split("\n") | map(ascii_downcase | gsub("^\\s+|\\s+$"; ""))
              | map(select(length > 0)))
        else [] end) as $house
-
-    | decklist as $lines
 
     | ($lines | map(. + {rec: $db[(.name | keyname)]})) as $cards
     | ($cards | map(select(.rec == null) | .name))      as $unknown
@@ -292,13 +274,14 @@ cmd_check() {
     # Partners, backgrounds and Doctor/companion pairs put two cards in the
     # command zone, and colour identity is their *union* — taking only the first
     # would flag the other partner and its whole colour as illegal.
-    | ($known | map(select(is_commander))) as $cmdrs
+    | ($known | map(select(.commander))) as $cmdrs
     | ([ $cmdrs[].rec.ci[]? ] | unique) as $cmdci
     # A companion is a 101st card outside the deck (CR 903.11), so it is counted
-    # and colour-checked separately rather than against the 100. `outside` is
-    # shared with `play` so both agree on what is not part of the deck proper.
-    | ($known | map(select(outside)))       as $comps
-    | ($known | map(select(outside | not))) as $deck
+    # and colour-checked separately rather than against the 100. Whether a line is
+    # outside the deck is decided by `progress-engine`, so `check` and `play` cannot
+    # disagree about it.
+    | ($known | map(select(.outside)))       as $comps
+    | ($known | map(select(.outside | not))) as $deck
 
     | {
         total: ([ $deck[] | .qty ] | add // 0),
@@ -367,7 +350,7 @@ cmd_check() {
           (if (.house_ban_violations|length) > 0 then "house ban: \(.house_ban_violations|join(", "))" else empty end)
         ] | join("; ")) end)
     | .unchecked = "mass land denial, early two-card combos, chained extra turns, companion deckbuilding restriction"
-  ' "$1" >"$report"
+  ' >"$report"
 
   cat "$report"
   # The verdict also goes to stderr, and the exit code reflects it. A caller that
@@ -515,20 +498,23 @@ play_new() {
   # Quantities are expanded into individual instances up front: the list says
   # "18x Plains", and a library holding one Plains deals nothing like the real
   # deck. Ids are stable so `move` can name a specific copy.
-  jq -Rn --slurpfile idx "$INDEX" \
+  local parsed
+  parsed=$(parse_decklist "$deck")
+
+  jq -n --argjson lines "$parsed" --slurpfile idx "$INDEX" \
     --arg deck "$deck" --arg seed "$seed" --arg game "$GAME" \
-    "$PARSE_JQ"'
+    "$JQ_PRELUDE"'
     ($idx[0].cards) as $db
-    | decklist as $lines
+
     | ([ $lines[] | select((.name | keyname) | in($db) | not) | .name ]) as $unknown
     | if ($unknown | length) > 0
       then error("unknown card(s): \($unknown | join(", ")) — run `scryfall check` first")
       else . end
-    | [ $lines[] | select(outside | not) | . as $l
+    | [ $lines[] | select(.outside | not) | . as $l
         | range(1; $l.qty + 1)
         | {id: (($l.name | keyname | gsub("[^a-z0-9]+"; "-")) + "#" + tostring),
            name: $l.name,
-           cmdr: ($l | is_commander)} ] as $all
+           cmdr: $l.commander} ] as $all
     | {game: $game, deck: $deck, seed: $seed, turn: 0, mulligans: 0, owed: 0,
        zones: {
          library:     [$all[] | select(.cmdr | not) | {id, name}],
@@ -536,7 +522,7 @@ play_new() {
          command:     [$all[] | select(.cmdr) | {id, name}]
        },
        log: []}
-  ' "$deck" >"$f.tmp" || die "could not build a game from $deck"
+  ' >"$f.tmp" || die "could not build a game from $deck"
   mv "$f.tmp" "$f"
 
   play_shuffle "$seed"

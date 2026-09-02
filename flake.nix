@@ -318,6 +318,16 @@
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # progress-engine — exact draw-probability tests for decklists, and the
+    # canonical parser for Archidekt decklist format. The mtg-commander skill's
+    # `scryfall` helper shells out to it rather than carrying a second copy of
+    # that parser: `check` and `play` must agree on what a decklist *is*, or a
+    # deck validates at 100 cards and then deals a different 100.
+    progress-engine = {
+      url = "github:cramt/progress-engine";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:

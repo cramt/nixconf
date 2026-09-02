@@ -75,9 +75,15 @@ in {
   # writeShellApplication prepends runtimeInputs rather than replacing PATH;
   # `play` adds `shuf` to that list, and a silently missing shuffler is the
   # worst failure this script could have.
+  # progress-engine owns decklist parsing outright. `check` and `play` used to
+  # share one jq regex on the strength of a comment begging future editors not
+  # to copy it; now they shell out to the same binary instead, which is the only
+  # version of that guarantee a comment cannot undermine.
   scryfall = pkgs.writeShellApplication {
     name = "scryfall";
-    runtimeInputs = with pkgs; [curl jq gzip util-linux coreutils openssl];
+    runtimeInputs =
+      (with pkgs; [curl jq gzip util-linux coreutils openssl])
+      ++ [inputs.progress-engine.packages.${pkgs.system}.default];
     text = builtins.readFile "${skillsRoot}/mtg-commander/scryfall.sh";
   };
 
