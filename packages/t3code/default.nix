@@ -62,43 +62,6 @@ let
       cp -r --no-preserve=mode,ownership ${src} $out
       jq '.scripts["nix:pack"] = "node scripts/build-preview-annotation-css.mjs && vp pack"' \
         ${src}/apps/desktop/package.json > $out/apps/desktop/package.json
-
-      # inputs.t3code-src adds `unsettledAt` to the ProjectionThread schema as
-      # a required-but-nullable field (Schema.NullOr, not Schema.optional like
-      # its neighbours linkedPullRequest/pinOrderKey) and ships the migration
-      # that adds the column — but never projects it in the four
-      # orchestration-v1 snapshot SELECTs that decode against that schema.
-      # Effect Schema treats an absent key as distinct from a null value, so
-      # those reads die with `SchemaError: Missing key at [0]["unsettledAt"]`
-      # as soon as the DB holds one thread row. getCommandReadModel() runs on
-      # startup, so the server exit-1s and systemd restart-loops forever
-      # without ever binding its port.
-      #
-      # This is the fork branch lagging, not an upstream defect: pingdotgg/main
-      # already projects unsettled_at in exactly these four queries, and the
-      # substitution below reproduces that fix line-for-line.
-      #
-      #   https://github.com/pingdotgg/t3code/pull/2829  (the base that added unsettledAt)
-      #
-      # REMOVE when inputs.t3code-src is bumped past this: the first guard
-      # fails the build once the source projects the column itself, so the
-      # patch cannot silently outlive the bug it works around.
-      psq=$out/apps/server/src/orchestration/Layers/ProjectionSnapshotQuery.ts
-      if grep -q 'unsettled_at AS "unsettledAt",' $psq; then
-        echo "t3code: source already projects unsettled_at — drop this patch" >&2
-        exit 1
-      fi
-      anchors=$(grep -c 'settled_at AS "settledAt",' $psq)
-      if [ "$anchors" != 4 ]; then
-        echo "t3code: expected 4 settledAt projections to patch, found $anchors" >&2
-        exit 1
-      fi
-      sed -i 's|^\( *\)settled_at AS "settledAt",$|\1settled_at AS "settledAt",\n\1unsettled_at AS "unsettledAt",|' $psq
-      patched=$(grep -c 'unsettled_at AS "unsettledAt",' $psq)
-      if [ "$patched" != 4 ]; then
-        echo "t3code: unsettled_at patch applied $patched/4 times" >&2
-        exit 1
-      fi
     '';
 
   workspace = pnpm2nix.mkPnpmWorkspace {

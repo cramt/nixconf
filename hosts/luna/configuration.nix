@@ -67,10 +67,6 @@
         # binary it finds on the unit's PATH is the dev bundle's wrapper, which
         # points it at the work pool — see modules/hm-features/opencode.nix.
         providers.opencode = true;
-        # Same deal for pi, which the fork pin in flake.nix is what buys us at
-        # all. The `pi` on the unit's PATH is the dev bundle's, already logged
-        # in and pointed at the M365 proxy — see modules/hm-features/pi.nix.
-        providers.pi = true;
       };
       nixarr.enable = true;
       cleanuparr = {

@@ -102,35 +102,36 @@
     # T3 Code — self-hosted coding-agent orchestrator. No upstream flake and no
     # published binary, so we build the monorepo ourselves (packages/t3code).
     #
-    # PINNED TO A FORK for Pi provider support. Upstream ships five drivers
+    # Tracks upstream main. This used to be pinned to StiensWout/t3code, the
+    # head of PR #7211 (a real Pi provider driver), which is stacked on the
+    # maintainer branch behind PR #2829 ("introduce new orchestrator") and so
+    # dragged in apps/server/src/orchestration-v2 with it.
+    #
+    # That fork is incompatible with the hosted client at app.t3.codes, which
+    # is built from main. Both sides expose `orchestration.dispatchCommand`,
+    # but the payload union differs: main creates a project by dispatching a
+    # `project.create` command through it, while orchestration-v2 moved project
+    # mutations out to a separate `projects.mutate` RPC and dropped every
+    # `project.*` member from the dispatch union. So the cloud client's "add
+    # project" failed schema decode at the RPC boundary — no handler, no span,
+    # no log line, and a bare "An error occurred." in the UI. Same story for
+    # provider.auth.*, provider.install.* and pullRequests.*, which main calls
+    # and orchestration-v2 has no handler for.
+    #
+    # Cost of coming back: no Pi driver. Upstream ships five drivers
     # (claude/codex/cursor/grok/opencode) and no Pi one, and shows no sign of
-    # growing one: 21 community PRs adding Pi have been opened since 2026-04
-    # and every one was closed unmerged, and no new provider driver has landed
-    # on main since Grok on 2026-06-09 — despite ~700 PRs/month merging
-    # otherwise. This rev is the head of the live attempt, pingdotgg/t3code
-    # #7211, which adds a real PiDriver + PiRpc + MCP injection and was
-    # live-tested against pi 0.84.2 (the version inputs.pi ships).
-    #
-    # It is stacked, not a one-off patch: #7211 targets the maintainer branch
-    # t3code/codex-turn-mapping (PR #2829, "introduce new orchestrator"), which
-    # is ~250 commits ahead of main and introduces apps/server/src/
-    # orchestration-v2 — the layer the Pi code is written against. So this pin
-    # drags in orchestrator v2 too, and #7211 cannot be rebased onto main.
-    #
-    # Pinning an explicit rev also freezes t3code against `just update`, which
-    # is deliberate: the fork branch gets force-pushed as its author iterates,
-    # and following it would swap the server out from under luna on an
-    # unrelated flake bump. Bump this rev by hand, after reading the diff.
+    # growing one — 21 community PRs adding Pi have been opened since 2026-04
+    # and every one was closed unmerged. If Pi matters more than the cloud
+    # client later, the fork is a one-line revert plus `providers.pi` in
+    # hosts/luna/configuration.nix and "pi" in knownDrivers
+    # (modules/services/t3code.nix) — but note the two orchestrators share
+    # migration ids 044-047 with different contents, so the state.sqlite is not
+    # portable in either direction.
     #
     #   https://github.com/pingdotgg/t3code/pull/7211  (Pi provider)
-    #   https://github.com/pingdotgg/t3code/pull/2829  (the base it is stacked on)
-    #
-    # REMOVE THIS PIN once #2829 lands on main and #7211 merges behind it: go
-    # back to plain `github:pingdotgg/t3code`, and revisit "pi" in
-    # knownDrivers (modules/services/t3code.nix) only if upstream ends up
-    # naming the driver kind something else.
+    #   https://github.com/pingdotgg/t3code/pull/2829  (the orchestrator-v2 base)
     t3code-src = {
-      url = "github:StiensWout/t3code/a00565fbfc34a5fefd1222e1868f41e36cb02378";
+      url = "github:pingdotgg/t3code";
       flake = false;
     };
 
