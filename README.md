@@ -21,6 +21,10 @@ My personal NixOS configuration, managing a fleet of machines using [flake-parts
 just deploy
 just deploy luna ganymede   # ...or narrow it to named hosts
 
+# Builds are capped at nproc/4 parallel jobs x 2 cores so the machine stays
+# usable mid-deploy. Lift the cap when nothing else needs the CPU:
+just jobs=8 cores=8 deploy
+
 # Apply config to the current host only, without the network
 nh os switch
 

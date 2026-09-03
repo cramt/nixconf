@@ -3,6 +3,14 @@ add_foundry_zips:
     ls ../nix-static/ | each { |it| nix-store --add-fixed sha256 $it.name } | each { |path| cachix push cramt $path }
     null
 
+# Nix defaults to "one build per core, and every core inside each build", which
+# pins the machine for the whole deploy — fine on saturn, miserable on a laptop
+# you're still using. jobs * cores is the ceiling; the daemon honours both
+# because cramt is a trusted-user. Bump either for a one-off:
+# `just jobs=8 cores=8 deploy luna`.
+jobs := `nproc | awk '{n = int($1 / 4); print (n < 1 ? 1 : n)}'`
+cores := "2"
+
 # Build the current config and activate it on every fleet host that answers on
 # the network right now. Powered-off hosts are reported and skipped, not fatal,
 # so this is safe to run whenever. `just deploy luna ganymede` narrows it.
@@ -53,7 +61,8 @@ deploy *hosts:
 
     # --inputs-from . pins the CLI to our locked nixpkgs, the same one the
     # activation wrappers are built from, rather than the ambient registry.
-    exec nix run --inputs-from . nixpkgs#deploy-rs -- --targets "${targets[@]}" -- --fallback
+    exec nix run --inputs-from . nixpkgs#deploy-rs -- --targets "${targets[@]}" -- \
+      --fallback --max-jobs {{jobs}} --cores {{cores}}
 
 # Runs as cramt so it reads the server's ~/.t3 state, and by absolute path
 # because a non-interactive ssh shell has no user profile on PATH.

@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # machine you run it on is just another target.
 just deploy
 just deploy luna ganymede   # ...or narrow to named hosts
+just jobs=8 cores=8 deploy  # ...or lift the default nproc/4 x 2 build cap
 
 # Apply system config to the current host only, no network
 nh os switch
