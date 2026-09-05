@@ -43,6 +43,28 @@
       ' "$conf" > "$conf.tmp"
       mv "$conf.tmp" "$conf"
     '';
+
+    # NeoForge's early-loading window renders in its own GL context and then
+    # hands the window over to Minecraft, with a one-second budget. On saturn
+    # (RX 7800 XT / radeonsi / Wayland) that handoff is unreliable: under memory
+    # pressure it blows the deadline and dies via tinyfiledialogs, and when it
+    # does complete the early render thread can survive the takeover and
+    # deadlock against the game's own render thread -- both parked in futex
+    # with the process at 0% CPU, indistinguishable from a hang.
+    #
+    # earlyWindowControl = false keeps the progress window but skips the
+    # takeover, so Minecraft creates its own window as it would unmodded. FML
+    # rewrites config/fml.toml on shutdown and pack updates ship their own, so
+    # this is re-asserted per instance on activation rather than symlinked.
+    applyFml = pkgs.writeShellScript "prismlauncher-fml-earlywindow" ''
+      set -eu
+      shopt -s nullglob
+      for conf in "$HOME"/.local/share/PrismLauncher/instances/*/minecraft/config/fml.toml; do
+        ${pkgs.gnused}/bin/sed -i \
+          's/^earlyWindowControl[[:space:]]*=[[:space:]]*true$/earlyWindowControl = false/' \
+          "$conf"
+      done
+    '';
   in {
     options.myHomeManager.prismlauncher = {
       enable = lib.mkEnableOption "myHomeManager.prismlauncher";
@@ -65,12 +87,22 @@
     };
 
     config = lib.mkIf cfg.enable {
-      home.packages = [pkgs.prismlauncher];
+      # zenity is for NeoForge, not Prism. Its fatal-error path (e.g. the
+      # early-display window handoff timing out under memory pressure) reports
+      # through tinyfiledialogs, which probes for zenity/kdialog/yad/Xdialog/
+      # python-tkinter and finds none of them on a stock NixOS desktop. It then
+      # falls back to reading y/n off stdin, which under Prism is a pipe nobody
+      # is watching, so the JVM blocks forever and reads as a frozen game.
+      home.packages = [pkgs.prismlauncher pkgs.zenity];
 
       # Same reasoning as steam-input: activation runs before any user session
       # exists, so Prism isn't up to race with over the config file.
       home.activation.prismlauncher-memory = lib.hm.dag.entryAfter ["writeBoundary"] ''
         run ${apply}
+      '';
+
+      home.activation.prismlauncher-fml-earlywindow = lib.hm.dag.entryAfter ["writeBoundary"] ''
+        run ${applyFml}
       '';
     };
   };
