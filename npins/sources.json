@@ -30,8 +30,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:6a1db7ac354082bf73f35dd37407707a42904c489bedfb1ee35024430c9c5a3a",
-      "hash": "sha256-Lx5lplQTQC1UXmlVYlTAl8WtpLiUL1/1XkMKpmC4bws="
+      "image_digest": "sha256:327d3cd1b30d195bd47959a318d069aa749c098d959562deb95af74f7a0b5942",
+      "hash": "sha256-YCeMISPfr/enG61KxEeEELOSG0GzQ/BuF5eDzXwlCSc="
     },
     "mbround18/valheim": {
       "type": "Container",
@@ -44,8 +44,8 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1063758.e8be7818e19a/nixexprs.tar.xz",
-      "hash": "sha256-qeiZaY+0tpZXliRA9odCNx+sOfIOhnkcUq9t+ctPrRA="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1066699.5545adfad2e9/nixexprs.tar.xz",
+      "hash": "sha256-v4ZEET1Ah1K9+wMaIwPH/JTQK3MwW/gZC/SyjnlBX74="
     },
     "tree-sitter-spade": {
       "type": "Git",
