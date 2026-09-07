@@ -42,9 +42,9 @@
 
       # nix.optimise dedupes the store but never deletes from it, so a host
       # without a gc timer only grows: mars reached 100% of its 468G root
-      # holding 162G of unrooted paths against 3 live generations. Declared
-      # here rather than per-host so a new host can't inherit the unbounded
-      # default by omission.
+      # holding 103k unrooted paths (133G) against 3 live generations.
+      # Declared here rather than per-host so a new host can't inherit the
+      # unbounded default by omission.
       nix.gc = {
         automatic = true;
         dates = "weekly";
