@@ -40,10 +40,27 @@
       # Drop this once that issue is closed.
       systemd.services.systemd-hostnamed.restartIfChanged = false;
 
+      # nix.optimise dedupes the store but never deletes from it, so a host
+      # without a gc timer only grows: mars reached 100% of its 468G root
+      # holding 162G of unrooted paths against 3 live generations. Declared
+      # here rather than per-host so a new host can't inherit the unbounded
+      # default by omission.
+      nix.gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 14d";
+      };
+
       nix.daemonCPUSchedPolicy = "idle";
       nix.daemonIOSchedClass = "idle";
       nix.settings = {
         experimental-features = ["nix-command" "flakes"];
+        # A weekly timer can't help a single build that fills the disk between
+        # runs. These let the daemon collect garbage mid-build once free space
+        # drops under min-free, instead of dying with ENOSPC part-way through
+        # a closure.
+        min-free = 10 * 1024 * 1024 * 1024;
+        max-free = 50 * 1024 * 1024 * 1024;
         # Honor the substituters/trusted-public-keys declared in flake.nix's
         # nixConfig. Without this, nix prints "ignoring untrusted flake
         # configuration setting 'extra-substituters'" and drops the flake's
@@ -65,6 +82,11 @@
           "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
         ];
       };
+      # /tmp lives on the root fs and survives reboots, so whatever a crashed
+      # process leaves behind stays indefinitely -- mars was holding 1.4G of
+      # orphaned puppeteer chrome profiles from runs weeks earlier.
+      boot.tmp.cleanOnBoot = true;
+
       programs.nix-ld.enable = true;
       nixpkgs = {
         overlays = import ../../overlays inputs;
