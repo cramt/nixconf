@@ -3,7 +3,7 @@
     options.myHomeManager.bundles.graphical.enable = lib.mkEnableOption "myHomeManager.bundles.graphical";
     config = lib.mkIf config.myHomeManager.bundles.graphical.enable {
       home.packages = with pkgs; [
-        wl-clipboard brightnessctl pavucontrol adwaita-qt antigravity orca-slicer t3code
+        wl-clipboard brightnessctl pavucontrol adwaita-qt t3code
       ];
       xdg.enable = true;
       # Keep the Orca screen reader off declaratively. COSMIC/GDM pull in the
@@ -19,8 +19,6 @@
         zen.enable = true;
         network-manager-applet.enable = true;
         nautilus.enable = true;
-        keymapp.enable = true;
-        vscode.enable = true;
       };
     };
   };

@@ -21,8 +21,6 @@
     # devices, cleared on its own, every local component measured clean afterwards).
     # Turn off once the ISP-side cause is identified or ruled out.
     netwatch.enable = true;
-    obs.enable = true;
-    jujutsu.enable = true;
     monitors = import ./monitors.nix;
     waybar.monitors = ["DP-2"];
   };

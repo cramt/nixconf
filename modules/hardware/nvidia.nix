@@ -42,10 +42,12 @@
         initrd.kernelModules = ["nvidia"];
         extraModulePackages = [driver];
       };
-      services.xserver = {
-        enable = true;
-        videoDrivers = ["nvidia"];
-      };
+      # videoDrivers only -- deliberately NOT `services.xserver.enable`. nixpkgs'
+      # nvidia module keys off this list alone, so the driver, modesetting and
+      # NVENC all come up without X. Enabling xserver here dragged a full X11 +
+      # lightdm login stack onto luna, whose GPU exists solely for Jellyfin
+      # transcoding; the hosts that do want X set it in their own config.
+      services.xserver.videoDrivers = ["nvidia"];
       hardware.graphics.enable = true;
       hardware.nvidia = {
         modesetting.enable = true;

@@ -59,17 +59,6 @@
         cacheVolume = "/tmp/b";
       };
       servatrice.enable = false;
-      gtnh = {
-        enable = false;
-        dataVolume = "/home/cramt/gtnh";
-      };
-      valheim = {
-        enable = false;
-        worldVolume = "/tmp/a";
-        binaryVolume = "/tmp/b";
-        serverName = "wutwutgame3";
-        worldName = "wutwutgame3";
-      };
     };
   };
 

@@ -29,6 +29,9 @@
   security.polkit.enable = true;
 
   services.desktopManager.plasma6.enable = true;
+  # Explicit since the nvidia module stopped implying it. SDDM runs on Wayland
+  # here, but Plasma still wants Xwayland for X11 clients.
+  services.xserver.enable = true;
   programs.kdeconnect.enable = true;
 
   services.displayManager = {

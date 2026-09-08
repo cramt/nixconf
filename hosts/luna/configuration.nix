@@ -44,7 +44,6 @@
     opnix-secrets.enable = true;
     services.m365-copilot-proxy.enable = true;
     gnupg.enable = true;
-    powertop.enable = true;
     nvidia.enable = true;
     docker = {
       enable = true;
@@ -94,20 +93,10 @@
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
         dataDir = "/pool/minecraft-forge";
       };
-      minecraft-homestead = {
-        enable = true;
-        dataDir = "/pool/minecraft-homestead";
-      };
-      gtnh = {
-        enable = true;
-        dataVolume = "/pool/gtnh";
-      };
       caddy = {
         enable = true;
         cacheVolume = "/pool/configs/caddy-cache";
-        staticFileVolumes = {
-          books = "/pool/books";
-        };
+        staticFileVolumes = {};
       };
       foundryvtt = {
         enable = true;
@@ -118,13 +107,6 @@
         maxPlayers = 8;
         beta = true;
         dataVolume = "/pool/satisfactory";
-      };
-      valheim = {
-        enable = true;
-        worldVolume = "/pool/valheim_config";
-        binaryVolume = "/pool/valheim_binary";
-        serverName = "wutwutgame3";
-        worldName = "wutwutgame3";
       };
       homelab_system_controller = {
         enable = false;
@@ -140,34 +122,9 @@
       postgres = {
         dataDir = "/pool/pgsql";
       };
-      continuwuity.enable = true;
       terraform_remote_backend.enable = true;
       servatrice.enable = true;
-      llama-cpp = {
-        enable = true;
-        models = [
-          {
-            name = "qwen3-14b";
-            repo = "unsloth/Qwen3-14B-GGUF";
-            file = "Qwen3-14B-Q4_K_M.gguf";
-            args = ["-ngl" "999" "-c" "16384" "--flash-attn" "on"];
-          }
-        ];
-        instances = {
-          default = {
-            gpu = "cuda";
-            port = 11434;
-            # saturn's llama-cpp-rpc worker is disabled; pointing at a dead
-            # RPC endpoint just makes this instance fail to start.
-            rpc = [];
-          };
-        };
-      };
       sshd.enable = true;
-      harmonia = {
-        prio = 50;
-        enable = true;
-      };
     };
   };
 

@@ -46,47 +46,12 @@ inputs: [
     });
   })
 
-  # Shared definitions for the GPU-accelerated llama.cpp builds used by the
-  # llama-cpp / llama-cpp-rpc services. These are cache misses by construction
-  # (Hydra doesn't build ROCm/CUDA variants), so they're exposed as flake
-  # packages (modules/flake/packages.nix) and prebuilt in CI. Keeping the
-  # override here means the service modules and the prebuilt flake packages
-  # resolve to the exact same store path.
-  (final: prev: let
-    # nixpkgs' llama-cpp rpcSupport post-install still runs
-    # `cp bin/rpc-server $out/bin/llama-rpc-server`, but upstream llama.cpp
-    # renamed that binary to `ggml-rpc-server` (cmake installs it under that
-    # name). Bridge the old name in the build tree so the copy succeeds and the
-    # service still finds `$out/bin/llama-rpc-server`. Guarded so it becomes a
-    # no-op once nixpkgs catches up to the rename.
-    withRpcServerFix = pkg:
-      pkg.overrideAttrs (old: {
-        postBuild =
-          (old.postBuild or "")
-          + ''
-            if [ ! -e bin/rpc-server ] && [ -e bin/ggml-rpc-server ]; then
-              ln -s ggml-rpc-server bin/rpc-server
-            fi
-          '';
-      });
-  in {
-    llama-cpp-rocm-rpc = withRpcServerFix (prev.llama-cpp.override {
-      rocmSupport = true;
-      rpcSupport = true;
-    });
-    llama-cpp-cuda-rpc = withRpcServerFix (prev.llama-cpp.override {
-      cudaSupport = true;
-      rpcSupport = true;
-    });
-  })
-
   # colibrì MoE streaming engine. Not in nixpkgs; pure C with no engine deps, so
   # the CPU build is cheap — but the GPU tiers are ROCm/Vulkan builds Hydra
-  # never caches, the same situation as llama-cpp-rocm-rpc above. The variants
-  # are spelled out HERE rather than .override'd inside the service module for
-  # the same reason as llama.cpp's: modules/services/colibri.nix selects one of
-  # these by name, so the prebuilt flake package and the one saturn's closure
-  # references are the same store path.
+  # never caches. The variants are spelled out HERE rather than .override'd
+  # inside the service module so that modules/services/colibri.nix, which selects
+  # one of these by name, and the prebuilt flake package resolve to the same
+  # store path.
   #
   # gfx1101 = Navi 32 = saturn's RX 7800 XT, and it is a compile-time target,
   # not llama.cpp's runtime HSA_OVERRIDE_GFX_VERSION — RDNA3 has WMMA matrix

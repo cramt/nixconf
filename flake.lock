@@ -1494,21 +1494,6 @@
         "type": "github"
       }
     },
-    "nix-flatpak": {
-      "locked": {
-        "lastModified": 1783368811,
-        "narHash": "sha256-0H8jDwR4Kegb3heaTrH1ftbgKfZVDT8JE+46uXxDy/Q=",
-        "owner": "gmodena",
-        "repo": "nix-flatpak",
-        "rev": "20d42f0ee98c9fe9f85e8d1de474f1409ed10d05",
-        "type": "github"
-      },
-      "original": {
-        "owner": "gmodena",
-        "repo": "nix-flatpak",
-        "type": "github"
-      }
-    },
     "nix-games": {
       "inputs": {
         "flake-parts": "flake-parts_7",
@@ -1798,11 +1783,11 @@
     },
     "nixpkgs_12": {
       "locked": {
-        "lastModified": 1787498568,
-        "narHash": "sha256-9i/VTdusq/+NM/tz+J1Re+ojkMB8MBf0QshnYfzHz30=",
+        "lastModified": 1788752844,
+        "narHash": "sha256-VaWGJ6+cIYN2erfSecbRV+4ljI185Ty2wUrXyvQbgOw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "56c02bc00adcf003215cc4bd996d6efaf4cff188",
+        "rev": "dc5d91f840324650bac8c379428c7037a416959a",
         "type": "github"
       },
       "original": {
@@ -2032,17 +2017,16 @@
         "nixpkgs": "nixpkgs_12"
       },
       "locked": {
-        "lastModified": 1787563785,
-        "narHash": "sha256-buASbQgCu7XkOdidp8lI9F24EIbjWc0weQFjx9idKbw=",
+        "lastModified": 1788884089,
+        "narHash": "sha256-5H5sExWjCHJH3Ax4ZfMdEExzWzL572iDk9dOfMw8LEE=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "11ec9dd83f6ca438de98749608af73f6877c62c5",
+        "rev": "cd168861ffc872cf7c91a42aadf9d7534d5d9709",
         "type": "github"
       },
       "original": {
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "11ec9dd83f6ca438de98749608af73f6877c62c5",
         "type": "github"
       }
     },
@@ -2361,7 +2345,6 @@
         "nh": "nh",
         "niri-flake": "niri-flake",
         "nix-colors": "nix-colors",
-        "nix-flatpak": "nix-flatpak",
         "nix-games": "nix-games",
         "nix-index-database": "nix-index-database",
         "nix-ld": "nix-ld",

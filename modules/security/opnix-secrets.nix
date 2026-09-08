@@ -29,7 +29,7 @@
           } // servicesIf config.services.tailscale.enable ["tailscaled"];
           cloudflareCredsEnv = {
             reference = "op://Homelab/Cloudflare/credsEnv";
-          } // servicesIf (config.security.acme.certs ? "turn.cramt.dk") ["acme-turn.cramt.dk"];
+          };
           postgresPassword =
             {
               reference = "op://Homelab/Postgres/password";
@@ -39,9 +39,6 @@
           homelabControllerEnv = {
             reference = "op://Homelab/HomelabController/envFile";
           } // servicesIf config.myNixOS.services.homelab_system_controller.enable ["homelab_system_controller"];
-          valheimEnv = {
-            reference = "op://Homelab/Valheim/envFile";
-          };
           curseForgeEnv = {
             reference = "op://Homelab/CurseForge/envFile";
           };
@@ -61,15 +58,6 @@
           };
           cockatriceEnv = {
             reference = "op://Homelab/Cockatrice/envFile";
-          };
-          matrixSharedSecret =
-            {
-              reference = "op://Homelab/Matrix/sharedSecret";
-            }
-            // servicesIf config.services.coturn.enable ["coturn"]
-            // ownerIf "turnserver" // groupIf "turnserver";
-          matrixSecretEnv = {
-            reference = "op://Homelab/Matrix/conduitEnv";
           };
           nixAccessTokensConf = {
             reference = "op://Homelab/GitHub/nixAccessTokensConf";

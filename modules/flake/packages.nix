@@ -125,8 +125,6 @@
       inherit
         (inputs.self.nixosConfigurations.saturn.pkgs)
         cosmic-comp
-        llama-cpp-rocm-rpc
-        llama-cpp-cuda-rpc
         # colibrì's GPU tiers. The HIP build compiles backend_cuda.cu through
         # hipcc for gfx1101 and the Vulkan one runs glslc over the compute
         # shaders — neither is anything Hydra has, and saturn is a desktop we'd

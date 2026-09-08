@@ -33,13 +33,6 @@
       "image_digest": "sha256:327d3cd1b30d195bd47959a318d069aa749c098d959562deb95af74f7a0b5942",
       "hash": "sha256-YCeMISPfr/enG61KxEeEELOSG0GzQ/BuF5eDzXwlCSc="
     },
-    "mbround18/valheim": {
-      "type": "Container",
-      "image_name": "mbround18/valheim",
-      "image_tag": "latest",
-      "image_digest": "sha256:0a5839b995ee777023928ae070d57ed68e068acfcd842abd259281a40aac6898",
-      "hash": "sha256-nH5QebRGVUndTVVdprel2qeARrnNrJqmrMU3NuSg8vk="
-    },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",

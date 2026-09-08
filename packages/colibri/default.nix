@@ -10,8 +10,7 @@
   # --- optional GPU tiers ----------------------------------------------------
   # Both default off. The CPU engine is the portable baseline; the GPU builds
   # are cache misses by construction (nothing upstream builds them), so they get
-  # opted into per host and prebuilt into cachix by CI, exactly like the
-  # llama-cpp-rocm-rpc / llama-cpp-cuda-rpc overrides in overlays/default.nix.
+  # opted into per host and prebuilt into cachix by CI (modules/flake/packages.nix).
   rocmSupport ? false,
   rocmPackages,
   # gfx1101 = Navi 32 = saturn's RX 7800 XT. This is NOT optional metadata:

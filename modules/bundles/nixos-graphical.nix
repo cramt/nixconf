@@ -1,4 +1,4 @@
-# NixOS graphical bundle — PipeWire, fonts, flatpak, peripheral support
+# NixOS graphical bundle — PipeWire, fonts, peripheral support
 { ... }: {
   flake.nixosModules."bundles.graphical" = { config, lib, pkgs, ... }: {
     options.myNixOS.bundles.graphical.enable = lib.mkEnableOption "myNixOS.bundles.graphical";
@@ -33,7 +33,6 @@
       myNixOS.services.udisks.enable = true;
       services = {
         pulseaudio.enable = false;
-        flatpak.enable = true;
       };
       myNixOS = {
         keymapp.enable = true;

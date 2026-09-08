@@ -119,32 +119,6 @@
       enable = true;
       user = "cramt";
     };
-    waydroid = {
-      enable = true;
-      armEmulation = "libhoudini"; # Intel CPU - libhoudini works better
-      properties = {
-        suspend = false; # Keep container running, don't freeze when no UI
-        fake_touch = ["com.riotgames.*"]; # Make mouse act as touch for games
-      };
-      apps.apkpure = [
-        "com.microsoft.teams"
-        "com.riotgames.legendsofruneterra"
-      ];
-      desktopEntries = [
-        {
-          id = "com.microsoft.teams";
-          name = "Microsoft Teams";
-          comment = "Chat and collaboration";
-          categories = ["Network" "Chat" "Office"];
-        }
-        {
-          id = "com.riotgames.legendsofruneterra";
-          name = "Legends of Runeterra";
-          comment = "Strategy card game";
-          categories = ["Game" "CardGame"];
-        }
-      ];
-    };
     niri.enable = true;
     opnix-secrets.enable = true;
     # Tunnel is declared but stays down until `systemctl start wg-quick-vxn`.
@@ -177,14 +151,6 @@
       # this host's t3code port, or stop the unit before opening the app.
       t3code.enable = true;
       sunshine.enable = true;
-      # Off: the RPC worker kept failing. luna's llama-cpp instance used to
-      # offload here, so its `rpc` list is empty until this comes back.
-      llama-cpp-rpc = {
-        enable = false;
-        gpu = "rocm";
-        rocmVersion = "11.0.1";
-        port = 50052;
-      };
       # colibrì streams MoE expert weights off the dedicated /llm partitions
       # (hosts/saturn/disko.nix). The CLI ships now because staging the weights
       # NEEDS it — `coli convert`/`download` populate /llm/primary, and

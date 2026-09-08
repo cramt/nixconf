@@ -6,8 +6,8 @@ My personal NixOS configuration, managing a fleet of machines using [flake-parts
 
 | Host | Type | Description |
 |------|------|-------------|
-| `saturn` | Desktop | AMD gaming PC with Wayland/COSMIC, Secure Boot (lanzaboote), Ollama (ROCm) |
-| `luna` | Server | Home server with NAS, Ollama (CUDA), game servers, Caddy, Nix binary cache |
+| `saturn` | Desktop | AMD gaming PC with Wayland/COSMIC, Secure Boot (lanzaboote), colibrì MoE inference (ROCm) |
+| `luna` | Server | Home server with NAS, game servers, Caddy, fleet Prometheus + Grafana |
 | `mars` | Desktop | Secondary desktop, AMD gaming PC with COSMIC |
 | `ganymede` | Laptop | NVIDIA laptop running KDE Plasma 6, always-on (lid-close ignored) |
 | `eros` | SBC | Raspberry Pi (aarch64), SD card image |
@@ -101,7 +101,7 @@ cache, as `eros` does) and `address` (if DNS can't find the host). See
 | **Theming** | [stylix](https://github.com/nix-community/stylix) — dark theme with Iosevka Nerd Font. `stylixAsset` accepts an image or `.mp4` |
 | **Secrets** | [opnix](https://github.com/brizzbuzz/opnix) — 1Password-based secret injection |
 | **Port assignment** | `portselector.nix` — deterministically assigns ports by hashing service names |
-| **Binary cache** | [harmonia](https://github.com/nix-community/harmonia) on `luna` — serves the local Nix store |
+| **Fleet metrics** | Push-based Prometheus + Grafana on `luna`; agents remote_write through Caddy (`modules/services/metrics.nix`) |
 | **Non-flake pins** | `npins/` — for sources without flake support |
 | **Gems** | `gems/` — Ruby gems used by scripts, locked with `bundle lock` |
 | **Packages** | `packages/` — custom packages |
