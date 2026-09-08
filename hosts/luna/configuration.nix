@@ -69,6 +69,7 @@
         providers.opencode = true;
       };
       nixarr.enable = true;
+      recyclarr.enable = true;
       cleanuparr = {
         enable = true;
         dataVolume = "/pool/configs/cleanuparr";
