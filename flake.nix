@@ -55,7 +55,11 @@
     # management.html per release. The proxy would otherwise fetch it from
     # GitHub on first request and re-check every 3h; as an input it is locked
     # and `just update` moves it. The URL must stay on /latest/download so
-    # relocking actually picks up new releases.
+    # relocking actually picks up new releases -- the cost being that an
+    # upstream release (every 1-3 days) invalidates the locked narHash and eval
+    # dies with "NAR hash mismatch in input ... management.html" until someone
+    # relocks. The daily update PR normally absorbs that; by hand it is
+    # `nix flake update cli-proxy-api-panel`.
     cli-proxy-api-panel = {
       url = "file+https://github.com/router-for-me/Cli-Proxy-API-Management-Center/releases/latest/download/management.html";
       flake = false;

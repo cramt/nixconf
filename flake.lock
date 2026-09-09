@@ -232,7 +232,7 @@
     "cli-proxy-api-panel": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-CbQ7anoaNPrwLjKw6JZKbmvKI2xiVEMSfg0qj8IQSVo=",
+        "narHash": "sha256-2dnFMPuxrnL+QXvpWDA/DZDF+SWPOTqAVDNBqzliX9o=",
         "type": "file",
         "url": "https://github.com/router-for-me/Cli-Proxy-API-Management-Center/releases/latest/download/management.html"
       },
