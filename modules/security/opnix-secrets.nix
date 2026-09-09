@@ -59,9 +59,18 @@
           cockatriceEnv = {
             reference = "op://Homelab/Cockatrice/envFile";
           };
-          nixAccessTokensConf = {
-            reference = "op://Homelab/GitHub/nixAccessTokensConf";
-          };
+          # Included by cramt's user nix.conf (modules/hm-bundles/general.nix)
+          # for authenticated github.com tarball fetches. Flake inputs are
+          # fetched by the evaluating *client*, not the daemon, so the file has
+          # to be readable by the user running nix -- as 0600 root:root the
+          # `!include` was a silent no-op and every fetch took the
+          # unauthenticated 60/hr rate limit.
+          nixAccessTokensConf =
+            {
+              reference = "op://Homelab/GitHub/nixAccessTokensConf";
+              mode = "0640";
+            }
+            // groupIf "onepassword-secrets";
           discordBotToken = {
             reference = "op://Homelab/OpenClaw-Discord/botToken";
           };
