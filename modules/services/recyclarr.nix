@@ -16,6 +16,66 @@
     cfg = config.myNixOS.services.recyclarr;
     credDir = "/run/recyclarr-credentials";
     apiKeyFile = "${credDir}/sonarr-api-key";
+
+    # Release titles are a claim, not evidence. A "DUAL" tag got us a file whose
+    # only audio tracks were Portuguese and Japanese, because TRaSH's Bad Dual
+    # Groups rule anchors on the parsed release group (^(BiOMA)$) and the
+    # indexer had appended [EZTVx.to], so the -10000 never landed. Custom
+    # formats cannot see inside the container; ffprobe can.
+    dubGuard = pkgs.writeShellApplication {
+      name = "sonarr-dub-guard";
+      runtimeInputs = with pkgs; [curl jq ffmpeg gnugrep coreutils];
+      text = ''
+        sonarr="http://localhost:8989"
+        api_key="$(cat ${apiKeyFile})"
+        api() { curl -sf -m 60 -H "X-Api-Key: $api_key" "$@"; }
+
+        profile_id="$(api "$sonarr/api/v3/qualityprofile" \
+          | jq -r --arg n ${lib.escapeShellArg cfg.profileName} \
+              '.[] | select(.name == $n) | .id')"
+        if [ -z "$profile_id" ]; then
+          echo "quality profile ${cfg.profileName} does not exist yet; nothing to guard"
+          exit 0
+        fi
+
+        searched=""
+        while read -r series_id; do
+          [ -n "$series_id" ] || continue
+          while IFS=$'\t' read -r ep_id file_id path; do
+            [ -n "$path" ] && [ -f "$path" ] || continue
+            if ffprobe -v error -select_streams a \
+                 -show_entries stream_tags=language -of csv=p=0 "$path" \
+                 2>/dev/null | grep -qx eng; then
+              continue
+            fi
+            echo "no English audio track: $path"
+
+            # Blocklist the grab first so the re-search cannot pick the same
+            # lying release straight back off the same indexer.
+            grab_id="$(api "$sonarr/api/v3/history?episodeId=$ep_id&eventType=1&pageSize=20&sortKey=date&sortDirection=descending" \
+              | jq -r '.records[0].id // empty')"
+            if [ -n "$grab_id" ]; then
+              api -X POST -H "Content-Type: application/json" -d '{}' \
+                "$sonarr/api/v3/history/failed/$grab_id" >/dev/null || true
+            fi
+            api -X DELETE "$sonarr/api/v3/episodefile/$file_id" >/dev/null || true
+            searched="$searched $ep_id"
+          done < <(api "$sonarr/api/v3/episode?seriesId=$series_id&includeEpisodeFile=true" \
+            | jq -r '.[] | select(.hasFile) | "\(.id)\t\(.episodeFileId)\t\(.episodeFile.path)"')
+        done < <(api "$sonarr/api/v3/series" \
+          | jq -r --argjson p "$profile_id" '.[] | select(.qualityProfileId == $p) | .id')
+
+        if [ -n "$searched" ]; then
+          # shellcheck disable=SC2086
+          jq -nc --args '{name: "EpisodeSearch", episodeIds: ($ARGS.positional | map(tonumber))}' $searched \
+            | api -X POST -H "Content-Type: application/json" -d @- \
+                "$sonarr/api/v3/command" >/dev/null
+          echo "requeued a search for episodes:$searched"
+        else
+          echo "every file on the ${cfg.profileName} profile has an English audio track"
+        fi
+      '';
+    };
   in {
     options.myNixOS.services.recyclarr = {
       enable = lib.mkEnableOption "myNixOS.services.recyclarr";
@@ -57,6 +117,28 @@
 
       systemd.services.recyclarr.after = ["sonarr.service" "network-online.target"];
       systemd.services.recyclarr.wants = ["network-online.target"];
+
+      systemd.services.sonarr-dub-guard = {
+        description = "Drop anime files whose audio tracks have no English";
+        after = ["sonarr.service" "recyclarr-sonarr-apikey.service"];
+        requires = ["recyclarr-sonarr-apikey.service"];
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = lib.getExe dubGuard;
+        };
+      };
+
+      systemd.timers.sonarr-dub-guard = {
+        description = "Periodic English-audio check on imported anime";
+        wantedBy = ["timers.target"];
+        timerConfig = {
+          # Hourly rather than daily: a simulcast episode that imports wrong at
+          # 02:00 should be re-grabbed before anyone sits down to watch it.
+          OnCalendar = "hourly";
+          Persistent = true;
+          RandomizedDelaySec = "10m";
+        };
+      };
 
       services.recyclarr = {
         enable = true;
