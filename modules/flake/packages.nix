@@ -147,6 +147,7 @@
         agentsview
         agent-browser
         cockatrice
+        rhystic-tracker
         ;
     } // lib.optionalAttrs (system == "aarch64-linux") {
       # Steam Link client — aarch64 only because it's a prebuilt arm64 binary.

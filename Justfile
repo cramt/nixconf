@@ -94,6 +94,7 @@ update_packages:
     nix run nixpkgs#nix-update -- --flake agentsview
     nix run nixpkgs#nix-update -- --flake agent-browser
     nix run nixpkgs#nix-update -- --flake cockatrice
+    nix run nixpkgs#nix-update -- --flake rhystic-tracker
 
 # Bump every pinned source (flake.lock, gems, npins, packages). Run daily by
 # .github/workflows/update.yml, which pushes the result to the `update` branch

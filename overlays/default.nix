@@ -75,6 +75,12 @@ inputs: [
     cockatrice = prev.callPackage ../packages/cockatrice {};
   })
 
+  # Not in nixpkgs. Tauri app, so it needs the webkitgtk stack — see
+  # ../packages/rhystic-tracker/default.nix.
+  (final: prev: {
+    rhystic-tracker = prev.callPackage ../packages/rhystic-tracker {};
+  })
+
   # Not in nixpkgs; built from source (Go + embedded Svelte frontend).
   # Bump version + hashes in ../packages/agentsview/default.nix.
   (final: prev: {
