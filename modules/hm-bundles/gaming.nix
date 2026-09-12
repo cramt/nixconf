@@ -13,6 +13,7 @@
         dxvk
         gamescope
         mangohud
+        protontricks
         # Legends of Runeterra. Riot's Packman anti-tamper rejects current wine
         # (int 0x2c -> STATUS_ASSERTION_FAILURE before Unity even logs), so the
         # package pins GE-Proton8-27-LoL and sets up DXVK + the prefix itself.
