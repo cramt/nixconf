@@ -94,6 +94,41 @@ Prefer one jq or `otag` pass over many API calls; hit the live search API only
 for something genuinely not in the bulk files, and then with a `User-Agent` header and a gap
 between calls.
 
+## What people actually play: EDHREC JSON
+
+EDHREC mirrors every page as JSON. Use it; never scrape the HTML, where a fetch returns a
+lossy summary that silently drops cards.
+
+```bash
+edhrec() { curl -s -A 'Mozilla/5.0' "https://json.edhrec.com/pages/$1.json"; }
+
+edhrec commanders/borborygmos-and-fblthp \
+  | jq -r '.container.json_dict.cardlists[]? | "=== \(.header) ===",
+      (.cardviews[]? | "  \(.synergy*100|round)%syn \(.name)")'
+```
+
+Slug is the card name lowercased, punctuation stripped, spaces to hyphens
+(`Uril, the Miststalker` → `uril-the-miststalker`). Paths: `commanders/<slug>`,
+`commanders/<slug>/<theme>`, `cards/<slug>`, `average-decks/<slug>`, `decks/<slug>`.
+
+Negative `synergy` means the card is played *less* here than in an average deck — a cut signal.
+
+**Individual decklists live on the other host** and need a browser User-Agent:
+
+```bash
+curl -s -A 'Mozilla/5.0' "https://edhrec.com/api/deckpreview/<urlhash>" \
+  | jq -r '[.deck.cards[][][0]]|.[]'
+```
+
+`decks/<slug>.json` → `.table` is every tracked deck (`urlhash`, `price`, `salt`, `bracket`,
+type counts) but carries **no cardlists**, and its facets are bracket/budget/savedate/tags
+only — never card. So "which decks run card X" means fetching one `deckpreview` per deck and
+filtering locally: sample a few dozen, don't sweep thousands. `json.edhrec.com` 403s on
+`deckpreview`. `.table` is not in random order, so a `head -N` sample skews — say so when
+quoting a rate off one.
+
+EDHREC says what people play. Scryfall stays the authority on oracle text and legality.
+
 ## Design brief: build the deck the judge dreads
 
 Alex is a nerdy player first. The goal is **weird, funny, rules-bending interactions** — to
