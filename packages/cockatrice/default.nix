@@ -13,8 +13,9 @@ stdenv.mkDerivation (finalAttrs: {
   # nixpkgs' cockatrice lags a full major version behind (2.10.x), so we build
   # from source. Cockatrice tags every build YYYY-MM-DD-{Release,Development}-X.Y.Z;
   # the `version` here is the full stable *Release* tag. `just update_packages`
-  # runs nix-update, which follows GitHub's "latest release" (Development tags are
-  # marked pre-release and skipped).
+  # runs nix-update against a regex that only matches Release tags — the atom
+  # feed it reads has no prerelease flag to filter on, and currently holds
+  # nothing but Development betas. See the Justfile recipe.
   version = "2026-06-26-Release-3.0.2";
 
   src = fetchFromGitHub {

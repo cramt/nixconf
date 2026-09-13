@@ -93,7 +93,16 @@ update_gems:
 update_packages:
     nix run nixpkgs#nix-update -- --flake agentsview
     nix run nixpkgs#nix-update -- --flake agent-browser
-    nix run nixpkgs#nix-update -- --flake cockatrice
+    # Cockatrice cuts Development betas far more often than Release builds, and
+    # the releases/tags atom feeds nix-update reads only carry the 10 newest
+    # entries — since 2026-06-26-Release-3.0.2 there has been no Release tag in
+    # that window at all. Without the regex nix-update errors out on the beta it
+    # finds; with it there is simply nothing to match, which it also calls an
+    # error. Neither is a reason to fail the whole update run.
+    # Drop the `||` once upstream cuts a 3.1.0 Release and the feed holds one again.
+    nix run nixpkgs#nix-update -- --flake cockatrice \
+      --version-regex '^(\d{4}-\d{2}-\d{2}-Release-[0-9.]+)$' \
+      || echo ">> cockatrice: no Release tag in the atom feed window, leaving it pinned"
     nix run nixpkgs#nix-update -- --flake rhystic-tracker
     # rhystic-tracker's avatar extractor stack, pinned per-package off PyPI.
     nix run nixpkgs#nix-update -- --flake unitypy
