@@ -95,6 +95,14 @@ update_packages:
     nix run nixpkgs#nix-update -- --flake agent-browser
     nix run nixpkgs#nix-update -- --flake cockatrice
     nix run nixpkgs#nix-update -- --flake rhystic-tracker
+    # rhystic-tracker's avatar extractor stack, pinned per-package off PyPI.
+    nix run nixpkgs#nix-update -- --flake unitypy
+    nix run nixpkgs#nix-update -- --flake texture2ddecoder
+    nix run nixpkgs#nix-update -- --flake etcpak
+    nix run nixpkgs#nix-update -- --flake astc-encoder-py
+    nix run nixpkgs#nix-update -- --flake tpk-ar
+    nix run nixpkgs#nix-update -- --flake fmod-toolkit
+    nix run nixpkgs#nix-update -- --flake pyfmodex
 
 # Bump every pinned source (flake.lock, gems, npins, packages). Run daily by
 # .github/workflows/update.yml, which pushes the result to the `update` branch

@@ -1,7 +1,7 @@
 { inputs, ... }:
 {
   perSystem = { pkgs, lib, system, ... }: {
-    packages = lib.optionalAttrs (system == "x86_64-linux") {
+    packages = lib.optionalAttrs (system == "x86_64-linux") ({
       # `nix run .#flash-eros -- /dev/sdX` — flash a ready-to-boot eros SD card.
       # Builds the aarch64 SD image (substituted from cache), then bakes the
       # local /etc/opnix-token into the image's rootfs /etc *post-build* (via a
@@ -149,7 +149,18 @@
         cockatrice
         rhystic-tracker
         ;
-    } // lib.optionalAttrs (system == "aarch64-linux") {
+    }
+    # Same reason, one layer down: UnityPy and the codec packages it needs are
+    # hand-pinned PyPI version + hash, so each needs a flake attr for nix-update
+    # to read meta.position off. Nothing installs them directly — they exist so
+    # rhystic-tracker's wrapper can put a python holding them on the app's PATH.
+    # Imported rather than callPackage'd, because callPackage staples
+    # override/overrideDerivation onto the set it returns and those would then
+    # show up as flake packages of their own.
+    // import ../../packages/rhystic-tracker/python {
+      inherit (inputs.self.nixosConfigurations.saturn.pkgs) python3Packages;
+    })
+    // lib.optionalAttrs (system == "aarch64-linux") {
       # Steam Link client — aarch64 only because it's a prebuilt arm64 binary.
       steamlink = pkgs.callPackage ../../packages/steamlink {};
 

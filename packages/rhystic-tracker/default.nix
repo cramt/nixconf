@@ -7,15 +7,17 @@
 # because tauri-build embeds ../dist at compile time — the vite output has to
 # exist before cargo runs.
 #
-# Avatar extraction (Settings -> "extract avatars from MTGA client") stays
-# broken here: it shells out to a bundled python script needing UnityPy, which
-# nixpkgs doesn't have. Everything else works without it. Drop the note once
-# UnityPy lands in nixpkgs.
+# Avatar extraction (Settings -> "extract avatars from MTGA client") shells out
+# to a bundled python script that wants UnityPy. Nothing in that stack is in
+# nixpkgs, so ./python packages it and the wrapper puts a python holding it on
+# the app's PATH — the rust side just runs `python3` and takes what it finds.
 {
   lib,
   fetchFromGitHub,
   rustPlatform,
   buildNpmPackage,
+  callPackage,
+  python3,
   makeDesktopItem,
   copyDesktopItems,
   pkg-config,
@@ -28,13 +30,17 @@
   libayatana-appindicator,
   xdotool,
 }: let
-  version = "1.5.0";
+  version = "1.5.1";
+
+  unityPython = python3.withPackages (_: [
+    (callPackage ./python {}).unitypy
+  ]);
 
   src = fetchFromGitHub {
     owner = "Balthazzahr";
     repo = "Rhystic-Tracker";
     tag = "v${version}";
-    hash = "sha256-jWgC6gwpIh8XypnvjvXFo37BCkfgN0PMrXXIEanFQBo=";
+    hash = "sha256-8gQxAMAULcLXGd0TSjrcL2hTpYE+dMQl6XlWvr9agUo=";
   };
 
   frontend = buildNpmPackage {
@@ -54,7 +60,7 @@ in
 
     cargoRoot = "src-tauri";
     buildAndTestSubdir = "src-tauri";
-    cargoHash = "sha256-4qRPYIB6sSXHWUPj5KdPoBGLo5a233yGUrzhrdpIAak=";
+    cargoHash = "sha256-uBhCQYkUKl0ZwB8vQWyyOulmZM/7s8I2haLWcV4WsRA=";
 
     # production-env is the feature upstream's release workflow builds with: it
     # selects the real DB instead of the dev one. custom-protocol is what
@@ -87,9 +93,13 @@ in
     ];
 
     # tauri's tray-icon feature dlopens libayatana-appindicator3 rather than
-    # linking it, so buildInputs alone leaves it unfindable at runtime.
+    # linking it, so buildInputs alone leaves it unfindable at runtime. The PATH
+    # entry is what the avatar extractor finds when it shells out to `python3`;
+    # without it the app reports "Python 3 is required" on a NixOS session,
+    # where there is no python on PATH at all.
     preFixup = ''
       gappsWrapperArgs+=(--prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [libayatana-appindicator]}")
+      gappsWrapperArgs+=(--prefix PATH : "${unityPython}/bin")
     '';
 
     postInstall = ''
