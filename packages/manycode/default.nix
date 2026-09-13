@@ -44,6 +44,10 @@ buildNpmPackage (finalAttrs: {
   # an immutable store path — it would fail with a misleading "are you online?".
   postPatch = ''
     cp ${./update-stub.js} lib/update.js
+
+    # smoke.js drops the frame it is waiting for when the builder is loaded;
+    # fix-join-race.js explains the race and repairs the two helpers involved.
+    node ${./fix-join-race.js} test/smoke.js
   '';
 
   # Worth the ~40s: the suites host a real bash session and join it back over
