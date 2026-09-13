@@ -9,7 +9,8 @@
   python3,
   node-gyp,
   gnumake,
-  electron_41,
+  spdx-license-list-data,
+  electron_44,
   makeDesktopItem,
   copyDesktopItems,
   # `inputs.pnpm2nix.lib.<system>` — pure-Nix pnpm-lock.yaml v9 builder.
@@ -37,7 +38,7 @@ let
   version = (lib.importJSON (src + "/apps/server/package.json")).version;
 
   nodejs = nodejs_24;
-  electron = electron_41;
+  electron = electron_44;
 
   # node-pty resolves its addon under prebuilds/<process.platform>-<process.arch>,
   # which are node's names, not nix's.
@@ -48,6 +49,16 @@ let
     }
     .${stdenv.hostPlatform.system}
     or (throw "t3code: no node-pty prebuild dir mapping for ${stdenv.hostPlatform.system}");
+
+  # apps/web's vite config runs a `t3code:third-party-licenses` plugin that
+  # reads SPDX licence texts out of `.generated/third-party-licenses/spdx/
+  # <version>/` and, on a miss, downloads them from raw.githubusercontent.com —
+  # which the build sandbox has no network for. nixpkgs ships the same list at
+  # the same version, so prime the cache from the store instead. Keep
+  # `spdxVersion` in step with SPDX_LICENSE_LIST_VERSION in
+  # scripts/lib/third-party-licenses.ts; a mismatch just means a cache miss,
+  # i.e. the network fetch and the build failure come back.
+  spdxVersion = "v${spdx-license-list-data.version}";
 
   # apps/desktop's build is a vite-plus `run.tasks.build` in vite.config.ts, not
   # a package.json script, and it `dependsOn: ["t3#build"]` — which pnpm2nix
@@ -62,6 +73,17 @@ let
       cp -r --no-preserve=mode,ownership ${src} $out
       jq '.scripts["nix:pack"] = "node scripts/build-preview-annotation-css.mjs && vp pack"' \
         ${src}/apps/desktop/package.json > $out/apps/desktop/package.json
+
+      # Only the ids the config actually cites — the full list is 22M of JSON
+      # and every copy rides along in each app's isolated source tree.
+      spdxCache=$out/.generated/third-party-licenses/spdx/${spdxVersion}
+      mkdir -p $spdxCache
+      jq -r '[.. | objects | select(has("licenseId")) | .licenseId] | unique | .[]' \
+        ${src}/third-party-licenses.config.json \
+      | while IFS= read -r licenseId; do
+        cp ${spdx-license-list-data.json}/json/details/"$licenseId".json $spdxCache/
+      done
+      chmod -R u+w $spdxCache
     '';
 
   workspace = pnpm2nix.mkPnpmWorkspace {
@@ -156,7 +178,7 @@ let
   # DesktopBackendConfiguration.ts) — i.e. under Electron's node, at a different
   # NODE_MODULE_VERSION. One build covers both anyway: node-pty is a
   # node-addon-api (Node-API) addon, and Node-API is ABI-stable across runtimes
-  # (verified by dlopen'ing this addon under both node 24 and electron 41).
+  # (verified by dlopen'ing this addon under both node 24 and electron 44).
   nodePty = stdenv.mkDerivation {
     pname = "t3code-node-pty";
     inherit version;

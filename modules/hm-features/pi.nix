@@ -54,6 +54,30 @@
       };
     });
 
+    # nixpkgs 2026-09-08 (NixOS/nixpkgs#558890) promoted the Go rewrite to the
+    # plain `typescript` attribute (7.0.2) and moved the old JS compiler to
+    # `typescript_5`, throwing on `typescript-go` — which pi.nix's package.nix
+    # still asks callPackage for, so evaluating it aborts the whole host.
+    # NixOS/nixpkgs#560917 then dropped `$out/bin/tsgo` from that package, so
+    # the rename alone isn't enough: every pi workspace builds with `tsgo -p
+    # …` and only `tsc` is left in bin. The shim puts the same binary back
+    # under its old name — it resolves its lib dir from /proc/self/exe, so a
+    # symlink is fine.
+    #
+    # Remove once lukasl-dev/pi.nix asks for typescript_5 + typescript itself.
+    #   https://github.com/NixOS/nixpkgs/pull/558890
+    #   https://github.com/NixOS/nixpkgs/pull/560917
+    tsgoShim = pkgs.runCommand "tsgo-${pkgs.typescript.version}" {} ''
+      mkdir -p $out/bin
+      ln -s ${pkgs.typescript}/bin/tsc $out/bin/tsgo
+    '';
+
+    piPackage =
+      inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent.override {
+        typescript = pkgs.typescript_5;
+        typescript-go = tsgoShim;
+      };
+
     # hiPrio to win over the plain `pi` the upstream module installs (which is
     # itself a wrapper — cfg.finalPackage — carrying the --skill flags and the
     # settings.json merge, so it is what we exec).
@@ -119,6 +143,7 @@
 
       programs.pi.coding-agent = {
         enable = true;
+        package = piPackage;
 
         # ~/.pi/agent/settings.json. pi mutates this file at runtime (e.g.
         # lastChangelogVersion), so the module jq-merges our declared values
