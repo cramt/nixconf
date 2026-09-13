@@ -96,12 +96,6 @@ inputs: [
     agent-browser = prev.callPackage ../packages/agent-browser {};
   })
 
-  # Multiplayer claude-code: shares the live session with a join code. Not in
-  # nixpkgs and no upstream flake — see packages/manycode/default.nix.
-  (final: prev: {
-    manycode = prev.callPackage ../packages/manycode {};
-  })
-
   (final: prev: let
     # The revision npins actually fetched, so mkZedExtension can cross-check it
     # against the grammar revision the extension's own manifest declares.

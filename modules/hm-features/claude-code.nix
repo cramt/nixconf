@@ -97,9 +97,6 @@
       agent-browser.enable =
         lib.mkEnableOption "Vercel agent-browser CLI + Claude Code skill"
         // {default = true;};
-      manycode.enable =
-        lib.mkEnableOption "manycode — share the live claude session with a join code (LAN or cloudflare quick tunnel)"
-        // {default = true;};
       pstack.enable =
         lib.mkEnableOption "vendored pstack judgment skills (unslop, type-system-discipline, technical-writing, …)"
         // {default = true;};
@@ -141,13 +138,6 @@
         home.packages = [agentBrowserPkg];
         home.file.".claude/skills/agent-browser/SKILL.md".source = skillStub;
       }))
-      # Multiplayer claude: `manycode host` shares the session you're in,
-      # `manycode join <code>` attaches to someone else's. Package only — its
-      # settings live in ~/.manycode/config.json, which `manycode setup`
-      # rewrites in place, so a store symlink would just break setup silently.
-      (lib.mkIf cfg.manycode.enable {
-        home.packages = [pkgs.manycode];
-      })
       (lib.mkIf cfg.mtg-commander.enable {
         home.packages = [skills.scryfall];
         home.file.".claude/skills/mtg-commander/SKILL.md".source =
