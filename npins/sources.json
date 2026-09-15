@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "fd5e46563e90b7d90804d34ac6fc6760aec0e271",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/fd5e46563e90b7d90804d34ac6fc6760aec0e271.tar.gz",
-      "hash": "sha256-uAz2Fczk3FX1oZ3TOMucJrdvqMp/IefAmwt95eMbuc4="
+      "revision": "8a085dfc7d70b88cec8982b893a65ccab144981a",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/8a085dfc7d70b88cec8982b893a65ccab144981a.tar.gz",
+      "hash": "sha256-EkiBaNcx4nY/bqGGUOc0EPoW17yu07XwmOm1p1S5B+Q="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -30,15 +30,15 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:860b198305e6bfe1bdec8abee2b3a0ef4208edf2e9cbf7e09cb3df97bef2bd6c",
-      "hash": "sha256-iwQCi5BO4CSc8KLSkDpRSCvBJ2Qj+WMWIbLkk1boklk="
+      "image_digest": "sha256:3f86cd3268f313b466552cb7ed98c3055f77c21823a7b1fb8426a4f203d7188a",
+      "hash": "sha256-d0bmZMasT2RTuRds2IDsDYxh4z1KY155gR9c+OVUtuY="
     },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1071116.aff8a0b28396/nixexprs.tar.xz",
-      "hash": "sha256-vLblJRFZjrSBOyHD4jwBkGJm2iOVk8c9BJnzZTOojSc="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1073483.c7def046b9a8/nixexprs.tar.xz",
+      "hash": "sha256-obwZbWHP7htCIoq2Z0g/uTMcEgN6yqcMNIcOMe6P2qI="
     },
     "tree-sitter-spade": {
       "type": "Git",
