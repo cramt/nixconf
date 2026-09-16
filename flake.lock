@@ -1501,11 +1501,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787915395,
-        "narHash": "sha256-7bBcwFlcesedJdgZ8a0f5LGJ1LmQjpXmmLkezV/KSg0=",
+        "lastModified": 1789590837,
+        "narHash": "sha256-XQUujsODjigouDCYgkGMTK23z5BOqTiNnK6wZ8G59DA=",
         "owner": "cramt",
         "repo": "nix-games",
-        "rev": "47ed2149d2db4d6c9a1af042630f8ebd3c84b3ce",
+        "rev": "e407375661404e4c111fd5da7f6068e51df46aa3",
         "type": "github"
       },
       "original": {
