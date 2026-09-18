@@ -96,7 +96,13 @@ cmd_sync() {
     def keyname: ascii_downcase | gsub("^\\s+|\\s+$"; "");
     # Cards exempt from singleton say so in their own rules text, so read it off
     # the card rather than keeping a hand-maintained list of Rats and Petitioners.
-    reduce inputs as $c ({cards: {}, oids: {}};
+    # Tokens, emblems and art-series entries share names with real cards
+    # (Llanowar Elves, Mutavault, Timeless Witness, and 34 others). They land
+    # later in the bulk file, so an unfiltered reduce overwrites the real
+    # record and `check` then reports those cards as not commander-legal.
+    def playable: (.layout // "normal")
+      | test("^(token|double_faced_token|emblem|art_series)$") | not;
+    reduce (inputs | select(playable)) as $c ({cards: {}, oids: {}};
       {
         name: $c.name,
         ci: ($c.color_identity // []),
