@@ -12,7 +12,6 @@
         gamemode
         dxvk
         gamescope
-        rhystic-tracker
         mangohud
         protontricks
         # Legends of Runeterra. Riot's Packman anti-tamper rejects current wine
@@ -24,6 +23,10 @@
       myHomeManager = {
         prismlauncher.enable = true;
         cockatrice.enable = true;
+        rhystic-tracker = {
+          enable = true;
+          service.enable = true;
+        };
       };
     };
   };

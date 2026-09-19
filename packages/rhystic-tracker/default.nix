@@ -72,8 +72,23 @@ in
       "tauri/custom-protocol"
     ];
 
+    # --hidden is ours: the user service starts the tracker at login and it has
+    # to come up in the tray, not on screen. Tauri builds the window from
+    # tauri.conf.json before setup() runs, so hiding it in setup would flash it
+    # first — build it hidden instead and show it in setup unless --hidden was
+    # passed. The desktop entry still opens a visible window, and upstream's
+    # single-instance plugin makes it raise the background instance rather than
+    # start a second one.
     postPatch = ''
       cp -r ${frontend} dist
+
+      substituteInPlace src-tauri/tauri.conf.json \
+        --replace-fail '"fullscreen": false,' '"fullscreen": false, "visible": false,'
+
+      substituteInPlace src-tauri/src/main.rs \
+        --replace-fail 'let is_prod = db::DatabaseManager::resolve_env().to_lowercase() == "production";' \
+                       'let is_prod = db::DatabaseManager::resolve_env().to_lowercase() == "production";
+      if !std::env::args().any(|a| a == "--hidden") { if let Some(w) = app.get_webview_window("main") { let _ = w.show(); } }'
     '';
 
     nativeBuildInputs = [
