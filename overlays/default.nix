@@ -233,4 +233,24 @@ inputs: [
       '';
     });
   })
+
+  # node 26.9.0's own test suite fails in a sandbox: test-fs-cp-async-file-modes
+  # chmods a file to 0o444 and expects the copy to fail, which never happens for
+  # a build user whose umask/ownership makes the read-only bit irrelevant. Hydra
+  # reproduces it, so nodejs-slim_26 is uncached everywhere — and stylix's
+  # Iosevka pulls it in via buildNpmPackage's `nodejs_latest`, taking every host
+  # down with it. Drop the one test rather than the whole check phase.
+  #
+  # Remove once nodejs/node#66104 lands in a release nixpkgs has picked up.
+  #   https://github.com/NixOS/nixpkgs/issues/564449
+  #   https://github.com/nodejs/node/pull/66104
+  (final: prev: {
+    nodejs-slim_26 = prev.nodejs-slim_26.overrideAttrs (old: {
+      postPatch =
+        (old.postPatch or "")
+        + ''
+          rm test/parallel/test-fs-cp-async-file-modes.mjs
+        '';
+    });
+  })
 ]
