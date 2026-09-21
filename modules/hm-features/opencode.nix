@@ -6,11 +6,11 @@
 # this machine (127.0.0.1, see modules/hm-features/cli-proxy-api.nix); opencode
 # talks to the employer's, which is remote and needs a URL and an API key —
 # both from opnix; myLib/agent-pool.nix says where they come from and why they
-# never enter the store. pi and omp read the same two files.
+# never enter the store. pi reads the same two files.
 #
 # opencode is the one consumer that wants the stored URL verbatim, /v1 and all:
 # it hands options.baseURL to the anthropic provider whole, unlike Claude Code's
-# ANTHROPIC_BASE_URL (and omp's), which appends the version segment itself.
+# ANTHROPIC_BASE_URL, which appends the version segment itself.
 #
 # opencode.json refers to both as {env:...}, and the `opencode` wrapper exports
 # them from those files. Going through env rather than baking the values into

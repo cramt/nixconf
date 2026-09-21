@@ -9,10 +9,10 @@
 #         into an `x-api-key` header — the same header opencode's provider
 #         sends, so the pool sees an identical request.
 #   URL   models.json `providers.anthropic.baseUrl`. pi has no env equivalent
-#         (unlike Claude Code's ANTHROPIC_BASE_URL, which omp also honours), so
-#         the wrapper renders that one file at launch from the secret. It hands
-#         the value straight to @anthropic-ai/sdk, which appends /v1/messages
-#         itself — hence the trailing /v1 gets stripped off the stored URL.
+#         (unlike Claude Code's ANTHROPIC_BASE_URL), so the wrapper renders
+#         that one file at launch from the secret. It hands the value straight
+#         to @anthropic-ai/sdk, which appends /v1/messages itself — hence the
+#         trailing /v1 gets stripped off the stored URL.
 #
 # ANTHROPIC_AUTH_TOKEN has to be cleared: pi prefers it over ANTHROPIC_API_KEY
 # and sends it as `Authorization: Bearer`, so a pi launched from inside a
