@@ -121,6 +121,30 @@
         home.packages =
           lib.optional cfg.ms365.enable m365ClaudePkg
           ++ lib.optional proxyCfg.enable claudePoolPkg;
+
+        # Sit out a rate limit instead of dying on it. Claude Code's default
+        # 429 path gives up two ways: a retry-after longer than 60s is
+        # rejected outright ("retry after too long"), and without one it
+        # exhausts 10 exponential retries capped at 32s — measured at 11
+        # attempts over 3m18s against a permanently-429ing upstream, which is
+        # nothing next to a 5h window. This moves 429/overloaded onto the
+        # persistent path: the attempt counter stops applying, backoff caps at
+        # 5m instead of 32s, and anthropic-ratelimit-unified-reset is honoured
+        # up to 6h. Verified against a fake upstream returning retry-after: 25
+        # and recovering at 75s — four attempts spaced 25s apart, then the
+        # turn completed.
+        #
+        # A session variable rather than an export in claudePoolPkg, because
+        # the wrapper only exists on pool hosts: luna runs the same
+        # claude-code but force-disables cli-proxy-api, and its direct OAuth
+        # login hits the real window just as hard. t3code gets it from here
+        # too — it captures the environment through `zsh -i -c` (see
+        # hm-features/zsh.nix) and hands process.env to the CLI it spawns.
+        #
+        # Remove when upstream makes waiting the default for subscription
+        # limits rather than something the runner opts into.
+        home.sessionVariables.CLAUDE_CODE_RETRY_WATCHDOG = "1";
+
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude/skills/status".source = skills.status.path;
