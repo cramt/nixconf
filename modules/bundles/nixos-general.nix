@@ -100,7 +100,17 @@
         };
         fonts = {
           monospace = {
-            package = pkgs.iosevka.out;
+            # The nerd-fonts build, not pkgs.iosevka: only this one actually
+            # ships the "Iosevka Nerd Font" family named just below — plain
+            # iosevka registers as "Iosevka", so the name never resolved to
+            # the package it was paired with. It's also a prebuilt release
+            # zip rather than a source build, which takes nodejs_26 out of
+            # every x86 host's closure. That node is patched in
+            # overlays/default.nix to skip a sandbox-failing test, making it
+            # uncached everywhere, so each host compiled it from source —
+            # ~35min, and enough TMPDIR scratch to blow the CI runner's root
+            # filesystem and kill the mars job outright.
+            package = pkgs.nerd-fonts.iosevka;
             name = "Iosevka Nerd Font";
           };
           sansSerif = {

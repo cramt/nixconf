@@ -237,9 +237,15 @@ inputs: [
   # node 26.9.0's own test suite fails in a sandbox: test-fs-cp-async-file-modes
   # chmods a file to 0o444 and expects the copy to fail, which never happens for
   # a build user whose umask/ownership makes the read-only bit irrelevant. Hydra
-  # reproduces it, so nodejs-slim_26 is uncached everywhere — and stylix's
-  # Iosevka pulls it in via buildNpmPackage's `nodejs_latest`, taking every host
-  # down with it. Drop the one test rather than the whole check phase.
+  # reproduces it, so nodejs-slim_26 is uncached everywhere. Drop the one test
+  # rather than the whole check phase.
+  #
+  # Currently unreferenced: stylix used to drag this in through a source-built
+  # pkgs.iosevka, which cost every x86 host a ~35min from-source node and blew
+  # the CI runner's root filesystem. nixos-general.nix now points stylix at the
+  # prebuilt nerd-fonts.iosevka, so nothing in the fleet pulls nodejs_26 at all.
+  # Kept as insurance — the upstream bug is real, so anything that starts
+  # depending on node 26 would hit it — but if nothing does, this can just go.
   #
   # Remove once nodejs/node#66104 lands in a release nixpkgs has picked up.
   #   https://github.com/NixOS/nixpkgs/issues/564449
