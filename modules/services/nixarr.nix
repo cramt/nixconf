@@ -31,6 +31,9 @@
         bazarr = {
           port = 6767;
         };
+        shelfmark = {
+          port = 8084;
+        };
       };
       environment.systemPackages = with pkgs; [
         tremc
@@ -121,8 +124,40 @@
         };
       };
 
+      # Shelfmark searches through Prowlarr rather than keeping its own indexer
+      # list, so Prowlarr stays the single registry -- the 18 indexers it already
+      # syncs to sonarr/radarr serve books too. It is a search-and-grab tool, not
+      # an *arr: no author monitoring, no quality profiles. Readarr, the actual
+      # Sonarr-for-books, was retired upstream and its metadata servers are gone.
+      services.shelfmark.environment = {
+        PROWLARR_ENABLED = "true";
+        PROWLARR_URL = "http://127.0.0.1:9696";
+        TRANSMISSION_URL = "http://127.0.0.1:9091";
+        TRANSMISSION_CATEGORY = "books";
+        INGEST_DIR = "${config.nixarr.mediaDir}/library/books";
+      };
+
+      # Prowlarr generates its own API key into its state dir, so lifting it into
+      # 1Password would mean two copies to keep in step. Read it at activation
+      # instead: Prowlarr remains the one source, and the key never enters the
+      # world-readable store the way services.shelfmark.environment would.
+      systemd.services.shelfmark.serviceConfig = {
+        EnvironmentFile = "-/run/shelfmark/prowlarr.env";
+        ExecStartPre = lib.mkBefore [
+          "+${pkgs.writeShellScript "shelfmark-prowlarr-key" ''
+            set -euo pipefail
+            key=$(${pkgs.gnused}/bin/sed -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' \
+              ${config.nixarr.stateDir}/prowlarr/config.xml)
+            install -d -m 0700 /run/shelfmark
+            umask 077
+            printf 'PROWLARR_API_KEY=%s\n' "$key" > /run/shelfmark/prowlarr.env
+          ''}"
+        ];
+      };
+
       nixarr = {
         enable = true;
+        shelfmark.enable = true;
         jellyfin.enable = true;
         jellyseerr.enable = true;
         bazarr.enable = true;
