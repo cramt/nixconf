@@ -156,6 +156,10 @@
         # Point it at the flaresolverr nixarr already runs for prowlarr.
         USING_EXTERNAL_BYPASSER = "true";
         EXT_BYPASSER_URL = "http://127.0.0.1:8191";
+        # A measured annas-archive solve takes ~22s, over the 20s default for
+        # BYPASS_PAGE_SOURCE_TIMEOUT -- the solve succeeds and the search still
+        # fails. 60s leaves headroom without exceeding EXT_BYPASSER_TIMEOUT.
+        BYPASS_PAGE_SOURCE_TIMEOUT = "60";
       };
 
       # Prowlarr generates its own API key into its state dir, so lifting it into
