@@ -132,6 +132,10 @@
       services.shelfmark.environment = {
         PROWLARR_ENABLED = "true";
         PROWLARR_URL = "http://127.0.0.1:9696";
+        # Naming the client is what registers it; TRANSMISSION_URL alone leaves
+        # shelfmark reporting "No download clients configured" and erroring
+        # every grab.
+        PROWLARR_TORRENT_CLIENT = "transmission";
         TRANSMISSION_URL = "http://127.0.0.1:9091";
         TRANSMISSION_CATEGORY = "books";
         INGEST_DIR = "${config.nixarr.mediaDir}/library/books";
