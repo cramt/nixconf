@@ -1189,11 +1189,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1789821330,
-        "narHash": "sha256-nPbZg9ha4b4k5c8g99rO5lcLc0ygFOV5GCt6/4UukYs=",
+        "lastModified": 1790068079,
+        "narHash": "sha256-a0Gydk2Xz2CTDxO5bmKvSrEXuprTr2FYuXvH3PpfR1c=",
         "owner": "cramt",
         "repo": "jellarr",
-        "rev": "f99ec5c985ae07304893f89fe6ed233d995d1aef",
+        "rev": "bc8f09e058be99e4d0102d27755f87534dd75157",
         "type": "github"
       },
       "original": {

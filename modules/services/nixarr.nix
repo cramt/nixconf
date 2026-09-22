@@ -99,7 +99,6 @@
                 name = "tvshows";
                 collectionType = "tvshows";
                 libraryOptions.pathInfos = [
-                  {path = "/pool/downloads/tvshows";}
                   {path = "${config.nixarr.mediaDir}/library/shows";}
                 ];
               }
@@ -107,7 +106,6 @@
                 name = "movies";
                 collectionType = "movies";
                 libraryOptions.pathInfos = [
-                  {path = "/pool/downloads/movies";}
                   {path = "${config.nixarr.mediaDir}/library/movies";}
                 ];
               }
