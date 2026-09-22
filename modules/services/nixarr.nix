@@ -143,10 +143,12 @@
         # stays fully declarative; Hardcover and Google Books would each add a
         # secret to carry for no gain here.
         OPENLIBRARY_ENABLED = "true";
-        # Default is epub,mobi,azw3,fb2,djvu,cbz,cbr -- a .mobi or .azw3 would land
-        # in the library and read badly in jellyfin. Narrow to the one format it
-        # renders properly; widen this if a wanted book has no epub release.
-        SUPPORTED_FORMATS = "epub";
+        # Reading happens on a kindle, not in jellyfin, so azw3 and mobi are
+        # first-class here rather than something to filter out. This drops the
+        # rest of the default list -- fb2 and djvu the kindle will not read, and
+        # cbz/cbr are comics, not books. pdf is absent from the default and
+        # stays excluded either way: unreadable on a kindle.
+        SUPPORTED_FORMATS = "epub,azw3,mobi";
       };
 
       # Prowlarr generates its own API key into its state dir, so lifting it into
