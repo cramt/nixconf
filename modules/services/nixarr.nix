@@ -109,6 +109,13 @@
                   {path = "${config.nixarr.mediaDir}/library/movies";}
                 ];
               }
+              {
+                name = "books";
+                collectionType = "books";
+                libraryOptions.pathInfos = [
+                  {path = "${config.nixarr.mediaDir}/library/books";}
+                ];
+              }
             ];
           };
         };
