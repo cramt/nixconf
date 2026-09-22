@@ -116,7 +116,7 @@
       hermes-agent = {
         enable = true;
         discord.enable = true;
-        discord.allowedUserIds = [ "149996010314137600" ];
+        discord.allowedUserIds = ["149996010314137600"];
         discord.homeChannelId = "1465064573840130289";
       };
       postgres = {
@@ -168,6 +168,16 @@
   #   enable = true;
   #   enableSSHSupport = true;
   # };
+
+  # The btrfs migration left /pool owned by cramt while its children are
+  # root-owned, and systemd-tmpfiles refuses to descend a non-root -> root
+  # transition: every rule under /pool/media was silently skipped, so any
+  # nixarr service added after the migration started with no state dir. Older
+  # services only survived because their directories predate it. `z` adjusts
+  # the existing mount point without recursing into the ~4TB beneath it.
+  systemd.tmpfiles.rules = [
+    "z /pool 0755 root root - -"
+  ];
 
   # List services that you want to enable:
 

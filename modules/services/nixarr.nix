@@ -141,13 +141,6 @@
         OPENLIBRARY_ENABLED = "true";
       };
 
-      # systemd-tmpfiles refuses every rule under /pool/media -- "unsafe path
-      # transition /pool (owned by cramt) -> /pool/media (owned by root)" -- so
-      # nixarr's own stateDir rule never fires and shelfmark starts with nowhere
-      # to write its settings. The older services only work because their dirs
-      # predate the btrfs migration that left /pool user-owned. Create it here
-      # until /pool itself is root-owned, which fixes it for every nixarr service.
-
       # Prowlarr generates its own API key into its state dir, so lifting it into
       # 1Password would mean two copies to keep in step. Read it at activation
       # instead: Prowlarr remains the one source, and the key never enters the
@@ -157,7 +150,6 @@
         ExecStartPre = lib.mkBefore [
           "+${pkgs.writeShellScript "shelfmark-prowlarr-key" ''
             set -euo pipefail
-            install -d -m 0700 -o shelfmark -g media "${config.nixarr.stateDir}/shelfmark"
             key=$(${pkgs.gnused}/bin/sed -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' \
               ${config.nixarr.stateDir}/prowlarr/config.xml)
             install -d -m 0700 /run/shelfmark
