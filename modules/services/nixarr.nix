@@ -160,6 +160,14 @@
         # BYPASS_PAGE_SOURCE_TIMEOUT -- the solve succeeds and the search still
         # fails. 60s leaves headroom without exceeding EXT_BYPASSER_TIMEOUT.
         BYPASS_PAGE_SOURCE_TIMEOUT = "60";
+        # Direct Download cannot work on this host and every attempt costs a
+        # ~25s bypass round before failing, which is what made the UI look
+        # hung. annas-archive.gl is behind DDoS-Guard, which flaresolverr does
+        # not solve -- it answers "Challenge solved!" and hands back the
+        # challenge page. The internal bypasser needs a browser that is not in
+        # the package closure, and of the four AA mirrors only .gl resolves
+        # (.li is a parked domain). Prowlarr is the working source.
+        DIRECT_DOWNLOAD_ENABLED = "false";
       };
 
       # Prowlarr generates its own API key into its state dir, so lifting it into
