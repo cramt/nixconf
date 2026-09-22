@@ -32,7 +32,7 @@
           port = 6767;
         };
         shelfmark = {
-          port = 8084;
+          port = config.nixarr.shelfmark.port;
         };
       };
       environment.systemPackages = with pkgs; [
@@ -131,12 +131,12 @@
       # Sonarr-for-books, was retired upstream and its metadata servers are gone.
       services.shelfmark.environment = {
         PROWLARR_ENABLED = "true";
-        PROWLARR_URL = "http://127.0.0.1:9696";
+        PROWLARR_URL = "http://127.0.0.1:${toString config.nixarr.prowlarr.port}";
         # Naming the client is what registers it; TRANSMISSION_URL alone leaves
         # shelfmark reporting "No download clients configured" and erroring
         # every grab.
         PROWLARR_TORRENT_CLIENT = "transmission";
-        TRANSMISSION_URL = "http://127.0.0.1:9091";
+        TRANSMISSION_URL = "http://127.0.0.1:${toString config.nixarr.transmission.uiPort}";
         TRANSMISSION_CATEGORY = "books";
         INGEST_DIR = "${config.nixarr.mediaDir}/library/books";
         # Open Library is the one metadata provider needing no API key, so it
@@ -155,7 +155,7 @@
         # rotation before failing, which reads as a UI that never loads.
         # Point it at the flaresolverr nixarr already runs for prowlarr.
         USING_EXTERNAL_BYPASSER = "true";
-        EXT_BYPASSER_URL = "http://127.0.0.1:8191";
+        EXT_BYPASSER_URL = "http://127.0.0.1:${toString config.services.flaresolverr.port}";
         # A measured annas-archive solve takes ~22s, over the 20s default for
         # BYPASS_PAGE_SOURCE_TIMEOUT -- the solve succeeds and the search still
         # fails. 60s leaves headroom without exceeding EXT_BYPASSER_TIMEOUT.
