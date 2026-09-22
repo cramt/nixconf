@@ -27,10 +27,6 @@
 
   home.packages = [
     (import ../../scripts/keep_awake.nix { inherit pkgs; })
-    # Saturn only, not the graphical bundle: zed-delta is a requireFile package
-    # (invite-only download), so putting it in a shared bundle would break eval
-    # on every host that doesn't have the tarball in its store.
-    pkgs.zed-delta
   ];
 
   home.stateVersion = "26.05";
