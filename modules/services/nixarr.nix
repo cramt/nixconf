@@ -149,6 +149,13 @@
         # cbz/cbr are comics, not books. pdf is absent from the default and
         # stays excluded either way: unreadable on a kindle.
         SUPPORTED_FORMATS = "epub,azw3,mobi";
+        # Shelfmark defaults the bypasser to http://flaresolverr:8191 -- the
+        # docker-compose hostname, which does not resolve here. Unset, every
+        # Direct Download search burns five retries with backoff and DNS
+        # rotation before failing, which reads as a UI that never loads.
+        # Point it at the flaresolverr nixarr already runs for prowlarr.
+        USING_EXTERNAL_BYPASSER = "true";
+        EXT_BYPASSER_URL = "http://127.0.0.1:8191";
       };
 
       # Prowlarr generates its own API key into its state dir, so lifting it into
