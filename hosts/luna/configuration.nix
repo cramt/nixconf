@@ -169,14 +169,20 @@
   #   enableSSHSupport = true;
   # };
 
-  # The btrfs migration left /pool owned by cramt while its children are
-  # root-owned, and systemd-tmpfiles refuses to descend a non-root -> root
-  # transition: every rule under /pool/media was silently skipped, so any
-  # nixarr service added after the migration started with no state dir. Older
-  # services only survived because their directories predate it. `z` adjusts
-  # the existing mount point without recursing into the ~4TB beneath it.
+  # The btrfs migration left /pool, /pool/media/.state and .state/nixarr owned
+  # by cramt while the service directories beneath them are root- or
+  # service-owned. systemd-tmpfiles refuses to descend such a transition and
+  # skips the rule while still exiting 0, so every nixarr rule under those
+  # paths was silently ignored. Services predating the migration kept working
+  # only because their directories already existed. nixarr documents this: a
+  # stateDir whose parents are not root-owned is unsupported.
+  #
+  # `z` rather than `Z` -- adjust these three directories alone, never
+  # recursing through the ~4TB of media beneath them.
   systemd.tmpfiles.rules = [
     "z /pool 0755 root root - -"
+    "z /pool/media/.state 0755 root root - -"
+    "z /pool/media/.state/nixarr 0755 root root - -"
   ];
 
   # List services that you want to enable:
