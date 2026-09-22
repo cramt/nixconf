@@ -24,7 +24,21 @@
   }: let
     cfg = config.myHomeManager.cli-proxy-api;
 
-    cliProxyPkg = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.cli-proxy-api;
+    # claude-opus-5-5 only entered upstream's embedded model registry in
+    # v7.3.13 (router-for-me/CLIProxyAPI@2430354), released hours after the
+    # current llm-agents pin packaged 7.3.10 — older registries reject the
+    # model. go.mod is untouched 7.3.10..7.3.13, so vendorHash carries over.
+    # Remove once llm-agents ships cli-proxy-api >= 7.3.13.
+    cliProxyPkg = (inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.cli-proxy-api).overrideAttrs (old: rec {
+      version = "7.3.13";
+      src = pkgs.fetchFromGitHub {
+        owner = "router-for-me";
+        repo = "CLIProxyAPI";
+        tag = "v${version}";
+        hash = "sha256-9ZiYPBEoxTcZaomY0Be4Q5hwQf5FCfdbvcJzYEGI+So=";
+      };
+      ldflags = map (builtins.replaceStrings [old.version] [version]) old.ldflags;
+    });
 
     authDir = "${config.home.homeDirectory}/.cli-proxy-api";
     # The local API key gates 127.0.0.1 only, but the nix store is world
