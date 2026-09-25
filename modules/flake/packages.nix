@@ -148,7 +148,6 @@
         agent-browser
         cockatrice
         rhystic-tracker
-        zed-delta
         ;
     }
     # Same reason, one layer down: UnityPy and the codec packages it needs are

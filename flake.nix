@@ -81,6 +81,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Zed's Delta agent. Our own flake (cramt/delta-nix), auto-bumped hourly by its
+    # CI; `just update` pulls the new version in.
+    delta-nix = {
+      url = "github:cramt/delta-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # OpenAI-compatible proxy for M365 Copilot (Nitro service + NixOS module).
     m365-copilot-proxy = {
       url = "github:cramt/m365-copilot-proxy";

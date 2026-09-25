@@ -324,6 +324,26 @@
         "type": "github"
       }
     },
+    "delta-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790361093,
+        "narHash": "sha256-9STt39f+1tOH0vZ0ifRG9p+E0DeAC3rzJCXPibbc3XM=",
+        "owner": "cramt",
+        "repo": "delta-nix",
+        "rev": "7c1a025abe4d35f2b5977d9982a5ff3b03c2f7c9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cramt",
+        "repo": "delta-nix",
+        "type": "github"
+      }
+    },
     "deploy-rs": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -2237,6 +2257,7 @@
         "claude-code": "claude-code",
         "cli-proxy-api-panel": "cli-proxy-api-panel",
         "cosmic-manager": "cosmic-manager",
+        "delta-nix": "delta-nix",
         "deploy-rs": "deploy-rs",
         "disko": "disko",
         "fenix": "fenix",

@@ -96,12 +96,8 @@ inputs: [
     agent-browser = prev.callPackage ../packages/agent-browser {};
   })
 
-  # Zed's Delta agent. Deliberately NOT named `delta` — that attribute is
-  # git-delta, and shadowing it would swap the diff pager out from under every
-  # consumer. Needs the tarball in the store by hand; see the package header.
-  (final: prev: {
-    zed-delta = prev.callPackage ../packages/zed-delta {};
-  })
+  # Zed's Delta agent, as `zed-delta` (`delta` is git-delta).
+  inputs.delta-nix.overlays.default
 
   (final: prev: let
     # The revision npins actually fetched, so mkZedExtension can cross-check it
