@@ -139,6 +139,7 @@
 
   home.packages = [
     (import ../../scripts/keep_awake.nix { inherit pkgs; })
+    pkgs.zed-delta
   ];
 
   home.stateVersion = "26.05";
