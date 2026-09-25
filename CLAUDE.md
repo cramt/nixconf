@@ -46,7 +46,7 @@ The flake-parts plumbing lives in `modules/flake/`:
 | `modules/flake/packages.nix` | `perSystem` packages (e.g. `eros-img`, `flash-eros`) |
 | `modules/flake/hm-modules.nix` | Typed accumulator options (`hmModules.default/features/bundles`) wired into `flake.homeManagerModules` once, to avoid freeform merge conflicts |
 
-The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
+The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`, `mercury`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
 
 A host only needs `hosts/<name>/host.nix` when it deviates from that; it takes `nixpkgs` (build from a vendor cache, as `eros` does with `nixpkgs-rpi`) and `address` (when DNS can't resolve the bare hostname).
 
@@ -121,6 +121,7 @@ Terraform configs live in `infra/`. Use `just tf <args>` which injects credentia
 
 - `saturn` — Alex's desktop (COSMIC daily driver, niri secondary). Home machine; work happens on a separate laptop.
 - `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.47. `eros` — 2GB RPi4 TV kiosk. `mars` — secondary desktop.
+- `mercury` — Terasic DE25-Nano (Agilex 5 SoC FPGA), headless, serial console only. Board support (kernel, boot chain, SD image) lives in our `A-H-Technology/nixos-fpga` flake (local checkout `~/code/nixos-fpga`); the host file only carries fleet bits. Kernel bumps come through that repo's `needs-hardware-test` PRs, never from nixconf.
 - Fleet hostnames resolve over the router's DNS, so `just deploy` addresses hosts by name, not IP.
 - Daily browser is Zen. Firefox is installed on `mars` (profiles configured, never launched); helium is kept on `saturn` for the occasional chromium.
 - `/external_storage` is a mergerfs pool over slow HDDs — no heavy IO through the mergerfs mount.
@@ -129,7 +130,7 @@ Terraform configs live in `infra/`. Use `just tf <args>` which injects credentia
 ## Build Policy
 
 - Small config changes build locally on saturn. Chunky/uncached/aarch64 builds go through GitHub Actions (ARM runner) + cachix.
-- NEVER build or eval on eros (2GB RAM, hard-crashes). `just deploy` already builds everything locally and only copies closures out (`remoteBuild = false`), so this holds by construction.
+- NEVER build or eval on eros (2GB RAM, hard-crashes) or mercury (957 MB). `just deploy` already builds everything locally and only copies closures out (`remoteBuild = false`), so this holds by construction.
 - If Alex is gaming: `--cores 1`, run in background.
 - Flakes only see git-tracked files — `git add` new files before `nix build`.
 - "CI is failing" unqualified = the saturn build.

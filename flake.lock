@@ -1491,6 +1491,26 @@
         "type": "github"
       }
     },
+    "nixos-fpga": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790345015,
+        "narHash": "sha256-Ju2TnX1IwfEJa/dxL6x1q9pv/LSci0zHoy2YHyhoq4w=",
+        "owner": "A-H-Technology",
+        "repo": "nixos-fpga",
+        "rev": "bbe3e4741cecfb6ce236bf7b2730adc661eecbe9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "A-H-Technology",
+        "repo": "nixos-fpga",
+        "type": "github"
+      }
+    },
     "nixos-images": {
       "inputs": {
         "nixos-stable": [
@@ -2242,6 +2262,7 @@
         "nix-index-database": "nix-index-database",
         "nix-ld": "nix-ld",
         "nixarr": "nixarr",
+        "nixos-fpga": "nixos-fpga",
         "nixos-raspberrypi": "nixos-raspberrypi",
         "nixpkgs": "nixpkgs_11",
         "nixpkgs-rpi": [
@@ -2260,7 +2281,6 @@
         "quadlet-nix": "quadlet-nix",
         "stylix": "stylix",
         "t3code-src": "t3code-src",
-        "terasic-linux-socfpga": "terasic-linux-socfpga",
         "winapps": "winapps",
         "yazi": "yazi",
         "zen-browser": "zen-browser"
@@ -2712,23 +2732,6 @@
       "original": {
         "owner": "pingdotgg",
         "repo": "t3code",
-        "type": "github"
-      }
-    },
-    "terasic-linux-socfpga": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1750988538,
-        "narHash": "sha256-a2gTLTAaJ7wSetDDedq8ZEghbMEVawRnbXu1OotmaU8=",
-        "owner": "terasic",
-        "repo": "linux-socfpga",
-        "rev": "d7d192a9ddd955fe206aa350afed8f82e368a74c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "terasic",
-        "ref": "de25_nano_revA_v1.0",
-        "repo": "linux-socfpga",
         "type": "github"
       }
     },

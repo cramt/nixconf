@@ -284,15 +284,12 @@
     nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/nixos-unstable";
     nixpkgs-rpi.follows = "nixos-raspberrypi/nixpkgs";
 
-    # Terasic's linux-socfpga fork — mercury's kernel. Mainline has had Agilex 5
-    # SoC support since 6.6, but socfpga_agilex5_de25_nano.dtb exists only here,
-    # so we can't just use nixpkgs' kernel. Not a flake, it's a kernel tree.
-    # A branch rather than a tag because that's all Terasic publishes; the lock
-    # pins the rev, so `just update` is what moves the board's kernel — if mercury
+    # Board support for mercury (Terasic DE25-Nano): vendor kernel, boot chain,
+    # SD image. Kernel bumps land there only after a hardware test, so if mercury
     # ever boot-loops after an update PR, this input is the first suspect.
-    terasic-linux-socfpga = {
-      url = "github:terasic/linux-socfpga/de25_nano_revA_v1.0";
-      flake = false;
+    nixos-fpga = {
+      url = "github:A-H-Technology/nixos-fpga";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # Fleet deployment: builds each host's toplevel locally and activates it over
