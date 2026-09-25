@@ -104,6 +104,9 @@ update_packages:
       --version-regex '^(\d{4}-\d{2}-\d{2}-Release-[0-9.]+)$' \
       || echo ">> cockatrice: no Release tag in the atom feed window, leaving it pinned"
     nix run nixpkgs#nix-update -- --flake rhystic-tracker
+    # Delta has no git tags or release feed for nix-update to follow; its own
+    # releases API is the only thing that knows the latest version.
+    nix run nixpkgs#nix-update -- --flake zed-delta --version "$(curl -fsSL 'https://delta.dev/api/releases/nightly/latest/asset?asset=delta&os=linux&arch=x86_64' | nix run nixpkgs#jq -- -er .version)"
     # rhystic-tracker's avatar extractor stack, pinned per-package off PyPI.
     nix run nixpkgs#nix-update -- --flake unitypy
     nix run nixpkgs#nix-update -- --flake texture2ddecoder

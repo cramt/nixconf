@@ -3,10 +3,12 @@
 # exposed as `zed-delta` so it doesn't shadow that, but its binary is still
 # named `delta`, so only put one of the two on a given PATH.
 #
-# requireFile, not fetchurl: Delta is invite-only early access and
-# https://delta.dev/api/releases/stable/latest/delta-linux-x86_64.tar.gz answers
-# 401 without a session cookie, so there is no URL Nix can fetch unattended.
-# Swap this for a plain fetchurl once downloads open up.
+# The tarball sits in a private R2 bucket. delta.dev's (unauthenticated)
+# releases API only ever hands out presigned links that die after 15 minutes,
+# so there is no URL fetchurl could pin. Instead src is a fixed-output
+# derivation that asks the API for a fresh link to the *pinned* version at
+# fetch time: the hash keeps it reproducible, the API just brokers access.
+# Swap for plain fetchurl if upstream ever publishes a stable URL.
 #
 # Upstream ships bin/delta with RPATH=$ORIGIN/../lib and its own copies of
 # libxcb/libxkbcommon/libunwind (built for old-glibc distros). We drop that lib/
@@ -18,13 +20,15 @@
 # which autoPatchelf cannot see, so those four go in the wrapper's
 # LD_LIBRARY_PATH along with the driver link that carries the Vulkan ICD.
 #
-# Bump: set version, download the new tarball, then
-#   nix-store --add-fixed sha256 delta-linux-x86_64.tar.gz
-#   nix hash file --type sha256 --sri delta-linux-x86_64.tar.gz
+# Bumped by `just update_packages`: the API's nightly/latest answers the
+# version, nix-update rewrites version + hash.
 {
   lib,
   stdenv,
-  requireFile,
+  stdenvNoCC,
+  curl,
+  jq,
+  cacert,
   autoPatchelfHook,
   makeWrapper,
   addDriverRunpath,
@@ -35,21 +39,23 @@
   wayland,
   xorg,
 }: let
-  version = "0.15.0";
+  version = "0.17.0";
 in
   stdenv.mkDerivation {
     pname = "zed-delta";
     inherit version;
 
-    src = requireFile {
-      name = "delta-linux-x86_64.tar.gz";
-      hash = "sha256-necopupdJDzqS7yG2ilDfL4c767S3qz+lNfype32LXw=";
-      message = ''
-        Delta is invite-only, so its tarball cannot be fetched automatically.
-        Download delta-linux-x86_64.tar.gz while signed in at
-        https://delta.dev/download and add it to the store with:
-
-          nix-store --add-fixed sha256 delta-linux-x86_64.tar.gz
+    src = stdenvNoCC.mkDerivation {
+      name = "delta-linux-x86_64-${version}.tar.gz";
+      outputHashMode = "flat";
+      outputHashAlgo = "sha256";
+      outputHash = "sha256-+AUZre1HCN2hzmF95jY0Xs0n4Fd/yPnfCTG+QGBt6MU=";
+      nativeBuildInputs = [curl jq];
+      SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
+      impureEnvVars = lib.fetchers.proxyImpureEnvVars;
+      buildCommand = ''
+        url=$(curl -fsSL "https://delta.dev/api/releases/nightly/${version}/asset?asset=delta&os=linux&arch=x86_64" | jq -er .url)
+        curl -fsSL -o "$out" "$url"
       '';
     };
 
