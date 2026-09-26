@@ -13,7 +13,7 @@
 # and pricing already embedded, so we patchelf that. nix-update follows the
 # GitHub releases and rewrites version + the host-arch hash below.
 let
-  version = "0.43.0";
+  version = "0.44.0";
 
   selectSystem = attrs:
     attrs.${stdenv.hostPlatform.system}
@@ -27,7 +27,7 @@ let
   # aarch64 hash only moves when built on arm. Every host that uses agentsview is
   # x86_64, so arm is effectively spare coverage.
   hash = selectSystem {
-    x86_64-linux = "sha256-RSDGaYdy0ttyICEqv1jX1YwJZtdDXwpasTQ3H4dN9tk=";
+    x86_64-linux = "sha256-A36npG1S4GsgNjtKp81/KOMvMdghWAPW6aDJa6xYGOM=";
     aarch64-linux = "sha256-EvOMxiP0zp0J6FcUSSX4AqwA+SlMoxPwYNY3JhwqAD4=";
   };
 in
