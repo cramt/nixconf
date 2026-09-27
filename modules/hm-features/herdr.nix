@@ -8,7 +8,7 @@
       enable = lib.mkEnableOption "myHomeManager.herdr";
       integrations = lib.mkOption {
         type = lib.types.listOf lib.types.str;
-        default = [ "claude" "codex" "pi" ];
+        default = [ "claude" "codex" ];
         example = [ "claude" ];
         description = ''
           Agent integrations to (re)install on every activation via
@@ -36,8 +36,6 @@
       # (incl. codex's read-only config.toml symlink) is already in place.
       home.activation.herdrIntegrations =
         lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          # pi writes its hook into the extensions dir and refuses if it's absent.
-          run mkdir -p "$HOME/.pi/agent/extensions"
           ${lib.concatMapStringsSep "\n" (name: ''
             # `|| true`: best-effort per agent — e.g. codex's read-only config.toml
             # makes the final config write fail after the hook is already installed.

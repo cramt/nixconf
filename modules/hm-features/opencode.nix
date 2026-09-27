@@ -6,7 +6,7 @@
 # this machine (127.0.0.1, see modules/hm-features/cli-proxy-api.nix); opencode
 # talks to the employer's, which is remote and needs a URL and an API key —
 # both from opnix; myLib/agent-pool.nix says where they come from and why they
-# never enter the store. pi reads the same two files.
+# never enter the store.
 #
 # opencode is the one consumer that wants the stored URL verbatim, /v1 and all:
 # it hands options.baseURL to the anthropic provider whole, unlike Claude Code's
@@ -76,9 +76,8 @@
       programs.opencode = {
         enable = true;
 
-        # Same file Claude Code gets as ~/.claude/CLAUDE.md and pi gets as
-        # ~/.pi/agent/AGENTS.md — one source of truth so the agents can't
-        # disagree about what this machine is.
+        # Same file Claude Code gets as ~/.claude/CLAUDE.md — one source of
+        # truth so the agents can't disagree about what this machine is.
         context = ./global-agent-instructions.md;
 
         settings = {

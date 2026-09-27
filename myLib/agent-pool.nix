@@ -1,6 +1,5 @@
 # The employer's pooled Anthropic-shaped endpoint, shared by every coding agent
-# that talks to it: opencode (modules/hm-features/opencode.nix) and pi
-# (modules/hm-features/pi.nix).
+# that talks to it: opencode (modules/hm-features/opencode.nix).
 #
 # Two fields on op://Homelab/OpenCode, which opnix renders as two files (a
 # 1Password field can't hold a newline, so they can't share one envFile):
@@ -10,7 +9,7 @@
 #
 # Both stay out of the world-readable nix store — every consumer reads them at
 # launch. The URL is stored *with* its /v1 because that is what opencode hands
-# to its provider verbatim; pi normalises it itself (see its module).
+# to its provider verbatim.
 #
 # Lives in myLib/ rather than modules/ for the same reason agent-skills.nix
 # does: import-tree turns every .nix file under modules/ into a flake-parts
@@ -19,8 +18,7 @@
   # The Claude models the pool serves. Every agent here has a maintained
   # built-in catalog entry for each of these (context window, pricing, thinking
   # levels), so only opencode — which enumerates its provider's models by hand —
-  # needs the names; pi resolves them from its own catalog and picks up
-  # upstream corrections for free.
+  # needs the names.
   claudeModels = {
     "claude-opus-5" = "Claude Opus 5";
     "claude-opus-4-8" = "Claude Opus 4.8";

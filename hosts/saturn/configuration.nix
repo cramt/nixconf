@@ -123,11 +123,9 @@
     opnix-secrets.enable = true;
     # Tunnel is declared but stays down until `systemctl start wg-quick-vxn`.
     vpn.vxn.enable = true;
-    services.m365-copilot-proxy.enable = true;
     gnupg.enable = true;
     onepassword.enable = true;
     qemu.enable = true;
-    docker.enable = true;
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.graphical.enable = true;
@@ -150,7 +148,6 @@
       # start happily over one), so don't run both at once. Use the web UI at
       # this host's t3code port, or stop the unit before opening the app.
       t3code.enable = true;
-      sunshine.enable = true;
       # colibrì streams MoE expert weights off the dedicated /llm partitions
       # (hosts/saturn/disko.nix). The CLI ships now because staging the weights
       # NEEDS it — `coli convert`/`download` populate /llm/primary, and
@@ -216,6 +213,8 @@
   };
 
   networking.networkmanager.enable = true;
+  # NetworkManager pulls ModemManager in by default; there is no modem here.
+  networking.modemmanager.enable = false;
 
   programs.nix-ld.enable = true;
 

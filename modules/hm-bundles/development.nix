@@ -22,7 +22,6 @@
         # empty. Accounts are added once each with `agent-accounts add`
         # (interactive OAuth), which Nix can't do for us.
         cli-proxy-api.enable = true;
-        pi.enable = true;
         java.enable = true;
         scala.enable = true;
         ruby.enable = true;

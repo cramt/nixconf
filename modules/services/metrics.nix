@@ -61,11 +61,6 @@
             are enumerated in infra/main.tf, there's no wildcard.
           '';
         };
-        grafanaSubdomain = lib.mkOption {
-          type = lib.types.str;
-          default = "grafana";
-          description = "Caddy vhost for the dashboards. Also needs an A record.";
-        };
         dataDir = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = null;
@@ -113,7 +108,7 @@
             default = "admin";
             description = ''
               Basic-auth user the agents push as, and the name typed into the
-              browser prompt in front of prometheus and grafana.
+              browser prompt in front of prometheus.
             '';
           };
           hashedPassword = lib.mkOption {
@@ -123,16 +118,8 @@
               bcrypt hash of the push password, from `caddy hash-password`. A
               hash, not a secret, so it lives in the store like btopttyd's does
               -- the password itself comes from opnix on each agent.
-
-              This one credential also fronts grafana, which runs anonymous-
-              Admin behind it: whoever can push can also edit dashboards.
             '';
           };
-        };
-        grafana.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Run Grafana alongside prometheus, pre-pointed at it.";
         };
       };
     };
@@ -145,7 +132,6 @@
           "9100" = "node_exporter";
           "9256" = "process_exporter";
           "9090" = "prometheus";
-          "3000" = "grafana";
         };
       }
 
@@ -173,7 +159,20 @@
           # bounded by the set of distinct binaries that run (a few hundred on a
           # desktop), and the basename is what maps back to a package in the
           # config. Grouping per-PID instead would be unbounded.
+          #
+          # {{.ExeBase}} is basename(argv[0]), and chromium/electron children
+          # and zen's content processes rewrite argv[0] into their whole
+          # command line -- so the "basename" lands mid-argument, e.g. inside
+          # flaresolverr's --user-data-dir=/tmp/tmpXXXXXXXX. Every launch was a
+          # fresh series (~600 on luna in a month). Those two families are
+          # named by the first token of the command line instead; everything
+          # else keeps ExeBase, whose argv[0] is what makes npm-launched MCP
+          # servers and electron's app.asar tellable apart at all.
           settings.process_names = [
+            {
+              name = "{{.Matches.exe}}";
+              cmdline = [''^(?:\S*/)?(?P<exe>[^\s/]+) .*(--type=|-contentproc )''];
+            }
             {
               name = "{{.ExeBase}}";
               cmdline = [".+"];
@@ -262,59 +261,13 @@
 
         # Withheld until the credential exists, so the assertion above is what
         # surfaces rather than a type error deep in the Caddyfile builder.
-        myNixOS.services.caddy.serviceMap = lib.optionalAttrs (cfg.server.auth.hashedPassword != null) (
-          {
-            ${cfg.server.subdomain} = {
-              port = ports.prometheus;
-              basic-auth = {
-                username = cfg.server.auth.username;
-                hashed-password = cfg.server.auth.hashedPassword;
-              };
+        myNixOS.services.caddy.serviceMap = lib.optionalAttrs (cfg.server.auth.hashedPassword != null) {
+          ${cfg.server.subdomain} = {
+            port = ports.prometheus;
+            basic-auth = {
+              username = cfg.server.auth.username;
+              hashed-password = cfg.server.auth.hashedPassword;
             };
-          }
-          // lib.optionalAttrs cfg.server.grafana.enable {
-            ${cfg.server.grafanaSubdomain} = {
-              port = ports.grafana;
-              basic-auth = {
-                username = cfg.server.auth.username;
-                hashed-password = cfg.server.auth.hashedPassword;
-              };
-            };
-          }
-        );
-
-        services.grafana = lib.mkIf cfg.server.grafana.enable {
-          enable = true;
-          settings = {
-            server = {
-              http_addr = "127.0.0.1";
-              http_port = ports.grafana;
-              domain = "${cfg.server.grafanaSubdomain}.${site.domain}";
-              root_url = "https://${cfg.server.grafanaSubdomain}.${site.domain}/";
-            };
-            # Anonymous Admin rather than the stock admin/admin: there's no
-            # second password to leak or rotate, and caddy's basic_auth in front
-            # is already the gate. Load-bearing on http_addr staying loopback.
-            "auth.anonymous" = {
-              enabled = true;
-              org_role = "Admin";
-            };
-            auth.disable_login_form = true;
-            # File provider rather than a literal: grafana reads it at start-up
-            # so the key never lands in the world-readable nix store.
-            security.secret_key = "$__file{${config.services.onepassword-secrets.secretPaths.grafanaSecretKey}}";
-          };
-          provision.datasources.settings = {
-            apiVersion = 1;
-            datasources = [
-              {
-                name = "Prometheus";
-                type = "prometheus";
-                access = "proxy";
-                url = "http://127.0.0.1:${toString ports.prometheus}";
-                isDefault = true;
-              }
-            ];
           };
         };
       })

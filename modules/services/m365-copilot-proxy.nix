@@ -8,9 +8,6 @@
 #
 #   2. Set `myNixOS.services.m365-copilot-proxy.enable = true;` on the host
 #      (the host must also have `myNixOS.opnix-secrets.enable = true;`).
-#
-# The port is assigned through the repo's port-selector; pi reads the same value
-# via osConfig (see modules/hm-features/pi.nix), so the two always agree.
 { inputs, ... }: {
   flake.nixosModules."services.m365-copilot-proxy" = { config, lib, ... }:
   let

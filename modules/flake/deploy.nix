@@ -48,7 +48,7 @@ in
     sshUser = "root";
     user = "root";
     # luna starts a lot of heavy units in one go (postgres, jellyfin,
-    # the *arrs, satisfactory), and deploy-rs' 240s/30s defaults are sized for
+    # the *arrs), and deploy-rs' 240s/30s defaults are sized for
     # a machine that activates in seconds. Too short and magic rollback reverts
     # a perfectly good deploy just for being slow.
     activationTimeout = 900;

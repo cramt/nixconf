@@ -85,7 +85,6 @@
         # op://Homelab/Metrics/remoteWritePassword and reaches agents via opnix.
         auth.hashedPassword = "$2a$14$np6mAmdVPkGBrPrFnV4rSeUw45WaHHvVngHupMyOSyClwwnL7444a";
       };
-      tor.enable = true;
       garage.enable = false;
       btopttyd.enable = false;
       minecraft-forge = {
@@ -101,12 +100,6 @@
       foundryvtt = {
         enable = true;
         dataVolume = "/pool/configs/foundryvtt_a";
-      };
-      satisfactory = {
-        enable = true;
-        maxPlayers = 8;
-        beta = true;
-        dataVolume = "/pool/satisfactory";
       };
       homelab_system_controller = {
         enable = false;

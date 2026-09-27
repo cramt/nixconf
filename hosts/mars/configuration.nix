@@ -35,11 +35,8 @@
     gnupg.enable = true;
     onepassword.enable = true;
     opnix-secrets.enable = true;
-    services.m365-copilot-proxy.enable = true;
-    qemu.enable = true;
     docker.enable = true;
     bluetooth.enable = true;
-    localsend.enable = true;
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.graphical.enable = true;
@@ -63,6 +60,8 @@
   };
 
   networking.networkmanager.enable = true;
+  # NetworkManager pulls ModemManager in by default; there is no modem here.
+  networking.modemmanager.enable = false;
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
