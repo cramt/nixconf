@@ -394,28 +394,34 @@ shuffler to bias.
 
 ```bash
 gauntlet parse deck.txt              # the canonical decklist parser, as JSON
-gauntlet test deck.txt criteria.js   # evaluate criteria, PASS/FAIL, exit code
-gauntlet test deck.txt c.js --draw   # model being on the draw
-gauntlet test deck.txt c.js --simulate --trials 200000 --seed 1
+gauntlet sync                        # build its own index (~/.cache/scryfall/index.jsonl)
+gauntlet test deck.txt criteria.toml # evaluate criteria, PASS/FAIL, exit code
+gauntlet test deck.txt c.toml --draw # model being on the draw
 ```
 
-Criteria are JavaScript, so combining requirements is ordinary code:
+Criteria are TOML. All `require` clauses must hold; `[[criterion.any_of]]` branches are
+alternatives. `can_cast` prices a cost against the lands drawn (rocks and dorks don't count,
+and shock/check lands are assumed tapped, so mana figures are floors). Worked examples:
+`~/code/progress-engine/decks/*.criteria.toml`.
 
-```js
-// t(n) is your position on turn n; t(0) is the opening hand. On the play, turn 1
-// draws nothing, so t(0) and t(1) see the same seven cards.
-criterion("turn-1 accelerant", (t) =>
-  t(1).count('t:land') >= 1 &&
-  t(1).count('cat:"Ramp - One Mana"') >= 1,
-  { atLeast: 0.35 });
+```toml
+# turn 0 is the opening hand; on the play turn 1 draws nothing.
+[[criterion]]
+name = "commander on turn 2"
+at_least = 0.30
+require = [
+  { turn = 1, query = 'cat:"Ramp - One Mana"', min = 1 },
+  { turn = 2, can_cast = "{G}{W}" },
+]
 
-// The bar for a three-mana commander getting down on turn two.
-criterion("commander on turn 2", (t) =>
-  t(1).count('t:land') >= 1 &&
-  t(1).count('cat:"Ramp - One Mana"') >= 1 &&
-  t(2).count('t:land') >= 2,
-  { atLeast: 0.30 });
+[[expect]]          # a mean and distribution, never fails
+name = "lands in opener"
+turn = 0
+query = "t:land"
 ```
+
+**Double-faced cards must use the full `Front // Back` name** — gauntlet doesn't resolve
+front-face names the way `check` and Archidekt do. Test against an expanded copy of the list.
 
 Card selection is a subset of Scryfall syntax — `t:land`, `o:"Add {W}"`, `mv<=2`, `id<=W`,
 `is:permanent`, `-t:creature`, `or`, parentheses — plus `cat:"..."` for the decklist's own
@@ -423,9 +429,9 @@ categories. **Unsupported syntax is a parse error naming the term**, never a sil
 
 Notes that matter in practice:
 
-- **A criterion without `atLeast` is informational.** It reports a number and cannot fail.
+- **A criterion without `at_least` is informational.** It reports a number and cannot fail.
   Use thresholds for the things the deck genuinely needs, not for everything.
-- **The file decides how many turns to model.** The deepest `t(n)` you ask about sets it;
+- **The file decides how many turns to model.** The deepest `turn` you ask about sets it;
   nothing is declared twice.
 - **Watch the query match counts.** Every run reports how many cards each query matched, and
   says so loudly when that is zero. A misspelled category parses fine and matches nothing,
