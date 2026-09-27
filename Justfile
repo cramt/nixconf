@@ -132,7 +132,9 @@ update:
     fi
     just update_flake
     just update_gems
-    npins update
+    # npins shells out to skopeo for docker pins; CI's runner image happens to
+    # ship it, a desktop doesn't.
+    nix shell --inputs-from . nixpkgs#npins nixpkgs#skopeo --command npins update
     just update_packages
 
 tf *args:
