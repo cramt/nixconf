@@ -67,6 +67,9 @@
         # points it at the work pool — see modules/hm-features/opencode.nix.
         providers.opencode = true;
       };
+      # Always-on target for claude.ai/code and the phone app; uses the direct
+      # claude.ai login in ~/.claude.json (luna is off the account pool).
+      claude-remote-control.enable = true;
       nixarr.enable = true;
       recyclarr.enable = true;
       cleanuparr = {
