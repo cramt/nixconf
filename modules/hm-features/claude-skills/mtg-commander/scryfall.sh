@@ -22,7 +22,7 @@ TAGS="$CACHE/tags.json"
 # a game in progress is not.
 STATE="${SCRYFALL_STATE:-${XDG_STATE_HOME:-$HOME/.local/state}/scryfall/games}"
 
-# Decklist parsing lives in `progress-engine`, not here.
+# Decklist parsing lives in `gauntlet`, not here.
 #
 # `check` and `play` must agree on what a decklist *is* — a disagreement means a
 # deck validates at 100 cards and then deals a different 100 — and the only way
@@ -36,7 +36,7 @@ STATE="${SCRYFALL_STATE:-${XDG_STATE_HOME:-$HOME/.local/state}/scryfall/games}"
 # commander.
 parse_decklist() {
   [[ -r ${1:-} ]] || die "cannot read decklist: ${1:-}"
-  progress-engine parse "$1" || die "could not parse $1 — see the error above"
+  gauntlet parse "$1" || die "could not parse $1 — see the error above"
 }
 
 # Name normalisation, which must match how `sync` built the index or every
@@ -284,7 +284,7 @@ cmd_check() {
     | ([ $cmdrs[].rec.ci[]? ] | unique) as $cmdci
     # A companion is a 101st card outside the deck (CR 903.11), so it is counted
     # and colour-checked separately rather than against the 100. Whether a line is
-    # outside the deck is decided by `progress-engine`, so `check` and `play` cannot
+    # outside the deck is decided by `gauntlet`, so `check` and `play` cannot
     # disagree about it.
     | ($known | map(select(.outside)))       as $comps
     | ($known | map(select(.outside | not))) as $deck

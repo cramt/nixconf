@@ -33,8 +33,8 @@ scryfall path                     # path to the index, for arbitrary jq
 scryfall play new <file>          # deal a real shuffled deck and play it out
 ```
 
-A second binary, `progress-engine`, answers the question neither of those does — how often the
-deck actually has its pieces by turn N. See [Test whether it functions](#test-whether-it-functions-progress-engine).
+A second binary, `gauntlet`, answers the question neither of those does — how often the
+deck actually has its pieces by turn N. See [Test whether it functions](#test-whether-it-functions-gauntlet).
 It also owns decklist parsing outright: `check` and `play` shell out to it, so all three agree
 on what a decklist is by construction.
 
@@ -382,21 +382,21 @@ The acceptance test is the hypergeometric distribution for the deck. For 36 land
 (a 100-card deck minus the commander), n=7: **mean 2.5457, SD 1.2331**. Deal N hands, count
 lands, and check the mean sits within ~3 SE (`1.2331/sqrt(N)`). Both `shuf` and the seeded
 openssl AES-CTR keystream clear this; anything you replace them with must too.
-## Test whether it functions: `progress-engine`
+## Test whether it functions: `gauntlet`
 
 `check` proves a list is legal. `play` deals one game. Neither answers the question that
 decides whether a deck works: **by turn N, how often do I actually have the pieces** — where a
 "piece" may be one card or two combined, and where one card can count as several.
 
-`progress-engine test` answers that exactly. Not by simulating: it groups cards by which of
+`gauntlet test` answers that exactly. Not by simulating: it groups cards by which of
 your queries they match and enumerates the possibilities, so there is no sampling error and no
 shuffler to bias.
 
 ```bash
-progress-engine parse deck.txt              # the canonical decklist parser, as JSON
-progress-engine test deck.txt criteria.js   # evaluate criteria, PASS/FAIL, exit code
-progress-engine test deck.txt c.js --draw   # model being on the draw
-progress-engine test deck.txt c.js --simulate --trials 200000 --seed 1
+gauntlet parse deck.txt              # the canonical decklist parser, as JSON
+gauntlet test deck.txt criteria.js   # evaluate criteria, PASS/FAIL, exit code
+gauntlet test deck.txt c.js --draw   # model being on the draw
+gauntlet test deck.txt c.js --simulate --trials 200000 --seed 1
 ```
 
 Criteria are JavaScript, so combining requirements is ordinary code:
