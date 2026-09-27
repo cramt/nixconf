@@ -34,6 +34,9 @@ jobs:
           # config instead (override mechanism: containers/skopeo#2002).
           # Remove once the runner image ships a v2 registries.conf.
           CONTAINERS_REGISTRIES_CONF: /dev/null
+          # npins and nix-update read this for GitHub API calls; `just update`
+          # also forwards it to nix as access-tokens.
+          GITHUB_TOKEN: ${{ github.token }}
         run: nix shell nixpkgs#just nixpkgs#npins nixpkgs#bundler --command just update
 
       # Pushes with GITHUB_TOKEN don't fire pull_request events (GitHub's

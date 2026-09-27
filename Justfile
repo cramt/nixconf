@@ -116,7 +116,20 @@ update_packages:
 # Bump every pinned source (flake.lock, gems, npins, packages). Run daily by
 # .github/workflows/update.yml, which pushes the result to the `update` branch
 # as a PR and prebuilds it into cachix — merge that PR to update.
+#
+# Anonymous GitHub API calls cap out at 60/h, which flake update + npins +
+# nix-update blow through fast. Borrow gh's token (or CI's GITHUB_TOKEN) and
+# hand it to all three: nix via access-tokens, npins/nix-update via GITHUB_TOKEN.
 update:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}"
+    if [ -n "$GITHUB_TOKEN" ]; then
+      export GITHUB_TOKEN
+      export NIX_CONFIG="access-tokens = github.com=$GITHUB_TOKEN${NIX_CONFIG:+$'\n'$NIX_CONFIG}"
+    else
+      echo ">> no GitHub token (gh not authed?), running anonymous, expect rate limits" >&2
+    fi
     just update_flake
     just update_gems
     npins update
