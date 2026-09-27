@@ -201,10 +201,6 @@ inputs: [
   })
 
   (final: prev: {
-    julia = prev.julia.withPackages ["JuliaFormatter" "LanguageServer"];
-  })
-
-  (final: prev: {
     docker = prev.docker.override {
       buildxSupport = true;
     };

@@ -82,6 +82,9 @@
           # env, and `load_direnv = "shell_hook"` is set, so a devshell in a
           # vix project supplies it. Revisit if vixen lands in nixpkgs.
           swim
+          # The Zed julia extension runs JETLS via `julia` on PATH (needs 1.12.2..1.13)
+          # and installs JETLS itself into a private depot.
+          julia
           npins
           nix-prefetch-docker
           sshpass

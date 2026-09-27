@@ -22,7 +22,7 @@
 
       programs.zed-editor = {
         enable = true;
-        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "scala" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin" "styx"];
+        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "scala" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin" "styx" "julia"];
         mutableUserSettings = false;
         mutableUserKeymaps = false;
         mutableUserTasks = false;
