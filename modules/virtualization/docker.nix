@@ -13,6 +13,10 @@
       };
     };
     config = lib.mkIf cfg.enable {
+      # oci-containers defaults to podman. This used to be set by the
+      # satisfactory module alone, so dropping satisfactory silently moved
+      # every other container on luna to podman.
+      virtualisation.oci-containers.backend = "docker";
       networking.firewall = {
         allowedTCPPorts = lib.optionals (cfg.httpPort != null) [cfg.httpPort];
       };
