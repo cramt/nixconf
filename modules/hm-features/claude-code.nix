@@ -91,6 +91,37 @@
     # and with opencode (~/.config/opencode/AGENTS.md) — single source of truth
     # so the agents' global instructions can't drift.
     globalClaudeMd = builtins.readFile ./global-agent-instructions.md;
+
+    # Keys we own inside ~/.claude/settings.json. The file can't be a
+    # home.file symlink: Claude Code writes to it itself (/model, /theme,
+    # herdr registers its hook there), so these get deep-merged in on every
+    # activation and everything else in the file is left alone.
+    declaredSettings = (pkgs.formats.json {}).generate "claude-declared-settings.json" {
+      # Empty string hides the Co-Authored-By trailer / "Generated with"
+      # footer entirely. The global instructions already forbid attribution,
+      # but the harness injects its own default, so it has to die at the source.
+      attribution = {
+        commit = "";
+        pr = "";
+      };
+    };
+    mergeSettings = pkgs.writeShellApplication {
+      name = "claude-merge-settings";
+      runtimeInputs = [pkgs.coreutils pkgs.jq];
+      text = ''
+        f="$HOME/.claude/settings.json"
+        install -d "$HOME/.claude"
+        # Refuse to clobber a file we can't parse — that's hand-edited state
+        # worth more than our two keys.
+        if [ -e "$f" ]; then
+          current=$(jq . "$f") || { echo "claude-merge-settings: $f is not valid JSON, skipping" >&2; exit 0; }
+        else
+          current='{}'
+        fi
+        printf '%s' "$current" | jq --slurpfile declared ${declaredSettings} '. * $declared[0]' > "$f.new"
+        mv "$f.new" "$f"
+      '';
+    };
   in {
     options.myHomeManager.claude-code = {
       enable = lib.mkEnableOption "myHomeManager.claude-code";
@@ -144,6 +175,10 @@
         # Remove when upstream makes waiting the default for subscription
         # limits rather than something the runner opts into.
         home.sessionVariables.CLAUDE_CODE_RETRY_WATCHDOG = "1";
+
+        home.activation.claude-settings = lib.hm.dag.entryAfter ["writeBoundary"] ''
+          run ${lib.getExe mergeSettings}
+        '';
 
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
