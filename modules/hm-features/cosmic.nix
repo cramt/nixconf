@@ -132,6 +132,13 @@
           cursor_follows_focus = true;
           focus_follows_cursor = true;
           focus_follows_cursor_delay = 100;
+          # cosmic-comp hands every non-sandboxed client a valid xdg-activation
+          # token without an input serial, so with the default `Focus` policy a
+          # CDP-driven Chromium (agent-browser) raising a tab yanks focus — and,
+          # via cursor_follows_focus, the pointer — over to its monitor. Only
+          # honour activation on the workspace already in front of us; anything
+          # elsewhere just gets marked urgent.
+          activation_policy = ron "enum" "FocusIfActiveWorkspace";
           autotile_behavior = ron "enum" "PerWorkspace";
           xkb_config = {
             rules = "";
