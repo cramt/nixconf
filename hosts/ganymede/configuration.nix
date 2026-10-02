@@ -15,6 +15,9 @@
 
   boot = {
     loader.systemd-boot.enable = true;
+    # /boot is 1 GiB and each generation here carries a 7.3-rc kernel plus
+    # the NVIDIA module initrd; unlimited entries filled it and broke a deploy.
+    loader.systemd-boot.configurationLimit = 5;
     loader.efi.canTouchEfiVariables = true;
     # 7.3 is the first kernel whose hid-steam drives the 2026 Steam Controller
     # (Vicki Pfau's series, merged for 7.3-rc1), and the couch compositor reads
