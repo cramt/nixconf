@@ -11,6 +11,7 @@
     niri.enable = true;
     bundles.general.enable = true;
     bundles.development.enable = true;
+    delta.enable = true;
     btop.hardware-accel = "rocm";
     bundles.graphical.enable = true;
     bundles.gaming.enable = true;
@@ -27,7 +28,6 @@
 
   home.packages = [
     (import ../../scripts/keep_awake.nix { inherit pkgs; })
-    pkgs.zed-delta
   ];
 
   home.stateVersion = "26.05";

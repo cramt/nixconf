@@ -331,11 +331,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790361093,
-        "narHash": "sha256-9STt39f+1tOH0vZ0ifRG9p+E0DeAC3rzJCXPibbc3XM=",
+        "lastModified": 1790924130,
+        "narHash": "sha256-4woe6+r3iuCMxC5M0d939dGbxYPi06ho+w5baya5IRU=",
         "owner": "cramt",
         "repo": "delta-nix",
-        "rev": "7c1a025abe4d35f2b5977d9982a5ff3b03c2f7c9",
+        "rev": "83d739f83b574e6f3aeb2be7463b4aa50c0a1fe9",
         "type": "github"
       },
       "original": {

@@ -12,6 +12,7 @@
     bundles.general.enable = true;
     bundles.graphical.enable = true;
     bundles.development.enable = true;
+    delta.enable = true;
     bundles.work.enable = true;
     bundles.gaming.enable = true;
 
@@ -139,7 +140,6 @@
 
   home.packages = [
     (import ../../scripts/keep_awake.nix { inherit pkgs; })
-    pkgs.zed-delta
   ];
 
   home.stateVersion = "26.05";
