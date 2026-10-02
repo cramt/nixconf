@@ -1,7 +1,10 @@
 # NVIDIA GPU with proprietary drivers
-{ ... }: {
-  flake.nixosModules."features.nvidia" = { config, lib, ... }:
-  let
+{...}: {
+  flake.nixosModules."features.nvidia" = {
+    config,
+    lib,
+    ...
+  }: let
     driver = config.myNixOS.nvidia.package;
   in {
     options.myNixOS.nvidia = {
@@ -58,6 +61,17 @@
         open = false;
         nvidiaSettings = true;
         package = driver;
+      };
+
+      # GPU and NVENC/NVDEC utilisation: whether the card earns its keep.
+      services.prometheus.exporters.nvidia-gpu = lib.mkIf config.myNixOS.services.metrics.exporter.enable {
+        enable = true;
+        listenAddress = "127.0.0.1";
+        port = config.port-selector.ports.nvidia_gpu_exporter;
+      };
+      port-selector.auto-assign = lib.mkIf config.myNixOS.services.metrics.exporter.enable ["nvidia_gpu_exporter"];
+      myNixOS.services.metrics.localJobs = lib.mkIf config.myNixOS.services.metrics.exporter.enable {
+        nvidia-gpu.port = config.port-selector.ports.nvidia_gpu_exporter;
       };
     };
   };

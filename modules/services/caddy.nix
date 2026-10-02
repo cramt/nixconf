@@ -1,4 +1,4 @@
-{ ... }: {
+{...}: {
   flake.nixosModules."services.caddy" = {
     config,
     lib,
@@ -190,11 +190,18 @@
         }
       ];
       networking.firewall.allowedTCPPorts = [80 443];
+      # Served by caddy's admin API, which only ever listens on loopback.
+      myNixOS.services.metrics.localJobs.caddy.port = 2019;
       services.caddy = {
         enable = true;
         email = (import ../../myLib/site.nix).email;
+        # per_host labels every request series with its vhost, which is what
+        # "is anyone actually using <service>" comes down to on this box.
         globalConfig = ''
           debug
+          metrics {
+            per_host
+          }
         '';
         virtualHosts =
           {

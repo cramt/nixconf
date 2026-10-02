@@ -101,7 +101,7 @@ cache, as `eros` does) and `address` (if DNS can't find the host). See
 | **Theming** | [stylix](https://github.com/nix-community/stylix) — dark theme with Iosevka Nerd Font. `stylixAsset` accepts an image or `.mp4` |
 | **Secrets** | [opnix](https://github.com/brizzbuzz/opnix) — 1Password-based secret injection |
 | **Port assignment** | `portselector.nix` — deterministically assigns ports by hashing service names |
-| **Fleet metrics** | Push-based Prometheus on `luna`; agents remote_write through Caddy (`modules/services/metrics.nix`) |
+| **Fleet metrics** | Push-based Prometheus on `luna`; agents remote_write through Caddy (`modules/services/metrics.nix`). Services register loopback scrapes via `localJobs`: Caddy per-vhost requests, cli-proxy-api (`cpa-prometheus` plugin), exportarr, nvidia-gpu |
 | **Non-flake pins** | `npins/` — for sources without flake support |
 | **Gems** | `gems/` — Ruby gems used by scripts, locked with `bundle lock` |
 | **Packages** | `packages/` — custom packages |

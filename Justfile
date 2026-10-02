@@ -93,6 +93,7 @@ update_gems:
 update_packages:
     nix run nixpkgs#nix-update -- --flake agentsview
     nix run nixpkgs#nix-update -- --flake agent-browser
+    nix run nixpkgs#nix-update -- --flake cpa-prometheus
     # Cockatrice cuts Development betas far more often than Release builds, and
     # the releases/tags atom feeds nix-update reads only carry the 10 newest
     # entries — since 2026-06-26-Release-3.0.2 there has been no Release tag in

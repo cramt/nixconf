@@ -65,6 +65,27 @@
         managementKeyFile = keyFile;
         apiKeyFile = config.services.onepassword-secrets.secretPaths.cliProxyApiKey;
         panelAutoLogin = true;
+        # Only worth loading where something scrapes it.
+        plugins = lib.mkIf config.services.prometheus.enable {
+          cpa-prometheus.package = pkgs.cpa-prometheus;
+        };
+      };
+
+      # CPA has no /metrics of its own; the plugin serves it on a management
+      # route, behind the same key caddy injects. systemd hands prometheus a
+      # copy, so the key stays readable by cramt and caddy only.
+      myNixOS.services.metrics.localJobs.cli-proxy-api = {
+        inherit (config.home-manager.users.${cfg.user}.myHomeManager.cli-proxy-api) port;
+        path = "/v0/management/plugins/cpa-prometheus/metrics";
+        extraConfig.authorization.credentials_file = "/run/credentials/prometheus.service/cli-proxy-api-management";
+      };
+      # promtool's full check stats credentials_file inside the build sandbox,
+      # where the systemd credential can't exist yet.
+      services.prometheus.checkConfig = lib.mkIf config.services.prometheus.enable "syntax-only";
+      systemd.services.prometheus = lib.mkIf config.services.prometheus.enable {
+        wants = ["cli-proxy-api-management-key.service"];
+        after = ["cli-proxy-api-management-key.service"];
+        serviceConfig.LoadCredential = ["cli-proxy-api-management:${keyFile}"];
       };
 
       myNixOS.services.caddy.serviceMap.${cfg.subdomain} = {

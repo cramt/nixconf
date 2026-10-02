@@ -143,6 +143,7 @@
         agentsview
         agent-browser
         cockatrice
+        cpa-prometheus
         rhystic-tracker
         ;
     }

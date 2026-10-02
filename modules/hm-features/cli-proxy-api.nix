@@ -75,18 +75,38 @@
         ''
       ));
 
-    settings = {
-      host = "127.0.0.1";
-      inherit (cfg) port;
-      tls.enable = false;
-      auth-dir = authDir;
-      debug = false;
+    # CPA only loads regular *.so files from plugins.dir (symlinks are skipped)
+    # and takes the plugin id from the file name, so each library is copied in
+    # under its id. A package that doesn't ship lib/<id>.so fails this build
+    # instead of becoming a plugin that silently never loads.
+    pluginsDir = pkgs.runCommand "cli-proxy-api-plugins" {} (''
+        mkdir -p $out
+      ''
+      + lib.concatStrings (lib.mapAttrsToList (id: plugin: ''
+          cp ${plugin.package}/lib/${id}.so $out/${id}.so
+        '')
+        cfg.plugins));
 
-      routing = {
-        inherit (cfg) strategy;
-        session-affinity = cfg.session-affinity;
+    settings =
+      {
+        host = "127.0.0.1";
+        inherit (cfg) port;
+        tls.enable = false;
+        auth-dir = authDir;
+        debug = false;
+
+        routing = {
+          inherit (cfg) strategy;
+          session-affinity = cfg.session-affinity;
+        };
+      }
+      // lib.optionalAttrs (cfg.plugins != {}) {
+        plugins = {
+          enabled = true;
+          dir = pluginsDir;
+          configs = lib.mapAttrs (_: plugin: {enabled = true;} // plugin.settings) cfg.plugins;
+        };
       };
-    };
 
     # Everything except the two generated keys is declarative; they are spliced
     # in at start. remote-management lives in the same splice because YAML
@@ -317,6 +337,27 @@
           Pin a conversation to the account it started on, so prompt caching
           survives. Failover to another account is still automatic once the
           bound one is exhausted.
+        '';
+      };
+
+      plugins = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.submodule {
+          options = {
+            package = lib.mkOption {
+              type = lib.types.package;
+              description = "Derivation providing lib/<plugin id>.so.";
+            };
+            settings = lib.mkOption {
+              type = (pkgs.formats.yaml {}).type;
+              default = {};
+              description = "plugins.configs.<id> for this plugin, minus `enabled`.";
+            };
+          };
+        });
+        default = {};
+        description = ''
+          Dynamic-library plugins keyed by plugin id. Declaring one enables it;
+          upstream's plugin store and runtime installs stay unused.
         '';
       };
     };

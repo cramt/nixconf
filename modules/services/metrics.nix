@@ -18,7 +18,7 @@
 # Known blind spot either way: process-exporter samples /proc on the scrape
 # interval, so a binary that runs for ten seconds between scrapes is invisible.
 # Answering "did I *ever* run this" properly needs execsnoop/auditd, not polling.
-{ ... }: {
+{...}: {
   flake.nixosModules."services.metrics" = {
     config,
     lib,
@@ -46,10 +46,44 @@
         }
       ];
     };
+
+    # Both the agent and the server scrape these, so a service registers its
+    # endpoint once and it lands wherever this host's prometheus runs.
+    serviceJobs =
+      lib.mapAttrsToList (
+        name: job:
+          localJob name job.port // {metrics_path = job.path;} // job.extraConfig
+      )
+      cfg.localJobs;
   in {
     options.myNixOS.services.metrics = {
       exporter = {
         enable = lib.mkEnableOption "myNixOS.services.metrics.exporter";
+      };
+      localJobs = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.submodule {
+          options = {
+            port = lib.mkOption {
+              type = lib.types.port;
+              description = "Loopback port the endpoint listens on.";
+            };
+            path = lib.mkOption {
+              type = lib.types.str;
+              default = "/metrics";
+            };
+            extraConfig = lib.mkOption {
+              type = lib.types.attrs;
+              default = {};
+              description = "Merged into the scrape_config, e.g. `authorization`.";
+            };
+          };
+        });
+        default = {};
+        description = ''
+          Per-service loopback endpoints, keyed by job name. Set them from the
+          service's own module so a disabled service never leaves a dead
+          target behind. Inert on hosts with neither an agent nor the server.
+        '';
       };
       server = {
         enable = lib.mkEnableOption "myNixOS.services.metrics.server";
@@ -188,10 +222,12 @@
           port = ports.prometheus;
           listenAddress = "127.0.0.1";
           globalConfig.scrape_interval = cfg.server.scrapeInterval;
-          scrapeConfigs = [
-            (localJob "node" ports.node_exporter)
-            (localJob "process" ports.process_exporter)
-          ];
+          scrapeConfigs =
+            [
+              (localJob "node" ports.node_exporter)
+              (localJob "process" ports.process_exporter)
+            ]
+            ++ serviceJobs;
           remoteWrite = [
             {
               url = "https://${cfg.server.subdomain}.${site.domain}/api/v1/write";
@@ -234,10 +270,14 @@
           ];
           # The server has no agent, so it scrapes its own loopback exporters
           # directly rather than pushing to itself.
-          scrapeConfigs = [
-            (localJob "node" ports.node_exporter)
-            (localJob "process" ports.process_exporter)
-          ];
+          scrapeConfigs =
+            [
+              (localJob "node" ports.node_exporter)
+              (localJob "process" ports.process_exporter)
+              # TSDB size and ingest rate: the cost side of keeping years of it.
+              (localJob "prometheus" ports.prometheus)
+            ]
+            ++ serviceJobs;
         };
 
         # A bind mount fails outright if its source is missing, and systemd only

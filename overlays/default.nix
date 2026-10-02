@@ -87,6 +87,11 @@ inputs: [
     agentsview = prev.callPackage ../packages/agentsview {};
   })
 
+  # CLIProxyAPI's Prometheus exporter plugin, loaded by luna's cli-proxy-api.
+  (final: prev: {
+    cpa-prometheus = prev.callPackage ../packages/cpa-prometheus {};
+  })
+
   # nixpkgs now ships its own agent-browser (0.27.0) which lags the version we
   # track. Point pkgs.agent-browser at our local build so every consumer
   # (development bundle, claude-code feature) resolves to the same store path
