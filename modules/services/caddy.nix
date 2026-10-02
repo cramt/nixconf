@@ -19,6 +19,7 @@
       // (lib.attrsets.mapAttrs' (name: {
           port,
           basic-auth,
+          forward-auth,
           ...
         }: {
           name = "${name}.${cfg.domain}";
@@ -37,6 +38,12 @@
                   }
                 ''
               }
+              ${lib.optionalString forward-auth ''
+                forward_auth localhost:${builtins.toString config.port-selector.ports.authelia} {
+                  uri /api/authz/forward-auth
+                  copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+                }
+              ''}
               reverse_proxy http://localhost:${builtins.toString port}
             '';
           };
@@ -117,6 +124,13 @@
                 };
               });
             };
+            forward-auth = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+              description = ''
+                Put this vhost behind the myNixOS.services.authelia passkey portal.
+              '';
+            };
           };
         });
         default = {};
@@ -126,6 +140,16 @@
       };
     };
     config = lib.mkIf cfg.enable {
+      # Without the portal, forward_auth would point at a port nothing listens
+      # on and every gated vhost would 502 -- fail the build instead.
+      assertions = [
+        {
+          assertion =
+            config.myNixOS.services.authelia.enable
+            || !(lib.any (s: s.forward-auth) (lib.attrValues cfg.serviceMap));
+          message = "caddy.serviceMap has forward-auth entries but myNixOS.services.authelia is disabled.";
+        }
+      ];
       networking.firewall.allowedTCPPorts = [80 443];
       services.caddy = {
         enable = true;

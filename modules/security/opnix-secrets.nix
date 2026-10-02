@@ -127,6 +127,18 @@
             reference = "op://Homelab/VXN-WireGuard/presharedKey";
           };
         }
+        # Gated so hosts without the portal don't fail their render if the
+        # item is ever missing. Root-owned is fine: authelia reads them through
+        # systemd LoadCredential.
+        // lib.optionalAttrs config.myNixOS.services.authelia.enable (
+          builtins.mapAttrs (_: field:
+            {reference = "op://Homelab/Authelia/${field}";}
+            // servicesIf true ["authelia-main"]) {
+            autheliaJwtSecret = "jwtSecret";
+            autheliaSessionSecret = "sessionSecret";
+            autheliaStorageEncryptionKey = "storageEncryptionKey";
+          }
+        )
         // lib.optionalAttrs config.myNixOS.services.t3code.onDiskSshKey.enable {
           # Name kept from the paseo era: same 1Password item, same key, and
           # renaming would only churn the rendered path for no gain.

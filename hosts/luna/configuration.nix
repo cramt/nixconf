@@ -71,6 +71,13 @@
       # claude.ai login in ~/.claude.json (luna is off the account pool).
       claude-remote-control.enable = true;
       nixarr.enable = true;
+      # Passkey portal for the owner-only vhosts (caddy serviceMap forward-auth).
+      authelia = {
+        enable = true;
+        # Plaintext lives in op://Homelab/Authelia/password; only needed to
+        # enroll a passkey on a new device.
+        user.hashedPassword = "$argon2id$v=19$m=65536,t=3,p=4$fT170oQb3iDhmNYoqCpTZA$80k++XmJ8d5NRibh16c7CZXOwTHnemn3IZDIoFj2SS0";
+      };
       recyclarr.enable = true;
       cleanuparr = {
         enable = true;

@@ -12,6 +12,8 @@
       enable = lib.mkEnableOption "myNixOS.services.nixarr";
     };
     config = lib.mkIf cfg.enable {
+      # jellyfin and jellyseerr stay ungated: friends log into both with their
+      # own jellyfin accounts. Everything else is owner-only, behind authelia.
       myNixOS.services.caddy.serviceMap = {
         jellyfin = {
           port = 8096;
@@ -21,27 +23,45 @@
         };
         sonarr = {
           port = 8989;
+          forward-auth = true;
         };
         radarr = {
           port = 7878;
+          forward-auth = true;
         };
         prowlarr = {
           port = 9696;
+          forward-auth = true;
         };
         bazarr = {
           port = 6767;
+          forward-auth = true;
         };
         shelfmark = {
           port = config.nixarr.shelfmark.port;
+          forward-auth = true;
         };
       };
       environment.systemPackages = with pkgs; [
         tremc
       ];
       services.flaresolverr.enable = true;
-      services.radarr.settings.auth.required = "DisabledForLocalAddresses";
-      services.sonarr.settings.auth.required = "DisabledForLocalAddresses";
-      services.prowlarr.settings.auth.required = "DisabledForLocalAddresses";
+      # "External" is Servarr's own setting for "a proxy in front does auth" --
+      # no app login at all. Safe only because the ports aren't open on the
+      # LAN, so caddy+authelia is the sole way in.
+      # auth.required stays as nixarr's settings-sync asserts it must.
+      services.radarr.settings.auth = {
+        method = "External";
+        required = "DisabledForLocalAddresses";
+      };
+      services.sonarr.settings.auth = {
+        method = "External";
+        required = "DisabledForLocalAddresses";
+      };
+      services.prowlarr.settings.auth = {
+        method = "External";
+        required = "DisabledForLocalAddresses";
+      };
 
       services.jellarr = {
         enable = true;
