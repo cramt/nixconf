@@ -56,12 +56,13 @@
     services = {
       # T3 Code server: offload coding-agent work to luna from the mars/saturn
       # desktop app. Runs as cramt so agents get git/ssh + the agent CLIs
-      # (dev bundle). Reachable on the LAN and at t3.<domain> behind authelia;
-      # either way, pair a client with `just t3_pair`.
+      # (dev bundle). At t3.<domain> the passkey is the only login; LAN
+      # clients (the desktop app) pair with `just t3_pair`.
       t3code = {
         enable = true;
         user = "cramt";
         subdomain = "t3";
+        proxyAuth = true;
         # Headless: no 1Password agent here, so agents need the key on disk.
         onDiskSshKey.enable = true;
         # opencode ships disabled in t3code (opt-in from its settings UI). The

@@ -14,11 +14,22 @@
 #   - LAN: the server binds every interface and the port is opened, for the
 #     desktop app, which can't get through a browser login portal.
 #   - `subdomain`: a caddy vhost behind the authelia passkey portal, for a
-#     browser anywhere. The pairing is then per browser, on top of the passkey.
+#     browser anywhere. No pairing there: see proxyAuth below.
 #
 # We used to compile T3 Connect (Ping's Clerk login + cloud relay) in for the
 # off-LAN case. Its relay client downloaded its own cloudflared into
 # ~/.t3/tools/, outside Nix, which is why the caddy route replaced it.
+#
+# proxyAuth borrows upstream's reusable dev token (apps/server/src/auth/
+# ReusableDevAuth.ts) as a fixed session secret. Its matching cookie,
+# `t3_dev_session_<sha256 of token>`, authenticates any request that carries
+# no other credential, so caddy adds it after authelia lets a request through
+# and the browser never sees the pairing screen. The token only switches on
+# alongside --dev-url, and that flag's other effects are why the URL points
+# at a dead port: requests whose Host is loopback get redirected there (caddy
+# forwards the public Host, so only `curl localhost` on the box hits it), and
+# Codex's ChatGPT login returns there instead of to /welcome. No upstream
+# issue for a real trusted-proxy mode yet; drop this when one lands.
 { ... }: {
   flake.nixosModules."services.t3code" = { config, lib, pkgs, ... }:
   let
@@ -76,6 +87,26 @@
         mv "${settingsFile}.new" "${settingsFile}"
       '';
     };
+    proxyAuthDir = "/var/lib/t3code-proxy-auth";
+    proxyAuthToken = "${proxyAuthDir}/token";
+    proxyAuthCookie = "${proxyAuthDir}/cookie";
+    serveArgs = [
+      "--host ${cfg.host}"
+      "--port ${toString port}"
+      "--base-dir ${dataDir}"
+      "--no-browser"
+    ] ++ lib.optional cfg.proxyAuth "--dev-url http://127.0.0.1:9";
+    # The token goes in through the environment, read here rather than via
+    # EnvironmentFile so a not-yet-generated file is an ordinary failed start
+    # that Restart= retries.
+    serve = pkgs.writeShellScript "t3code-serve" (
+      lib.optionalString cfg.proxyAuth ''
+        test -s ${proxyAuthToken}
+        T3CODE_DEV_AUTH_TOKEN=$(< ${proxyAuthToken})
+        export T3CODE_DEV_AUTH_TOKEN
+      ''
+      + "exec ${pkgs.t3code}/bin/t3 serve ${lib.concatStringsSep " " serveArgs}\n"
+    );
     prepare = pkgs.writeShellApplication {
       name = "t3code-prepare";
       runtimeInputs = [ pkgs.coreutils ];
@@ -118,6 +149,15 @@
           infra/main.tf.
         '';
       };
+      proxyAuth = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Skip pairing on the `subdomain` vhost: caddy presents a fixed session
+          to t3code once authelia has passed the request. LAN clients still
+          pair as usual.
+        '';
+      };
       openFirewall = lib.mkOption {
         type = lib.types.bool;
         default = true;
@@ -152,6 +192,10 @@
 
     config = lib.mkIf cfg.enable {
       assertions = [
+        {
+          assertion = cfg.proxyAuth -> cfg.subdomain != null;
+          message = "myNixOS.services.t3code.proxyAuth needs a subdomain to proxy through.";
+        }
         {
           assertion = lib.all (d: lib.elem d knownDrivers) (lib.attrNames cfg.providers);
           message = ''
@@ -189,7 +233,39 @@
         ${cfg.subdomain} = {
           inherit port;
           forward-auth = true;
+          reverse-proxy-config = lib.optionalString cfg.proxyAuth ''
+            header_up Cookie "{file.${proxyAuthCookie}}; {http.request.header.Cookie}"
+          '';
         };
+      };
+
+      systemd.tmpfiles.settings."10-t3code-proxy-auth" = lib.mkIf cfg.proxyAuth {
+        ${proxyAuthDir}.d = {
+          user = cfg.user;
+          group = config.services.caddy.group;
+          mode = "0750";
+        };
+      };
+
+      systemd.services.t3code-proxy-auth = lib.mkIf cfg.proxyAuth {
+        description = "Generate the session secret caddy presents to t3code";
+        wantedBy = ["multi-user.target"];
+        after = ["systemd-tmpfiles-setup.service"];
+        serviceConfig.Type = "oneshot";
+        path = [pkgs.openssl pkgs.coreutils];
+        script = ''
+          umask 027
+          if [ ! -s ${proxyAuthToken} ]; then
+            openssl rand -hex 32 > ${proxyAuthToken}.new
+            mv ${proxyAuthToken}.new ${proxyAuthToken}
+          fi
+          token=$(< ${proxyAuthToken})
+          # Upstream names the cookie after the token's sha256 (ReusableDevAuth.ts).
+          hash=$(printf %s "$token" | sha256sum | cut -d" " -f1)
+          printf 't3_dev_session_%s=%s' "$hash" "$token" > ${proxyAuthCookie}
+          chown ${cfg.user}:${config.services.caddy.group} ${proxyAuthToken} ${proxyAuthCookie}
+          chmod 0640 ${proxyAuthToken} ${proxyAuthCookie}
+        '';
       };
 
       # `t3` CLI on the system PATH (stable /run/current-system/sw/bin) so
@@ -206,13 +282,7 @@
           Unit.Description = "T3 Code - self-hosted server for AI coding agents";
           Install.WantedBy = [ "default.target" ];
           Service = {
-            ExecStart = lib.concatStringsSep " " [
-              "${pkgs.t3code}/bin/t3 serve"
-              "--host ${cfg.host}"
-              "--port ${toString port}"
-              "--base-dir ${dataDir}"
-              "--no-browser"
-            ];
+            ExecStart = "${serve}";
             WorkingDirectory = "/home/${cfg.user}";
             Environment = [
               "NODE_ENV=production"
