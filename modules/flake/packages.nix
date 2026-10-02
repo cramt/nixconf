@@ -132,10 +132,6 @@
         # seconds to build and deliberately left out.
         colibri-rocm
         colibri-vulkan
-        # llm-agents' recipe rebuilt with T3 Connect compiled in (see
-        # overlays/default.nix), so cache.numtide.com can't serve it. Version
-        # moves with the llm-agents input.
-        t3code
         ;
 
       # Exposed so `nix-update --flake <name>` can locate them (it reads the

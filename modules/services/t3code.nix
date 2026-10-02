@@ -9,26 +9,16 @@
 # unit too, but it also installs a self-updating launcher under ~/.t3 — Nix owns
 # the version here, so the unit is hand-rolled around `t3 serve` instead.
 #
-# Unlike paseo the server binds an interface directly rather than dialing out to
-# a relay. It's bound on the LAN and the firewall port is opened; the one-time
-# pairing token from `t3 pair` (see `just t3_pair`) is the capability that gets a
-# client in, and unauthenticated requests are rejected.
+# Two ways in, both ending at t3code's own one-time pairing token (`just
+# t3_pair`), which upstream has no switch to turn off:
+#   - LAN: the server binds every interface and the port is opened, for the
+#     desktop app, which can't get through a browser login portal.
+#   - `subdomain`: a caddy vhost behind the authelia passkey portal, for a
+#     browser anywhere. The pairing is then per browser, on top of the passkey.
 #
-# The build does carry T3 Connect (the t3code overlay in overlays/default.nix), so a client can
-# instead sign in to Ping's Clerk and reach this host over their cloud relay —
-# that's a per-client choice made in the UI, and nothing here dials the relay on
-# its own.
-#
-# Once linked, though, the relay side is not declarative. The relay client
-# downloads its own cloudflared (~39MB, straight from GitHub releases) into
-# ~/.t3/tools/cloudflared/<version>/, so that binary's version is upstream's
-# choice rather than anything pinned here, and it re-downloads whenever they bump
-# it. The server bundle does read T3CODE_CLOUDFLARED_PATH, so pointing that at
-# pkgs.cloudflared should hand the job back to Nix — untested. In the same vein
-# `t3 connect` offers to "update or repair" the installed service, which means
-# dropping upstream's self-updating launcher in ~/.t3 alongside the Nix-owned
-# unit; always decline it. Worth a proper pass at some point to work out how much
-# of ~/.t3 can be owned declaratively and how much is genuinely mutable state.
+# We used to compile T3 Connect (Ping's Clerk login + cloud relay) in for the
+# off-LAN case. Its relay client downloaded its own cloudflared into
+# ~/.t3/tools/, outside Nix, which is why the caddy route replaced it.
 { ... }: {
   flake.nixosModules."services.t3code" = { config, lib, pkgs, ... }:
   let
@@ -118,6 +108,16 @@
           reach it; `openFirewall` decides whether that is actually reachable.
         '';
       };
+      subdomain = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "t3";
+        description = ''
+          Expose the server as this caddy vhost, behind the authelia passkey
+          portal. Needs caddy and authelia on this host, plus an A record in
+          infra/main.tf.
+        '';
+      };
       openFirewall = lib.mkOption {
         type = lib.types.bool;
         default = true;
@@ -184,6 +184,13 @@
       };
 
       networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ port ];
+
+      myNixOS.services.caddy.serviceMap = lib.mkIf (cfg.subdomain != null) {
+        ${cfg.subdomain} = {
+          inherit port;
+          forward-auth = true;
+        };
+      };
 
       # `t3` CLI on the system PATH (stable /run/current-system/sw/bin) so
       # `ssh <user>@host t3 pair` prints the pairing token without depending on

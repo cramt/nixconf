@@ -141,14 +141,10 @@ inputs: [
   })
 
   # T3 Code comes from llm-agents (release-tracked, bumped daily by numtide).
-  # Their build ships with T3 Connect compiled out: the web client reads its
-  # Clerk key from import.meta.env at build time, so it can't be supplied at
-  # runtime and we rebuild their recipe with the keys set. That forfeits the
-  # cache.numtide.com hit, so CI prebuilds it into cachix instead.
-  #
-  # The values are the public identifiers from upstream's .env.example (the
-  # same ones release builds carry), not secrets. Leave one out and its define
-  # becomes "", which is how upstream ships the feature disabled.
+  # Their build ships with T3 Connect compiled out, which is what we want: luna
+  # is reached through caddy + authelia (modules/services/t3code.nix), not
+  # Ping's cloud relay. Only the wrapper is overridden, so the unwrapped build
+  # still comes straight from cache.numtide.com.
   #
   # Switching from our old pnpm2nix build: that one launched electron on a bare
   # main.cjs, so safeStorage sometimes keyed off the keyring entry for app
@@ -161,19 +157,8 @@ inputs: [
   # home-manager ones (claude-code's config, auth, etc.), not a second copy
   # pinned by llm-agents.
   (final: prev: let
-    upstream = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.t3code;
-    t3code = upstream.override {
+    t3code = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.t3code.override {
       providerPackages = [];
-      t3code-unwrapped = upstream.unwrapped.overrideAttrs (old: {
-        env =
-          (old.env or {})
-          // {
-            T3CODE_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsudDMuY29kZXMk";
-            T3CODE_CLERK_JWT_TEMPLATE = "t3-relay";
-            T3CODE_CLERK_CLI_OAUTH_CLIENT_ID = "hzxSgY2cH10sDU2r";
-            T3CODE_RELAY_URL = "https://relay.t3.codes";
-          };
-      });
     };
   in {
     inherit t3code;

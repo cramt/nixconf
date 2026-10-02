@@ -56,10 +56,12 @@
     services = {
       # T3 Code server: offload coding-agent work to luna from the mars/saturn
       # desktop app. Runs as cramt so agents get git/ssh + the agent CLIs
-      # (dev bundle). Bound on the LAN — pair a client with `just t3_pair`.
+      # (dev bundle). Reachable on the LAN and at t3.<domain> behind authelia;
+      # either way, pair a client with `just t3_pair`.
       t3code = {
         enable = true;
         user = "cramt";
+        subdomain = "t3";
         # Headless: no 1Password agent here, so agents need the key on disk.
         onDiskSshKey.enable = true;
         # opencode ships disabled in t3code (opt-in from its settings UI). The
@@ -106,6 +108,13 @@
         enable = true;
         cacheVolume = "/pool/configs/caddy-cache";
         staticFileVolumes = {};
+        # The cli-proxy-api pool runs as cramt's user unit (development bundle,
+        # modules/hm-features/cli-proxy-api.nix). Its web panel still asks for
+        # the management key (`agent-accounts key`) behind the passkey.
+        serviceMap.cliproxy = {
+          inherit (config.home-manager.users.cramt.myHomeManager.cli-proxy-api) port;
+          forward-auth = true;
+        };
       };
       foundryvtt = {
         enable = true;
