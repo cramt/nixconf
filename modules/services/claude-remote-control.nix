@@ -15,7 +15,7 @@
     ...
   }: let
     cfg = config.myNixOS.services.claude-remote-control;
-    claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
+    claudeCodePkg = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
   in {
     options.myNixOS.services.claude-remote-control = {
       enable = lib.mkEnableOption "myNixOS.services.claude-remote-control";

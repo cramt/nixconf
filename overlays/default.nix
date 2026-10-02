@@ -237,24 +237,4 @@ inputs: [
       buildxSupport = true;
     };
   })
-
-  # Fix faugus-launcher subprocess calls: faugus-run invokes `sys.executable -m faugus.components`
-  # which spawns bare python3 without site-packages, so deps like `requests` are missing.
-  # Workaround for nixpkgs#423927 (buildPythonPackage incomplete wrapping).
-  (final: prev: let
-    py3 = prev.python3;
-    faugusDeps = with py3.pkgs; [
-      pillow
-      psutil
-      pygobject3
-      requests
-      vdf
-    ];
-  in {
-    faugus-launcher = prev.faugus-launcher.overrideAttrs (old: {
-      preFixup = (old.preFixup or "") + ''
-        makeWrapperArgs+=(--prefix PYTHONPATH : "$out/${py3.sitePackages}:${py3.pkgs.makePythonPath faugusDeps}")
-      '';
-    });
-  })
 ]

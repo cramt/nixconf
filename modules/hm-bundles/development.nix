@@ -30,7 +30,6 @@
         # cli-proxy-api pool (URL + key from 1Password via opnix) rather than
         # the local one.
         opencode.enable = true;
-        herdr.enable = true;
       };
       home.packages = with pkgs;
         [
@@ -70,7 +69,7 @@
           agent-browser
           devenv
           geminicommit
-          inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
+          inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
           spade
           # Spade's build tool. The zed-spade extension runs the language
           # server as `swim lsp`, so it has to be on PATH, not just spadec.

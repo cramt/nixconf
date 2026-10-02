@@ -50,9 +50,7 @@ in {
             "*" = {
               ControlPath = "~/.ssh/control-%C";
             };
-            # Named Host aliases so `herdr --remote luna` (and plain `ssh luna`)
-            # resolve. Herdr rides regular SSH like tmux, so a Host entry is all
-            # the remote multiplexer needs — no daemon or extra port on luna.
+            # Named Host aliases so plain `ssh luna` etc. resolve.
             "luna" = {
               HostName = site.luna_internal_address;
               User = "cramt";

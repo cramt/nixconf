@@ -138,6 +138,5 @@ Terraform configs live in `infra/`. Use `just tf <args>` which injects credentia
 
 - Alex runs the deploy herself (wl-copy it when ready) — `just deploy` for the fleet, `nh os switch` for the local host alone. After she deploys, verify: ssh in, `systemctl --failed`, journalctl on the touched services.
 - deploy-rs activates with magic rollback: a host that loses its network mid-activation reverts itself. A deploy that "hung then rolled back" means the new config broke connectivity, not that deploy-rs failed.
-- `hermes-agent`'s container doesn't recreate on config change — `systemctl restart hermes-agent` manually.
 - Editing a 1Password secret in place requires restarting `opnix-secrets`, not just the consuming service.
 - Secrets go through opnix (`/etc/opnix-token`) — never interactive `op` prompts.

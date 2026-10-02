@@ -109,12 +109,6 @@
         databaseUrl = "sqlite:/pool/homelab_discord_bot.db?mode=rwc";
       };
       open-webui.enable = false;
-      hermes-agent = {
-        enable = true;
-        discord.enable = true;
-        discord.allowedUserIds = ["149996010314137600"];
-        discord.homeChannelId = "1465064573840130289";
-      };
       postgres = {
         dataDir = "/pool/pgsql";
       };

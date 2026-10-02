@@ -30,8 +30,6 @@
     jellarr.url = "github:cramt/jellarr";
     quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
 
-    claude-code.url = "github:sadjow/claude-code-nix";
-
     # mattpocock/skills — engineering-process skills for Claude Code (spec →
     # tickets → triage → implement → review, on `gh issue`). Upstream ships it
     # through Claude Code's plugin marketplace; we take the repo directly and
@@ -65,14 +63,6 @@
       flake = false;
     };
 
-    # Herdr — agent-aware terminal multiplexer ("tmux for coding agents").
-    # Not in nixpkgs; the upstream flake exposes packages.default + an overlay.
-    # Remote use ("herdr --remote luna") rides plain SSH like tmux — no daemon.
-    herdr = {
-      url = "github:ogulcancelik/herdr";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Zed's Delta agent. Our own flake (cramt/delta-nix), auto-bumped hourly by its
     # CI; `just update` pulls the new version in.
     delta-nix = {
@@ -85,12 +75,6 @@
       url = "github:cramt/m365-copilot-proxy";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # Nous Research Hermes Agent — self-hosted autonomous agent. The flake
-    # exposes nixosModules.default + packages. Deliberately NOT following our
-    # nixpkgs: it's a large Python app pinned against its own nixpkgs, and
-    # overriding that risks breaking the build.
-    hermes-agent.url = "github:NousResearch/hermes-agent";
 
     winapps = {
       url = "github:winapps-org/winapps";

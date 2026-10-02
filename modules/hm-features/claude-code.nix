@@ -5,7 +5,7 @@
     pkgs,
     ...
   }: let
-    claudeCodePkg = inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
+    claudeCodePkg = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
 
     # Skill libraries and helper binaries shared with opencode — see
     # myLib/agent-skills.nix for how each set is enumerated and why.
@@ -93,9 +93,9 @@
     globalClaudeMd = builtins.readFile ./global-agent-instructions.md;
 
     # Keys we own inside ~/.claude/settings.json. The file can't be a
-    # home.file symlink: Claude Code writes to it itself (/model, /theme,
-    # herdr registers its hook there), so these get deep-merged in on every
-    # activation and everything else in the file is left alone.
+    # home.file symlink: Claude Code writes to it itself (/model, /theme), so
+    # these get deep-merged in on every activation and everything else in the
+    # file is left alone.
     declaredSettings = (pkgs.formats.json {}).generate "claude-declared-settings.json" {
       # Empty string hides the Co-Authored-By trailer / "Generated with"
       # footer entirely. The global instructions already forbid attribution,
