@@ -55,6 +55,44 @@
       device = "/dev/dri/by-path/pci-0000:01:00.0-card";
       connector = "HDMI-A-1";
       mode = "3840x2160@60";
+      # The LG's own settings, held to what's on screen over its network API
+      # and put back whenever they drift (emrakul's src/tv.rs).
+      tv = {
+        host = "192.168.178.36";
+        key_file = config.services.onepassword-secrets.secretPaths.tvClientKey;
+        # Not a secret: it pins the TV's self-signed cert, so nobody else on
+        # the LAN can pose as the TV and collect the key.
+        cert_fingerprint = "11:C5:B1:C5:90:77:50:AB:B9:DA:2A:66:65:CC:CE:2B:B2:88:A5:83:F4:5A:33:39:E7:1F:87:BF:2F:80:85:52";
+        input = "HDMI_1";
+        settings = {
+          # Overscan clipped Home's edges and Chromium's top bar.
+          aspectRatio = {
+            justScan = "on";
+            arcPerApp = "original";
+          };
+          # "auto" dims the panel with the picture, which is what made dark
+          # scenes unwatchable. It isn't per picture mode, so it lives here.
+          picture.energySaving = "off";
+        };
+        # Home and web apps share a mode, so going Home never switches it.
+        home.picture.pictureMode = "filmMaker";
+        app.picture.pictureMode = "filmMaker";
+        # Game Optimizer, for Game entries (X-Emrakul-Tv=game).
+        profiles.game.picture.pictureMode = "game";
+      };
+    };
+  };
+
+  # Just the TV's SSAP client key, not the opnix-secrets bundle: none of the
+  # homelab's other secrets belong on the TV box. Needs /etc/opnix-token on
+  # ganymede. emrakul reads the key on every connect, so no restart wiring.
+  services.onepassword-secrets = {
+    enable = true;
+    tokenFile = "/etc/opnix-token";
+    secrets.tvClientKey = {
+      reference = "op://Homelab/LG-TV/password";
+      owner = "cramt";
+      mode = "0400";
     };
   };
 
