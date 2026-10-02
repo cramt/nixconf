@@ -73,14 +73,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Community-maintained Nix flake for the pi coding agent (https://pi.dev).
-    # There is no official flake; lukasl-dev/pi.nix exposes the package,
-    # an overlay, and NixOS/Home Manager modules (programs.pi.coding-agent).
-    pi = {
-      url = "github:lukasl-dev/pi.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Zed's Delta agent. Our own flake (cramt/delta-nix), auto-bumped hourly by its
     # CI; `just update` pulls the new version in.
     delta-nix = {
