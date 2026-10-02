@@ -14,7 +14,12 @@
   boot = {
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
-    kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+    # 7.3 is the first kernel whose hid-steam drives the 2026 Steam Controller
+    # (Vicki Pfau's series, merged for 7.3-rc1), and the couch compositor reads
+    # the controller through that driver rather than through Steam. legacy_580
+    # was build-checked against 7.3-rc4. Back to linux_zen once it reaches 7.3.
+    # https://lore.kernel.org/linux-input/20260807013334.2109386-1-vi@endrift.com/
+    kernelPackages = pkgs.linuxKernel.packages.linux_testing;
 
     # Kill the internal panel: the lid is always shut, and leaving it enabled
     # means the desktop spans a screen nobody can see and windows can open on
