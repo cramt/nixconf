@@ -58,6 +58,17 @@
     bundles.general.enable = true;
     bundles.users.enable = true;
 
+    # The Claude session on luna gets in here (and only here) to drive the
+    # couch-compositor bring-up over SSH. Setting home-users at all replaces
+    # the option's default attrset, so userConfig has to be restated too.
+    # Drop the extra key once that work no longer needs hands on the box.
+    home-users.cramt = {
+      userConfig = ./home.nix;
+      authorizedKeys =
+        (import ../../myLib/keys.nix).alex
+        ++ ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMHteAL112dycYVBLCRppKjK7+cgRIXrXMwV3jHHojrH solemn-simulacrum@luna"];
+    };
+
     # Couch console (supersedes eros). Plasma below stays as the "switch to
     # desktop" target and as the fallback while autoStart is off.
     console = {
