@@ -33,6 +33,13 @@
     kernelParams = ["video=eDP-1:d" "consoleblank=0"];
   };
 
+  # No fbdev console on the NVIDIA card. Its modeset to 4K at boot lands ~2 s
+  # before emrakul's own, and the LG gets stuck on "No signal" trying to
+  # lock onto both (https://github.com/cramt/emrakul/issues/25). Without it
+  # emrakul's modeset is the only one; recovery is over ssh. Drop this if
+  # emrakul learns to survive a preceding modeset.
+  hardware.nvidia.moduleParams.nvidia-drm.fbdev = lib.mkForce 0;
+
   security.polkit.enable = true;
 
   # emrakul is the only session: it boots straight onto the TV on tty1 and

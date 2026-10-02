@@ -119,6 +119,8 @@ in {
       PromotionsEnabled = false;
       BrowserSignin = 0;
       RestoreOnStartup = 5; # open the --app URL, never the last session
+      DefaultNotificationsSetting = 2; # never ask, never show
+      DefaultGeolocationSetting = 2;
     };
   };
 }
