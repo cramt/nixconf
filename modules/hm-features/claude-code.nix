@@ -7,8 +7,8 @@
   }: let
     claudeCodePkg = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code;
 
-    # Skill libraries and helper binaries shared with opencode — see
-    # myLib/agent-skills.nix for how each set is enumerated and why.
+    # Skill libraries and helper binaries — see myLib/agent-skills.nix for how
+    # each set is enumerated and why.
     skills = import ../../myLib/agent-skills.nix {inherit lib pkgs inputs;};
     agentBrowserPkg = skills.agent-browser;
 
@@ -83,9 +83,6 @@
       exec ${claudeCodePkg}/bin/claude "$@"
     '');
 
-    # Shared with pi (written to ~/.pi/agent/AGENTS.md by modules/hm-features/pi.nix)
-    # and with opencode (~/.config/opencode/AGENTS.md) — single source of truth
-    # so the agents' global instructions can't drift.
     globalClaudeMd = builtins.readFile ./global-agent-instructions.md;
 
     # Keys we own inside ~/.claude/settings.json. The file can't be a

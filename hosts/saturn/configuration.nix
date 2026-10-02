@@ -147,7 +147,11 @@
       # launch — nothing upstream locks the data dir (verified: two servers
       # start happily over one), so don't run both at once. Use the web UI at
       # this host's t3code port, or stop the unit before opening the app.
-      t3code.enable = true;
+      t3code = {
+        enable = true;
+        # codex ships enabled in t3code, but there's no codex CLI to run.
+        providers.codex = false;
+      };
       # colibrì streams MoE expert weights off the dedicated /llm partitions
       # (hosts/saturn/disko.nix). The CLI ships now because staging the weights
       # NEEDS it — `coli convert`/`download` populate /llm/primary, and

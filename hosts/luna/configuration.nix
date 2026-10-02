@@ -65,14 +65,9 @@
         proxyAuth = true;
         # Headless: no 1Password agent here, so agents need the key on disk.
         onDiskSshKey.enable = true;
-        # opencode ships disabled in t3code (opt-in from its settings UI). The
-        # binary it finds on the unit's PATH is the dev bundle's wrapper, which
-        # points it at the work pool — see modules/hm-features/opencode.nix.
-        providers.opencode = true;
+        # codex ships enabled in t3code, but there's no codex CLI to run.
+        providers.codex = false;
       };
-      # Always-on target for claude.ai/code and the phone app; uses the direct
-      # claude.ai login in ~/.claude.json (luna is off the account pool).
-      claude-remote-control.enable = true;
       nixarr.enable = true;
       # Passkey portal for the owner-only vhosts (caddy serviceMap forward-auth).
       authelia = {

@@ -74,22 +74,6 @@
           discordBotToken = {
             reference = "op://Homelab/OpenClaw-Discord/botToken";
           };
-          # The work cli-proxy-api pool, read by the `opencode` wrapper
-          # (modules/hm-features/opencode.nix). Two fields rather than one
-          # envFile because a 1Password field can't hold a newline.
-          # Group-readable so the wrapper reads them as cramt, not root.
-          opencodeUrl =
-            {
-              reference = "op://Homelab/OpenCode/url";
-              mode = "0640";
-            }
-            // groupIf "onepassword-secrets";
-          opencodeApiKey =
-            {
-              reference = "op://Homelab/OpenCode/apiKey";
-              mode = "0640";
-            }
-            // groupIf "onepassword-secrets";
           # API key for cramt's cli-proxy-api pool on luna. luna's proxy accepts
           # it and every host's `claude` wrapper sends it
           # (modules/hm-features/claude-code.nix). Group-readable because both

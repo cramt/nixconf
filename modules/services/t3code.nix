@@ -5,7 +5,7 @@
 # Runs as a real login user's `systemd --user` service (not a system unit), so
 # the server lives in a genuine user session and the agents it spawns inherit
 # that user's home-manager environment: git, ssh keys, and the agent CLIs
-# (claude, codex, opencode). Upstream's own `t3 service install` writes a user
+# (claude). Upstream's own `t3 service install` writes a user
 # unit too, but it also installs a self-updating launcher under ~/.t3 — Nix owns
 # the version here, so the unit is hand-rolled around `t3 serve` instead.
 #
@@ -127,7 +127,7 @@
         default = "cramt";
         description = ''
           Real login user whose `systemd --user` manager runs the server. Its
-          home-manager profile (git/ssh, the claude/codex/opencode CLIs) is what
+          home-manager profile (git/ssh, the claude CLI) is what
           spawned agents inherit. Must be one of this host's home-users.
         '';
       };
@@ -166,7 +166,7 @@
       providers = lib.mkOption {
         type = lib.types.attrsOf lib.types.bool;
         default = {};
-        example = {opencode = true;};
+        example = {codex = false;};
         description = ''
           Coding-agent providers to pin on (or off) in the server's
           settings.json, keyed by t3code driver kind. codex and claudeAgent
@@ -288,7 +288,7 @@
               "NODE_ENV=production"
               "T3CODE_HOME=${dataDir}"
               # Explicit PATH so agent processes the server spawns find git/ssh
-              # + the claude/codex CLIs. systemd --user does not reliably put
+              # + the claude CLI. systemd --user does not reliably put
               # the per-user profile on PATH, so set it here.
               "PATH=/home/${cfg.user}/.nix-profile/bin:/etc/profiles/per-user/${cfg.user}/bin:/run/current-system/sw/bin:/run/wrappers/bin:/nix/var/nix/profiles/default/bin"
             ];
