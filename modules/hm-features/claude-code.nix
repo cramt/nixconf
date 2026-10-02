@@ -136,6 +136,9 @@
         example = "mail|excel|todo";
         description = "Regex handed to ms-365-mcp-server --enabled-tools, narrowing which of its 336 tools reach the context.";
       };
+      dm-me.enable =
+        lib.mkEnableOption "Discord DM-to-Alex skill + `dm-me` CLI (yelliv bot)"
+        // {default = true;};
       mtg-commander.enable =
         lib.mkEnableOption "MTG Commander deckbuilding skill + `scryfall` bulk-data CLI"
         // {default = true;};
@@ -190,6 +193,10 @@
         home.packages = [agentBrowserPkg];
         home.file.".claude/skills/agent-browser/SKILL.md".source = skillStub;
       }))
+      (lib.mkIf cfg.dm-me.enable {
+        home.packages = [skills.dm-me-bin];
+        home.file.".claude/skills/dm-me/SKILL.md".source = skills.dm-me.path;
+      })
       (lib.mkIf cfg.mtg-commander.enable {
         home.packages = [skills.scryfall];
         home.file.".claude/skills/mtg-commander/SKILL.md".source =

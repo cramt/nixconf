@@ -83,5 +83,18 @@ in {
     text = builtins.readFile "${skillsRoot}/mtg-commander/scryfall.sh";
   };
 
+  dm-me = {
+    name = "dm-me";
+    path = "${skillsRoot}/dm-me/SKILL.md";
+  };
+
+  # Packaged rather than left as a script in the skill dir so curl/jq/op are
+  # closed over — the hand-rolled version needed a `nix shell` fallback.
+  dm-me-bin = pkgs.writeShellApplication {
+    name = "dm-me";
+    runtimeInputs = with pkgs; [curl jq _1password-cli coreutils];
+    text = builtins.readFile "${skillsRoot}/dm-me/dm-me.sh";
+  };
+
   agent-browser = pkgs.callPackage ../packages/agent-browser {};
 }
