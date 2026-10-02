@@ -7,6 +7,8 @@
 }: {
   imports = [
     ./hardware-configuration.nix
+    ./web-apps.nix
+    inputs.emrakul.nixosModules.default
     inputs.disko.nixosModules.default
     (import ./disko.nix {device = "/dev/nvme0n1";})
   ];
@@ -33,21 +35,37 @@
 
   security.polkit.enable = true;
 
-  services.desktopManager.plasma6.enable = true;
-  # Explicit since the nvidia module stopped implying it. SDDM runs on Wayland
-  # here, but Plasma still wants Xwayland for X11 clients.
-  services.xserver.enable = true;
-  programs.kdeconnect.enable = true;
+  # emrakul is the only session: it boots straight onto the TV on tty1 and
+  # restarts itself if it dies. The other VTs keep their gettys as a way in
+  # from a keyboard, and sshd stays on below.
+  services.emrakul = {
+    enable = true;
+    user = "cramt";
+    settings = {
+      device = "/dev/dri/by-path/pci-0000:01:00.0-card";
+      connector = "HDMI-A-1";
+      mode = "3840x2160@60";
+    };
+  };
 
-  services.displayManager = {
-    sddm = {
-      enable = true;
-      wayland.enable = true;
-    };
-    autoLogin = {
-      enable = true;
-      user = "cramt";
-    };
+  # Plasma used to bring PipeWire along; with emrakul nothing else does.
+  # It runs per user, socket-activated in the user manager that emrakul's PAM
+  # login session starts, so it comes up when a web app first plays sound.
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    pulse.enable = true;
+    # Sound follows the picture. The 1050 Ti's HDMI audio ships with session
+    # priority 696 against the internal ALC255's 1009, so without this
+    # everything plays out of the laptop speakers with the lid shut. The node
+    # name embeds the PCI address, so it's stable across boots.
+    wireplumber.extraConfig."51-hdmi-default-sink"."monitor.alsa.rules" = [
+      {
+        matches = [{"node.name" = "alsa_output.pci-0000_01_00.1.hdmi-stereo";}];
+        actions.update-props."priority.session" = 2000;
+      }
+    ];
   };
 
   myNixOS = {
@@ -72,39 +90,6 @@
       authorizedKeys =
         (import ../../myLib/keys.nix).alex
         ++ ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMHteAL112dycYVBLCRppKjK7+cgRIXrXMwV3jHHojrH solemn-simulacrum@luna"];
-    };
-
-    # Couch console (supersedes eros). Plasma below stays as the "switch to
-    # desktop" target and as the fallback while autoStart is off.
-    console = {
-      enable = true;
-      # gamescope is confirmed to init on this laptop's 1050 Ti (nested; the
-      # DRM backend the session actually uses is what this flip tests).
-      # Reverting is this one line — recoverable over SSH, since autologin
-      # means SDDM shows no session picker to escape through.
-      autoStart = true;
-
-      # gamescope can't drive this laptop's TV, so the desktop compositor does
-      # it instead. gamescope ties its DRM device to its Vulkan device, and
-      # neither choice works here:
-      #   - composite on the NVIDIA (the GPU HDMI-A-1 hangs off) and it
-      #     segfaults in CVulkanDevice::compileAllPipelines. Reproducible on
-      #     the headless backend, so it's the device, not the display:
-      #       gamescope --backend headless                              -> 0
-      #       gamescope --backend headless --prefer-vk-device 10de:1c8c -> SIGSEGV
-      #   - composite on the Intel (its default) and it opens the Intel's DRM
-      #     node, which has no HDMI on it, so it drives the internal panel —
-      #     or with that panel disabled, "cannot find any connected connector!"
-      #     and exits. It does not fall through to the other GPU.
-      # gamescope 3.16.25 has no flag or env var to pick the DRM device
-      # separately (checked --help and the binary's GAMESCOPE_* strings).
-      # Revisit if gamescope gains one, or if the NVIDIA crash is fixed.
-      mode = "bigpicture";
-
-      # Sound follows the picture. The 1050 Ti's HDMI audio ships with session
-      # priority 696 against the internal ALC255's 1009, so without this the
-      # console plays out of the laptop speakers with the lid shut.
-      audioNode = "alsa_output.pci-0000_01_00.1.hdmi-stereo";
     };
 
     services = {

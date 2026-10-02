@@ -248,6 +248,14 @@
       url = "github:cramt/progress-engine";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # emrakul — the TV appliance compositor that is ganymede's only session.
+    # Follows our nixpkgs so it links the same mesa/libglvnd the NVIDIA driver
+    # on the host is matched against.
+    emrakul = {
+      url = "github:cramt/emrakul";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:
