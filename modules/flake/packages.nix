@@ -132,9 +132,9 @@
         # seconds to build and deliberately left out.
         colibri-rocm
         colibri-vulkan
-        # Built from source through pnpm2nix (whole pnpm monorepo + a ~2min
-        # rolldown build), so it wants prebuilding too. Version tracks
-        # inputs.t3code-src, so `nix flake update` bumps it, not nix-update.
+        # llm-agents' recipe rebuilt with T3 Connect compiled in (see
+        # overlays/default.nix), so cache.numtide.com can't serve it. Version
+        # moves with the llm-agents input.
         t3code
         ;
 

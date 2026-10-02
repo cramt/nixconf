@@ -14,7 +14,7 @@
 # pairing token from `t3 pair` (see `just t3_pair`) is the capability that gets a
 # client in, and unauthenticated requests are rejected.
 #
-# The build does carry T3 Connect (packages/t3code/default.nix), so a client can
+# The build does carry T3 Connect (the t3code overlay in overlays/default.nix), so a client can
 # instead sign in to Ping's Clerk and reach this host over their cloud relay —
 # that's a per-client choice made in the UI, and nothing here dials the relay on
 # its own.
@@ -50,8 +50,14 @@
     # in settings.json as a phantom provider — unknown driver envelopes are
     # preserved verbatim by design, so nothing upstream would complain.
     #
-    # No "pi": the fork that carried a Pi driver (pingdotgg/t3code#7211) is no
-    # longer what inputs.t3code-src points at — see flake.nix for why.
+    # No "pi": upstream has no Pi driver (every community PR adding one,
+    # e.g. pingdotgg/t3code#7211, was closed unmerged). We briefly ran that
+    # fork, but its orchestrator-v2 broke the hosted client at app.t3.codes,
+    # which is built from main. The fork also reused migration ids 044-052 for
+    # different migrations, so a state.sqlite it touched crash-loops upstream
+    # ("no such column: auto_pull") until
+    # `DELETE FROM effect_sql_migrations WHERE migration_id >= 44` lets
+    # upstream's guarded 044+ replay (done on mars 2026-10-02).
     knownDrivers = ["codex" "claudeAgent" "cursor" "grok" "opencode"];
     # Both shapes, because both are live upstream: `providers.<kind>` is the
     # legacy mirror the settings UI reads, and `providerInstances.<kind>` is

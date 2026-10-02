@@ -140,15 +140,47 @@ inputs: [
     };
   })
 
-  # Not in nixpkgs and no upstream flake — the whole pnpm 11 monorepo is built
-  # from source with pnpm2nix. Chunky (the web app alone is a ~2min rolldown
-  # build on top of the full dependency farm), so let CI prebuild it into
-  # cachix rather than building on a host. Source is pinned by inputs.t3code-src
-  # and moves with `nix flake update`.
-  (final: prev: {
-    t3code = prev.callPackage ../packages/t3code {
-      pnpm2nix = inputs.pnpm2nix.lib.${prev.stdenv.hostPlatform.system};
-      src = inputs.t3code-src;
+  # T3 Code comes from llm-agents (release-tracked, bumped daily by numtide).
+  # Their build ships with T3 Connect compiled out: the web client reads its
+  # Clerk key from import.meta.env at build time, so it can't be supplied at
+  # runtime and we rebuild their recipe with the keys set. That forfeits the
+  # cache.numtide.com hit, so CI prebuilds it into cachix instead.
+  #
+  # The values are the public identifiers from upstream's .env.example (the
+  # same ones release builds carry), not secrets. Leave one out and its define
+  # becomes "", which is how upstream ships the feature disabled.
+  #
+  # Switching from our old pnpm2nix build: that one launched electron on a bare
+  # main.cjs, so safeStorage sometimes keyed off the keyring entry for app
+  # "Electron" instead of "T3 Code (Alpha)". Anything it encrypted that way
+  # (seen: connection-catalog.json) fails with ElectronSafeStorageDecryptError
+  # now. Fix: decrypt under app name "Electron" and re-encrypt under
+  # "T3 Code (Alpha)" (done on mars 2026-10-02).
+  #
+  # providerPackages is emptied because the agents t3code spawns should be the
+  # home-manager ones (claude-code's config, auth, etc.), not a second copy
+  # pinned by llm-agents.
+  (final: prev: let
+    upstream = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.t3code;
+    t3code = upstream.override {
+      providerPackages = [];
+      t3code-unwrapped = upstream.unwrapped.overrideAttrs (old: {
+        env =
+          (old.env or {})
+          // {
+            T3CODE_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsudDMuY29kZXMk";
+            T3CODE_CLERK_JWT_TEMPLATE = "t3-relay";
+            T3CODE_CLERK_CLI_OAUTH_CLIENT_ID = "hzxSgY2cH10sDU2r";
+            T3CODE_RELAY_URL = "https://relay.t3.codes";
+          };
+      });
+    };
+  in {
+    inherit t3code;
+    t3code-desktop = final.symlinkJoin {
+      name = "t3code-desktop-${t3code.version}";
+      paths = [t3code.desktop];
+      meta = t3code.meta // {mainProgram = "t3code-desktop";};
     };
   })
 

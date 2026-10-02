@@ -100,53 +100,6 @@
     # overriding that risks breaking the build.
     hermes-agent.url = "github:NousResearch/hermes-agent";
 
-    # T3 Code — self-hosted coding-agent orchestrator. No upstream flake and no
-    # published binary, so we build the monorepo ourselves (packages/t3code).
-    #
-    # Tracks upstream main. This used to be pinned to StiensWout/t3code, the
-    # head of PR #7211 (a real Pi provider driver), which is stacked on the
-    # maintainer branch behind PR #2829 ("introduce new orchestrator") and so
-    # dragged in apps/server/src/orchestration-v2 with it.
-    #
-    # That fork is incompatible with the hosted client at app.t3.codes, which
-    # is built from main. Both sides expose `orchestration.dispatchCommand`,
-    # but the payload union differs: main creates a project by dispatching a
-    # `project.create` command through it, while orchestration-v2 moved project
-    # mutations out to a separate `projects.mutate` RPC and dropped every
-    # `project.*` member from the dispatch union. So the cloud client's "add
-    # project" failed schema decode at the RPC boundary — no handler, no span,
-    # no log line, and a bare "An error occurred." in the UI. Same story for
-    # provider.auth.*, provider.install.* and pullRequests.*, which main calls
-    # and orchestration-v2 has no handler for.
-    #
-    # Cost of coming back: no Pi driver. Upstream ships five drivers
-    # (claude/codex/cursor/grok/opencode) and no Pi one, and shows no sign of
-    # growing one — 21 community PRs adding Pi have been opened since 2026-04
-    # and every one was closed unmerged. If Pi matters more than the cloud
-    # client later, the fork is a one-line revert plus `providers.pi` in
-    # hosts/luna/configuration.nix and "pi" in knownDrivers
-    # (modules/services/t3code.nix) — but note the two orchestrators share
-    # migration ids 044-052 with different contents, so the state.sqlite is not
-    # portable in either direction. A DB the fork migrated crash-loops upstream's
-    # server ("no such column: auto_pull") because the migrator only runs ids
-    # above the ledger's max; upstream's 044-054 are all guarded/idempotent, so
-    # `DELETE FROM effect_sql_migrations WHERE migration_id >= 44` and a restart
-    # lets them replay (done on mars 2026-10-02).
-    #
-    #   https://github.com/pingdotgg/t3code/pull/7211  (Pi provider)
-    #   https://github.com/pingdotgg/t3code/pull/2829  (the orchestrator-v2 base)
-    t3code-src = {
-      url = "github:pingdotgg/t3code";
-      flake = false;
-    };
-
-    # Pure-Nix builder for pnpm v9 lockfiles; used by packages/t3code to
-    # materialize node_modules without running `pnpm install` in the sandbox.
-    pnpm2nix = {
-      url = "github:cramt/pnpm2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     winapps = {
       url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";
