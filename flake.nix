@@ -126,8 +126,12 @@
     # client later, the fork is a one-line revert plus `providers.pi` in
     # hosts/luna/configuration.nix and "pi" in knownDrivers
     # (modules/services/t3code.nix) — but note the two orchestrators share
-    # migration ids 044-047 with different contents, so the state.sqlite is not
-    # portable in either direction.
+    # migration ids 044-052 with different contents, so the state.sqlite is not
+    # portable in either direction. A DB the fork migrated crash-loops upstream's
+    # server ("no such column: auto_pull") because the migrator only runs ids
+    # above the ledger's max; upstream's 044-054 are all guarded/idempotent, so
+    # `DELETE FROM effect_sql_migrations WHERE migration_id >= 44` and a restart
+    # lets them replay (done on mars 2026-10-02).
     #
     #   https://github.com/pingdotgg/t3code/pull/7211  (Pi provider)
     #   https://github.com/pingdotgg/t3code/pull/2829  (the orchestrator-v2 base)
