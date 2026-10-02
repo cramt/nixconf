@@ -87,11 +87,16 @@
           webauthn = {
             disable = false;
             enable_passkey_login = true;
+            # A user-verified passkey (biometric/PIN) counts as both factors,
+            # so the day-to-day login is the passkey alone.
+            experimental_enable_passkey_uv_two_factors = true;
             display_name = "cramt.dk";
           };
           # Caddy only asks about vhosts that opted in, so a blanket policy is
-          # the whole access model. A passkey login satisfies one_factor.
-          access_control.default_policy = "one_factor";
+          # the whole access model. two_factor rather than one_factor: the
+          # password alone shouldn't get in, and Authelia hides the passkey
+          # settings entirely when nothing requires a second factor.
+          access_control.default_policy = "two_factor";
           session.cookies = [
             {
               domain = caddyDomain;
