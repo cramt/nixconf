@@ -1,6 +1,6 @@
 # Zed's Delta agent (pkgs.zed-delta, from the delta-nix overlay), wired to the
-# local cli-proxy-api pool as a custom Anthropic provider so it draws on the
-# same pooled subscriptions as `claude`.
+# cli-proxy-api pool on luna (myLib/claude-pool.nix) as a custom Anthropic
+# provider so it draws on the same pooled subscriptions as `claude`.
 #
 # Delta writes ~/.config/delta/settings.json itself, so like
 # ~/.claude/settings.json in claude-code.nix this can't be a home.file symlink:
@@ -10,10 +10,9 @@
 #
 # Auth goes in as an `x-api-key` header rather than through Delta's API-key
 # field, which only writes to the system keychain. That puts the proxy key in
-# settings.json in plaintext, next to the 0600 keyfile it came from. Fine for a
-# key that only gates 127.0.0.1. It is read at activation and never enters the
-# store; the proxy generates it on its first start, so on a fresh host the
-# provider shows up from the activation after that.
+# settings.json in plaintext (0600). It is read at activation from the opnix
+# file and never enters the store; on a fresh host the provider shows up from
+# the first activation after opnix has rendered it.
 #
 # Delta appends /v1/messages to base_url itself, so the base URL has no /v1.
 {...}: {
@@ -24,7 +23,7 @@
     ...
   }: let
     cfg = config.myHomeManager.delta;
-    proxyCfg = config.myHomeManager.cli-proxy-api;
+    pool = import ../../myLib/claude-pool.nix;
 
     providerName = "cli-proxy-api";
 
@@ -62,7 +61,7 @@
 
     provider = (pkgs.formats.json {}).generate "delta-pool-provider.json" {
       name = providerName;
-      base_url = "http://127.0.0.1:${toString proxyCfg.port}";
+      base_url = pool.url;
       api_mode = "anthropic";
       models = map (m: m // {reasoning_efforts = efforts;}) models;
     };
@@ -72,9 +71,9 @@
       runtimeInputs = [pkgs.coreutils pkgs.jq];
       text = ''
         f="$HOME/.config/delta/settings.json"
-        keyfile="$HOME/.cli-proxy-api/local-api-key"
-        if [ ! -s "$keyfile" ]; then
-          echo "delta-merge-settings: no $keyfile yet (cli-proxy-api hasn't started), skipping" >&2
+        keyfile=${pool.apiKeyFile}
+        if [ ! -r "$keyfile" ] || [ ! -s "$keyfile" ]; then
+          echo "delta-merge-settings: cannot read $keyfile (opnix not rendered yet?), skipping" >&2
           exit 0
         fi
         install -d "$HOME/.config/delta"
@@ -100,11 +99,11 @@
 
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {home.packages = [pkgs.zed-delta];}
-      (lib.mkIf proxyCfg.enable {
+      {
         home.activation.delta-settings = lib.hm.dag.entryAfter ["writeBoundary"] ''
           run ${lib.getExe mergeSettings}
         '';
-      })
+      }
     ]);
   };
 }

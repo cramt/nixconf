@@ -2,11 +2,10 @@
 # global agent instructions, the same skill libraries, and a pooled endpoint
 # instead of a per-machine login.
 #
-# The difference is whose pool. `claude` talks to the cli-proxy-api running on
-# this machine (127.0.0.1, see modules/hm-features/cli-proxy-api.nix); opencode
-# talks to the employer's, which is remote and needs a URL and an API key —
-# both from opnix; myLib/agent-pool.nix says where they come from and why they
-# never enter the store.
+# The difference is whose pool. `claude` talks to ours on luna
+# (myLib/claude-pool.nix); opencode talks to the employer's, which needs a URL
+# and an API key, both from opnix; myLib/agent-pool.nix says where they come
+# from and why they never enter the store.
 #
 # opencode is the one consumer that wants the stored URL verbatim, /v1 and all:
 # it hands options.baseURL to the anthropic provider whole, unlike Claude Code's

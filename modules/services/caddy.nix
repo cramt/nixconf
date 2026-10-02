@@ -21,8 +21,22 @@
           basic-auth,
           forward-auth,
           reverse-proxy-config,
+          ungated-paths,
           ...
-        }: {
+        }: let
+          upstream = "http://localhost:${builtins.toString port}";
+          gated = ''
+            ${lib.optionalString forward-auth ''
+              forward_auth localhost:${builtins.toString config.port-selector.ports.authelia} {
+                uri /api/authz/forward-auth
+                copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+              }
+            ''}
+            reverse_proxy ${upstream} {
+              ${reverse-proxy-config}
+            }
+          '';
+        in {
           name = "${name}.${cfg.domain}";
           value = {
             extraConfig = ''
@@ -39,14 +53,18 @@
                   }
                 ''
               }
-              ${lib.optionalString forward-auth ''
-                forward_auth localhost:${builtins.toString config.port-selector.ports.authelia} {
-                  uri /api/authz/forward-auth
-                  copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
-                }
-              ''}
-              reverse_proxy http://localhost:${builtins.toString port} {
-                ${reverse-proxy-config}
+              ${
+                if ungated-paths == []
+                then gated
+                else ''
+                  @ungated path ${lib.concatStringsSep " " ungated-paths}
+                  handle @ungated {
+                    reverse_proxy ${upstream}
+                  }
+                  handle {
+                    ${gated}
+                  }
+                ''
               }
             '';
           };
@@ -132,6 +150,17 @@
               default = false;
               description = ''
                 Put this vhost behind the myNixOS.services.authelia passkey portal.
+              '';
+            };
+            ungated-paths = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [];
+              example = ["/v1/*"];
+              description = ''
+                Caddy path matchers that skip forward-auth and
+                reverse-proxy-config, for clients that can't do a browser
+                login. The upstream must authenticate these itself: they are a
+                hole in the passkey gate.
               '';
             };
             reverse-proxy-config = lib.mkOption {

@@ -16,19 +16,13 @@
       programs.go.enable = true;
       myHomeManager = {
         claude-code.enable = true;
-        # Pools the Claude subscription accounts behind one local endpoint; the
-        # `claude` wrapper in claude-code.nix picks this up automatically, and
-        # degrades to the direct OAuth login on a host whose pool is still
-        # empty. Accounts are added once each with `agent-accounts add`
-        # (interactive OAuth), which Nix can't do for us.
-        cli-proxy-api.enable = true;
         java.enable = true;
         scala.enable = true;
         ruby.enable = true;
         codex.enable = true;
         # Same skills and global AGENTS.md as claude-code, pointed at the work
         # cli-proxy-api pool (URL + key from 1Password via opnix) rather than
-        # the local one.
+        # ours on luna.
         opencode.enable = true;
       };
       home.packages = with pkgs;

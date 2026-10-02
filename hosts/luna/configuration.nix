@@ -110,7 +110,8 @@
         cacheVolume = "/pool/configs/caddy-cache";
         staticFileVolumes = {};
       };
-      # cramt's pool (development bundle) at cliproxy.<domain>, passkey only.
+      # cramt's Claude pool at cliproxy.<domain>: panel behind the passkey, /v1
+      # behind the shared API key. Every host's `claude` points here.
       cli-proxy-api.enable = true;
       foundryvtt = {
         enable = true;

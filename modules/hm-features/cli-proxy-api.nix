@@ -1,7 +1,8 @@
 # CLIProxyAPI — pools several Claude subscription accounts behind one
 # Anthropic-compatible endpoint on localhost, with per-model 429 cooldown and
-# automatic failover when the bound account is exhausted. Consumed by the
-# `claude` wrapper in modules/hm-features/claude-code.nix.
+# automatic failover when the bound account is exhausted. Runs on luna only,
+# enabled by modules/services/cli-proxy-api.nix, which also exposes it; every
+# host's `claude` wrapper (modules/hm-features/claude-code.nix) connects there.
 #
 # This is a *home-manager* module, not modules/services/, on purpose: the
 # credentials are per-user OAuth tokens created by an interactive browser flow
@@ -34,6 +35,10 @@
     # against config.example.yaml in 7.2.113), so the config file is assembled
     # at start rather than being a pure store path.
     keyFile = "${authDir}/local-api-key";
+    apiKeyFile =
+      if cfg.apiKeyFile != null
+      then cfg.apiKeyFile
+      else keyFile;
     # Same reasoning for the management key: it gates /v0/management, which can
     # read the config (including the api key) and delete credentials. The server
     # bcrypt-hashes it in memory and never persists the hash back, so the
@@ -99,7 +104,11 @@
           chmod 600 "$1"
         fi
       }
-      gen_key ${lib.escapeShellArg keyFile}
+      ${
+        if cfg.apiKeyFile == null
+        then "gen_key ${lib.escapeShellArg keyFile}"
+        else "test -s ${lib.escapeShellArg apiKeyFile}"
+      }
       ${
         if cfg.managementKeyFile == null
         then "gen_key ${lib.escapeShellArg mgmtKeyFile}"
@@ -111,7 +120,7 @@
       umask 077
       {
         cat ${baseConfig}
-        printf 'api-keys:\n  - "%s"\n' "$(cat ${lib.escapeShellArg keyFile})"
+        printf 'api-keys:\n  - "%s"\n' "$(cat ${lib.escapeShellArg apiKeyFile})"
         # Management API and control panel are localhost-only and gated by their
         # own key. Auto-update is off because the panel comes from the store.
         printf 'remote-management:\n  allow-remote: false\n  disable-control-panel: false\n  disable-auto-update-panel: true\n  secret-key: "%s"\n' \
@@ -277,6 +286,16 @@
           Read the management key from this file instead of generating one in
           auth-dir. For when something outside this user needs it too, like a
           reverse proxy injecting it.
+        '';
+      };
+
+      apiKeyFile = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = ''
+          Read the client API key from this file instead of generating one in
+          auth-dir. For a pool other machines connect to, which need the same
+          key.
         '';
       };
 

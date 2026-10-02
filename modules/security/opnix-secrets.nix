@@ -90,6 +90,16 @@
               mode = "0640";
             }
             // groupIf "onepassword-secrets";
+          # API key for cramt's cli-proxy-api pool on luna. luna's proxy accepts
+          # it and every host's `claude` wrapper sends it
+          # (modules/hm-features/claude-code.nix). Group-readable because both
+          # sides run as cramt.
+          cliProxyApiKey =
+            {
+              reference = "op://Homelab/CliProxyAPI/apiKey";
+              mode = "0640";
+            }
+            // groupIf "onepassword-secrets";
           # Shared push credential for the metrics agents. Rendered on every
           # opnix host, so the 1Password item has to exist before any of them
           # deploy -- opnix fails the whole secret render if a reference is dead.

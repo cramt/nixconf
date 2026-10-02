@@ -39,26 +39,23 @@
 
     cfg = config.myHomeManager.claude-code;
 
-    # `claude` wrapper: point Claude Code at the local cli-proxy-api (see
-    # modules/hm-features/cli-proxy-api.nix) so requests are spread over the
-    # pooled Claude accounts instead of the single OAuth login in ~/.claude.
-    # The proxy authenticates upstream with its own stored tokens, so what
-    # Claude Code sends is the proxy's local api key — ANTHROPIC_API_KEY is
-    # cleared so it can't fall back to a real Anthropic key. hiPrio to win over
-    # the raw claude-code binary the development bundle installs.
-    # Falls back to Claude Code's own OAuth whenever the pool can't serve: an
-    # empty pool is the normal state right after a deploy (accounts are added
-    # by an interactive `agent-accounts add`, which Nix can't do), and silently
-    # routing at that point would break `claude` entirely rather than degrade.
-    proxyCfg = config.myHomeManager.cli-proxy-api;
+    # `claude` wrapper: point Claude Code at the cli-proxy-api pool on luna
+    # (myLib/claude-pool.nix) so requests are spread over the pooled Claude
+    # accounts instead of the single OAuth login in ~/.claude. The proxy
+    # authenticates upstream with its own stored tokens, so what Claude Code
+    # sends is the pool's api key — ANTHROPIC_API_KEY is cleared so it can't
+    # fall back to a real Anthropic key. hiPrio to win over the raw claude-code
+    # binary the development bundle installs.
+    # Falls back to Claude Code's own OAuth whenever the pool can't be reached
+    # (luna down, opnix not rendered yet): silently routing at that point
+    # would break `claude` entirely rather than degrade.
+    pool = import ../../myLib/claude-pool.nix;
     claudePoolPkg = lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
-      authdir="$HOME/.cli-proxy-api"
-      keyfile="$authdir/local-api-key"
-      accounts=$(find "$authdir" -maxdepth 1 -name '*.json' 2>/dev/null | wc -l)
+      keyfile=${pool.apiKeyFile}
 
-      if [ -s "$keyfile" ] && [ "$accounts" -gt 0 ] &&
-         timeout 1 bash -c '</dev/tcp/127.0.0.1/${toString proxyCfg.port}' 2>/dev/null; then
-        export ANTHROPIC_BASE_URL="http://127.0.0.1:${toString proxyCfg.port}"
+      if [ -r "$keyfile" ] && [ -s "$keyfile" ] &&
+         timeout 2 bash -c '</dev/tcp/${pool.host}/443' 2>/dev/null; then
+        export ANTHROPIC_BASE_URL="${pool.url}"
         export ANTHROPIC_AUTH_TOKEN="$(cat "$keyfile")"
         # Must be empty, not unset: a real key here would let Claude Code bill
         # the API directly instead of going through the pooled subscriptions.
@@ -75,12 +72,11 @@
         # do work on this path, so the opt-out goes too.
         unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ENABLE_CLAUDEAI_MCP_SERVERS
 
-        if [ "$accounts" -eq 0 ]; then
-          echo "claude: cli-proxy-api has no accounts yet — using the direct OAuth login." >&2
-          echo "        add one with: agent-accounts add" >&2
+        if [ ! -r "$keyfile" ]; then
+          echo "claude: cannot read $keyfile — using the direct OAuth login." >&2
+          echo "        needs myNixOS.opnix-secrets and the onepassword-secrets group (re-login after first deploy)." >&2
         else
-          echo "claude: cli-proxy-api unreachable on 127.0.0.1:${toString proxyCfg.port} — using the direct OAuth login." >&2
-          echo "        systemctl --user status cli-proxy-api" >&2
+          echo "claude: ${pool.host} unreachable — using the direct OAuth login." >&2
         fi
       fi
 
@@ -150,8 +146,8 @@
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
         home.packages =
-          lib.optional cfg.ms365.enable m365ClaudePkg
-          ++ lib.optional proxyCfg.enable claudePoolPkg;
+          [claudePoolPkg]
+          ++ lib.optional cfg.ms365.enable m365ClaudePkg;
 
         # Sit out a rate limit instead of dying on it. Claude Code's default
         # 429 path gives up two ways: a retry-after longer than 60s is
@@ -166,11 +162,11 @@
         # turn completed.
         #
         # A session variable rather than an export in claudePoolPkg, because
-        # the wrapper only exists on pool hosts: luna runs the same
-        # claude-code but force-disables cli-proxy-api, and its direct OAuth
-        # login hits the real window just as hard. t3code gets it from here
-        # too — it captures the environment through `zsh -i -c` (see
-        # hm-features/zsh.nix) and hands process.env to the CLI it spawns.
+        # the wrapper's fallback is the direct OAuth login, which hits the real
+        # window just as hard, and `m365claude` skips the wrapper entirely.
+        # t3code gets it from here too — it captures the environment through
+        # `zsh -i -c` (see hm-features/zsh.nix) and hands process.env to the
+        # CLI it spawns.
         #
         # Remove when upstream makes waiting the default for subscription
         # limits rather than something the runner opts into.

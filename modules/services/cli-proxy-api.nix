@@ -6,6 +6,11 @@
 # The key moves out of the user's auth-dir (0700 under a 0700 home) into a
 # system-owned file that caddy's group can read, generated once by root. The
 # proxy unit waits for it rather than racing to generate its own.
+#
+# The Anthropic API itself (/v1) is the exception to the passkey: Claude Code
+# on the other hosts can't do a browser login, so those paths skip authelia
+# and are gated by the pool's API key instead, shared with the clients through
+# opnix (cliProxyApiKey).
 {...}: {
   flake.nixosModules."services.cli-proxy-api" = {
     config,
@@ -56,13 +61,16 @@
       };
 
       home-manager.users.${cfg.user}.myHomeManager.cli-proxy-api = {
+        enable = true;
         managementKeyFile = keyFile;
+        apiKeyFile = config.services.onepassword-secrets.secretPaths.cliProxyApiKey;
         panelAutoLogin = true;
       };
 
       myNixOS.services.caddy.serviceMap.${cfg.subdomain} = {
         inherit (config.home-manager.users.${cfg.user}.myHomeManager.cli-proxy-api) port;
         forward-auth = true;
+        ungated-paths = ["/v1/*"];
         # Only the passkey-gated vhost gets this, so the panel's placeholder
         # key never reaches the bare port.
         reverse-proxy-config = ''
