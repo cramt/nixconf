@@ -61,6 +61,10 @@
           --ozone-platform=wayland \
           --kiosk --app=${lib.escapeShellArg app.url} \
           --no-first-run --noerrdialogs --password-store=basic \
+          # emrakul advertises scale 1, so pages would render at 1x on a 4K TV:
+          # unreadable from the couch. 2x is 1080p-sized CSS. Drop once emrakul
+          # sends a wl_output/fractional scale for the TV.
+          --force-device-scale-factor=2 \
           --enable-features=AcceleratedVideoDecodeLinuxGL,VaapiOnNvidiaGPUs \
           --ignore-gpu-blocklist --use-gl=angle --use-angle=gl \
           "$@"
