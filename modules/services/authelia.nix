@@ -106,7 +106,8 @@
           storage.local.path = "/var/lib/authelia-main/db.sqlite3";
           # Identity verification for enrolling a passkey lands here instead of
           # email. It's needed once per new device, so reading it over ssh beats
-          # carrying SMTP creds.
+          # carrying SMTP creds. Each prompt overwrites the file and revokes the
+          # previous code, so only the newest one in it is valid.
           notifier.filesystem.filename = "/var/lib/authelia-main/notification.txt";
         };
       };
