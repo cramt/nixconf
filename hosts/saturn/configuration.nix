@@ -130,6 +130,13 @@
     bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.graphical.enable = true;
     steam.enable = true;
+    # ganymede's Moonlight streams games from here. Only up while a graphical
+    # session is; autologin and suspend-for-WoL are still undecided.
+    sunshine = {
+      enable = true;
+      # From nixos-generate-config's output, not checked against the live box.
+      wakeOnLan.interface = "enp4s0";
+    };
     amd.enable = true;
     bundles.users.enable = true;
     services = {
