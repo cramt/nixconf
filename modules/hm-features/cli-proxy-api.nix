@@ -38,7 +38,10 @@
     # read the config (including the api key) and delete credentials. The server
     # bcrypt-hashes it in memory and never persists the hash back, so the
     # plaintext here stays the only copy.
-    mgmtKeyFile = "${authDir}/management-key";
+    mgmtKeyFile =
+      if cfg.managementKeyFile != null
+      then cfg.managementKeyFile
+      else "${authDir}/management-key";
     configFile = "${authDir}/config.yaml";
 
     # Upstream's web control panel, pinned as the cli-proxy-api-panel flake
@@ -46,10 +49,26 @@
     # MANAGEMENT_STATIC_PATH wants either a file literally named
     # management.html or a directory containing one, and a file input lands in
     # the store as "source" — hence the directory.
-    managementPanel = pkgs.runCommand "cli-proxy-api-panel" {} ''
-      mkdir -p $out
-      ln -s ${inputs.cli-proxy-api-panel} $out/management.html
-    '';
+    #
+    # With panelAutoLogin, the stored-session restore is patched to always fire
+    # with a placeholder key, which the reverse proxy in front then overwrites
+    # with the real one. --replace-fail so a panel bump that reshuffles the
+    # minified bundle breaks the build instead of quietly bringing the prompt
+    # back.
+    managementPanel = pkgs.runCommand "cli-proxy-api-panel" {} (''
+        mkdir -p $out
+      ''
+      + (
+        if cfg.panelAutoLogin
+        then ''
+          substitute ${inputs.cli-proxy-api-panel} $out/management.html \
+            --replace-fail 'l=o||i||``,' 'l=o||i||`injected-by-proxy`,' \
+            --replace-fail 'n&&c&&l)try' 'c&&l)try'
+        ''
+        else ''
+          ln -s ${inputs.cli-proxy-api-panel} $out/management.html
+        ''
+      ));
 
     settings = {
       host = "127.0.0.1";
@@ -81,7 +100,13 @@
         fi
       }
       gen_key ${lib.escapeShellArg keyFile}
-      gen_key ${lib.escapeShellArg mgmtKeyFile}
+      ${
+        if cfg.managementKeyFile == null
+        then "gen_key ${lib.escapeShellArg mgmtKeyFile}"
+        # Owned by whoever set the option; until it exists, fail and let
+        # Restart=always retry.
+        else "test -s ${lib.escapeShellArg mgmtKeyFile}"
+      }
 
       umask 077
       {
@@ -242,6 +267,27 @@
           Credential selection strategy. fill-first drains one account before
           moving to the next, which staggers rolling-window subscription caps —
           round-robin spreads usage so every account hits its window at once.
+        '';
+      };
+
+      managementKeyFile = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = ''
+          Read the management key from this file instead of generating one in
+          auth-dir. For when something outside this user needs it too, like a
+          reverse proxy injecting it.
+        '';
+      };
+
+      panelAutoLogin = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Patch the web panel to log in without asking for the management key.
+          Only sound when a reverse proxy in front of the panel overwrites
+          Authorization with the real key (and gates the vhost itself);
+          against the bare port the panel just fails to authenticate.
         '';
       };
 

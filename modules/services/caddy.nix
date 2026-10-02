@@ -20,6 +20,7 @@
           port,
           basic-auth,
           forward-auth,
+          reverse-proxy-config,
           ...
         }: {
           name = "${name}.${cfg.domain}";
@@ -44,7 +45,9 @@
                   copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
                 }
               ''}
-              reverse_proxy http://localhost:${builtins.toString port}
+              reverse_proxy http://localhost:${builtins.toString port} {
+                ${reverse-proxy-config}
+              }
             '';
           };
         })
@@ -129,6 +132,13 @@
               default = false;
               description = ''
                 Put this vhost behind the myNixOS.services.authelia passkey portal.
+              '';
+            };
+            reverse-proxy-config = lib.mkOption {
+              type = lib.types.lines;
+              default = "";
+              description = ''
+                Extra directives inside this vhost's reverse_proxy block.
               '';
             };
           };

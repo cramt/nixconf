@@ -108,14 +108,9 @@
         enable = true;
         cacheVolume = "/pool/configs/caddy-cache";
         staticFileVolumes = {};
-        # The cli-proxy-api pool runs as cramt's user unit (development bundle,
-        # modules/hm-features/cli-proxy-api.nix). Its web panel still asks for
-        # the management key (`agent-accounts key`) behind the passkey.
-        serviceMap.cliproxy = {
-          inherit (config.home-manager.users.cramt.myHomeManager.cli-proxy-api) port;
-          forward-auth = true;
-        };
       };
+      # cramt's pool (development bundle) at cliproxy.<domain>, passkey only.
+      cli-proxy-api.enable = true;
       foundryvtt = {
         enable = true;
         dataVolume = "/pool/configs/foundryvtt_a";
