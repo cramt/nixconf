@@ -140,7 +140,13 @@
         inherit (game) name;
         # Detached: the steam:// URL hands off to the already running Steam
         # and returns at once, so there's no process for Sunshine to wait on.
-        detached = ["${pkgs.util-linux}/bin/setsid ${lib.getExe config.programs.steam.package} steam://rungameid/${toString game.steamAppId}"];
+        # Through systemd-run, not as Sunshine's child: Sunshine's capability
+        # wrapper (capSysAdmin, for KMS capture) leaves CAP_SYS_ADMIN
+        # inheritable, and Steam's bwrap refuses to start with unexpected
+        # capabilities, so the launch died silently and Moonlight just showed
+        # the desktop. https://github.com/containers/bubblewrap/issues/380 — drop
+        # systemd-run once Sunshine stops passing the capability to its children.
+        detached = ["${pkgs.systemd}/bin/systemd-run --user --collect ${lib.getExe config.programs.steam.package} steam://rungameid/${toString game.steamAppId}"];
         # Sunshine only takes .png box art.
         image-path = "${pkgs.runCommand "steam-${toString game.steamAppId}.png" {nativeBuildInputs = [pkgs.imagemagick];} ''
           magick ${pkgs.fetchurl {
