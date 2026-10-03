@@ -136,6 +136,21 @@
       enable = true;
       user = "cramt";
       wakeOnLan.macAddress = (import ./lan.nix).macAddress;
+      apps = [
+        {
+          name = "V Rising";
+          # Detached: the steam:// URL hands off to the already running Steam
+          # and returns at once, so there's no process for Sunshine to wait on.
+          detached = ["${pkgs.util-linux}/bin/setsid ${lib.getExe config.programs.steam.package} steam://rungameid/1604030"];
+          # Sunshine only takes .png box art.
+          image-path = "${pkgs.runCommand "v-rising.png" {nativeBuildInputs = [pkgs.imagemagick];} ''
+            magick ${pkgs.fetchurl {
+              url = "https://cdn.cloudflare.steamstatic.com/steam/apps/1604030/library_600x900.jpg";
+              hash = "sha256-STXKtSGAg171d7lLTUzN2Cr9Dx0iIWBDgECa+VhCEcQ=";
+            }} $out
+          ''}";
+        }
+      ];
     };
     amd.enable = true;
     bundles.users.enable = true;
