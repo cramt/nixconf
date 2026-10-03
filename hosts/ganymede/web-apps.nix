@@ -56,15 +56,11 @@
         export XDG_DATA_DIRS="/etc/profiles/per-user/$USER/share:/run/current-system/sw/share"
         # A profile per app keeps each one logged in on its own, and keeps one
         # app's leftover Chromium from swallowing another's launch.
-        # --force-device-scale-factor=2: emrakul advertises scale 1, so pages
-        # would render at 1x on a 4K TV, unreadable from the couch. 2x is
-        # 1080p-sized CSS. Drop once emrakul sends a scale for the TV.
         exec chromium \
           --user-data-dir="''${XDG_STATE_HOME:-$HOME/.local/state}/web-apps/${id}" \
           --ozone-platform=wayland \
           --kiosk --app=${lib.escapeShellArg app.url} \
           --no-first-run --noerrdialogs --password-store=basic \
-          --force-device-scale-factor=2 \
           --enable-features=AcceleratedVideoDecodeLinuxGL,VaapiOnNvidiaGPUs \
           --ignore-gpu-blocklist --use-gl=angle --use-angle=gl \
           "$@"
