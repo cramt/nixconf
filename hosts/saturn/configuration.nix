@@ -134,8 +134,8 @@
     # session is; autologin and suspend-for-WoL are still undecided.
     sunshine = {
       enable = true;
-      # From nixos-generate-config's output, not checked against the live box.
-      wakeOnLan.interface = "enp4s0";
+      user = "cramt";
+      wakeOnLan.macAddress = (import ./lan.nix).macAddress;
     };
     amd.enable = true;
     bundles.users.enable = true;
