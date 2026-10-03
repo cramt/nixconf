@@ -118,7 +118,7 @@ cache, as `eros` does) and `address` (if DNS can't find the host). See
 
 ## Infrastructure
 
-Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by [terranix](https://github.com/cramt/terranix/tree/provider-schemas) with every resource typed against the cloudflare provider's schema. Secrets come from 1Password, state lives in postgres on luna.
+Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by [terranix](https://github.com/cramt/terranix/tree/provider-schemas) with every resource typed against the cloudflare provider's schema. Secrets come from 1Password. State is a file in `/vault` on luna, and tofu always runs there (over ssh, wherever you start it).
 
 ```bash
 just deploy infra   # apply it (a bare `just deploy` does this before the hosts)

@@ -11,9 +11,10 @@
     ./workers.nix
   ];
 
-  # Connection string comes from PG_CONN_STR; the database lives on luna
-  # (myNixOS.services.terraform_remote_backend).
-  terraform.backend.pg = { };
+  # A plain file on luna. The wrapper only ever runs tofu there, so nothing
+  # else needs to reach it, and the local backend's file lock is enough to
+  # serialize applies started from different machines.
+  terraform.backend.local.path = "/vault/terraform/nixconf.tfstate";
 
   variable = {
     domain = { type = "string"; sensitive = true; };

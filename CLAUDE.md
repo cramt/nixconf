@@ -116,7 +116,7 @@ what makes `just deploy` able to reach a host at all).
 
 ### Infrastructure
 
-Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terranix (our `cramt/terranix` fork, `provider-schemas` branch) with options typed from the cloudflare provider's own schema, so a bad attribute fails at eval. `modules/flake/infra.nix` exposes it as `.#infra`, an OpenTofu wrapper that reads secrets from 1Password into `TF_VAR_*`/`CLOUDFLARE_*` and keeps state in postgres on luna. `just deploy` applies it before the hosts (`just deploy infra` alone, `just deploy luna` skips it); `just tf plan` for a dry run. Workers under `infra/<name>/` are bundled by wrangler in the sandbox (`infra/worker.nix`); bump the `hash` in `infra/workers.nix` when their `pnpm-lock.yaml` changes.
+Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terranix (our `cramt/terranix` fork, `provider-schemas` branch) with options typed from the cloudflare provider's own schema, so a bad attribute fails at eval. `modules/flake/infra.nix` exposes it as `.#infra`, an OpenTofu wrapper that reads secrets from 1Password into `TF_VAR_*`/`CLOUDFLARE_*`. State is a plain file at `/vault/terraform/nixconf.tfstate` on luna, so the wrapper always runs tofu there: it copies its closure to luna and executes over ssh, from whichever machine you start it on (postgres on luna stays up for other repos' state). `just deploy` applies it before the hosts (`just deploy infra` alone, `just deploy luna` skips it); `just tf plan` for a dry run. Workers under `infra/<name>/` are bundled by wrangler in the sandbox (`infra/worker.nix`); bump the `hash` in `infra/workers.nix` when their `pnpm-lock.yaml` changes.
 
 ## Machine & Host Facts
 
