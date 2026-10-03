@@ -193,6 +193,34 @@ in {
           installation_mode = "force_installed";
         };
       };
+      # uBO's managed storage, re-applied on every start. uBO caches it and reads
+      # the cache first, so a change here lands on the second start after the
+      # deploy, not the first.
+      # https://github.com/gorhill/uBlock/blob/master/platform/common/managed_storage.json
+      "3rdparty".Extensions."uBlock0@raymondhill.net".toOverwrite = {
+        # uBO's own defaults (assets.json entries without `off`), pinned so
+        # the profile can't drift off them.
+        filterLists = [
+          "user-filters"
+          "ublock-filters"
+          "ublock-badware"
+          "ublock-privacy"
+          "ublock-unbreak"
+          "ublock-quick-fixes"
+          "easylist"
+          "easyprivacy"
+          "urlhaus-1"
+          "plowe-0"
+        ];
+        # uBO's own default trusted sites. Overwriting them every start undoes
+        # a stray click on the power button: the YouTube profile had
+        # www.youtube.com trusted, which switched uBO off there entirely.
+        # https://github.com/cramt/emrakul/issues/26
+        trustedSiteDirectives = [
+          "chrome-extension-scheme"
+          "moz-extension-scheme"
+        ];
+      };
       Permissions = {
         Notifications = {
           BlockNewRequests = true;
