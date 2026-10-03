@@ -16,8 +16,12 @@
     text = ''
       # emrakul runs with only Home's apps as its data dir (home-apps.nix).
       export XDG_DATA_DIRS="/etc/profiles/per-user/$USER/share:/run/current-system/sw/share"
+      # Steam decides it's in a gamescope session (SteamOS) from
+      # GAMESCOPE_WAYLAND_DISPLAY, and then hides Exit Steam from its Power
+      # menu for SteamOS's Switch to Desktop, which does nothing here. Without
+      # it, Exit Steam is back, and gamescope exits with Steam, back to Home.
       exec ${lib.getExe pkgs.gamescope} -W 3840 -H 2160 -r 60 -f -e -- \
-        ${lib.getExe steam} -gamepadui
+        env -u GAMESCOPE_WAYLAND_DISPLAY ${lib.getExe steam} -gamepadui
     '';
   };
 
