@@ -21,8 +21,10 @@
       # https://github.com/cramt/emrakul/issues/5
       export SDL_JOYSTICK_HIDAPI=0
       # --no-keep-awake: a game never holds the TV awake (emrakul's Idle).
+      # The address, not the name: saturn.fritz.box also resolves to another
+      # PC (lan.nix), and Moonlight adds whatever the name resolves to.
       # --quit-after: ending the stream any other way ends Desktop on saturn too.
-      exec ${moonlight} stream ${saturn.name} Desktop \
+      exec ${moonlight} stream ${saturn.address} Desktop \
         --display-mode fullscreen --resolution 3840x2160 --fps 60 \
         --no-keep-awake --quit-after
     '';
@@ -36,7 +38,7 @@
     name = "moonlight-saturn-quit";
     runtimeInputs = [pkgs.coreutils];
     text = ''
-      QT_QPA_PLATFORM=offscreen exec timeout 30 ${moonlight} quit ${saturn.name}
+      QT_QPA_PLATFORM=offscreen exec timeout 30 ${moonlight} quit ${saturn.address}
     '';
   };
 
