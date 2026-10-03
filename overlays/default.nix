@@ -93,11 +93,13 @@ inputs: [
   })
 
   # Pre-generated Moonlight <-> Sunshine pairing: the generator (a flake app,
-  # run by hand to rotate) and what ganymede seeds Moonlight.conf with.
+  # run by hand to rotate) and what ganymede seeds Moonlight.conf with. Then
+  # emrakul-games, which turns every paired host's apps into Home tiles.
   # final.qt6: moonlight-seed links the same qtbase as moonlight-qt.
   (final: prev: {
     moonlight-pairing = prev.callPackage ../packages/moonlight-pairing {};
     moonlight-seed = final.callPackage ../packages/moonlight-seed {};
+    emrakul-games = prev.callPackage ../packages/emrakul-games {};
   })
 
   # nixpkgs now ships its own agent-browser (0.27.0) which lags the version we
