@@ -112,6 +112,11 @@
       # See its --help.
       saturn-windows-image = pkgs.callPackage ../../packages/saturn-windows-image {};
 
+      # `nix run .#moonlight-pairing -- ~/.cache/moonlight-pairing/<new dir>`:
+      # new certs pairing ganymede's Moonlight with saturn's Sunshine. Re-run to
+      # rotate; where each output goes is in modules/gaming/moonlight.nix.
+      moonlight-pairing = pkgs.callPackage ../../packages/moonlight-pairing {};
+
       # NOTE: scripts/windows-vm.sh (boot the physical Windows partition in a VM)
       # is SHELVED — Windows aborts very early on the synthesized disk topology
       # with no BSOD/log to diagnose. Kept in-tree as a reference but deliberately

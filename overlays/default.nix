@@ -92,6 +92,14 @@ inputs: [
     cpa-prometheus = prev.callPackage ../packages/cpa-prometheus {};
   })
 
+  # Pre-generated Moonlight <-> Sunshine pairing: the generator (a flake app,
+  # run by hand to rotate) and what ganymede seeds Moonlight.conf with.
+  # final.qt6: moonlight-seed links the same qtbase as moonlight-qt.
+  (final: prev: {
+    moonlight-pairing = prev.callPackage ../packages/moonlight-pairing {};
+    moonlight-seed = final.callPackage ../packages/moonlight-seed {};
+  })
+
   # nixpkgs now ships its own agent-browser (0.27.0) which lags the version we
   # track. Point pkgs.agent-browser at our local build so every consumer
   # (development bundle, claude-code feature) resolves to the same store path
