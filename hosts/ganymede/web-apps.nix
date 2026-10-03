@@ -220,6 +220,33 @@ in {
           "chrome-extension-scheme"
           "moz-extension-scheme"
         ];
+        # The TV UI (youtube.com/tv) carries its ads inside the API responses,
+        # and the stock YouTube filters miss them there. Measured on ganymede
+        # (emrakul#26): the TV client fetches its player response from
+        # /youtubei/v1/player with no query string, while uBO's lists match
+        # `player?`, so pre-rolls and mid-rolls get through: with only the stock
+        # lists, one video played a pod of five ads in 45 s. Home's ad tiles
+        # come as adSlotRenderer items in the browse response, a shape only
+        # the TV UI uses. These prune the same fields TizenTube strips
+        # (mods/features/adblock.js in KrX3D/TizenTube). Drop them once
+        # uBlockOrigin/uAssets covers /tv itself.
+        # https://github.com/cramt/emrakul/issues/26
+        filters = let
+          shelves = "sectionListRenderer.contents.[].shelfRenderer.content.horizontalListRenderer.items.[-].adSlotRenderer";
+          home = "contents.tvBrowseRenderer.content.tvSurfaceContentRenderer.content";
+          paths = [
+            "${home}.sectionListRenderer.contents.[-].adSlotRenderer"
+            "${home}.${shelves}"
+            "continuationContents.sectionListContinuation.contents.[-].adSlotRenderer"
+            "continuationContents.sectionListContinuation.contents.[].shelfRenderer.content.horizontalListRenderer.items.[-].adSlotRenderer"
+            "continuationContents.horizontalListContinuation.items.[-].adSlotRenderer"
+            "continuationContents.tvSurfaceContentContinuation.content.${shelves}"
+          ];
+        in [
+          "www.youtube.com##+js(json-prune-fetch-response, playerAds adPlacements adSlots, , propsToMatch, youtubei/v1/player)"
+          "www.youtube.com##+js(json-prune-xhr-response, playerAds adPlacements adSlots, , propsToMatch, youtubei/v1/player)"
+          "www.youtube.com##+js(json-prune, ${lib.concatStringsSep " " paths})"
+        ];
       };
       Permissions = {
         Notifications = {
