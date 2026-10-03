@@ -1,6 +1,9 @@
 # KDE Connect: text sent from the phone lands on emrakul's clipboard, for
 # Ctrl+V (or the on-screen keyboard's Paste) in a web app, and Home gets a
 # tile for kdeconnect-app. https://github.com/cramt/emrakul/issues/27
+# The phone's remote input (touchpad and keyboard) needs nothing here:
+# emrakul's module brings the RemoteDesktop portal it asks for.
+# https://github.com/cramt/emrakul/issues/28
 {
   config,
   lib,
