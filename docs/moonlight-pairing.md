@@ -38,9 +38,9 @@ saturn's web UI login (port 47990) comes from the same 1Password item:
    cd ~/.cache/moonlight-pairing/<dir>
    op item create --vault Homelab --category Login --title Sunshine-saturn \
      --generate-password='letters,digits,32' username=cramt \
-     'sunshine-key.pem[file]=sunshine-key.pem'
+     'sunshine-key\.pem[file]=sunshine-key.pem'
    op item create --vault Homelab --category 'Secure Note' --title Moonlight-ganymede \
-     'moonlight-ganymede.pem[file]=moonlight-ganymede.pem'
+     'moonlight-ganymede\.pem[file]=moonlight-ganymede.pem'
    ```
 
    To rotate, replace the `.pem` files on the existing items in the 1Password
