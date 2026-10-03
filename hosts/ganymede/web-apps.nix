@@ -3,7 +3,6 @@
 # Home draws its tile from.
 {
   lib,
-  options,
   pkgs,
   ...
 }: let
@@ -52,7 +51,7 @@
       runtimeInputs = [pkgs.chromium];
       text = ''
         export LIBVA_DRIVER_NAME=nvidia
-        # emrakul runs with only the web apps as its data dir (see below).
+        # emrakul runs with only Home's apps as its data dir (home-apps.nix).
         export XDG_DATA_DIRS="/etc/profiles/per-user/$USER/share:/run/current-system/sw/share"
         # A profile per app keeps each one logged in on its own, and keeps one
         # app's leftover Chromium from swallowing another's launch.
@@ -82,25 +81,8 @@
       mkdir -p $out/share/icons/hicolor/scalable/apps
       sed 's|<svg |<svg fill="#ffffff" |' ${app.icon} > $out/share/icons/hicolor/scalable/apps/web-app-${id}.svg
     '';
-  webAppsPackage = pkgs.symlinkJoin {
-    name = "web-apps";
-    paths = lib.mapAttrsToList entry webApps;
-  };
 in {
-  # Home lists every desktop entry in XDG_DATA_DIRS, and the system and home
-  # profiles carry plenty (nvim, btop, qt5ct, nixos-manual, ...). The TV shows
-  # only the web apps, so emrakul gets a data dir holding nothing else. Its
-  # unit's Environment= can't do this: PAM's login stack sets XDG_DATA_DIRS
-  # after it. The launchers put the normal dirs back for Chromium.
-  services.emrakul.package = let
-    emrakul = options.services.emrakul.package.default;
-  in
-    pkgs.writeShellApplication {
-      name = "emrakul";
-      text = ''
-        XDG_DATA_DIRS=${webAppsPackage}/share exec ${lib.getExe emrakul} "$@"
-      '';
-    };
+  ganymede.homeApps = lib.mapAttrsToList entry webApps;
 
   programs.chromium = {
     enable = true;
