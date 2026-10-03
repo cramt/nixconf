@@ -11,6 +11,7 @@
     ./web-apps.nix
     ./kdeconnect.nix
     ./moonlight.nix
+    ./steam.nix
     inputs.emrakul.nixosModules.default
     inputs.disko.nixosModules.default
     (import ./disko.nix {device = "/dev/nvme0n1";})
