@@ -45,4 +45,15 @@ in {
   };
 
   ganymede.homeApps = [entry];
+
+  # emrakul's module locks the puck's hidraw to root, so nothing can make
+  # hid-steam drop the gamepad. Steam Input needs exactly that hidraw, so give
+  # it back to the seat's user: while Steam runs it owns the controller and
+  # emrakul sees no gamepad, then emrakul picks it up again by hotplug once
+  # Steam exits. Sorts after emrakul's 61- rule and before 73-seat-late.
+  services.udev.packages = [
+    (pkgs.writeTextDir "lib/udev/rules.d/62-ganymede-steam-hidraw.rules" ''
+      SUBSYSTEM=="hidraw", KERNELS=="*:28DE:*", TAG+="uaccess", MODE="0660"
+    '')
+  ];
 }
