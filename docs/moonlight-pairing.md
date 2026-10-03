@@ -43,6 +43,10 @@ saturn's web UI login (port 47990) comes from the same 1Password item:
      'moonlight-ganymede\.pem[file]=moonlight-ganymede.pem'
    ```
 
+   Keep the backslash. In an `op` assignment a dot separates section from
+   field, so an unescaped `sunshine-key.pem[file]` is stored as file `pem` in
+   section `sunshine-key`, and opnix fails with `missing_reference`.
+
    To rotate, replace the `.pem` files on the existing items in the 1Password
    app, or `op item delete` both items and create them again as above (which
    also rolls the web UI password).
