@@ -55,6 +55,8 @@
       device = "/dev/dri/by-path/pci-0000:01:00.0-card";
       connector = "HDMI-A-1";
       mode = "3840x2160@60";
+      # Web apps lay out at 1920x1080 and draw at 4K: readable from the couch.
+      scale = 2;
       # The LG's own settings, held to what's on screen over its network API
       # and put back whenever they drift (emrakul's src/tv.rs).
       tv = {
