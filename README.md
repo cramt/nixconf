@@ -33,7 +33,7 @@ just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
 
 # Infrastructure (uses 1Password for secrets)
-just tf <args>        # Run OpenTofu in ./infra with env vars from opnix
+just tf <args>        # Run OpenTofu on the Cloudflare infra (just tf plan); `just deploy` applies it
 
 # Flake management
 nix flake update
@@ -118,9 +118,9 @@ cache, as `eros` does) and `address` (if DNS can't find the host). See
 
 ## Infrastructure
 
-Terraform/OpenTofu configs live in `infra/`. Credentials are injected from 1Password via `opnix`.
+Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by [terranix](https://github.com/cramt/terranix/tree/provider-schemas) with every resource typed against the cloudflare provider's schema. Secrets come from 1Password, state lives in postgres on luna.
 
 ```bash
-just tf plan
-just tf apply
+just deploy infra   # apply it (a bare `just deploy` does this before the hosts)
+just tf plan        # any other OpenTofu command
 ```

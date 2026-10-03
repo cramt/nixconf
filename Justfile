@@ -15,6 +15,11 @@ cores := "2"
 # the network right now. Powered-off hosts are reported and skipped, not fatal,
 # so this is safe to run whenever. `just deploy luna ganymede` narrows it.
 #
+# The Cloudflare infra (infra/, via `nix run .#infra`) goes first, so DNS for a
+# new vhost exists before the host asks ACME for its cert. It's a target named
+# `infra`: a bare `just deploy` includes it, `just deploy luna` skips it,
+# `just deploy infra` runs it alone. tofu asks before applying any change.
+#
 # The local machine is just another node — it gets deployed over SSH like the
 # rest, so this works from whichever host you happen to be sitting at.
 deploy *hosts:
@@ -26,10 +31,20 @@ deploy *hosts:
     nodes=$(nix eval --raw .#deploy.nodes --apply \
       'ns: builtins.concatStringsSep "\n" (builtins.attrValues (builtins.mapAttrs (n: v: n + " " + v.hostname) ns))')
 
-    want="{{hosts}}"
+    want=""; infra=false
+    if [ -z "{{hosts}}" ]; then infra=true; fi
+    for w in {{hosts}}; do
+      if [ "$w" = infra ]; then infra=true; else want+="$w "; fi
+    done
     for w in $want; do
       grep -qE "^$w " <<<"$nodes" || { echo "unknown host: $w" >&2; exit 1; }
     done
+
+    if $infra; then
+      nix run .#infra -- apply
+      # only `infra` named: an empty $want would otherwise mean every host
+      if [ -n "{{hosts}}" ] && [ -z "$want" ]; then exit 0; fi
+    fi
     wanted() { [ -z "$want" ] && return 0; for w in $want; do [ "$w" = "$1" ] && return 0; done; return 1; }
 
     # Probe over SSH rather than ping: a host can answer ICMP while sshd is down
@@ -138,8 +153,6 @@ update:
     nix shell --inputs-from . nixpkgs#npins nixpkgs#skopeo --command npins update
     just update_packages
 
+# Run OpenTofu against the Cloudflare infra (`just tf plan`); `just deploy` applies it
 tf *args:
-    #!/usr/bin/env bash
-    export OP_SERVICE_ACCOUNT_TOKEN=$(cat /etc/opnix-token)
-    export PG_CONN_STR="postgres://terraformremotestate:$(op read 'op://Homelab/TerraformRemoteState/password')@$(op read 'op://Homelab/Infrastructure/lunaInternalAddress'):5432"
-    tofu -chdir=infra {{args}}
+    nix run .#infra -- {{args}}

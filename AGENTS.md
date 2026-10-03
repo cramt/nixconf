@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # machine you run it on is just another target.
 just deploy
 just deploy luna ganymede   # ...or narrow to named hosts
+just deploy infra           # ...or just the Cloudflare infra (a bare deploy applies it first)
 just jobs=8 cores=8 deploy  # ...or lift the default nproc/4 x 2 build cap
 
 # Apply system config to the current host only, no network
@@ -22,7 +23,7 @@ just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
 
 # Infrastructure (uses 1Password for secrets)
-just tf <args>        # Run terraform in ./infra with env vars from opnix
+just tf <args>        # Run OpenTofu on the Cloudflare infra (just tf plan); `just deploy` applies it
 
 # Flake management
 nix flake update
@@ -115,7 +116,7 @@ what makes `just deploy` able to reach a host at all).
 
 ### Infrastructure
 
-Terraform configs live in `infra/`. Use `just tf <args>` which injects credentials from 1Password via `opnix`.
+Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terranix (our `cramt/terranix` fork, `provider-schemas` branch) with options typed from the cloudflare provider's own schema, so a bad attribute fails at eval. `modules/flake/infra.nix` exposes it as `.#infra`, an OpenTofu wrapper that reads secrets from 1Password into `TF_VAR_*`/`CLOUDFLARE_*` and keeps state in postgres on luna. `just deploy` applies it before the hosts (`just deploy infra` alone, `just deploy luna` skips it); `just tf plan` for a dry run. Workers under `infra/<name>/` are bundled by wrangler in the sandbox (`infra/worker.nix`); bump the `hash` in `infra/workers.nix` when their `pnpm-lock.yaml` changes.
 
 ## Machine & Host Facts
 

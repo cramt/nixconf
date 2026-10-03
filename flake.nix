@@ -239,6 +239,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Cloudflare infra as Nix (infra/, applied by `just deploy`). The fork's
+    # provider-schemas branch types every resource against the provider's own
+    # schema, so a typo fails at eval instead of at plan.
+    # Back to github:terranix/terranix once that lands upstream.
+    terranix = {
+      url = "github:cramt/terranix/provider-schemas";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # progress-engine — exact draw-probability tests for decklists, and the
     # canonical parser for Archidekt decklist format. The mtg-commander skill's
     # `scryfall` helper shells out to it rather than carrying a second copy of
