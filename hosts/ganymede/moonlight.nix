@@ -62,9 +62,7 @@ in {
     enable = true;
     user = "cramt";
     host = saturn;
-    # Null until the 1Password item exists: opnix renders all of ganymede's
-    # secrets or none, the TV key included. See docs/moonlight-pairing.md.
-    clientKey = null;
+    clientKey = "op://Homelab/Moonlight-ganymede/moonlight-ganymede.pem";
   };
 
   ganymede.homeApps = [entry];
