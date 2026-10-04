@@ -198,7 +198,7 @@
         home.file.".claude/skills/dm-me/SKILL.md".source = skills.dm-me.path;
       })
       (lib.mkIf cfg.mtg-commander.enable {
-        home.packages = [skills.scryfall];
+        home.packages = [skills.scryfall skills.gauntlet];
         home.file.".claude/skills/mtg-commander/SKILL.md".source =
           skills.mtg-commander.path;
       })

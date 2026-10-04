@@ -29,7 +29,13 @@
   # vocabulary to match upstream's conventions, which ours don't follow.
   mattpocockExclude = ["setup-matt-pocock-skills"];
   mattpocockRoot = "${inputs.mattpocock-skills}/skills";
+  # progress-engine's CLI. Exported below as well as wrapped by `scryfall`:
+  # the skill runs `gauntlet test` directly, and a copy reachable only from
+  # inside that wrapper read as "not installed" in four sessions out of six.
+  gauntlet = inputs.progress-engine.packages.${pkgs.system}.default;
 in {
+  inherit gauntlet;
+
   # Each entry is { name; path; } where path is a store path to a skill
   # directory containing SKILL.md — the shape both agents' config wants.
   pstack =
@@ -79,7 +85,7 @@ in {
     name = "scryfall";
     runtimeInputs =
       (with pkgs; [curl jq gzip util-linux coreutils openssl])
-      ++ [inputs.progress-engine.packages.${pkgs.system}.default];
+      ++ [gauntlet];
     text = builtins.readFile "${skillsRoot}/mtg-commander/scryfall.sh";
   };
 

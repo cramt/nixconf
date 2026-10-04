@@ -29,6 +29,7 @@ scryfall gamechangers             # the live Game Changers list
 scryfall check <file> [bracket]   # validate a decklist; PASS/FAIL to stderr, exit code, JSON to stdout
 scryfall tags [pattern]           # find Oracle tag slugs
 scryfall otag <slug> [ci] [cmc]   # cards carrying an Oracle tag
+scryfall lands <ci> [regex]       # the land pool for an identity, MDFCs first
 scryfall path                     # path to the index, for arbitrary jq
 scryfall play new <file>          # deal a real shuffled deck and play it out
 ```
@@ -39,8 +40,8 @@ It also owns decklist parsing outright: `check` and `play` shell out to it, so a
 on what a decklist is by construction.
 
 The first `sync` takes about a minute and then serves everything from disk. Each card record
-is `{name, ci, commander_legal, game_changer, type_line, cmc, keywords, oracle, any_number,
-usd, uri}`, keyed by lowercased name under `.cards`, so open-ended questions are a jq away
+is `{name, ci, commander_legal, game_changer, type_line, layout, cmc, mana_cost, keywords,
+oracle, any_number, usd, uri}`, keyed by lowercased name under `.cards`, so open-ended questions are a jq away
 with **zero** API calls:
 
 ```bash
@@ -91,8 +92,16 @@ accumulator, not the input root.** Capture the root first (`. as $root | reduce 
 card lookup inside the loop silently returns null and you get a confident, empty answer.
 
 Prefer one jq or `otag` pass over many API calls; hit the live search API only
-for something genuinely not in the bulk files, and then with a `User-Agent` header and a gap
-between calls.
+for something genuinely not in the bulk files (rulings, printings), and then with a
+`User-Agent` header and a gap between calls. Per-card API loops got this machine a 403
+"restricted" once; mana costs are in the index now, so pip counts need no API.
+
+Comprehensive Rules, as JSON keyed by rule number:
+
+```bash
+curl -s https://api.academyruins.com/cr -o /tmp/cr.json
+jq -r 'to_entries[]|select(.key|startswith("730"))|"\(.key)  \(.value.ruleText)"' /tmp/cr.json
+```
 
 ## What people actually play: EDHREC JSON
 
@@ -242,10 +251,70 @@ scryfall otag mana-rock GUR 2   # 2-mana rocks castable in Temur
   everyone opted into that, but those decks are rare here. `scryfall check` enforces this at
   brackets ≤3 and lifts it at 4+.
 
-## Always output decklists in Archidekt format
+## Manabase: picked from a list, measured, never recalled
 
-Whenever a decklist comes up — a new build, an upgrade, or even a handful of swaps — give
-the **complete 100-card list**, not a diff or an excerpt. One card per line:
+Manabases from memory come out as precon filler: Command Tower, gainlands, temples, zero
+MDFCs. Every manabase so far needed rebuilding by hand. So:
+
+- **Start from `scryfall lands <ci>`**, not recall. It lists every legal land and MDFC in
+  the identity, MDFCs first, then by untapped → conditional → tapped.
+- **MDFCs are spells that cost no land slot.** A blue deck should run Sink into Stupor before
+  its Nth Island. Fill spell roles with MDFCs wherever one does the job, and count each as a
+  land. One rules catch: in hand an MDFC is only its front face, so it is not a land *card*
+  for "discard a land" / "put a land from your hand" effects.
+- **Untapped where the curve needs it.** The colour of turns 1–2 (the ramp, the commander's
+  early pips) gets the untapped sources; tapped lands go to colours you need later. A tapland
+  earns its slot by doing something (cycling, bounce, a triome's fixing), never as filler.
+- **Sources follow pips relative to mana value.** `{R}{R}{R}` on a 3-drop is a different
+  problem from `{2}{R}{R}{R}` on a 5-drop.
+- **Basics feed basic-fetch ramp.** Cultivate and friends take two basics each, and fetchlands
+  compete for the same pool.
+
+`scryfall check` reports `.manabase` (MDFCs run vs. available, tapped lands, sources vs. pip
+share, basics vs. basic fetchers) and prints `manabase:` warnings to stderr. Resolve them or
+say why not. The warnings are heuristics read off oracle text; `gauntlet`'s `can_cast` is the
+measurement when it matters.
+
+## Building the list
+
+- **Fill each role from a search, then pick.** Pull candidates from the index, otags,
+  `lands` and EDHREC before choosing. Recall misses new cards: Icetill Explorer was in
+  fetched EDHREC data and still left out. Before presenting, diff the list against the
+  commander's EDHREC synergy list and account for high-synergy cards you skipped.
+- **Read every card a query surfaces before dismissing it.**
+- **Categories are measurement inputs.** Gauntlet queries run on `cat:`, so a card filed
+  under a role it doesn't do inflates a pass rate. A category names a mechanism the card's
+  oracle text has: a damage doubler is not a "Discard Payoff". Split enablers from payoffs.
+- **Check the turn it matters.** Before a claim about a card's role, check its cost and
+  timing on that turn: a 4-mana ramp spell is not a turn-2 play; scry before a dredge draw
+  sees nothing; permanents cast from the graveyard are still sorcery speed.
+- **Cuts are named.** Every change lists cuts as well as adds. Never cut a card silently,
+  never substitute for a card the user named, and when a remark is ambiguous ("not okay",
+  "never happening") ask before cutting on it.
+- **Answer what was asked.** "Is there something there?" wants ideas, not a 100-card list.
+
+## Where decks live: `~/code/mtg`
+
+A git repo. `decks/<slug>.deck.toml` is the deck, `collection.toml` is what the user owns,
+and saving is a commit plus push (history is the undo). Criteria files go beside the deck as
+`decks/<slug>.criteria.toml`. Never leave a list in `/tmp` or `~`; always state the path.
+
+`.deck.toml` is progress-engine's format: `cards = [{ printing = "set/num" | name = "…",
+qty?, in = ["Category", …] }]` plus a `[categories]` table (`Commander = { type =
+"commander" }`), and optional `name`/`description` at the top. Edit it in place for changes.
+For a new deck, write Archidekt text (below) and convert:
+
+```bash
+gauntlet import new.txt > ~/code/mtg/decks/<slug>.deck.toml
+```
+
+`check`, `play` and `gauntlet test` all read `.deck.toml` directly. Printing-only entries
+are named from gauntlet's index, which needs printings: run `gauntlet sync` once if `parse`
+says so.
+
+## Archidekt text format
+
+Used for new decks before `import`, and for showing a full list. One card per line:
 
 ```
 1x Card Name [Category]
@@ -266,11 +335,11 @@ the **complete 100-card list**, not a diff or an excerpt. One card per line:
   role, which is worth noticing before the list ships.
 - **A card can carry several categories**, comma-separated inside the brackets:
   `1x Myr Battlesphere [Big Colorless,Test]`. Use this when a card genuinely does two jobs —
-  it is what lets `odds` ask about either role — but don't scatter categories to pad the list.
+  it is what lets `gauntlet` ask about either role — but don't scatter categories to pad the list.
 - The commander goes in a `[Commander{top}]` category. It may sit alongside others
   (`[Ramp,Commander{top}]`) and still registers as the commander.
-- For upgrades, print the full new list, then a short cuts/adds table underneath explaining
-  the reasoning. The list first, the prose second.
+- For changes to a deck in the repo, edit the `.deck.toml`, commit, push, and reply with a
+  cuts/adds table and the reasoning. Print the full list for a new build or when asked.
 
 ## Before presenting any list, validate it
 
@@ -300,8 +369,10 @@ The script cannot see mass land denial, cheap combos, chained extra turns, or th
 deckbuilding restriction a companion imposes — it lists these in `.unchecked`. Those need
 you to actually read the deck, so check them by hand before claiming a bracket.
 
-`.usd_total` and `.priciest` come out of the same pass, so don't shell out for arithmetic —
-there is no `bc` on this machine.
+`.usd_total` and `.priciest` come out of the same pass, so don't shell out for arithmetic.
+There is no `bc` and no `python3` on this machine: use jq, awk and sed. A failed edit
+command leaves the old file in place, so a PASS after an error is a PASS on the old list.
+Re-check after any edit that printed an error.
 
 ### Partners, backgrounds and companions
 
@@ -393,10 +464,11 @@ your queries they match and enumerates the possibilities, so there is no samplin
 shuffler to bias.
 
 ```bash
-gauntlet parse deck.txt              # the canonical decklist parser, as JSON
-gauntlet sync                        # build its own index (~/.cache/scryfall/index.jsonl)
-gauntlet test deck.txt criteria.toml # evaluate criteria, PASS/FAIL, exit code
-gauntlet test deck.txt c.toml --draw # model being on the draw
+gauntlet parse <deck>              # the canonical decklist parser, as JSON (.deck.toml or text)
+gauntlet import deck.txt            # Archidekt text as a .deck.toml, on stdout
+gauntlet sync                       # build its own index, with printings (~/.cache/scryfall/index.jsonl)
+gauntlet test <deck> criteria.toml  # evaluate criteria, PASS/FAIL, exit code
+gauntlet test <deck> c.toml --draw  # model being on the draw
 ```
 
 Criteria are TOML. All `require` clauses must hold; `[[criterion.any_of]]` branches are
@@ -420,13 +492,13 @@ turn = 0
 query = "t:land"
 ```
 
-**Double-faced cards must use the full `Front // Back` name** — gauntlet doesn't resolve
-front-face names the way `check` and Archidekt do. Test against an expanded copy of the list.
-
 Card selection is a subset of Scryfall syntax — `t:land`, `o:"Add {W}"`, `mv<=2`, `id<=W`,
 `is:permanent`, `-t:creature`, `or`, parentheses — plus `cat:"..."` for the decklist's own
 categories. **Unsupported syntax is a parse error naming the term**, never a silent no-match.
 
+Every criteria file carries the commander-on-curve line from the [ramp table](#ramp-tune-it-to-the-commanders-cost)
+(a 3-drop on turn 2 off a one-mana accelerant, and so on). That rule was broken in two of
+six builds while it sat in prose; as a criterion it fails.
 Notes that matter in practice:
 
 - **A criterion without `at_least` is informational.** It reports a number and cannot fail.

@@ -47,6 +47,45 @@ def keyname: ascii_downcase | gsub("^\\s+|\\s+$"; "");
 JQ
 )
 
+# Manabase reading, shared by `check` and `lands`. Agents build manabases from
+# memory (precon gainlands, zero MDFCs) because nothing measured them; these
+# defs are what does now. Heuristics over oracle text, so they report rather
+# than fail the verdict.
+MANA_PRELUDE=$(
+  cat <<'JQ'
+def front_type: .type_line | split(" // ")[0];
+def is_land: front_type | test("\\bLand\\b");
+# A spell on the front, a land on the back, chosen on play (modal_dfc, not a
+# transform card that flips on a condition): counts toward land drops and
+# costs no spell slot. Pathways are Land // Land and stay plain lands.
+def is_mdfc: .layout == "modal_dfc" and (is_land | not)
+  and (.type_line | split(" // ")[1:] | any(test("\\bLand\\b")));
+def landish: is_land or is_mdfc;
+def basic_type: {W: "Plains", U: "Island", B: "Swamp", R: "Mountain", G: "Forest"};
+def tap_status:
+  if (.oracle | test("enters (the battlefield )?tapped"; "i") | not) then "untapped"
+  elif (.oracle | test("tapped unless|you may pay [0-9]+ life"; "i")) then "conditional"
+  else "tapped" end;
+# Colours a land (or MDFC back) can make, restricted to the deck's identity.
+def produces($ci):
+  .oracle as $o | .type_line as $t
+  | if ($o | test("Add[^.\\n]*any (one )?colou?r|[Ss]earch[^.\\n]*basic land"))
+    then $ci
+    else [ $ci[] as $c | basic_type[$c] as $b | select(
+        ($t | test($b))
+        or ($o | test("Add[^.\\n]*\\{" + $c + "\\}"))
+        or ($o | test("[Ss]earch[^.\\n]*" + $b))) | $c ]
+    end;
+def pips($c): (.mana_cost // "") | split(" // ")[0]
+  | [ scan("\\{[^}]*\\}") | select(test($c)) ] | length;
+JQ
+)
+
+# House defaults for the manabase warnings. Tunable, not gospel: the point is
+# that a list with a dozen taplands and no MDFCs says so out loud.
+MAX_TAPPED_LANDS=4
+MIN_MDFCS=4
+
 # Alex's house bans: format-legal cards she doesn't want in a *low bracket*
 # deck. Not a playgroup rule — a variance one. Turn-one Sol Ring either wins the
 # game on the spot or paints you as the table's archenemy, and neither is a fun
@@ -56,6 +95,9 @@ HOUSE_BANS="${MTG_HOUSE_BANS:-Sol Ring}"
 # Brackets at or below this are held to the house bans.
 HOUSE_BAN_MAX_BRACKET=3
 
+# Bump when the index gains or changes a field; `fresh` rebuilds on mismatch.
+INDEX_SCHEMA=3
+
 die() {
   printf 'scryfall: %s\n' "$*" >&2
   exit 1
@@ -63,6 +105,9 @@ die() {
 
 fresh() {
   [[ -s $1 ]] || return 1
+  # An index built by an older version of this script lacks fields the newer
+  # one promises; treat it as stale rather than serve nulls for a day.
+  [[ $(jq -r '.schema // 0' "$1") == "$INDEX_SCHEMA" ]] || return 1
   (($(($(date +%s) - $(stat -c %Y "$1"))) < MAX_AGE_SECONDS))
 }
 
@@ -92,7 +137,7 @@ cmd_sync() {
   echo "building index..." >&2
   # `reduce inputs` streams the JSONL line by line, so peak memory is the size
   # of the finished index rather than all 150MB+ of raw card objects.
-  jq -n --arg updated "$updated" '
+  jq -n --arg updated "$updated" --arg schema "$INDEX_SCHEMA" '
     def keyname: ascii_downcase | gsub("^\\s+|\\s+$"; "");
     # Cards exempt from singleton say so in their own rules text, so read it off
     # the card rather than keeping a hand-maintained list of Rats and Petitioners.
@@ -109,7 +154,11 @@ cmd_sync() {
         commander_legal: ($c.legalities.commander // "not_legal"),
         game_changer: ($c.game_changer // false),
         type_line: ($c.type_line // ""),
+        layout: ($c.layout // "normal"),
         cmc: ($c.cmc // 0),
+        # Pip ratios are a manabase question; without this the agent goes to the
+        # live API per card, which got this machine rate-banned once.
+        mana_cost: ($c.mana_cost // (($c.card_faces // [])[0].mana_cost) // ""),
         keywords: ($c.keywords // []),
         # Kept in the index so "every card with splice onto Arcane" is a jq pass
         # rather than a hundred API calls. Both faces, for DFCs.
@@ -130,7 +179,7 @@ cmd_sync() {
         then .cards[($c.card_faces[0].name | keyname)] //= $rec
         else . end
     )
-    | {updated_at: $updated} + .
+    | {updated_at: $updated, schema: ($schema|tonumber)} + .
   ' "$raw" >"$INDEX.tmp"
   mv "$INDEX.tmp" "$INDEX"
   printf 'indexed %s names\n' "$(jq -r '.cards|length' "$INDEX")" >&2
@@ -267,7 +316,9 @@ cmd_check() {
     --arg housebans "$HOUSE_BANS" \
     --argjson bracket "$bracket" \
     --argjson housemax "$HOUSE_BAN_MAX_BRACKET" \
-    "$JQ_PRELUDE"'
+    --argjson maxtapped "$MAX_TAPPED_LANDS" \
+    --argjson minmdfc "$MIN_MDFCS" \
+    "$JQ_PRELUDE$MANA_PRELUDE"'
     ($idx[0].cards) as $db
     | (if $bracket <= $housemax
        then ($housebans | split("\n") | map(ascii_downcase | gsub("^\\s+|\\s+$"; ""))
@@ -324,7 +375,43 @@ cmd_check() {
                     | . * 100 | round / 100),
         priciest: ([ $deck[] | select(.rec.usd != null)
                      | {name: .rec.name, usd: (.rec.usd | tonumber)} ]
-                   | sort_by(-.usd) | .[0:8])
+                   | sort_by(-.usd) | .[0:8]),
+        manabase: (
+          ($deck | map(select(.rec | landish))) as $lands
+          | ($deck | map(select(.rec | is_land | not))) as $spells
+          | ($cmdci | map(. as $c | {($c): ([ $spells[] | (.rec | pips($c)) * .qty ] | add // 0)}) | add // {}) as $pips
+          | ($pips | [.[]] | add // 0) as $piptotal
+          | ($cmdci | map(. as $c | {($c): ([ $lands[] | select(.rec | produces($cmdci) | index($c)) | .qty ] | add // 0)}) | add // {}) as $src
+          | {
+              lands: ([ $deck[] | select(.rec | is_land) | .qty ] | add // 0),
+              mdfcs: [ $lands[] | select(.rec | is_mdfc) | .rec.name ],
+              # How many the deck *could* run: the gap is the nag.
+              mdfcs_available: ([ $db[] | select(is_mdfc and .commander_legal == "legal"
+                                    and ((.ci - $cmdci) | length == 0)) | .name ] | unique | length),
+              tapped: [ $lands[] | select(.rec | tap_status == "tapped") | .rec.name ],
+              conditional: [ $lands[] | select(.rec | tap_status == "conditional") | .rec.name ],
+              basics: ([ $deck[] | select(.rec.type_line | test("Basic Land")) | .qty ] | add // 0),
+              # Cultivate and friends want basics specifically; fetch effects that
+              # take any Forest-typed land do not, and are not counted.
+              basic_fetchers: [ $spells[] | select(.rec.oracle | test("[Ss]earch your library[^.]*basic land")) | .rec.name ],
+              sources: $src,
+              pip_share: ($pips | map_values(if $piptotal > 0 then (. / $piptotal * 100 | round) else 0 end)),
+              source_share: ($src | ([.[]] | add // 0) as $t
+                             | map_values(if $t > 0 then (. / $t * 100 | round) else 0 end))
+            }
+          | .warnings = [
+              (if (.mdfcs | length) < $minmdfc and .mdfcs_available > (.mdfcs | length)
+               then "\(.mdfcs | length) MDFCs of \(.mdfcs_available) in identity — scryfall lands \($cmdci | join(""))"
+               else empty end),
+              (if (.tapped | length) > $maxtapped
+               then "\(.tapped | length) lands always enter tapped: \(.tapped | join(", "))" else empty end),
+              (. as $m | $m.pip_share | to_entries[]
+               | select(.value >= 10 and ($m.source_share[.key] // 0) < .value * 0.75)
+               | "\(.key) is \(.value)% of pips but \($m.source_share[.key] // 0)% of sources"),
+              (if (.basic_fetchers | length) * 2 > .basics
+               then "\(.basic_fetchers | length) basic-land fetchers against \(.basics) basics" else empty end)
+            ]
+        )
       }
     | .game_changer_count = (.game_changers | length)
     # Game Changers only ever set a *floor*. Mass land denial, early two-card
@@ -363,7 +450,33 @@ cmd_check() {
   # pipes stdout through `jq '{some,fields}'` can drop the failure from the JSON
   # — that has happened — but stderr still lands in front of whoever is reading.
   jq -r '.verdict' "$report" >&2
+  # Manabase warnings ride stderr too, for the same reason, but never flip the
+  # exit code: legality is a fact, a manabase is a judgement.
+  jq -r '.manabase.warnings[] | "manabase: " + .' "$report" >&2
   jq -e '.ok' "$report" >/dev/null
+}
+
+# The land pool for an identity, so a manabase is picked from a list rather than
+# recalled. MDFCs first: they are spells that never cost a land slot, and the
+# ones recall forgets. Then lands by how often they enter untapped.
+cmd_lands() {
+  [[ -n ${1:-} ]] || die "usage: scryfall lands <color-identity> [pattern]"
+  need_index
+  jq -r --arg ci "$1" --arg q "${2:-}" "$JQ_PRELUDE$MANA_PRELUDE"'
+    ($ci | ascii_upcase | split("") | map(select(. != ""))) as $want
+    | [ .cards[] | select(landish and .commander_legal == "legal"
+          and ((.ci - $want) | length == 0)
+          and ($q == "" or (.name + " " + .oracle | test($q; "i")))) ]
+    | unique_by(.name)
+    | map(. + {kind: (if is_mdfc then "mdfc" else "land" end),
+               tap: tap_status, makes: (produces($want) | join(""))})
+    # Basics and snow basics are not a menu item.
+    | map(select(.type_line | test("Basic") | not))
+    | sort_by((if .kind == "mdfc" then 0 else 1 end),
+              ({untapped: 0, conditional: 1, tapped: 2}[.tap]),
+              -(.makes | length), .name)
+    | .[] | "\(.kind)\t\(.tap)\t\(if .makes == "" then "-" else .makes end)\t\(.name)\t\(.usd // "-")"
+  ' "$INDEX" | column -t -s $'\t'
 }
 
 # --- play -------------------------------------------------------------------
@@ -767,6 +880,7 @@ check) shift; cmd_check "$@" ;;
 path) shift; cmd_path "$@" ;;
 tags) shift; cmd_tags "$@" ;;
 otag) shift; cmd_otag "$@" ;;
+lands) shift; cmd_lands "$@" ;;
 play) shift; cmd_play "$@" ;;
 *)
   cat >&2 <<'USAGE'
@@ -780,6 +894,8 @@ usage: scryfall <command>
   otag <slug> [ci] [max-cmc]
                    cards carrying an Oracle tag, optionally filtered to a colour
                    identity and mana value, e.g. `otag mana-rock GUR 2`
+  lands <ci> [re]  the land pool for an identity: MDFCs first, then untapped
+                   fixing; optional regex on name/text
   path             path to the index, for your own jq queries
   play <subcommand>
                    deal and play out a real shuffled deck (see below)
