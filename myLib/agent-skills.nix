@@ -96,6 +96,14 @@ in {
     text = builtins.readFile "${skillsRoot}/mtg/scryfall.sh";
   };
 
+  # Transcripts of Commander creators, the raw material the mtg skill's
+  # distilled lessons are cited against. Same packaging reasoning as scryfall.
+  mtg-lore = pkgs.writeShellApplication {
+    name = "mtg-lore";
+    runtimeInputs = with pkgs; [yt-dlp gawk gnugrep findutils coreutils];
+    text = builtins.readFile "${skillsRoot}/mtg/mtg-lore.sh";
+  };
+
   dm-me = {
     name = "dm-me";
     path = "${skillsRoot}/dm-me/SKILL.md";

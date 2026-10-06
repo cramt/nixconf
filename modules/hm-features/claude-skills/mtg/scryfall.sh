@@ -86,15 +86,12 @@ JQ
 MAX_TAPPED_LANDS=4
 MIN_MDFCS=4
 
-# Alex's house bans: format-legal cards she doesn't want in a *low bracket*
-# deck. Not a playgroup rule — a variance one. Turn-one Sol Ring either wins the
-# game on the spot or paints you as the table's archenemy, and neither is a fun
-# coinflip. Fine at bracket 4+, where everyone signed up for that.
+# Alex's house bans: format-legal cards she treats as banned at every bracket.
+# Not a playgroup rule — a variance one, learned from the creators
+# mtg-lore syncs. Turn-one Sol Ring either wins the game on the spot or paints
+# you as the table's archenemy, and neither is a fun coinflip.
 # Newline-separated; override for other people's decks.
 HOUSE_BANS="${MTG_HOUSE_BANS:-Sol Ring}"
-# Brackets at or below this are held to the house bans.
-HOUSE_BAN_MAX_BRACKET=3
-
 # Bump when the index gains or changes a field; `fresh` rebuilds on mismatch.
 INDEX_SCHEMA=3
 
@@ -304,7 +301,7 @@ cmd_otag() {
 cmd_check() {
   [[ -r ${1:-} ]] || die "usage: scryfall check <decklist-file> [target-bracket]"
   need_index
-  # Default to 3: Alex builds 1-3, so the house bans apply unless told otherwise.
+  # Default to 3: Alex builds 1-3.
   local bracket=${2:-3}
   local report
   report=$(mktemp) && trap 'rm -f "$report"' RETURN
@@ -315,15 +312,12 @@ cmd_check() {
   jq -n --argjson lines "$parsed" --slurpfile idx "$INDEX" \
     --arg housebans "$HOUSE_BANS" \
     --argjson bracket "$bracket" \
-    --argjson housemax "$HOUSE_BAN_MAX_BRACKET" \
     --argjson maxtapped "$MAX_TAPPED_LANDS" \
     --argjson minmdfc "$MIN_MDFCS" \
     "$JQ_PRELUDE$MANA_PRELUDE"'
     ($idx[0].cards) as $db
-    | (if $bracket <= $housemax
-       then ($housebans | split("\n") | map(ascii_downcase | gsub("^\\s+|\\s+$"; ""))
-             | map(select(length > 0)))
-       else [] end) as $house
+    | ($housebans | split("\n") | map(ascii_downcase | gsub("^\\s+|\\s+$"; ""))
+       | map(select(length > 0))) as $house
 
     | ($lines | map(. + {rec: $db[(.name | keyname)]})) as $cards
     | ($cards | map(select(.rec == null) | .name))      as $unknown

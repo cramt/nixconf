@@ -90,10 +90,10 @@ Always state the target bracket up front and justify it. Flag honestly when a de
 
 ## House rules
 
-- **No Sol Ring in bracket 1–3 decks.** A variance argument, not a power one: a turn-one Sol
-  Ring either runs away with the game or paints you as the table's archenemy, and neither is
-  a fun coinflip. Fine at bracket 4+, where everyone opted into that. `scryfall check`
-  enforces this at brackets ≤3 and lifts it at 4+.
+- **Sol Ring is treated as banned, at every bracket.** A variance argument, not a power one,
+  and a lesson taken from the creators in `mtg-lore`: a turn-one Sol Ring either runs away
+  with the game or paints you as the table's archenemy, and neither is a fun coinflip.
+  `scryfall check` fails any deck that runs it.
 
 ## Ramp: tune it to the commander's cost
 
