@@ -1997,11 +1997,11 @@
         "terranix": "terranix"
       },
       "locked": {
-        "lastModified": 1791111988,
-        "narHash": "sha256-IPG19chzyrjzERtt6YYAUqKGrAW5i9IwLVrYJDZvB4c=",
+        "lastModified": 1791296942,
+        "narHash": "sha256-CvMUr6L9cvKuW2Ui6nd5Oo/HsBLdskiB5E+BS7wGY+k=",
         "owner": "cramt",
         "repo": "progress-engine",
-        "rev": "ef256e5b3c66c73f8d6a1d9f60e0f533810a77a1",
+        "rev": "4725f9f1594831d4d3e73a51e524ce382a689ffe",
         "type": "github"
       },
       "original": {

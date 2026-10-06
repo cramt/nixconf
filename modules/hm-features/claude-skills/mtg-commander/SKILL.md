@@ -170,9 +170,10 @@ require = [{ turn = 2, cast = 'name:"<commander>"', min = 1 }]
 ```
 
 `cast` asks the real question: was the commander actually cast by that turn. The older
-proxy, "a one-mana dork in hand plus `can_cast` of its cost", only approximates it. Until
-gauntlet models land-fetch ramp, a deck that ramps with Nature's Lore reads low here; compare
-list variants rather than trusting the absolute figure.
+proxy, "a one-mana dork in hand plus `can_cast` of its cost", only approximates it. Declare land
+ramp with an `[[effect]]` and the Battlebond lands with `[assume]` (see the `mtg` skill),
+or a deck that ramps with Nature's Lore reads low here. Compare list variants rather than
+trusting the absolute figure.
 
 `gauntlet`'s library size should read 99 for a normal Commander deck.
 

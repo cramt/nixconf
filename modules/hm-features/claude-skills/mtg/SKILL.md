@@ -558,13 +558,35 @@ Gauntlet also reads `[land_drop]` and `[[effect]]` tables. Its parse errors are 
 they name the missing field, so when something here is undocumented, try it and read the
 error.
 
-**Treat gauntlet's mana figures as floors, and use them to compare lists.** It reads some
-untapped lands as tapped: shock and check lands, and Battlebond lands, which are untapped in
-multiplayer. It has fetches find basics only, and it can't yet put a land onto the
-battlefield from a ramp spell. A three-colour deck full of duals reads several points low.
-The reliable use is relative: run the same criteria file against the current list and a
-modified copy, and report the difference. Don't quote an absolute "Kellan on turn 3: 36%" as
-the truth.
+Two declarations make the mana model match a real Commander deck:
+
+```toml
+# Conditional taplands that are untapped in this game. Gauntlet never takes the
+# format as input, so Battlebond lands read as tapped unless the file says otherwise.
+[assume]
+untapped = ['o:"two or more opponents"']
+
+# Land ramp: a spell or creature that puts a land onto the battlefield. This needs
+# [land_drop]. The land counts as entering tapped and pays from the next turn,
+# which is exact for Rampant Growth and Cultivate and a slight undercount for
+# Nature's Lore.
+[land_drop]
+
+[[effect]]
+match = '''name:"Nature's Lore"'''
+on = "cast"
+fetch = ['t:forest']
+to = "battlefield"
+```
+
+`adds` is for cards that produce mana (dorks, rocks). On a card that fetches a land, gauntlet
+refuses it and points you at `fetch`.
+
+**Treat gauntlet's mana figures as floors, and use them to compare lists.** Check lands
+still read as tapped, and fetches find basics only, so a three-colour deck full of duals
+reads a little low even with the declarations above. The reliable use is relative: run the
+same criteria file against the current list and a modified copy, and report the difference.
+Don't quote an absolute "Kellan on turn 3: 36%" as the truth.
 
 With a `[casting]` section, a hand `query` at turn N no longer counts cards that have already
 been cast. "A dork in hand by turn 1" undercounts once the engine casts dorks. Ask that
@@ -575,7 +597,8 @@ Card selection is a subset of Scryfall syntax (`t:land`, `o:"Add {W}"`, `mv<=2`,
 categories. **Unsupported syntax is a parse error naming the term**, never a silent no-match.
 
 - **A criterion without `at_least` is informational.** It reports a number and cannot fail.
-  A file with no `at_least` anywhere asserts nothing: "PASS: 0 of 0" is not a pass. Put
+  A file with no `at_least` anywhere asserts nothing, and gauntlet says so with "NOTHING
+  ASSERTED" (exit 0). Put
   thresholds on the things the deck genuinely needs. When you find a criteria file without
   them, say so.
 - **Stdout is a long JSON report with the summary at the end.** Read the PASS/FAIL lines
