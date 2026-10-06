@@ -191,7 +191,19 @@
       ];
       networking.firewall.allowedTCPPorts = [80 443];
       # Served by caddy's admin API, which only ever listens on loopback.
-      myNixOS.services.metrics.localJobs.caddy.port = 2019;
+      myNixOS.services.metrics.localJobs.caddy = {
+        port = 2019;
+        # per_host takes the raw Host header, so a client that spells out
+        # `:443` splits one vhost into two series and undercounts it.
+        extraConfig.metric_relabel_configs = [
+          {
+            source_labels = ["host"];
+            regex = "(.+):443";
+            target_label = "host";
+            replacement = "$1";
+          }
+        ];
+      };
       services.caddy = {
         enable = true;
         email = (import ../../myLib/site.nix).email;
