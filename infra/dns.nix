@@ -19,7 +19,7 @@ in
   resource.cloudflare_dns_record = {
     # vhosts behind luna's reverse proxy
     luna = lunaHost // {
-      for_each = keyed [ "tdarr" "yelliv" "open-webui" "jellyfin" "btop" "jellyseerr" "qbit" "foundry-a" "prowlarr" "radarr" "sonarr" "bazarr" "shelfmark" "cockatrice" "metrics" "auth" "t3" "cliproxy" ];
+      for_each = keyed [ "tdarr" "yelliv" "open-webui" "jellyfin" "btop" "jellyseerr" "qbit" "foundry-a" "prowlarr" "radarr" "sonarr" "bazarr" "shelfmark" "cockatrice" "metrics" "auth" "t3" "cliproxy" "grafana" ];
     };
 
     # straight to luna, no proxy in front
