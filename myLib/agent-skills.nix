@@ -70,7 +70,8 @@ in {
 
   mtg-commander = {
     name = "mtg-commander";
-    path = "${skillsRoot}/mtg-commander/SKILL.md";
+    # A directory, not just SKILL.md: principles.md ships beside it.
+    path = "${skillsRoot}/mtg-commander";
   };
 
   # The mtg skills lean on this helper for every card lookup, so it

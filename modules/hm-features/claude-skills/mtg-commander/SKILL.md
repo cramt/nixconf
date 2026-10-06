@@ -17,6 +17,36 @@ entirely** in October 2025. An agent working from memory would confidently enfor
 that no longer exists. The Game Changers list has been revised four times since launch;
 get it from `scryfall gamechangers`, never from a list written down anywhere.
 
+## What good builders agree on: read `principles.md`
+
+[`principles.md`](principles.md), next to this file, condenses about 1000 videos from The
+Trinket Mage, 3/3 Elk, Salubrious Snail, Maldhound and the Good Time Boys podcast (VeggieWagon
+and co-hosts) into cited deckbuilding principles, the points where they disagree, and card
+verdicts with reasons. **Read it before building, upgrading or critiquing a deck.** Use it to
+judge cards and ratios, and name the principle when you apply one ("cutting Cultivate: turn 3
+is too valuable outside a 1-3-5 curve"). Alex's house rules and the design brief beat it where
+they conflict.
+
+The rules that most often decide a build:
+
+- **One plan; cut what doesn't push it toward a win.** A deck with two half-themes has two
+  decks' worth of dead draws.
+- **Fundamentals first, theme on top.** Never cut ramp, draw or removal for theme; find the
+  on-theme version instead.
+- **A real way to close.** Value engines without a finisher make 10-turn slogs.
+- **Floor over ceiling.** Judge a card by its average game: "would I want this hellbent and
+  behind?" Win-more is dead in most games.
+- **Don't hinge on one piece, the commander included.** Keep functional copies and a backup
+  angle on the same plan.
+- **Question every staple.** Power creep outclassed many of them (three-mana removal, Fact or
+  Fiction), and generic bombs flatten the rest of the deck.
+- **Cheap interaction (1-2 mana) that answers every permanent type,** aimed at engines rather
+  than the first body.
+- **Ramp that leads somewhere:** cheap, land-based and resilient, sized to the curve, paired
+  with draw.
+- **Re-price for 40 life and three opponents.** Effects that hit each opponent scale; chip
+  damage and 60-card mill don't.
+
 ## What people actually play: EDHREC JSON
 
 EDHREC mirrors every page as JSON. Use it; never scrape the HTML, where a fetch returns a
@@ -203,17 +233,22 @@ before claiming a bracket.
 
 Starting ratios for a bracket 2–3 deck, to adjust rather than obey:
 
-- **35–38 lands**, trending lower with lots of cheap ramp or many MDFC land-backs (Karsten:
-  a non-mythic land/spell MDFC is 0.40 of a land, a mythic 0.75). **But go up, not down, when lands are also spells:** a
+- **37–40 lands, counting MDFCs, cyclers and utility lands.** This is the creators'
+  consensus: too few lands is the most common brewing mistake, and since lands double as
+  spells the high count is cheap. Go to 34–36 only with heavy cheap draw and filtering or 20+
+  ramp (Karsten: a non-mythic land/spell MDFC is 0.40 of a land, a mythic 0.75). **Go up, not down, when lands are also spells:** a
   cycling deck wants **~39**, run liberally on MDFCs and cycling lands, because a land that
   cycles is never a flooded draw. Same for landcycling: basic landcycling on something like
   Ash Barrens is still cycling, so it triggers every cycling payoff *and* fetches a land.
   Don't argue the count down on "flood turns into cards" grounds; that reasoning is what makes
   the extra lands correct in the first place.
-- **~10 ramp pieces**, chosen by the curve rule above
-- **~10 card advantage** sources; repeatable engines beat one-shot draw
-- **8–12 interaction** spells, including 2–3 board wipes; make sure some of it answers
-  artifacts, enchantments and graveyards, not just creatures
+- **8–10 ramp pieces**, chosen by the curve rule above. More (up to ~20) for expensive
+  central commanders and draw-heavy decks; fewer for low curves.
+- **10+ real card advantage** sources that net 2+ cards. Cantrips don't count. Engines beat
+  one-shots only if they pay back before the game ends.
+- **8–14 interaction** pieces, mostly at 1–2 mana, scaled to how slowly the deck wins, plus
+  **3–5 wipes** for slower decks (at least one for artifacts and enchantments). Answers must
+  cover every permanent type, include one graveyard hate piece, and own an out to indestructible.
 - the remainder on the theme and its payoffs
 
 Ask about budget and bracket if they weren't stated. Both massively change the answer.

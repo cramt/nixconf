@@ -229,6 +229,27 @@ format.
   "never happening") ask before cutting on it.
 - **Answer what was asked.** "Is there something there?" wants ideas, not a full list.
 
+### Judging a card
+
+These hold in any format. They're condensed from the Commander creators distilled in
+`mtg-commander`'s `principles.md`, which has the reasoning and sources.
+
+- **Floor over ceiling.** Rate a card by its average game, not its best one. A card that
+  needs three other pieces, or only shines when you're already winning, is dead in most
+  games.
+- **Payoffs need enablers.** Amplifiers (doublers, Panharmonicon) and narrow payoffs do
+  nothing alone. Count both halves before including either.
+- **A cost is upside only if the deck converts it.** Discard, life payment and sacrifice are
+  card disadvantage without payoffs that make them the plan.
+- **Context over reputation.** A staple that doesn't serve this deck's plan is a worse card
+  here than an on-plan card that's weaker on paper. Re-audit old staples against what's
+  printed now: power creep outclassed many.
+- **Bank value before removal.** ETB, cast and death triggers, haste and flash pay off before
+  an answer lands; an expensive, low-impact body loses big tempo to a cheap removal spell.
+- **Modal, multi-role and instant-speed cards never go dead.** An MDFC is a land or a spell;
+  removal on a body or in a land slot adds interaction without cutting a slot.
+- **Interaction that also advances the plan** beats an equal answer that doesn't.
+
 ### Manabase: picked from a list, never recalled
 
 Manabases from memory come out as precon filler: gainlands, temples, zero MDFCs.

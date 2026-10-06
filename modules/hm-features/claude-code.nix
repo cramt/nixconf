@@ -201,7 +201,7 @@
         home.packages = [skills.scryfall skills.gauntlet skills.mtg-lore];
         home.file = {
           ".claude/skills/mtg/SKILL.md".source = skills.mtg.path;
-          ".claude/skills/mtg-commander/SKILL.md".source = skills.mtg-commander.path;
+          ".claude/skills/mtg-commander".source = skills.mtg-commander.path;
         };
       })
       # pstack + mattpocock: symlink each skill dir in. Skills-only installs — no
