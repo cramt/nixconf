@@ -12,8 +12,9 @@
     expr,
     legend ? "",
     instant ? false,
+    format ? "time_series",
   }: {
-    inherit refId expr instant;
+    inherit refId expr instant format;
     legendFormat = legend;
     range = !instant;
   };
@@ -33,8 +34,11 @@
     options ? {},
     fieldConfig ? {},
     transformations ? [],
+    # Overrides the dashboard range for this panel alone, e.g. "14d".
+    timeFrom ? null,
   }: {
     inherit type title description w h options transformations;
+    ${if timeFrom != null then "timeFrom" else null} = timeFrom;
     targets = lib.imap0 (i: target (builtins.elemAt ["A" "B" "C" "D" "E" "F"] i)) queries;
     fieldConfig = lib.recursiveUpdate {
       defaults = {inherit unit;} // lib.optionalAttrs (min != null) {inherit min;} // lib.optionalAttrs (max != null) {inherit max;};
@@ -523,17 +527,207 @@ in {
     ];
   };
 
-  claude = dashboard {
+  claude = let
+    # Anthropic's reset time wobbles by a second between polls (21:59:59 vs
+    # 22:00:00); unrounded, every wobble would split a window into two bars.
+    # Grafana's date units want milliseconds.
+    resetAtMs = selector: "round(cliproxy_quota_reset_timestamp_seconds${selector} / 60) * 60 * 1000";
+
+    byName = name: properties: {
+      matcher = {
+        id = "byName";
+        options = name;
+      };
+      inherit properties;
+    };
+
+    windowNames = {
+      id = "mappings";
+      value = [
+        {
+          type = "value";
+          options = {
+            five_hour.text = "5-hour";
+            seven_day.text = "7-day";
+          };
+        }
+      ];
+    };
+
+    remainingThresholds = {
+      mode = "absolute";
+      steps = [
+        {
+          color = "red";
+          value = null;
+        }
+        {
+          color = "orange";
+          value = 0.2;
+        }
+        {
+          color = "green";
+          value = 0.5;
+        }
+      ];
+    };
+
+    # Every sample within one quota window carries the same reset time, so a
+    # state timeline over it draws each window as one bar, open to reset.
+    windowTimeline = {
+      title,
+      window,
+      timeFrom,
+      format,
+    }:
+      panel "state-timeline" {
+        inherit title timeFrom;
+        description = "One bar per quota window, labelled with when it resets. Bars that end together compete for the same days.";
+        w = 24;
+        h = 6;
+        unit = "time:${format}";
+        queries = [
+          {
+            expr = resetAtMs ''{window="${window}"}'';
+            legend = "{{email}}";
+          }
+        ];
+        options = {
+          mergeValues = true;
+          showValue = "always";
+          alignValue = "left";
+          rowHeight = 0.8;
+          legend.showLegend = false;
+        };
+        fieldConfig.defaults = {
+          color = {
+            mode = "fixed";
+            fixedColor = "#a9744f";
+          };
+          custom = {
+            fillOpacity = 70;
+            lineWidth = 2;
+          };
+        };
+      };
+  in dashboard {
     uid = "claude-pool";
     title = "Claude pool";
     panels = [
+      (panel "table" {
+        title = "Quota";
+        description = "Remaining share of each window, as Anthropic reports it.";
+        w = 16;
+        h = 7;
+        queries = map (q: q // {instant = true; format = "table";}) [
+          {expr = "cliproxy_quota_remaining_ratio";}
+          {expr = resetAtMs "";}
+          {expr = "cliproxy_quota_reset_timestamp_seconds - time()";}
+        ];
+        transformations = [
+          {
+            id = "merge";
+            options = {};
+          }
+          {
+            id = "organize";
+            options = {
+              excludeByName = lib.genAttrs ["Time" "instance" "job" "plugin_id" "auth_index" "provider"] (_: true);
+              renameByName = {
+                "Value #A" = "Remaining";
+                "Value #B" = "Resets";
+                "Value #C" = "In";
+              };
+              indexByName = {
+                email = 0;
+                window = 1;
+                "Value #A" = 2;
+                "Value #B" = 3;
+                "Value #C" = 4;
+              };
+            };
+          }
+        ];
+        options.sortBy = [
+          {
+            displayName = "email";
+            desc = false;
+          }
+        ];
+        fieldConfig.overrides = [
+          (byName "window" [windowNames])
+          (byName "Remaining" [
+            {
+              id = "unit";
+              value = "percentunit";
+            }
+            {
+              id = "min";
+              value = 0;
+            }
+            {
+              id = "max";
+              value = 1;
+            }
+            {
+              id = "thresholds";
+              value = remainingThresholds;
+            }
+            {
+              id = "custom.cellOptions";
+              value = {
+                type = "gauge";
+                mode = "basic";
+              };
+            }
+          ])
+          (byName "Resets" [
+            {
+              id = "unit";
+              value = "time:ddd MM/DD HH:mm";
+            }
+          ])
+          (byName "In" [
+            {
+              id = "unit";
+              value = "dtdurations";
+            }
+          ])
+        ];
+      })
+      (table {
+        title = "Credentials";
+        w = 8;
+        h = 7;
+        queries = [{expr = "cliproxy_credentials";}];
+        fieldConfig.overrides = [
+          (byName "Value" [
+            {
+              id = "custom.hidden";
+              value = true;
+            }
+          ])
+        ];
+      })
+      (windowTimeline {
+        title = "7-day windows";
+        window = "seven_day";
+        timeFrom = "14d";
+        format = "MM/DD HH:mm";
+      })
+      (windowTimeline {
+        title = "5-hour windows";
+        window = "five_hour";
+        timeFrom = "48h";
+        format = "HH:mm";
+      })
       (timeseries {
         title = "Quota remaining";
-        description = "Per account and window, as Anthropic reports it.";
+        description = "How fast each window burns down.";
         unit = "percentunit";
         min = 0;
         max = 1;
-        w = 16;
+        w = 24;
         queries = [
           {
             expr = "cliproxy_quota_remaining_ratio";
@@ -541,43 +735,10 @@ in {
           }
         ];
       })
-      (table {
-        title = "Credentials";
-        w = 8;
-        h = 8;
-        queries = [{expr = "cliproxy_credentials";}];
-        fieldConfig.overrides = [
-          {
-            matcher = {
-              id = "byName";
-              options = "Value";
-            };
-            properties = [
-              {
-                id = "custom.hidden";
-                value = true;
-              }
-            ];
-          }
-        ];
-      })
-      (bars {
-        title = "Quota resets in";
-        unit = "s";
-        w = 8;
-        h = 8;
-        queries = [
-          {
-            expr = "cliproxy_quota_reset_timestamp_seconds - time()";
-            legend = "{{email}} {{window}}";
-            instant = true;
-          }
-        ];
-      })
       (timeseries {
         title = "Requests by model";
         unit = "reqps";
-        w = 16;
+        w = 24;
         queries = [
           {
             expr = "sum by (model) (rate(cliproxy_requests_total[$__rate_interval]))";
