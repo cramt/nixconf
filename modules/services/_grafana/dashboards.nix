@@ -181,7 +181,7 @@ in {
         h = 7;
         queries = [
           {
-            expr = ''time() - max by (instance) (max_over_time(timestamp(up{job="node"})[30d:5m]))'';
+            expr = ''time() - max by (instance) (max_over_time(timestamp(up{job="node"})[30d:1m]))'';
             legend = "{{instance}}";
             instant = true;
           }
@@ -364,8 +364,8 @@ in {
         description = "Open warnings in each app's System > Status page.";
         queries = [
           {
-            expr = ''sum by (job) ({__name__=~"(sonarr|radarr|prowlarr|bazarr)_system_health_issues"})'';
-            legend = "{{job}}";
+            expr = ''label_replace(sum by (job) ({__name__=~"(sonarr|radarr|prowlarr|bazarr)_system_health_issues"}), "app", "$1", "job", "exportarr-(.*)")'';
+            legend = "{{app}}";
           }
         ];
         w = 8;
@@ -414,6 +414,32 @@ in {
           }
         ];
         w = 8;
+        fieldConfig.overrides = [
+          {
+            matcher = {
+              id = "byName";
+              options = "unavailable";
+            };
+            properties = [
+              {
+                id = "thresholds";
+                value = {
+                  mode = "absolute";
+                  steps = [
+                    {
+                      color = "green";
+                      value = null;
+                    }
+                    {
+                      color = "orange";
+                      value = 1;
+                    }
+                  ];
+                };
+              }
+            ];
+          }
+        ];
       })
       (timeseries {
         title = "GPU utilisation";
