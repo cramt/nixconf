@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Scryfall bulk-data helper for the mtg-commander skill.
+# Scryfall bulk-data helper for the mtg and mtg-commander skills.
 #
 # Everything here exists to keep an agent off the per-card search API. Scryfall
 # asks for <10 req/s with a 50-100ms gap between calls; resolving a 100-card
@@ -11,7 +11,7 @@ CACHE="${SCRYFALL_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/scryfall}"
 # Bulk files rebuild roughly daily; Scryfall explicitly asks callers not to
 # re-download them more often than that.
 MAX_AGE_SECONDS=$((24 * 60 * 60))
-UA="nixconf-mtg-commander-skill/1.0"
+UA="nixconf-mtg-skill/1.0"
 
 mkdir -p "$CACHE"
 INDEX="$CACHE/index.json"

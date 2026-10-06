@@ -139,8 +139,8 @@
       dm-me.enable =
         lib.mkEnableOption "Discord DM-to-Alex skill + `dm-me` CLI (yelliv bot)"
         // {default = true;};
-      mtg-commander.enable =
-        lib.mkEnableOption "MTG Commander deckbuilding skill + `scryfall` bulk-data CLI"
+      mtg.enable =
+        lib.mkEnableOption "MTG skills (general + Commander) + `scryfall` bulk-data CLI and `gauntlet`"
         // {default = true;};
     };
     config = lib.mkIf cfg.enable (lib.mkMerge [
@@ -197,10 +197,12 @@
         home.packages = [skills.dm-me-bin];
         home.file.".claude/skills/dm-me/SKILL.md".source = skills.dm-me.path;
       })
-      (lib.mkIf cfg.mtg-commander.enable {
+      (lib.mkIf cfg.mtg.enable {
         home.packages = [skills.scryfall skills.gauntlet];
-        home.file.".claude/skills/mtg-commander/SKILL.md".source =
-          skills.mtg-commander.path;
+        home.file = {
+          ".claude/skills/mtg/SKILL.md".source = skills.mtg.path;
+          ".claude/skills/mtg-commander/SKILL.md".source = skills.mtg-commander.path;
+        };
       })
       # pstack + mattpocock: symlink each skill dir in. Skills-only installs — no
       # plugin registration, no SessionStart hook — so they stay as declarative

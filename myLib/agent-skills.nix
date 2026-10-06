@@ -61,12 +61,19 @@ in {
     path = "${skillsRoot}/status";
   };
 
+  # Two skills sharing one toolchain: `mtg` is format-agnostic (lookups, rules,
+  # playtesting), `mtg-commander` layers the Commander-only parts on top of it.
+  mtg = {
+    name = "mtg";
+    path = "${skillsRoot}/mtg/SKILL.md";
+  };
+
   mtg-commander = {
     name = "mtg-commander";
     path = "${skillsRoot}/mtg-commander/SKILL.md";
   };
 
-  # The mtg-commander skill leans on this helper for every card lookup, so it
+  # The mtg skills lean on this helper for every card lookup, so it
   # gets a real derivation with its deps closed over rather than a bare script
   # in the skill dir: an agent that can't find `jq` would silently fall back to
   # guessing card data from memory, which is the one thing the skill forbids.
@@ -86,7 +93,7 @@ in {
     runtimeInputs =
       (with pkgs; [curl jq gzip util-linux coreutils openssl])
       ++ [gauntlet];
-    text = builtins.readFile "${skillsRoot}/mtg-commander/scryfall.sh";
+    text = builtins.readFile "${skillsRoot}/mtg/scryfall.sh";
   };
 
   dm-me = {
