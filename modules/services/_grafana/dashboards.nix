@@ -75,21 +75,31 @@
     } (args.options or {});
   });
 
-  # One instant query flattened into a sortable table, labels as columns.
-  table = args @ {sortBy ? null, ...}:
-    panel "table" ({h = 12;} // (removeAttrs args ["sortBy"]) // {
-      queries = map (q: q // {instant = true;}) args.queries;
+  # Plumbing labels every cliproxy/prometheus series carries; never worth a
+  # table column.
+  hiddenColumns = lib.genAttrs ["Time" "__name__" "job" "plugin_id" "auth_index" "provider"] (_: true);
+
+  # Instant queries as one sortable table, labels as columns. Table format plus
+  # merge rather than labelsToFields: the latter leaves one frame per series,
+  # which grafana renders as a single row and a frame picker.
+  table = args @ {
+    sortBy ? null,
+    sortDesc ? true,
+    rename ? {},
+    ...
+  }:
+    panel "table" ({h = 12;} // (removeAttrs args ["sortBy" "sortDesc" "rename"]) // {
+      queries = map (q: q // {instant = true; format = "table";}) args.queries;
       transformations = [
         {
-          id = "labelsToFields";
-          options.mode = "columns";
+          id = "merge";
+          options = {};
         }
         {
           id = "organize";
-          options.excludeByName = {
-            Time = true;
-            __name__ = true;
-            job = true;
+          options = {
+            excludeByName = hiddenColumns;
+            renameByName = rename;
           };
         }
       ];
@@ -97,7 +107,7 @@
         sortBy = [
           {
             displayName = sortBy;
-            desc = true;
+            desc = sortDesc;
           }
         ];
       };
@@ -306,7 +316,8 @@ in {
         unit = "d";
         w = 12;
         h = 16;
-        sortBy = "Value";
+        sortBy = "Days since";
+        rename.Value = "Days since";
         queries = [
           {
             expr = "(time() - max by (instance, groupname) (max_over_time(timestamp(namedprocess_namegroup_num_procs > 0)[$__range:1h]))) / 86400";
@@ -632,7 +643,7 @@ in {
           {
             id = "organize";
             options = {
-              excludeByName = lib.genAttrs ["Time" "instance" "job" "plugin_id" "auth_index" "provider"] (_: true);
+              excludeByName = hiddenColumns // {instance = true;};
               renameByName = {
                 "Value #A" = "Remaining";
                 "Value #B" = "Resets";
@@ -699,9 +710,17 @@ in {
         title = "Credentials";
         w = 8;
         h = 7;
+        sortBy = "email";
+        sortDesc = false;
         queries = [{expr = "cliproxy_credentials";}];
         fieldConfig.overrides = [
           (byName "Value" [
+            {
+              id = "custom.hidden";
+              value = true;
+            }
+          ])
+          (byName "instance" [
             {
               id = "custom.hidden";
               value = true;
