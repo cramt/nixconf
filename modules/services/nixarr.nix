@@ -190,6 +190,20 @@
         DIRECT_DOWNLOAD_ENABLED = "false";
       };
 
+      # Bazarr's post-processing hook is a shell command any UI user can set,
+      # i.e. RCE as the bazarr user. Before the authelia gate, a scanner set it
+      # to fetch and run an xmrig dropper. Nothing here uses the hook, so wipe
+      # it on every start rather than trust whatever the UI last saved.
+      # nixarr's bazarr settings-sync only covers the sonarr/radarr links.
+      systemd.services.bazarr.serviceConfig.ExecStartPre = lib.mkBefore [
+        (pkgs.writeShellScript "bazarr-no-postprocessing" ''
+          conf=${config.nixarr.bazarr.stateDir}/config/config.yaml
+          [ -e "$conf" ] || exit 0
+          ${pkgs.yq-go}/bin/yq -i \
+            '.general.use_postprocessing = false | .general.postprocessing_cmd = ""' "$conf"
+        '')
+      ];
+
       # Prowlarr generates its own API key into its state dir, so lifting it into
       # 1Password would mean two copies to keep in step. Read it at activation
       # instead: Prowlarr remains the one source, and the key never enters the
