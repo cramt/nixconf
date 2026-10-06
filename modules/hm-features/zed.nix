@@ -1,6 +1,10 @@
 { ... }: {
   hmModules.features.zed = { config, lib, pkgs, ... }: let
     rubyGems = (import ../../gems/default.nix) { inherit pkgs; };
+    # JETLS formats by shelling out to runic, which nixpkgs doesn't package
+    runic = pkgs.writeShellScriptBin "runic" ''
+      exec ${pkgs.julia.withPackages ["Runic"]}/bin/julia --startup-file=no -m Runic "$@"
+    '';
   in {
     options.myHomeManager.zed.enable = lib.mkEnableOption "myHomeManager.zed";
     config = lib.mkIf config.myHomeManager.zed.enable {
@@ -75,6 +79,10 @@
             };
             ruby-lsp.binary.path = lib.getExe rubyGems.ruby-lsp;
             rubocop.binary.path = lib.getExe rubyGems.rubocop;
+            jetls.settings.formatter.custom = {
+              executable = lib.getExe runic;
+              executable_range = lib.getExe runic;
+            };
           };
 
           project_panel.dock = "left";
