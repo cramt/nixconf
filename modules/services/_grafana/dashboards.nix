@@ -1,22 +1,19 @@
-# Dashboards as Nix rather than exported JSON: the panels share one datasource
-# and a handful of shapes, and a typo'd field fails eval instead of rendering an
+# Dashboards as Nix rather than exported JSON: the panels share a handful of
+# shapes, and a typo'd field fails eval instead of rendering an
 # empty panel. Grafana only sees the toJSON output, read-only.
 {
   lib,
   domain,
-  datasourceUid,
 }: let
-  datasource = {
-    type = "prometheus";
-    uid = datasourceUid;
-  };
+  # No datasource on panels or targets: they fall back to the default, the one
+  # provisioned prometheus. Pinning it by uid is what grafana#110740 breaks.
 
   target = refId: {
     expr,
     legend ? "",
     instant ? false,
   }: {
-    inherit refId expr instant datasource;
+    inherit refId expr instant;
     legendFormat = legend;
     range = !instant;
   };
@@ -37,7 +34,7 @@
     fieldConfig ? {},
     transformations ? [],
   }: {
-    inherit type title description w h datasource options transformations;
+    inherit type title description w h options transformations;
     targets = lib.imap0 (i: target (builtins.elemAt ["A" "B" "C" "D" "E" "F"] i)) queries;
     fieldConfig = lib.recursiveUpdate {
       defaults = {inherit unit;} // lib.optionalAttrs (min != null) {inherit min;} // lib.optionalAttrs (max != null) {inherit max;};

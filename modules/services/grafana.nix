@@ -13,13 +13,11 @@
     cfg = config.myNixOS.services.grafana;
     caddyDomain = config.myNixOS.services.caddy.domain;
     port = config.port-selector.ports.grafana;
-    prometheusUid = "prometheus";
     secretKey = "${config.services.grafana.dataDir}/secret_key";
 
     dashboards = import ./_grafana/dashboards.nix {
       inherit lib;
       domain = caddyDomain;
-      datasourceUid = prometheusUid;
     };
     dashboardDir = pkgs.linkFarm "grafana-dashboards" (lib.mapAttrsToList (name: d: {
         name = "${name}.json";
@@ -110,7 +108,13 @@
               {
                 name = "Prometheus";
                 type = "prometheus";
-                uid = prometheusUid;
+                # No `uid`. Grafana's first start can create this under a random
+                # uid, and from then on every start fails with "data source not
+                # found" trying to move it to the pinned one -- luna crashlooped
+                # on exactly that (https://github.com/grafana/grafana/issues/110740).
+                # Matching by name survives either state. Pin a uid again once
+                # that closes; dashboards would then reference it by uid instead
+                # of relying on it being the default.
                 url = "http://127.0.0.1:${toString config.port-selector.ports.prometheus}";
                 isDefault = true;
                 editable = false;
