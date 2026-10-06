@@ -27,9 +27,10 @@ die() {
 }
 
 ytdlp() {
-  # Paced well under anything YouTube throttles: a full first sync is ~1000
-  # videos, and a 429 mid-run costs more than the sleeps.
-  yt-dlp --quiet --no-warnings --sleep-requests 1 "$@"
+  # Paced for a full first sync of ~1000 videos: five channels at once with
+  # only --sleep-requests drew HTTP 429 on subtitle downloads within ten
+  # minutes. --sleep-subtitles paces the requests that throttle watches.
+  yt-dlp --quiet --no-warnings --sleep-requests 1 --sleep-subtitles 3 "$@"
 }
 
 # YouTube's auto-captions roll: each cue repeats the previous line and adds a
@@ -79,10 +80,19 @@ cmd_sync() {
       if [[ -e $dir/$id.txt || -e $dir/$id.none ]]; then continue; fi
       local tmp date
       tmp=$(mktemp -d)
-      if ! date=$(ytdlp --skip-download --no-simulate --write-subs --write-auto-subs \
-        --sub-langs en --sub-format vtt -o "$tmp/%(id)s" --print '%(upload_date)s' \
-        "https://www.youtube.com/watch?v=$id" </dev/null); then
-        echo "  failed: $id $title (will retry next sync)" >&2
+      # en-orig, not en: on a video with dubbed audio tracks, `en` is a machine
+      # translation served from an endpoint that 429s every request, while
+      # en-orig is the original auto-captions and exists on every video.
+      if ! date=$(ytdlp --skip-download --no-simulate --write-auto-subs \
+        --sub-langs en-orig --sub-format vtt -o "$tmp/%(id)s" --print '%(upload_date)s' \
+        "https://www.youtube.com/watch?v=$id" </dev/null 2>"$tmp/err"); then
+        echo "  failed: $id $title (will retry next sync): $(head -c 200 "$tmp/err")" >&2
+        # A 429 throttles the whole IP, not this video: pressing on just earns
+        # more of them.
+        if grep -q 429 "$tmp/err"; then
+          echo "  throttled, backing off 120s" >&2
+          sleep 120
+        fi
         rm -rf "$tmp"
         continue
       fi
