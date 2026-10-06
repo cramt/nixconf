@@ -66,16 +66,28 @@ def tap_status:
   if (.oracle | test("enters (the battlefield )?tapped"; "i") | not) then "untapped"
   elif (.oracle | test("tapped unless|you may pay [0-9]+ life"; "i")) then "conditional"
   else "tapped" end;
-# Colours a land (or MDFC back) can make, restricted to the deck's identity.
+# Colours a land (or MDFC back) can make, restricted to the deck's identity:
+# what its mana abilities produce (Scryfall's produced_mana), plus what it can
+# fetch. Only "search *your* library" fetches: Ghost Quarter and Field of Ruin
+# let the *opponent* search for a basic, which read as rainbow fixing when this
+# matched any "search ... basic land".
 def produces($ci):
-  .oracle as $o | .type_line as $t
-  | if ($o | test("Add[^.\\n]*any (one )?colou?r|[Ss]earch[^.\\n]*basic land"))
+  .oracle as $o | (.produced // []) as $made
+  | if ($o | test("[Ss]earch your library[^.\\n]*basic land"))
     then $ci
     else [ $ci[] as $c | basic_type[$c] as $b | select(
-        ($t | test($b))
-        or ($o | test("Add[^.\\n]*\\{" + $c + "\\}"))
-        or ($o | test("[Ss]earch[^.\\n]*" + $b))) | $c ]
+        ($made | index($c))
+        or ($o | test("[Ss]earch your library[^.\\n]*" + $b))) | $c ]
     end;
+# Karsten's 2022 table, 99-card column: coloured sources a spell of mana value
+# $mv with $n pips of one colour needs to be cast on curve (assumes 41 lands).
+# Rows past the table clamp to its last entry. See the mtg skill for the source.
+def karsten99($mv; $n):
+  if $n <= 0 then 0
+  elif $n == 1 then ([19,19,19,18,16,15,14][[$mv,6]|min] // 14)
+  elif $n == 2 then ([30,30,30,28,26,23,22,20][[$mv,7]|min])
+  elif $n == 3 then ([36,36,36,36,33,30,28,26][[$mv,7]|min])
+  else ([39,39,39,39,39,36][[$mv,5]|min]) end;
 def pips($c): (.mana_cost // "") | split(" // ")[0]
   | [ scan("\\{[^}]*\\}") | select(test($c)) ] | length;
 JQ
@@ -93,7 +105,7 @@ MIN_MDFCS=4
 # Newline-separated; override for other people's decks.
 HOUSE_BANS="${MTG_HOUSE_BANS:-Sol Ring}"
 # Bump when the index gains or changes a field; `fresh` rebuilds on mismatch.
-INDEX_SCHEMA=3
+INDEX_SCHEMA=4
 
 die() {
   printf 'scryfall: %s\n' "$*" >&2
@@ -164,6 +176,14 @@ cmd_sync() {
         any_number: (($c.oracle_text // "")
                      | test("A deck can have any number of cards named"; "i")),
         usd: ($c.prices.usd // null),
+        # Scryfall records what the mana abilities of the card make, both
+        # faces. Authoritative where reading "Add" out of oracle text guessed.
+        produced: ($c.produced_mana // []),
+        # Front face for DFCs: `card` and deck reviews want the body you cast.
+        power: ($c.power // (($c.card_faces // [])[0].power) // null),
+        toughness: ($c.toughness // (($c.card_faces // [])[0].toughness) // null),
+        loyalty: ($c.loyalty // (($c.card_faces // [])[0].loyalty) // null),
+        defense: ($c.defense // (($c.card_faces // [])[0].defense) // null),
         uri: $c.scryfall_uri
       } as $rec
       | .cards[($c.name | keyname)] = $rec
@@ -373,11 +393,25 @@ cmd_check() {
         manabase: (
           ($deck | map(select(.rec | landish))) as $lands
           | ($deck | map(select(.rec | is_land | not))) as $spells
-          | ($cmdci | map(. as $c | {($c): ([ $spells[] | (.rec | pips($c)) * .qty ] | add // 0)}) | add // {}) as $pips
-          | ($pips | [.[]] | add // 0) as $piptotal
-          | ($cmdci | map(. as $c | {($c): ([ $lands[] | select(.rec | produces($cmdci) | index($c)) | .qty ] | add // 0)}) | add // {}) as $src
+          # Karsten scales with land count, measured his way: MDFCs count 0.4 each.
+          | ([ $deck[] | select(.rec | is_land) | .qty ] | add // 0) as $nland
+          | ($nland + 0.4 * ([ $lands[] | select(.rec | is_mdfc) | .qty ] | add // 0)) as $efflands
+          | ($cmdci | map(. as $c | {($c): (
+              [ $spells[] | .rec as $r
+                | ($cmdci | map(. as $k | $r | pips($k)) | map(select(. > 0)) | length) as $ncol
+                | {name: $r.name, cost: $r.mana_cost,
+                   # X costs price at X=2 (the Karsten "typical X" rule), not at X=0.
+                   need: (karsten99(($r.cmc + 2 * ([$r.mana_cost | split(" // ")[0] | scan("\\{X\\}")] | length)) | floor; $r | pips($c))
+                          # Karsten gold rule: +1 to each colour of a multicolour card.
+                          + (if $ncol > 1 and ($r | pips($c)) > 0 then 1 else 0 end))} ]
+              | max_by(.need) // {need: 0}
+              | .need = ((.need * $efflands / 41 * 10 | round) / 10))}) | add // {}) as $karsten
+          # Sources counted the Karsten way: a land/spell MDFC is 0.8 of a source.
+          | ($cmdci | map(. as $c | {($c): ([ $lands[] | select(.rec | produces($cmdci) | index($c))
+                | .qty * (if .rec | is_mdfc then 0.8 else 1 end) ] | add // 0)}) | add // {}) as $src
           | {
-              lands: ([ $deck[] | select(.rec | is_land) | .qty ] | add // 0),
+              lands: $nland,
+              effective_lands: $efflands,
               mdfcs: [ $lands[] | select(.rec | is_mdfc) | .rec.name ],
               # How many the deck *could* run: the gap is the nag.
               mdfcs_available: ([ $db[] | select(is_mdfc and .commander_legal == "legal"
@@ -389,9 +423,10 @@ cmd_check() {
               # take any Forest-typed land do not, and are not counted.
               basic_fetchers: [ $spells[] | select(.rec.oracle | test("[Ss]earch your library[^.]*basic land")) | .rec.name ],
               sources: $src,
-              pip_share: ($pips | map_values(if $piptotal > 0 then (. / $piptotal * 100 | round) else 0 end)),
-              source_share: ($src | ([.[]] | add // 0) as $t
-                             | map_values(if $t > 0 then (. / $t * 100 | round) else 0 end))
+              # Per colour: the Karsten requirement for the hardest spell, scaled
+              # to this land count, against the sources the lands provide.
+              # Ignores dorks and rocks (count those by hand, per the skill).
+              karsten: ($karsten | with_entries(.key as $c | .value += {have: ($src[$c] // 0)}))
             }
           | .warnings = [
               (if (.mdfcs | length) < $minmdfc and .mdfcs_available > (.mdfcs | length)
@@ -399,9 +434,8 @@ cmd_check() {
                else empty end),
               (if (.tapped | length) > $maxtapped
                then "\(.tapped | length) lands always enter tapped: \(.tapped | join(", "))" else empty end),
-              (. as $m | $m.pip_share | to_entries[]
-               | select(.value >= 10 and ($m.source_share[.key] // 0) < .value * 0.75)
-               | "\(.key) is \(.value)% of pips but \($m.source_share[.key] // 0)% of sources"),
+              (.karsten | to_entries[] | select(.value.need - .value.have >= 1)
+               | "\(.key): \(.value.name) (\(.value.cost)) wants ~\(.value.need) \(.key) sources by Karsten, lands give \(.value.have)"),
               (if (.basic_fetchers | length) * 2 > .basics
                then "\(.basic_fetchers | length) basic-land fetchers against \(.basics) basics" else empty end)
             ]

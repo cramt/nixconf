@@ -388,6 +388,9 @@ games with friends. *Maldhound, Joe Cherries, 3/3 Elk, Snail.*
 
 ## Card verdicts with reasons
 
+Only verdicts whose reasoning generalises. Use the reason on cards that aren't listed:
+most of Alex's decks run cards no creator reviewed, and the principles above do the work there.
+
 Ramp and lands:
 - **Arcane Signet**: efficient, but not automatic; only if you use the mana.
 - **Cultivate**: filler outside a 1-3-5 curve; fixing matters more than a seventh copy.
@@ -403,7 +406,6 @@ Draw:
 - **Rhystic Study**: generically strong, salty, and it flattens the other 98 cards. Several
   creators cut it.
 - **Phyrexian Arena**: contested; slow payback, and a dead topdeck late.
-- **Night's Whisper**, **Stock Up**, **Nasty End**: cheap draw with a high floor.
 - **Skullclamp**: any 1/1 becomes a one-mana draw two.
 - **Salvaging Station** over **Staff of Nin**: it untaps on every death.
 - **Brainstorm**: overplayed; needs shuffles or many-spell turns.
@@ -411,18 +413,14 @@ Draw:
 - **Mystic Remora**: cumulative upkeep means playing less Magic.
 
 Removal and wipes:
-- **Assassin's Trophy**, **Beast Within**, **Generous Gift**, **Chaos Warp**: hit anything.
 - **Swords to Plowshares**: great but creature-only; any-permanent answers matter more in casual.
 - **Parting Gust**: also protection and flicker; displacing Swords in flicker decks.
 - **Leadership Vacuum**: absurdly efficient against commanders.
 - **Hero's Downfall**, **Murder**: outclassed.
 - **Farewell**: great when behind, bad when ahead.
 - **Cyclonic Rift**: just a wipe unless you have fliers or bounce synergy.
-- **Doomskar**, **Kaya's Wrath**, **Oversimplify**: strong budget wipes.
 
 Counters and protection:
-- **Counterspell**: A tier. **Fierce Guardianship**, **Force of Negation**: S tier.
-- **Negate**: misses creatures. **Force of Will**: poor in casual.
 - **Mystic Confluence**, **Cryptic Command**: worth five because they can just draw.
 - **Teferi's Protection**: the best white protection, and as agency-denying as stax.
 - **Lightning Greaves**, **Swiftfoot Boots**: contested; Greaves rates about 5/10 outside
@@ -453,7 +451,6 @@ Threats and engines:
 - **Sun Titan**: misses typeless lands but aged well. **Primeval Titan**: a design mistake.
 
 Politics:
-- **Bladegriff Prototype**, **Hunted Horror**: good political cards; opponents choose.
 - **Tower of Fortunes**: draws less removal than The Great Henge.
 - **Expropriate**, **Temporal Trespass**: votes follow perceived advantage, so they're miserable
   play patterns.

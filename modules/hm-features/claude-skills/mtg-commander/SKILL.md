@@ -24,8 +24,14 @@ Trinket Mage, 3/3 Elk, Salubrious Snail, Maldhound and the Good Time Boys podcas
 and co-hosts) into cited deckbuilding principles, the points where they disagree, and card
 verdicts with reasons. **Read it before building, upgrading or critiquing a deck.** Use it to
 judge cards and ratios, and name the principle when you apply one ("cutting Cultivate: turn 3
-is too valuable outside a 1-3-5 curve"). Alex's house rules and the design brief beat it where
-they conflict.
+is too valuable outside a 1-3-5 curve").
+
+**When rules conflict, the more specific one wins.** Alex's house rules and the design brief
+beat everything. Next come this skill and `principles.md`, which are about Commander. Last
+come the general `mtg` rules, Karsten's tables included, which are about Magic in general.
+A deck's own deliberate design can override a ratio when you can say why. A deck whose
+removal is the prize opponents pick for it runs more removal than 8-14, and that's fine.
+State the override instead of applying the ratio silently.
 
 The rules that most often decide a build:
 
@@ -134,13 +140,13 @@ actually deploy your commander** (or the deck's key engine). Count the turns out
 |---------------|-----------------|-----|
 | 3 | 1-mana accelerant (mana dork, 1-mana rock) | T1 dork → T2 you have 2 lands + dork = 3 → commander on **T2** |
 | 4 | 2-mana rock, or 2-mana "search up a land" | T2 rock → T3 = 4 mana → commander on **T3**. 1-mana accelerants also work |
-| 5 | 1-mana accelerant **plus** 3-mana ramp that also draws | T1 dork, T2 (3 mana) cast it → lands a land and puts one in hand → T3 = 4 lands + dork = 5 → commander on **T3** |
+| 5 | 1-mana accelerant **plus** 2-mana land ramp (Nature's Lore, Three Visits) | T1 dork; T2 (3 mana) cast it → an untapped land → T3 = 4 lands + dork = 5 → commander on **T3**. A 3-mana ramp spell that also draws does the same on T2 and refills, but the creators' consensus is that cheap ramp wins: it leaves mana for something else on T2 |
 
 The counter-example: **a 2-mana rock in a 3-drop commander deck does nothing.** Play it on T2
 and you cast your commander on T3, exactly when you'd have cast it off untapped lands anyway.
 
-Ramp compounds: the 1-mana accelerant is what lets the 3-mana ramp spell come down a turn
-early, which is why the 5-drop line gains two full turns rather than one.
+Ramp compounds: the 1-mana accelerant is what lets the 2-mana land ramp come down on T2 with
+a mana to spare, which is why the 5-drop line gains two full turns rather than one.
 
 Those are **archetypes, not card recommendations.** Pick ones that fit the colours and the
 plan, and look them up:
@@ -154,14 +160,19 @@ scryfall otag mana-rock GUR 2   # 2-mana rocks castable in Temur
 broken in two of six builds while it sat in prose; as a criterion it fails:
 
 ```toml
+[casting]
+prefer = ['name:"<commander>"', 'cat:"Ramp"']   # cast the commander first, ramp when it can't
+
 [[criterion]]
-name = "commander on turn 2"
+name = "commander on curve (3-drop: turn 2)"
 at_least = 0.30
-require = [
-  { turn = 1, query = 'cat:"Ramp - One Mana"', min = 1 },
-  { turn = 2, can_cast = "{G}{W}" },
-]
+require = [{ turn = 2, cast = 'name:"<commander>"', min = 1 }]
 ```
+
+`cast` asks the real question: was the commander actually cast by that turn. The older
+proxy, "a one-mana dork in hand plus `can_cast` of its cost", only approximates it. Until
+gauntlet models land-fetch ramp, a deck that ramps with Nature's Lore reads low here; compare
+list variants rather than trusting the absolute figure.
 
 `gauntlet`'s library size should read 99 for a normal Commander deck.
 
@@ -175,10 +186,14 @@ Source counts per colour come from the 99-card column of the Karsten table in th
 skill. That column assumes 41 lands (mana rocks counting as partial lands); at 36 lands,
 scale it, e.g. 26 sources for a 2CC card at 41 lands is about 23 at 36.
 
-`scryfall check` reports `.manabase` (MDFCs run vs. available, tapped lands, sources vs. pip
-share, basics vs. basic fetchers) and prints `manabase:` warnings to stderr. Resolve them or
-say why not. The warnings are heuristics read off oracle text and aren't Karsten's numbers: when they
-disagree, the table wins. `gauntlet`'s `can_cast` checks the finished deck.
+`scryfall check` does this Karsten check for you. `.manabase.karsten` gives, per colour, the
+hardest spell, the sources it needs scaled to the deck's land count (MDFCs count 0.4 toward
+that count and 0.8 as a source, and X is priced at 2), and the sources the lands provide. It
+also reports MDFCs run against those available, tapped lands, and basics against basic
+fetchers, and prints `manabase:` warnings to stderr. Resolve them or say why not. It counts
+lands only: add dorks and rocks by hand at Karsten's fractions, and re-price cards it can't
+read, such as a spell you won't cast on curve or a hybrid cost (counted toward both
+colours).
 
 ## Before presenting any list, validate it
 

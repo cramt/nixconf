@@ -42,8 +42,12 @@ decklist is by construction.
 
 The first `sync` takes about a minute and then serves everything from disk. Each card record
 is `{name, ci, commander_legal, game_changer, type_line, layout, cmc, mana_cost, keywords,
-oracle, any_number, usd, uri}`, keyed by lowercased name under `.cards`, so open-ended
-questions are a jq away with **zero** API calls:
+oracle, any_number, usd, uri, produced, power, toughness, loyalty, defense}`, keyed by lowercased name under `.cards`, so open-ended
+questions are a jq away with **zero** API calls. One type trap: **`commander_legal` is a
+string** (`"legal"`, `"not_legal"`, `"banned"`), so filter with `.commander_legal == "legal"`.
+A bare `select(.commander_legal)` is always true and lets illegal cards through. `produced` is
+Scryfall's list of colours the card's mana abilities make, and is the reliable way to ask
+what a land taps for.
 
 ```bash
 # every 1-mana green creature that could plausibly be a mana dork
@@ -229,6 +233,22 @@ format.
   "never happening") ask before cutting on it.
 - **Answer what was asked.** "Is there something there?" wants ideas, not a full list.
 
+### Creator transcripts: `mtg-lore`
+
+`mtg-commander`'s `principles.md` is compiled from creator videos, and the raw transcripts
+are searchable when a brew wants more than the distilled version, e.g. "has anyone built
+this commander, or used this card?":
+
+```bash
+mtg-lore search 'Kellan, the Kid'      # matching ~30s passages with a link to the second
+mtg-lore list 'mana base'              # videos by title
+mtg-lore show <video-id>               # a whole transcript
+mtg-lore sync                          # fetch new uploads (slow: YouTube throttles)
+```
+
+Transcripts are auto-captions, so card names are often misheard. Verify any name found there
+against Scryfall before using it.
+
 ### Judging a card
 
 These hold in any format. They're condensed from the Commander creators distilled in
@@ -307,7 +327,10 @@ a single colour.
 
 The table assumes 17 / 25 / 35 / 41 lands for 40 / 60 / 80 / 99 cards, a London mulligan, and
 for 99 cards Commander's free mulligan and turn-one draw (CR 103.4c, 800.7). With a different
-land count, scale: "18 sources" means roughly 18/25 of your lands. For 60 cards the article
+land count, scale: "18 sources" means roughly 18/25 of your lands. The land count you scale
+by is Karsten's land-count measure: real lands, plus land/spell MDFCs at 0.40 (0.75 if
+mythic). Count sources his way too: MDFCs at 0.8 (mythic 1.0), dorks and rocks fractionally
+as listed below. For 60 cards the article
 also gives 20 and 30 lands; interpolate between them:
 
 | Cost | 20 lands | 25 lands | 30 lands |
@@ -344,6 +367,12 @@ How Karsten counts things the table doesn't cover:
 - **Alternative costs**: ignore the mana cost if you never pay it; otherwise treat it
   normally and accept being a little short.
 - **Colourless `{C}` and snow** are colours in their own right.
+- **Costs the table doesn't list** (5CCC, five pips): take the neighbouring rows and
+  extrapolate. More pips at the same mana value needs more sources, more mana value at the
+  same pips needs fewer. Say that you extrapolated.
+- **Spells you don't cast on curve** (suspend, foretell, "can't cast before your fourth
+  turn"): price them at the turn you actually expect to cast them, using that turn's mana
+  value row. A UU spell you'll cast on turn 5 is a 3UU-row problem, not a UU one.
 - **Fetchlands** that fetch duals count fully for every colour they can find. Fabled Passage
   and Pathways count fully in two-colour decks but about **2/3 of a source** per colour in
   three-plus-colour decks with heavy requirements, since you have to choose.
@@ -492,32 +521,65 @@ gauntlet test <deck> c.toml --draw # model being on the draw
 ```
 
 Criteria are TOML. All `require` clauses must hold; `[[criterion.any_of]]` branches are
-alternatives. `can_cast` prices a cost against the lands drawn (rocks and dorks don't count,
-and shock/check lands are assumed tapped, so mana figures are floors). Worked examples:
-`~/code/progress-engine/decks/*.criteria.toml`.
+alternatives. A clause is one of `query` (cards in hand by that turn), `can_cast` (a mana
+cost payable from what's in play) or `cast` (a card actually cast by that turn, under the
+`[casting]` policy). Worked examples: `~/code/progress-engine/decks/*.criteria.toml`.
 
 ```toml
 # turn 0 is the opening hand; on the play turn 1 draws nothing.
-[[criterion]]
-name = "engine online by turn 3"
-at_least = 0.50
-require = [
-  { turn = 2, query = 'cat:"Ramp"', min = 1 },
-  { turn = 3, can_cast = "{2}{U}{U}" },
-]
+[mulligan]                       # keep/bottom/down_to are all required
+keep = [{ query = "t:land", min = 2, max = 5 }]
+down_to = 6
+bottom = ['mv>=6', 't:land']     # what goes to the bottom first
 
-[[expect]]          # a mean and distribution, never fails
+[casting]                        # what the engine casts when it can, in order
+prefer = ['name:"Kellan, the Kid"', 'name:"Birds of Paradise"']
+
+[[criterion]]
+name = "commander on curve"
+at_least = 0.30
+require = [{ turn = 3, cast = 'name:"Kellan, the Kid"', min = 1 }]
+
+[[criterion]]
+name = "three colours by turn 3"
+at_least = 0.60
+require = [{ turn = 3, can_cast = "{W}{U}{G}" }]
+
+[[expect]]                       # a mean and distribution, never fails
 name = "lands in opener"
 turn = 0
 query = "t:land"
 ```
+
+Names containing an apostrophe need TOML's literal triple quotes:
+`cast = '''name:"Betor, Ancestor's Voice"'''`. The error message says so too.
+
+Gauntlet also reads `[land_drop]` and `[[effect]]` tables. Its parse errors are good, and
+they name the missing field, so when something here is undocumented, try it and read the
+error.
+
+**Treat gauntlet's mana figures as floors, and use them to compare lists.** It reads some
+untapped lands as tapped: shock and check lands, and Battlebond lands, which are untapped in
+multiplayer. It has fetches find basics only, and it can't yet put a land onto the
+battlefield from a ramp spell. A three-colour deck full of duals reads several points low.
+The reliable use is relative: run the same criteria file against the current list and a
+modified copy, and report the difference. Don't quote an absolute "Kellan on turn 3: 36%" as
+the truth.
+
+With a `[casting]` section, a hand `query` at turn N no longer counts cards that have already
+been cast. "A dork in hand by turn 1" undercounts once the engine casts dorks. Ask that
+question in a file without `[casting]`, or ask with `cast`.
 
 Card selection is a subset of Scryfall syntax (`t:land`, `o:"Add {W}"`, `mv<=2`, `id<=W`,
 `is:permanent`, `-t:creature`, `or`, parentheses) plus `cat:"..."` for the decklist's own
 categories. **Unsupported syntax is a parse error naming the term**, never a silent no-match.
 
 - **A criterion without `at_least` is informational.** It reports a number and cannot fail.
-  Use thresholds for the things the deck genuinely needs.
+  A file with no `at_least` anywhere asserts nothing: "PASS: 0 of 0" is not a pass. Put
+  thresholds on the things the deck genuinely needs. When you find a criteria file without
+  them, say so.
+- **Stdout is a long JSON report with the summary at the end.** Read the PASS/FAIL lines
+  and per-criterion figures rather than scrolling the JSON.
 - **The file decides how many turns to model.** The deepest `turn` you ask about sets it.
 - **Watch the query match counts.** Every run reports how many cards each query matched, and
   says so loudly when that is zero. A misspelled category parses fine and matches nothing,
