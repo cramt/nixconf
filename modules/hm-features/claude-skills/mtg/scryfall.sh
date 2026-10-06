@@ -61,6 +61,8 @@ def is_land: front_type | test("\\bLand\\b");
 def is_mdfc: .layout == "modal_dfc" and (is_land | not)
   and (.type_line | split(" // ")[1:] | any(test("\\bLand\\b")));
 def landish: is_land or is_mdfc;
+# Supertypes stack, so a snow basic reads "Basic Snow Land": match the word, not "Basic Land".
+def is_basic: front_type | test("\\bBasic\\b");
 def basic_type: {W: "Plains", U: "Island", B: "Swamp", R: "Mountain", G: "Forest"};
 def tap_status:
   if (.oracle | test("enters (the battlefield )?tapped"; "i") | not) then "untapped"
@@ -377,7 +379,7 @@ cmd_check() {
           | {name: .rec.name, identity: .rec.ci} ],
         singleton_violations: [ $deck[]
           | select(.qty > 1)
-          | select(((.rec.type_line | test("Basic Land")) or .rec.any_number) | not)
+          | select(((.rec | is_basic) or .rec.any_number) | not)
           | {name: .rec.name, qty: .qty} ],
         game_changers: ([ $deck[] | select(.rec.game_changer) | .rec.name ] | sort),
         house_ban_violations: [ $deck[]
@@ -418,7 +420,7 @@ cmd_check() {
                                     and ((.ci - $cmdci) | length == 0)) | .name ] | unique | length),
               tapped: [ $lands[] | select(.rec | tap_status == "tapped") | .rec.name ],
               conditional: [ $lands[] | select(.rec | tap_status == "conditional") | .rec.name ],
-              basics: ([ $deck[] | select(.rec.type_line | test("Basic Land")) | .qty ] | add // 0),
+              basics: ([ $deck[] | select(.rec | is_basic) | .qty ] | add // 0),
               # Cultivate and friends want basics specifically; fetch effects that
               # take any Forest-typed land do not, and are not counted.
               basic_fetchers: [ $spells[] | select(.rec.oracle | test("[Ss]earch your library[^.]*basic land")) | .rec.name ],
