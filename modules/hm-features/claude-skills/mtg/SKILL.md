@@ -241,10 +241,116 @@ Manabases from memory come out as precon filler: gainlands, temples, zero MDFCs.
   land" / "put a land from your hand" effects.
 - **Untapped where the curve needs it.** The colour of turns 1–2 gets the untapped sources.
   A tapland earns its slot by doing something (cycling, bounce, a triome's fixing).
-- **Sources follow pips relative to mana value.** `{R}{R}{R}` on a 3-drop is a different
-  problem from `{2}{R}{R}{R}` on a 5-drop. `gauntlet`'s `can_cast` is the measurement.
+- **Sources follow pips relative to mana value**, by the numbers below, never by eye.
+  `{R}{R}{R}` on a 3-drop is a different problem from `{2}{R}{R}{R}` on a 5-drop.
 - **Basics feed basic-fetch ramp.** Cultivate and friends take two basics each, and fetchlands
   compete for the same pool.
+
+### Colour sources: Karsten is the bible
+
+Coloured-source counts come from Frank Karsten's *How Many Sources Do You Need to
+Consistently Cast Your Spells? A 2022 Update*
+(<https://www.tcgplayer.com/content/article/How-Many-Sources-Do-You-Need-to-Consistently-Cast-Your-Spells-A-2022-Update/dc23a7d2-0a16-4c0b-ad36-586fcca03ad8/>,
+simulation code at <https://github.com/frankkarsten/MTG-Math/blob/master/HowManySources2022Update.py>).
+Don't derive source counts any other way, and don't quote this table from memory either: it
+is copied here from the article. For every spell, look up its cost, take the strictest
+requirement per colour, and report sources-needed against sources-run for each colour.
+
+"Consistent" means: on the play, given you drew at least M lands by turn M, at least
+**(89 + M)%** to have the N coloured sources a spell with mana value M and N pips needs. That
+works out to 90% for one-drops, rising to 96% for seven-drops. Land *count* is a separate
+question; this table only splits the lands you already have between colours. `C` is one pip of
+a single colour.
+
+| Cost | Example | 40 cards | 60 cards | 80 cards | 99 cards (Commander) |
+|---|---|---|---|---|---|
+| 5C | Drowner of Hope | 6 | 9 | 12 | 14 |
+| 4C | Doubling Season | 6 | 9 | 14 | 15 |
+| 3C | Collected Company | 7 | 10 | 15 | 16 |
+| 2C | Reckless Stormseeker | 8 | 12 | 16 | 18 |
+| 5CC | Hullbreaker Horror | 8 | 12 | 17 | 20 |
+| 1C | Ledger Shredder | 9 | 13 | 18 | 19 |
+| 4CC | Primeval Titan | 9 | 13 | 19 | 22 |
+| C | Monastery Swiftspear | 9 | 14 | 19 | 19 |
+| 3CC | Baneslayer Angel | 10 | 15 | 20 | 23 |
+| 4CCC | Nyxbloom Ancient | 10 | 16 | 22 | 26 |
+| 2CC | Wrath of God | 11 | 16 | 23 | 26 |
+| 3CCC | Massacre Wurm | 11 | 17 | 24 | 28 |
+| 1CC | Narset, Parter of Veils | 12 | 18 | 25 | 28 |
+| 2CCC | Garruk, Primal Hunter | 13 | 19 | 26 | 30 |
+| CC | Lord of Atlantis | 14 | 21 | 28 | 30 |
+| 1CCC | Cryptic Command | 14 | 21 | 29 | 33 |
+| 1CCCC | Unnatural Growth | 15 | 22 | 31 | 36 |
+| CCC | Goblin Chainwhirler | 16 | 23 | 32 | 36 |
+| CCCC | Dawn Elemental | 17 | 24 | 34 | 39 |
+
+The table assumes 17 / 25 / 35 / 41 lands for 40 / 60 / 80 / 99 cards, a London mulligan, and
+for 99 cards Commander's free mulligan and turn-one draw (CR 103.4c, 800.7). With a different
+land count, scale: "18 sources" means roughly 18/25 of your lands. For 60 cards the article
+also gives 20 and 30 lands; interpolate between them:
+
+| Cost | 20 lands | 25 lands | 30 lands |
+|---|---|---|---|
+| 5C | 7 | 9 | 10 |
+| 4C | 8 | 9 | 11 |
+| 3C | 9 | 10 | 12 |
+| 2C | 10 | 12 | 13 |
+| 5CC | 10 | 12 | 15 |
+| 1C | 11 | 13 | 14 |
+| 4CC | 11 | 13 | 16 |
+| C | 12 | 14 | 15 |
+| 3CC | 12 | 15 | 17 |
+| 4CCC | 12 | 16 | 19 |
+| 2CC | 13 | 16 | 19 |
+| 3CCC | 14 | 17 | 20 |
+| 1CC | 15 | 18 | 21 |
+| 2CCC | 15 | 19 | 22 |
+| CC | 18 | 21 | 23 |
+| 1CCC | 17 | 21 | 24 |
+| 1CCCC | 18 | 22 | 26 |
+| CCC | 19 | 23 | 27 |
+| CCCC | 20 | 24 | 29 |
+
+How Karsten counts things the table doesn't cover:
+
+- **Gold cards**: split the cost per colour, look each part up, plus the combined pips as one
+  colour, then **add one to every requirement**. Teferi, Time Raveler (1WU, 60 cards): 13
+  white, 13 blue, 19 that make either. Skip the +1 for a colour every land already makes (a
+  splash in a mono deck is just the splash colour).
+- **Hybrid**: sources of either colour count together.
+- **Convoke, delve, X, cost reduction**: price the spell at the lands you'd typically tap
+  (Murktide Regent as 1UU in a deck that fills its graveyard).
+- **Alternative costs**: ignore the mana cost if you never pay it; otherwise treat it
+  normally and accept being a little short.
+- **Colourless `{C}` and snow** are colours in their own right.
+- **Fetchlands** that fetch duals count fully for every colour they can find. Fabled Passage
+  and Pathways count fully in two-colour decks but about **2/3 of a source** per colour in
+  three-plus-colour decks with heavy requirements, since you have to choose.
+- **Taplands**: for turn 1 only untapped sources count. From turn 2 on, count every source.
+  Rough tapland budget: at most 3 in a 60-card aggro deck with one-drops, at most 9 in
+  midrange/control without them; a conditional land like Sunpetal Grove is about 1/4 of a
+  tapland. Avoid vanilla taplands like guildgates.
+- **Land/spell MDFCs**: for land *count*, a non-mythic is 0.40 of a land and a mythic 0.75.
+  For colour *sources*, a non-mythic is 0.8 and a mythic a full source, because the games
+  where colour matters are the ones you play it as a land. Spell/spell MDFCs need both costs
+  covered.
+- **Mana dorks**: half a source per colour, for spells of MV 2+, if you can cast the dork
+  reliably (14+ untapped sources at 60).
+- **Mana rocks** (Arcane Signet, Signets): 3/4 of a source per colour, for spells of MV 3+.
+- **Two-mana land ramp** you can cast on turn 2 (Farseek, Rampant Growth, Sakura-Tribe Elder):
+  3/4 of a source per colour it can find, for MV 3+. **Three-mana ramp** (Cultivate, Myriad
+  Landscape): half a source, for MV 5+ only.
+- **Cantrips** costing ≤2 that you can already cast: (sources of that colour / deck size),
+  rounded down loosely. Cheap scry 1 ≈ 0.2 (0.1 at half the colour's lands), scry 2 ≈ 0.3
+  (0.15). Count at most 10 card-selection effects.
+- **Treasures**: each one-shot Treasure is 1/4 of a source of any colour, for MV 3+.
+- **Opponent-dependent** (Exotic Orchard, Fellwar Stone): with an unknown pod, Orchard 3/4 and
+  Fellwar 1/2 of any colour.
+- **Colour-fixing engines** like Fires of Invention don't count. Build for the games where the
+  plan didn't come together.
+
+`gauntlet`'s `can_cast` measures the deck as built, but it doesn't condition on drawing
+enough lands. Use the table to decide the split and gauntlet to check it.
 
 ## Where decks live: `~/code/mtg`
 

@@ -141,10 +141,14 @@ On top of the `mtg` manabase rules: every Commander manabase built from memory s
 out as Command Tower plus precon filler and needed rebuilding by hand. A blue deck should run
 Sink into Stupor before its Nth Island.
 
+Source counts per colour come from the 99-card column of the Karsten table in the `mtg`
+skill. That column assumes 41 lands (mana rocks counting as partial lands); at 36 lands,
+scale it, e.g. 26 sources for a 2CC card at 41 lands is about 23 at 36.
+
 `scryfall check` reports `.manabase` (MDFCs run vs. available, tapped lands, sources vs. pip
 share, basics vs. basic fetchers) and prints `manabase:` warnings to stderr. Resolve them or
-say why not. The warnings are heuristics read off oracle text; `gauntlet`'s `can_cast` is the
-measurement when it matters.
+say why not. The warnings are heuristics read off oracle text and aren't Karsten's numbers: when they
+disagree, the table wins. `gauntlet`'s `can_cast` checks the finished deck.
 
 ## Before presenting any list, validate it
 
@@ -199,8 +203,8 @@ before claiming a bracket.
 
 Starting ratios for a bracket 2–3 deck, to adjust rather than obey:
 
-- **35–38 lands**, trending lower with lots of cheap ramp or many MDFC land-backs (count
-  those as roughly half a land each). **But go up, not down, when lands are also spells:** a
+- **35–38 lands**, trending lower with lots of cheap ramp or many MDFC land-backs (Karsten:
+  a non-mythic land/spell MDFC is 0.40 of a land, a mythic 0.75). **But go up, not down, when lands are also spells:** a
   cycling deck wants **~39**, run liberally on MDFCs and cycling lands, because a land that
   cycles is never a flooded draw. Same for landcycling: basic landcycling on something like
   Ash Barrens is still cycling, so it triggers every cycling payoff *and* fetches a land.
