@@ -18,22 +18,25 @@
 }: {
   # Extension repo checkout (the one holding extension.toml).
   src,
-  # Grammar name -> { src; rev; }. `rev` is the revision `src` was pinned at;
-  # it is checked against what extension.toml declares.
-  grammars ? {},
 }: let
   manifest = builtins.fromTOML (builtins.readFile "${src}/extension.toml");
   cargoLockPath = "${src}/Cargo.lock";
   isRust = builtins.pathExists cargoLockPath;
 
-  # Zed accepts either spelling for the pinned grammar revision.
-  declaredRev = g: g.commit or g.rev;
-
-  # extension.toml names the revision the queries were written against; the
-  # npins pin is what actually gets compiled. `npins update` moving one without
-  # the other would silently ship queries that don't match the parser, so make
-  # the mismatch a build failure rather than a subtly broken editor.
-  revMismatches = lib.filterAttrs (name: g: declaredRev manifest.grammars.${name} != g.rev) grammars;
+  # Each grammar is fetched at exactly the revision extension.toml names, the
+  # one its queries were written against. Pinning grammars on their own (they
+  # used to live in npins) let `npins update` walk the parser ahead of the
+  # queries. Zed accepts either spelling for the revision.
+  grammars =
+    builtins.mapAttrs (_: g: {
+      path = g.path or ".";
+      src = builtins.fetchGit {
+        url = g.repository;
+        rev = g.commit or g.rev;
+        allRefs = true;
+      };
+    })
+    (manifest.grammars or {});
 
   apiVersion =
     if !isRust
@@ -78,7 +81,7 @@
   ];
 
   compileGrammar = name: g: let
-    root = "${g.src}/${manifest.grammars.${name}.path or "."}";
+    root = "${g.src}/${g.path}";
   in ''
     PATH="${wasiBinPath}:$PATH" ${wasiCc} -fPIC -shared -Os \
       -Wl,--export=tree_sitter_${name} \
@@ -87,11 +90,6 @@
       $(test -f ${root}/src/scanner.c && echo ${root}/src/scanner.c || true)
   '';
 in
-  assert lib.assertMsg (revMismatches == {}) ''
-    ${manifest.id}: pinned grammar revision does not match extension.toml:
-    ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: g: "  ${name}: extension.toml wants ${declaredRev manifest.grammars.${name}}, npins pins ${g.rev}") revMismatches)}
-    Re-pin the grammar at the revision extension.toml names, or bump both together.
-  '';
     stdenv.mkDerivation ({
         inherit src;
         pname = "zed-${manifest.id}";

@@ -18,12 +18,12 @@
 }:
 buildPythonPackage rec {
   pname = "unitypy";
-  version = "1.25.3";
+  version = "1.25.4";
   pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-QbPoMKBEad+r6twJf1m6cAjiiYZGBHKOGtYjwi18MNw=";
+    hash = "sha256-kdYWnXPbjrXxH9ZTG05emA9T2uANXjy6uCe79HZd5tM=";
   };
 
   build-system = [setuptools];

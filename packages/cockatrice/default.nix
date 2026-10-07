@@ -16,13 +16,13 @@ stdenv.mkDerivation (finalAttrs: {
   # runs nix-update against a regex that only matches Release tags — the atom
   # feed it reads has no prerelease flag to filter on, and currently holds
   # nothing but Development betas. See the Justfile recipe.
-  version = "2026-06-26-Release-3.0.2";
+  version = "2026-10-03-Release-3.1.0";
 
   src = fetchFromGitHub {
     owner = "Cockatrice";
     repo = "Cockatrice";
     tag = finalAttrs.version;
-    hash = "sha256-qn8pnC04uN994qLK4oXc3IiTpPMT3/gqHHBaEDkjsr4=";
+    hash = "sha256-25+RDA+EIsmVxC+SIUamI4BdOsqK9Y9tdEDxa4yfWtA=";
   };
 
   nativeBuildInputs = [

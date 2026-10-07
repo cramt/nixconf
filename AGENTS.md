@@ -101,7 +101,7 @@ what makes `just deploy` able to reach a host at all).
 - **Non-flake pins**: `npins/` for sources that don't have flake support.
 - **Gems**: `gems/` — Ruby gems used by scripts (locked with `bundle lock`).
 - **Packages**: `packages/` — custom packages (`agent-browser`, `agentsview`, `cockatrice`, `colibri`, `declaradroid`, `saturn-windows-image`, `steamlink`).
-- **Zed extensions**: `packages/mkZedExtension.nix` builds an extension into Zed's `installed/<id>` layout (wasm32-wasip2 via fenix, tree-sitter parsers via `pkgsCross.wasi32`) so `modules/hm-features/zed.nix` can symlink it in. This is the only declarative route for extensions that aren't in Zed's registry — registry ones just go in the `extensions` list. Grammar sources are npins pins, cross-checked at build time against the revision the extension's own `extension.toml` declares.
+- **Zed extensions**: `packages/mkZedExtension.nix` builds an extension into Zed's `installed/<id>` layout (wasm32-wasip2 via fenix, tree-sitter parsers via `pkgsCross.wasi32`) so `modules/hm-features/zed.nix` can symlink it in. This is the only declarative route for extensions that aren't in Zed's registry — registry ones just go in the `extensions` list. Grammars are fetched at exactly the repo + revision the extension's own `extension.toml` declares, so they are never pinned separately.
 - **Scripts**: `scripts/` — Nix-defined scripts (`zellij_smart_start`, `sway_gaming`, `keep_awake`, etc.).
 
 ### Home Manager Bundles

@@ -114,11 +114,7 @@ inputs: [
   # Zed's Delta agent, as `zed-delta` (`delta` is git-delta).
   inputs.delta-nix.overlays.default
 
-  (final: prev: let
-    # The revision npins actually fetched, so mkZedExtension can cross-check it
-    # against the grammar revision the extension's own manifest declares.
-    npinsRev = name: (builtins.fromJSON (builtins.readFile ../npins/sources.json)).pins.${name}.revision;
-  in {
+  (final: prev: {
     # Zed extensions that aren't in its registry, so `programs.zed-editor.extensions`
     # can't reach them. Prebuilt here into Zed's installed-extension layout and
     # symlinked in by modules/hm-features/zed.nix. See packages/mkZedExtension.nix.
@@ -133,26 +129,8 @@ inputs: [
         ];
     };
 
-    zed-spade = final.mkZedExtension {
-      src = final.npinsSources.zed-spade;
-      grammars.spade = {
-        src = final.npinsSources.tree-sitter-spade;
-        rev = npinsRev "tree-sitter-spade";
-      };
-    };
-
-    # tree-sitter-vixen is frozen in npins/sources.json: the grammar revision is
-    # dictated by vixen-zed's extension.toml, not independently updatable, and an
-    # unpinned `npins update` walks it ahead of the extension and trips the
-    # cross-check in packages/mkZedExtension.nix. Unfreeze and bump both when
-    # vixen-zed itself moves to a newer grammar.
-    zed-vixen = final.mkZedExtension {
-      src = final.npinsSources.vixen-zed;
-      grammars.vixen = {
-        src = final.npinsSources.tree-sitter-vixen;
-        rev = npinsRev "tree-sitter-vixen";
-      };
-    };
+    zed-spade = final.mkZedExtension {src = final.npinsSources.zed-spade;};
+    zed-vixen = final.mkZedExtension {src = final.npinsSources.vixen-zed;};
   })
 
   # T3 Code comes from llm-agents (release-tracked, bumped daily by numtide).

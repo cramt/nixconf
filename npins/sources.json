@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "d101424ac04e1bef0a980f4238095ac3a2c39f2f",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/d101424ac04e1bef0a980f4238095ac3a2c39f2f.tar.gz",
-      "hash": "sha256-cq0zy6EtJa94q4ykG05DY4dXSeyKmeWh9vU2RfqjTVM="
+      "revision": "ab0f060ad7a66c9159d751d876c15ecbaaf1820b",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/ab0f060ad7a66c9159d751d876c15ecbaaf1820b.tar.gz",
+      "hash": "sha256-DyE3l0iD65XGy0dsxz6e5OzDFe4tS1stwLpwRwGTds4="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -30,43 +30,15 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:860b3620c76e970716eaff1645c280aca70390dfe84712ed65b413d021cfcd16",
-      "hash": "sha256-aY7XjDTR9Ej475jiP2ONnbhu/XkaEPpJvdQNNorUOOM="
+      "image_digest": "sha256:1fa99b692e271f9a3b2f0460ba568c58328706f951bd4ef119c575f12252f1d4",
+      "hash": "sha256-32ZAjDhwYkMxGsDqAgw7tNeAXYh5uagprXDF0RS+5t0="
     },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1080219.8d5d270900d3/nixexprs.tar.xz",
-      "hash": "sha256-d3hOIhc3atvdRbTI+jZygt5ld0eQKfgBjhQ/VKpV3dM="
-    },
-    "tree-sitter-spade": {
-      "type": "Git",
-      "repository": {
-        "type": "Forgejo",
-        "server": "https://codeberg.org/",
-        "owner": "spade-lang",
-        "repo": "tree-sitter-spade"
-      },
-      "branch": "main",
-      "submodules": false,
-      "revision": "d094381a5b3ad7fbff9dc850471479a391b62d1f",
-      "url": "https://codeberg.org/spade-lang/tree-sitter-spade/archive/d094381a5b3ad7fbff9dc850471479a391b62d1f.tar.gz",
-      "hash": "sha256-CF3ZDeG359PgMMvD0AfjPMvWj6egIJJ/6g1tK73B0Bc="
-    },
-    "tree-sitter-vixen": {
-      "type": "Git",
-      "repository": {
-        "type": "GitHub",
-        "owner": "bearcove",
-        "repo": "tree-sitter-vixen"
-      },
-      "branch": "main",
-      "submodules": false,
-      "revision": "b07097fdde79f92863490d8e8b2dc9e926859578",
-      "url": "https://github.com/bearcove/tree-sitter-vixen/archive/b07097fdde79f92863490d8e8b2dc9e926859578.tar.gz",
-      "hash": "sha256-0TzeuO2GP0z7wc7AHb4LHKA3JEwriMbU5ZCEsWACmJE=",
-      "frozen": true
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1086706.e2ccecbf3086/nixexprs.tar.xz",
+      "hash": "sha256-8X2knlOzqm0RD28O0GpFspE9dRU/ZK/DozWq2WOpOjs="
     },
     "vixen-zed": {
       "type": "Git",
@@ -85,8 +57,8 @@
       "type": "Container",
       "image_name": "wolveix/satisfactory-server",
       "image_tag": "latest",
-      "image_digest": "sha256:e103700ae6ae4c50f19dac80eadb2a805c5b885e179ae2a40850e967bf189efd",
-      "hash": "sha256-gbVUYyYuyU4Bubk8pfiH63n4PMw2xG5u0bCTE36IAgk="
+      "image_digest": "sha256:ac252dba41653eb21c6feed94b577f98fa152f5792b1aeff2ce11fe364355137",
+      "hash": "sha256-7dIKtKIMky0nwwyXxeZHue2woHNqmJM+32NHA6egpLQ="
     },
     "zed-spade": {
       "type": "Git",
