@@ -98,6 +98,19 @@
           header_up Authorization "Bearer {file.${keyFile}}"
         '';
       };
+
+      # CPA's / is a JSON banner; the panel is what a browser wants. Merged into
+      # the vhosts serviceMap generates; redir runs before handle, so ahead of
+      # both the /v1 split and the passkey.
+      services.caddy.virtualHosts = let
+        caddyCfg = config.myNixOS.services.caddy;
+      in
+        lib.genAttrs (map (proto: "${proto}://${cfg.subdomain}.${caddyCfg.domain}") caddyCfg.protocol)
+        (_: {
+          extraConfig = ''
+            redir / /management.html
+          '';
+        });
     };
   };
 }
