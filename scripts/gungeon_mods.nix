@@ -5,9 +5,8 @@
 # than symlinked. Everything written is listed in a manifest next to the game,
 # so a mod dropped from the nix config is removed next time instead of lingering.
 #
-# The native Linux build only loads BepInEx when launched through
-# start_game_bepinex.sh, which means setting Steam's per-game launch option in
-# localconfig.vdf. That file has the same constraint as shortcuts.vdf: Steam
+# The native Linux build only loads BepInEx with doorstop preloaded, which
+# means setting Steam's per-game launch option in localconfig.vdf. That file has the same constraint as shortcuts.vdf: Steam
 # rewrites it from memory on exit, so it's only touched while Steam is down.
 # It's edited as text rather than round-tripped through python's vdf, whose
 # writer escapes ' and ? in ways Steam's parser doesn't undo.
@@ -146,8 +145,17 @@ pkgs.writers.writePython3Bin "gungeon-mods" {
           return
 
       install(spec, game_dir)
+      # What start_game_bepinex.sh would export, without going through it: under
+      # Steam it re-execs itself via an unquoted $0, which splits on the spaces
+      # in "Enter the Gungeon" and the game dies before starting. LD_PRELOAD
+      # takes a bare name because it also splits on spaces; LD_LIBRARY_PATH
+      # (colon-separated) is what locates it.
       set_launch_options(
-          '"' + os.path.join(game_dir, "start_game_bepinex.sh") + '" %command%')
+          "DOORSTOP_ENABLE=TRUE"
+          f' DOORSTOP_INVOKE_DLL_PATH="{game_dir}/BepInEx/core/BepInEx.Preloader.dll"'
+          f' LD_LIBRARY_PATH="{game_dir}/doorstop_libs:$LD_LIBRARY_PATH"'
+          ' LD_PRELOAD="libdoorstop_x64.so:$LD_PRELOAD"'
+          " %command%")
 
 
   main()
