@@ -96,7 +96,7 @@ what makes `just deploy` able to reach a host at all).
 ### Key Subsystems
 
 - **Theming**: `stylix` (dark theme, Iosevka Nerd Font). Configured in `modules/bundles/nixos-general.nix`. The `stylixAsset` option accepts an image or `.mp4` (first frame is extracted).
-- **Secrets**: `opnix` (1Password-based). Enabled per-host with `myNixOS.opnix-secrets.enable = true`.
+- **Secrets**: `opnix` (1Password-based). A host opts in with `myNixOS.opnix-secrets.enable = true` (it has `/etc/opnix-token`); each module declares the `services.onepassword-secrets.secrets` it reads behind its own enable, so a host renders only what it runs. `modules/security/opnix-secrets.nix` holds just the plumbing plus the secrets home-manager reads.
 - **Port assignment**: `modules/base/portselector.nix` provides a `port-selector` NixOS option that deterministically assigns ports to services by hashing their names, with manual overrides via `set-ports`.
 - **Non-flake pins**: `npins/` for sources that don't have flake support.
 - **Gems**: `gems/` — Ruby gems used by scripts (locked with `bundle lock`).

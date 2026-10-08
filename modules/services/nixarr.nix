@@ -12,6 +12,14 @@
       enable = lib.mkEnableOption "myNixOS.services.nixarr";
     };
     config = lib.mkIf cfg.enable {
+      services.onepassword-secrets.secrets = lib.mapAttrs (_: field: {
+        reference = "op://Homelab/JellyfinUsers/${field}";
+        mode = "0640";
+        group = "jellarr";
+      }) {
+        jellyfinCramtPassword = "cramtPassword";
+        jellyfinHannahPassword = "hannahPassword";
+      };
       # jellyfin and jellyseerr stay ungated: friends log into both with their
       # own jellyfin accounts. Everything else is owner-only, behind authelia.
       myNixOS.services.caddy.serviceMap = {

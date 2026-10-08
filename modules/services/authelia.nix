@@ -58,6 +58,15 @@
     };
 
     config = lib.mkIf cfg.enable {
+      # Root-owned is fine: authelia reads them through systemd LoadCredential.
+      services.onepassword-secrets.secrets = lib.mapAttrs (_: field: {
+        reference = "op://Homelab/Authelia/${field}";
+        services = ["authelia-main"];
+      }) {
+        autheliaJwtSecret = "jwtSecret";
+        autheliaSessionSecret = "sessionSecret";
+        autheliaStorageEncryptionKey = "storageEncryptionKey";
+      };
       assertions = [
         {
           assertion = cfg.user.hashedPassword != null;

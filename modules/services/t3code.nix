@@ -190,6 +190,18 @@
     };
 
     config = lib.mkIf cfg.enable {
+      # No `services` restart wiring: opnix restarts *system* units, but t3code
+      # is a user unit -- a dangling `services = ["t3code"]` would make opnix
+      # emit a stub system unit with no ExecStart and break activation. After
+      # rotating the key, restart the user service by hand:
+      #   systemctl --user -M cramt@ restart t3code
+      # Name kept from the paseo era: same 1Password item, same key, and
+      # renaming would only churn the rendered path for no gain.
+      services.onepassword-secrets.secrets.paseoSshKey = lib.mkIf cfg.onDiskSshKey.enable {
+        reference = "op://Homelab/Paseo/sshPrivateKey";
+        owner = "cramt";
+        mode = "0600";
+      };
       assertions = [
         {
           assertion = cfg.proxyAuth -> cfg.subdomain != null;

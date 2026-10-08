@@ -60,6 +60,8 @@
         '';
       };
 
+      services.onepassword-secrets.secrets.cliProxyApiKey = (import ../../myLib/claude-pool.nix).apiKeySecret;
+
       home-manager.users.${cfg.user}.myHomeManager.cli-proxy-api = {
         enable = true;
         managementKeyFile = keyFile;

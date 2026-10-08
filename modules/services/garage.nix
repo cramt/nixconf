@@ -111,6 +111,10 @@
         };
       };
       port-selector.auto-assign = ["garage_s3" "garage_web" "garage_rpc" "garage_admin"];
+      services.onepassword-secrets.secrets.garageEnv = {
+        reference = "op://Homelab/Garage/envFile";
+        services = ["garage"];
+      };
       services.garage = {
         enable = true;
         package = pkgs.garage;

@@ -15,6 +15,10 @@
       };
     };
     config = lib.mkIf cfg.enable {
+      services.onepassword-secrets.secrets.homelabControllerEnv = {
+        reference = "op://Homelab/HomelabController/envFile";
+        services = ["homelab_system_controller"];
+      };
       systemd.services.homelab_system_controller = {
         enable = true;
         script = "${inputs.homelab_system_controller.packages.${pkgs.stdenv.hostPlatform.system}.host}/bin/host";

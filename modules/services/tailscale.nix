@@ -11,6 +11,10 @@
       enable = lib.mkEnableOption "myNixOS.services.tailscale";
     };
     config = lib.mkIf cfg.enable {
+      services.onepassword-secrets.secrets.tailscalePreauthKey = {
+        reference = "op://Homelab/Tailscale/preauthKey";
+        services = ["tailscaled"];
+      };
       services.tailscale = {
         enable = true;
         authKeyFile = config.services.onepassword-secrets.secretPaths.tailscalePreauthKey;

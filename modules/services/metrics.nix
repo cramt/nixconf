@@ -219,6 +219,12 @@
       })
 
       (lib.mkIf runAgent {
+        services.onepassword-secrets.secrets.metricsRemoteWritePassword = {
+          reference = "op://Homelab/Metrics/remoteWritePassword";
+          services = ["prometheus"];
+          owner = "prometheus";
+          group = "prometheus";
+        };
         services.prometheus = {
           enable = true;
           enableAgentMode = true;

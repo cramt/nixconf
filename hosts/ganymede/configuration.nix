@@ -89,8 +89,8 @@
     };
   };
 
-  # Just the TV's SSAP client key, not the opnix-secrets bundle: none of the
-  # homelab's other secrets belong on the TV box. Needs /etc/opnix-token on
+  # opnix without myNixOS.opnix-secrets: that would also opt the TV box into the
+  # fleet metrics push and the nix GitHub token. Needs /etc/opnix-token on
   # ganymede. emrakul reads the key on every connect, so no restart wiring.
   services.onepassword-secrets = {
     enable = true;

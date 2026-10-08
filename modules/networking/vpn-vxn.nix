@@ -20,6 +20,10 @@
     };
 
     config = lib.mkIf cfg.enable {
+      services.onepassword-secrets.secrets = {
+        vxnPrivateKey.reference = "op://Homelab/VXN-WireGuard/privateKey";
+        vxnPresharedKey.reference = "op://Homelab/VXN-WireGuard/presharedKey";
+      };
       # wg-quick rather than networking.wireguard.interfaces: a 0.0.0.0/0
       # AllowedIPs needs the fwmark + `suppress_prefixlength 0` rule dance to
       # capture the default route without eating LAN routes, and DNS= needs a

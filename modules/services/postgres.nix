@@ -41,6 +41,12 @@
       };
     };
     config = lib.mkIf cfg.enable {
+      services.onepassword-secrets.secrets.postgresPassword = {
+        reference = "op://Homelab/Postgres/password";
+        services = ["postgresql"];
+        owner = "postgres";
+        group = "postgres";
+      };
       port-selector.set-ports."5432" = "postgresql";
       networking.firewall.allowedTCPPorts = [port];
       services.postgresql = {

@@ -46,6 +46,7 @@
   in {
     options.myNixOS.services.servatrice.enable = lib.mkEnableOption "myNixOS.services.servatrice";
     config = lib.mkIf config.myNixOS.services.servatrice.enable {
+      services.onepassword-secrets.secrets.cockatriceEnv.reference = "op://Homelab/Cockatrice/envFile";
       virtualisation.oci-containers.containers.servatrice = {
         hostname = "servatrice";
         imageStream = dockerImage;
