@@ -131,6 +131,8 @@
       # Remove this pin only if the card is replaced with Turing or newer.
       package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
     };
+    # Optimus laptop: an i915 iGPU sits beside the 1050 Ti.
+    intel-gpu.enable = true;
     bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.general.enable = true;
     bundles.users.enable = true;

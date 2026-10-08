@@ -178,20 +178,23 @@
   # remote_write from every agent lands here, so it dwarfs real traffic.
   realVhost = ''host!="metrics.${domain}"'';
 
-  # One series per host whatever the vendor: nvidia from nvidia_gpu_exporter,
-  # amdgpu from node_exporter's drm and hwmon collectors. hwmon names chips by
-  # PCI path, so the amdgpu sensors are picked out by joining on chip_name.
-  gpuByHost = {
-    nvidia,
-    amd,
-  }: "(${nvidia}) or (${amd})";
-  amdgpuHwmon = metric: ''${metric} * on (instance, chip) group_left node_hwmon_chip_names{chip_name="amdgpu"}'';
-  gpuQuery = args: [
+  # One query over every GPU vendor, each series labelled `gpu`: nvidia from
+  # nvidia_gpu_exporter, amdgpu from node_exporter's drm and hwmon collectors,
+  # intel from the intel_gpu_top bridge in hardware/intel-gpu.nix. Labelled
+  # rather than merged per host so an Optimus laptop (ganymede) shows both
+  # cards instead of `or` hiding one. Expressions must already be aggregated
+  # down to `instance` (plus whatever the legend adds).
+  gpuSeries = vendors:
+    lib.concatStringsSep " or " (lib.mapAttrsToList (gpu: expr: ''label_replace(${expr}, "gpu", "${gpu}", "", "")'') vendors);
+  gpuQuery = vendors: [
     {
-      expr = gpuByHost args;
-      legend = "{{instance}}";
+      expr = gpuSeries vendors;
+      legend = "{{instance}} {{gpu}}";
     }
   ];
+  # hwmon names chips by PCI path, so amdgpu's sensors are picked out by
+  # joining on chip_name.
+  amdgpuHwmon = metric: ''${metric} * on (instance, chip) group_left node_hwmon_chip_names{chip_name="amdgpu"}'';
 in {
   fleet = dashboard {
     uid = "fleet";
@@ -313,17 +316,19 @@ in {
       })
       (timeseries {
         title = "GPU busy";
-        description = "NVIDIA and AMD cards. Intel iGPUs and the Pi's vc4 don't report.";
+        description = "Intel is its busiest engine. The Pi's vc4 doesn't report.";
         unit = "percent";
         min = 0;
         max = 100;
         queries = gpuQuery {
           nvidia = "100 * max by (instance) (nvidia_smi_utilization_gpu_ratio)";
           amd = "max by (instance) (node_drm_gpu_busy_percent)";
+          intel = "100 * max by (instance) (intel_gpu_engine_busy_ratio)";
         };
       })
       (timeseries {
         title = "VRAM used";
+        description = "Intel iGPUs carve theirs out of system RAM, so they aren't here.";
         unit = "percent";
         min = 0;
         max = 100;
@@ -350,7 +355,46 @@ in {
           # Older amdgpu exposes power1_average, newer power1_input; max picks
           # whichever this kernel has without double counting.
           amd = "max by (instance) (${amdgpuHwmon ''max by (instance, chip, sensor) ({__name__=~"node_hwmon_power_(average_)?watt"})''})";
+          intel = ''sum by (instance) (intel_gpu_power_watts{domain="gpu"})'';
         };
+      })
+      (timeseries {
+        title = "GPU core clock";
+        unit = "hertz";
+        min = 0;
+        queries = gpuQuery {
+          nvidia = "max by (instance) (nvidia_smi_clocks_current_graphics_clock_hz)";
+          amd = ''1e6 * max by (instance) (${amdgpuHwmon ''node_hwmon_freq_freq_mhz{sensor="sclk"}''})'';
+          intel = ''max by (instance) (intel_gpu_frequency_hertz{kind="actual"})'';
+        };
+      })
+      (timeseries {
+        title = "GPU fan";
+        description = "Share of max RPM on AMD, so zero-RPM idle reads 0. NVIDIA reports its target speed.";
+        unit = "percent";
+        min = 0;
+        max = 100;
+        queries = gpuQuery {
+          nvidia = "100 * max by (instance) (nvidia_smi_fan_speed_ratio)";
+          amd = "100 * max by (instance) (${amdgpuHwmon "(node_hwmon_fan_rpm / node_hwmon_fan_max_rpm)"})";
+        };
+      })
+      (timeseries {
+        title = "Video engines";
+        description = "Hardware encode/decode: NVENC/NVDEC on NVIDIA, QuickSync's video and video-enhance engines on Intel. AMD's VCN isn't exposed.";
+        unit = "percent";
+        min = 0;
+        max = 100;
+        w = 24;
+        queries = [
+          {
+            expr = gpuSeries {
+              nvidia = ''label_replace(100 * max by (instance) (nvidia_smi_utilization_encoder_ratio), "engine", "encode", "", "") or label_replace(100 * max by (instance) (nvidia_smi_utilization_decoder_ratio), "engine", "decode", "", "")'';
+              intel = ''100 * max by (instance, engine) (intel_gpu_engine_busy_ratio{engine=~"video.*"})'';
+            };
+            legend = "{{instance}} {{gpu}} {{engine}}";
+          }
+        ];
       })
     ];
   };
