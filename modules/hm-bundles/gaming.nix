@@ -23,7 +23,6 @@
       myHomeManager = {
         prismlauncher.enable = true;
         cockatrice.enable = true;
-        gungeon-mods.enable = true;
         rhystic-tracker = {
           enable = true;
           service.enable = true;
