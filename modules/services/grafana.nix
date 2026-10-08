@@ -31,7 +31,7 @@
         type = lib.types.str;
         default = "grafana";
         description = ''
-          Vhost. Needs a matching A record in infra/dns.nix.
+          Vhost. Gets its A record from caddy.subdomains.
         '';
       };
     };

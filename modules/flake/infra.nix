@@ -9,6 +9,9 @@
       tfConfig = inputs.terranix.lib.terranixConfiguration {
         inherit pkgs;
         modules = [ ../../infra ];
+        # Read off luna's caddy rather than listed in dns.nix, so a vhost and
+        # its A record can't drift apart.
+        extraArgs.lunaVhosts = config.flake.nixosConfigurations.luna.config.myNixOS.services.caddy.subdomains;
       };
 
       stateHost = config.nixosHosts.luna.address;

@@ -91,8 +91,8 @@
           type = lib.types.str;
           default = "metrics";
           description = ''
-            Caddy vhost the agents push to. Needs a matching A record -- these
-            are enumerated in infra/main.tf, there's no wildcard.
+            Caddy vhost the agents push to. Gets its A record from
+            caddy.subdomains.
           '';
         };
         dataDir = lib.mkOption {

@@ -33,7 +33,7 @@
         type = lib.types.str;
         default = "auth";
         description = ''
-          Portal vhost. Needs a matching A record in infra/main.tf.
+          Portal vhost. Gets its A record from caddy.subdomains.
         '';
       };
       user = {

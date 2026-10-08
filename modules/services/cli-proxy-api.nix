@@ -33,7 +33,7 @@
       subdomain = lib.mkOption {
         type = lib.types.str;
         default = "cliproxy";
-        description = "Caddy vhost. Needs a matching A record in infra/main.tf.";
+        description = "Caddy vhost. Gets its A record from caddy.subdomains.";
       };
     };
 

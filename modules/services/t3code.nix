@@ -145,8 +145,7 @@
         example = "t3";
         description = ''
           Expose the server as this caddy vhost, behind the authelia passkey
-          portal. Needs caddy and authelia on this host, plus an A record in
-          infra/main.tf.
+          portal. Needs caddy and authelia on this host.
         '';
       };
       proxyAuth = lib.mkOption {

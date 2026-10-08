@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, lunaVhosts, ... }:
 let
   # for_each over a map keeps the `["<key>"]` addresses the HCL toset() had
   keyed = names: lib.genAttrs names (n: n);
@@ -19,7 +19,7 @@ in
   resource.cloudflare_dns_record = {
     # vhosts behind luna's reverse proxy
     luna = lunaHost // {
-      for_each = keyed [ "tdarr" "yelliv" "open-webui" "jellyfin" "btop" "jellyseerr" "qbit" "foundry-a" "prowlarr" "radarr" "sonarr" "bazarr" "shelfmark" "cockatrice" "metrics" "auth" "t3" "cliproxy" "grafana" ];
+      for_each = keyed lunaVhosts;
     };
 
     # straight to luna, no proxy in front

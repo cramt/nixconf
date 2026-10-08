@@ -97,9 +97,24 @@
         ) (lib.attrsets.attrsToList services)
       )
     );
+    subdomainOf = vhost: let
+      m = builtins.match "([a-z]+://)?(.+)\\.${lib.escapeRegex cfg.domain}" vhost;
+    in
+      if m == null
+      then null
+      else builtins.elemAt m 1;
   in {
     options.myNixOS.services.caddy = {
       enable = lib.mkEnableOption "myNixOS.services.caddy";
+      subdomains = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        readOnly = true;
+        description = ''
+          Every subdomain of `domain` this host's caddy serves. Read back from
+          the rendered virtualHosts, so vhosts added outside serviceMap count
+          too. infra/dns.nix gives each one an A record.
+        '';
+      };
       cacheVolume = lib.mkOption {
         type = lib.types.str;
         description = ''
@@ -178,75 +193,82 @@
         '';
       };
     };
-    config = lib.mkIf cfg.enable {
-      # Without the portal, forward_auth would point at a port nothing listens
-      # on and every gated vhost would 502 -- fail the build instead.
-      assertions = [
-        {
-          assertion =
-            config.myNixOS.services.authelia.enable
-            || !(lib.any (s: s.forward-auth) (lib.attrValues cfg.serviceMap));
-          message = "caddy.serviceMap has forward-auth entries but myNixOS.services.authelia is disabled.";
-        }
-      ];
-      networking.firewall.allowedTCPPorts = [80 443];
-      # Served by caddy's admin API, which only ever listens on loopback.
-      myNixOS.services.metrics.localJobs.caddy = {
-        port = 2019;
-        # per_host takes the raw Host header, so a client that spells out
-        # `:443` splits one vhost into two series and undercounts it.
-        extraConfig.metric_relabel_configs = [
+    config = lib.mkMerge [
+      {
+        myNixOS.services.caddy.subdomains = lib.unique (lib.sort lib.lessThan (
+          lib.filter (s: s != null) (map subdomainOf (lib.attrNames config.services.caddy.virtualHosts))
+        ));
+      }
+      (lib.mkIf cfg.enable {
+        # Without the portal, forward_auth would point at a port nothing listens
+        # on and every gated vhost would 502 -- fail the build instead.
+        assertions = [
           {
-            source_labels = ["host"];
-            regex = "(.+):443";
-            target_label = "host";
-            replacement = "$1";
+            assertion =
+              config.myNixOS.services.authelia.enable
+              || !(lib.any (s: s.forward-auth) (lib.attrValues cfg.serviceMap));
+            message = "caddy.serviceMap has forward-auth entries but myNixOS.services.authelia is disabled.";
           }
         ];
-      };
-      services.caddy = {
-        enable = true;
-        email = (import ../../myLib/site.nix).email;
-        # per_host labels every request series with its vhost, which is what
-        # "is anyone actually using <service>" comes down to on this box.
-        globalConfig = ''
-          debug
-          metrics {
-            per_host
-          }
-        '';
-        virtualHosts =
-          {
-            "(cors)" = {
-              extraConfig = ''
+        networking.firewall.allowedTCPPorts = [80 443];
+        # Served by caddy's admin API, which only ever listens on loopback.
+        myNixOS.services.metrics.localJobs.caddy = {
+          port = 2019;
+          # per_host takes the raw Host header, so a client that spells out
+          # `:443` splits one vhost into two series and undercounts it.
+          extraConfig.metric_relabel_configs = [
+            {
+              source_labels = ["host"];
+              regex = "(.+):443";
+              target_label = "host";
+              replacement = "$1";
+            }
+          ];
+        };
+        services.caddy = {
+          enable = true;
+          email = (import ../../myLib/site.nix).email;
+          # per_host labels every request series with its vhost, which is what
+          # "is anyone actually using <service>" comes down to on this box.
+          globalConfig = ''
+            debug
+            metrics {
+              per_host
+            }
+          '';
+          virtualHosts =
+            {
+              "(cors)" = {
+                extraConfig = ''
 
-                @cors_preflight method OPTIONS
+                  @cors_preflight method OPTIONS
 
-                header {
-                  ?Access-Control-Allow-Origin "*"
-                  ?Access-Control-Expose-Headers "Authorization"
-                  ?Access-Control-Allow-Headers *
-                  ?Access-Control-Allow-Credentials "true"
-                  ?Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
-                  ?Access-Control-Max-Age "3600"
-                }
-
-                handle @cors_preflight {
                   header {
                     ?Access-Control-Allow-Origin "*"
-                    Access-Control-Expose-Headers "Authorization"
-                    Access-Control-Allow-Headers *
-                    Access-Control-Allow-Credentials "true"
-                    Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
-                    Access-Control-Max-Age "3600"
+                    ?Access-Control-Expose-Headers "Authorization"
+                    ?Access-Control-Allow-Headers *
+                    ?Access-Control-Allow-Credentials "true"
+                    ?Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
+                    ?Access-Control-Max-Age "3600"
                   }
-                 respond "" 204
-                 }
-              '';
-            };
-          }
-          // services_with_protocol;
-      };
-    };
+
+                  handle @cors_preflight {
+                    header {
+                      ?Access-Control-Allow-Origin "*"
+                      Access-Control-Expose-Headers "Authorization"
+                      Access-Control-Allow-Headers *
+                      Access-Control-Allow-Credentials "true"
+                      Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE"
+                      Access-Control-Max-Age "3600"
+                    }
+                   respond "" 204
+                   }
+                '';
+              };
+            }
+            // services_with_protocol;
+        };
+      })
+    ];
   };
 }
