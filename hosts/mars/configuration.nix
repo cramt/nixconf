@@ -37,6 +37,7 @@
     opnix-secrets.enable = true;
     docker.enable = true;
     bluetooth.enable = true;
+    intel-gpu.enable = true;
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.graphical.enable = true;
