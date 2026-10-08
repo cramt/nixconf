@@ -24,7 +24,7 @@
   ...
 }: let
   # Their patched Steam Link (aarch64) — same package v1 shipped.
-  steamlink = pkgs.callPackage ../../packages/steamlink {};
+  inherit (pkgs) steamlink;
 
   # The addon-configured Firefox (uBlock + SponsorBlock), by store path so the
   # launcher doesn't depend on PATH inside the greetd-launched sway session.

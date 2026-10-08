@@ -46,19 +46,18 @@ inputs: [
     });
   })
 
-  # colibrì MoE streaming engine. Not in nixpkgs; pure C with no engine deps, so
-  # the CPU build is cheap — but the GPU tiers are ROCm/Vulkan builds Hydra
-  # never caches. The variants are spelled out HERE rather than .override'd
-  # inside the service module so that modules/services/colibri.nix, which selects
-  # one of these by name, and the prebuilt flake package resolve to the same
-  # store path.
+  (import ./local-packages.nix).overlay
+
+  # colibrì's GPU tiers: ROCm/Vulkan builds Hydra never caches. Spelled out
+  # HERE rather than .override'd inside the service module so that
+  # modules/services/colibri.nix, which selects one of these by name, and the
+  # prebuilt flake package resolve to the same store path.
   #
   # gfx1101 = Navi 32 = saturn's RX 7800 XT, and it is a compile-time target,
   # not llama.cpp's runtime HSA_OVERRIDE_GFX_VERSION — RDNA3 has WMMA matrix
   # cores, which is what rocWMMA needs to map the CUDA nvcuda::wmma kernels onto.
   (final: prev: {
-    colibri = prev.callPackage ../packages/colibri {};
-    colibri-rocm = prev.callPackage ../packages/colibri {
+    colibri-rocm = final.colibri.override {
       rocmSupport = true;
       rocmGpuTarget = "gfx1101";
     };
@@ -66,49 +65,9 @@ inputs: [
     # primitive ~35% faster than ROCm/HIP on RDNA4 — unmeasured on RDNA3, which
     # is exactly why both variants are built and A/B'd rather than one being
     # declared the winner up front (docs/saturn-llm-storage.md).
-    colibri-vulkan = prev.callPackage ../packages/colibri {
+    colibri-vulkan = final.colibri.override {
       vulkanSupport = true;
     };
-  })
-
-  (final: prev: {
-    cockatrice = prev.callPackage ../packages/cockatrice {};
-  })
-
-  # Not in nixpkgs. Tauri app, so it needs the webkitgtk stack — see
-  # ../packages/rhystic-tracker/default.nix.
-  (final: prev: {
-    rhystic-tracker = prev.callPackage ../packages/rhystic-tracker {};
-  })
-
-  # Not in nixpkgs; built from source (Go + embedded Svelte frontend).
-  # Bump version + hashes in ../packages/agentsview/default.nix.
-  (final: prev: {
-    agentsview = prev.callPackage ../packages/agentsview {};
-  })
-
-  # CLIProxyAPI's Prometheus exporter plugin, loaded by luna's cli-proxy-api.
-  (final: prev: {
-    cpa-prometheus = prev.callPackage ../packages/cpa-prometheus {};
-  })
-
-  # Pre-generated Moonlight <-> Sunshine pairing: the generator (a flake app,
-  # run by hand to rotate) and what ganymede seeds Moonlight.conf with. Then
-  # emrakul-games, which turns every paired host's apps into Home tiles.
-  # final.qt6: moonlight-seed links the same qtbase as moonlight-qt.
-  (final: prev: {
-    moonlight-pairing = prev.callPackage ../packages/moonlight-pairing {};
-    moonlight-seed = final.callPackage ../packages/moonlight-seed {};
-    emrakul-games = prev.callPackage ../packages/emrakul-games {};
-  })
-
-  # nixpkgs now ships its own agent-browser (0.27.0) which lags the version we
-  # track. Point pkgs.agent-browser at our local build so every consumer
-  # (development bundle, claude-code feature) resolves to the same store path
-  # and home-manager's buildEnv doesn't see two conflicting versions.
-  # Bump version + hash in ../packages/agent-browser/default.nix.
-  (final: prev: {
-    agent-browser = prev.callPackage ../packages/agent-browser {};
   })
 
   # Zed's Delta agent, as `zed-delta` (`delta` is git-delta).

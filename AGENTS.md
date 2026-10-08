@@ -44,7 +44,7 @@ The flake-parts plumbing lives in `modules/flake/`:
 | `modules/flake/hosts.nix` | Discovers hosts by reading `hosts/`, declares the `nixosHosts` option (hostname → `{ config; nixpkgs; address; }`) and builds `flake.nixosConfigurations` via `myLib.mkSystem` |
 | `modules/flake/deploy.nix` | Derives `flake.deploy` (deploy-rs nodes) from `nixosHosts`; driven by `just deploy` |
 | `modules/flake/systems.nix` | The `systems` list for `perSystem` |
-| `modules/flake/packages.nix` | `perSystem` packages (e.g. `eros-img`, `flash-eros`) |
+| `modules/flake/packages.nix` | `perSystem` packages: every `packages/<name>` plus images and tools (e.g. `eros-img`, `flash-eros`) |
 | `modules/flake/hm-modules.nix` | Typed accumulator options (`hmModules.default/features/bundles`) wired into `flake.homeManagerModules` once, to avoid freeform merge conflicts |
 
 The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
@@ -100,7 +100,7 @@ what makes `just deploy` able to reach a host at all).
 - **Port assignment**: `modules/base/portselector.nix` provides a `port-selector` NixOS option that deterministically assigns ports to services by hashing their names, with manual overrides via `set-ports`.
 - **Non-flake pins**: `npins/` for sources that don't have flake support.
 - **Gems**: `gems/` — Ruby gems used by scripts (locked with `bundle lock`).
-- **Packages**: `packages/` — custom packages (`agent-browser`, `agentsview`, `cockatrice`, `colibri`, `declaradroid`, `saturn-windows-image`, `steamlink`).
+- **Packages**: `packages/` — every `packages/<name>/default.nix` is `pkgs.<name>` on every host and a flake package (CI prebuilds it), with no list to edit: `overlays/local-packages.nix` discovers them the way `hosts.nix` discovers hosts. A folder named after a nixpkgs attr shadows it. Consumers use `pkgs.<name>`, never `callPackage ../packages/...`. `packages/rhystic-tracker/python/` is a small local python package set (UnityPy + its codec deps, none in nixpkgs) wired onto that app's PATH; each member is a flake output so `nix-update` can bump it.
 - **Zed extensions**: `packages/mkZedExtension.nix` builds an extension into Zed's `installed/<id>` layout (wasm32-wasip2 via fenix, tree-sitter parsers via `pkgsCross.wasi32`) so `modules/hm-features/zed.nix` can symlink it in. This is the only declarative route for extensions that aren't in Zed's registry — registry ones just go in the `extensions` list. Grammars are fetched at exactly the repo + revision the extension's own `extension.toml` declares, so they are never pinned separately.
 - **Scripts**: `scripts/` — Nix-defined scripts (`zellij_smart_start`, `sway_gaming`, `keep_awake`, etc.).
 

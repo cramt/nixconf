@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Emits a GitHub Actions matrix (one entry per flake package, per Linux system)
 # so each package is prebuilt on its own runner and pushed to cachix. The set of
-# things CI builds is exactly `nix flake show`'s packages — add a package to
-# modules/flake/packages.nix and it joins the build automatically.
+# things CI builds is exactly `nix flake show`'s packages — drop a folder into
+# packages/ (or add an output to modules/flake/packages.nix) and it joins.
 set -euo pipefail
 
 # system -> runner label

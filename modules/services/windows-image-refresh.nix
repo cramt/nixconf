@@ -47,7 +47,7 @@
           IOSchedulingClass = "idle";
         };
         script = ''
-          ${pkgs.callPackage ../../packages/saturn-windows-image {}}/bin/saturn-windows-image \
+          ${lib.getExe pkgs.saturn-windows-image} \
             --build-only --rebuild
         '';
       };

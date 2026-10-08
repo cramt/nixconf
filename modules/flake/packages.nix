@@ -1,6 +1,18 @@
 { inputs, ... }:
 {
-  perSystem = { pkgs, lib, system, ... }: {
+  perSystem = { pkgs, lib, system, ... }: let
+    saturnPkgs = inputs.self.nixosConfigurations.saturn.pkgs;
+    erosPkgs = inputs.self.nixosConfigurations.eros.pkgs;
+
+    # Every packages/<name> (overlays/local-packages.nix), taken from a host's
+    # overlaid package set rather than built here: the store paths are then
+    # byte-identical to what that host builds, so CI's prebuild is exactly what
+    # it substitutes. Also what `nix-update --flake <name>` reads meta.position
+    # off. Each package is exported once: x86 if it builds there, else aarch64.
+    localPackages = hostPkgs: keep:
+      lib.filterAttrs (_: keep)
+      (lib.genAttrs (import ../../overlays/local-packages.nix).names (n: hostPkgs.${n}));
+  in {
     packages = lib.optionalAttrs (system == "x86_64-linux") ({
       # `nix run .#flash-eros -- /dev/sdX` — flash a ready-to-boot eros SD card.
       # Builds the aarch64 SD image (substituted from cache), then bakes the
@@ -94,64 +106,25 @@
         cp ${crossed.config.system.build.sdImage}/sd-image/*.img $out
       '';
 
-      # `nix run .#saturn-windows-image -- --build-only` (then `-- --deploy-only
-      # /dev/…-part1`). Builds a debloated Windows 11 image in a headless raw-qemu
-      # VM (NVMe disk so it boots on saturn unchanged, no sysprep) and flashes it
-      # onto a partition. Ships Discord/1Password/Zen via winget at first logon;
-      # the AMD driver deliberately does NOT come from here (the build VM has no
-      # GPU) and arrives via Windows Update on first bare-metal boot.
-      #
-      # Uses any ISO it finds (~/Downloads included) before falling back to
-      # uupdump. Verified on 25H2 (26200): ConX is bypassed by forcing
-      # setup.exe /legacy, and the answer file's locale + edition are derived
-      # from install.wim rather than assumed — hardcoding en-US against
-      # "English International" (en-GB-only) media is what previously made
-      # Setup silently fall back to the interactive installer.
-      #
-      # Body lives in scripts/saturn-windows-image.sh; capture/deploy self-sudo.
-      # See its --help.
-      saturn-windows-image = pkgs.callPackage ../../packages/saturn-windows-image {};
-
-      # `nix run .#moonlight-pairing -- ~/.cache/moonlight-pairing/<new dir>`:
-      # new certs pairing ganymede's Moonlight with saturn's Sunshine. Re-run to
-      # rotate; where each output goes is in modules/gaming/moonlight.nix.
-      moonlight-pairing = pkgs.callPackage ../../packages/moonlight-pairing {};
-
       # NOTE: scripts/windows-vm.sh (boot the physical Windows partition in a VM)
       # is SHELVED — Windows aborts very early on the synthesized disk topology
       # with no BSOD/log to diagnose. Kept in-tree as a reference but deliberately
       # NOT exposed as a flake app until someone kernel-debugs the early-boot abort.
 
-      # Custom / from-source derivations that Hydra never caches (overlay
-      # patches, ROCm/CUDA builds). Pulled straight from saturn's overlaid
-      # package set so the store paths are byte-identical to what the x86
-      # hosts build. CI prebuilds these and pushes them to cachix so the
-      # toplevel builds substitute instead of compiling for hours.
+      # Overlay patches and from-source GPU builds Hydra never caches, pulled
+      # from saturn's package set for the same reason as localPackages.
       inherit
-        (inputs.self.nixosConfigurations.saturn.pkgs)
+        (saturnPkgs)
         cosmic-comp
         # colibrì's GPU tiers. The HIP build compiles backend_cuda.cu through
         # hipcc for gfx1101 and the Vulkan one runs glslc over the compute
         # shaders — neither is anything Hydra has, and saturn is a desktop we'd
-        # rather not have compiling HIP kernels. The plain CPU `colibri` is
-        # seconds to build and deliberately left out.
+        # rather not have compiling HIP kernels.
         colibri-rocm
         colibri-vulkan
         ;
-
-      # Exposed so `nix-update --flake <name>` can locate them (it reads the
-      # package's meta.position off the flake output). Bumped by `just
-      # update_packages`. These are our locally-built overrides of packages
-      # nixpkgs either lacks or lags on.
-      inherit
-        (inputs.self.nixosConfigurations.saturn.pkgs)
-        agentsview
-        agent-browser
-        cockatrice
-        cpa-prometheus
-        rhystic-tracker
-        ;
     }
+    // localPackages saturnPkgs (p: lib.meta.availableOn saturnPkgs.stdenv.hostPlatform p)
     # Same reason, one layer down: UnityPy and the codec packages it needs are
     # hand-pinned PyPI version + hash, so each needs a flake attr for nix-update
     # to read meta.position off. Nothing installs them directly — they exist so
@@ -160,12 +133,14 @@
     # override/overrideDerivation onto the set it returns and those would then
     # show up as flake packages of their own.
     // import ../../packages/rhystic-tracker/python {
-      inherit (inputs.self.nixosConfigurations.saturn.pkgs) python3Packages;
+      inherit (saturnPkgs) python3Packages;
     })
-    // lib.optionalAttrs (system == "aarch64-linux") {
-      # Steam Link client — aarch64 only because it's a prebuilt arm64 binary.
-      steamlink = pkgs.callPackage ../../packages/steamlink {};
-
+    // lib.optionalAttrs (system == "aarch64-linux") (
+    # What x86 can't build (steamlink, a prebuilt arm64 binary), from eros,
+    # the host that runs it.
+    localPackages erosPkgs (p: !lib.meta.availableOn saturnPkgs.stdenv.hostPlatform p
+      && lib.meta.availableOn erosPkgs.stdenv.hostPlatform p)
+    // {
       # nixos-raspberrypi exposes the SD image at config.system.build.sdImage
       # (instead of the upstream installer's `images.sd-card` path). aarch64
       # only — eros is a Raspberry Pi, so building this on x86 would emulate.
@@ -182,6 +157,6 @@
       mercury-img = pkgs.runCommand "mercury-img" {} ''
         cp ${inputs.self.nixosConfigurations.mercury.config.system.build.sdImage}/sd-image/*.img $out
       '';
-    };
+    });
   };
 }

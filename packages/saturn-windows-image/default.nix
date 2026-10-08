@@ -1,10 +1,19 @@
-# Build a debloated, app-provisioned Windows 11 image in a headless qemu VM and
-# flash it onto a physical partition. Body lives in
-# ../../scripts/saturn-windows-image.sh — see its header comment and --help.
+# `nix run .#saturn-windows-image -- --build-only` (then `-- --deploy-only
+# /dev/…-part1`). Builds a debloated Windows 11 image in a headless raw-qemu
+# VM (NVMe disk so it boots on saturn unchanged, no sysprep) and flashes it
+# onto a partition. Ships Discord/1Password/Zen via winget at first logon;
+# the AMD driver deliberately does NOT come from here (the build VM has no
+# GPU) and arrives via Windows Update on first bare-metal boot.
 #
-# Extracted from modules/flake/packages.nix so a NixOS module can depend on it
-# too: that file also pulls attrs out of nixosConfigurations.saturn.pkgs, so a
-# module reaching for inputs.self.packages would risk infinite recursion.
+# Uses any ISO it finds (~/Downloads included) before falling back to
+# uupdump. Verified on 25H2 (26200): ConX is bypassed by forcing
+# setup.exe /legacy, and the answer file's locale + edition are derived
+# from install.wim rather than assumed — hardcoding en-US against
+# "English International" (en-GB-only) media is what previously made
+# Setup silently fall back to the interactive installer.
+#
+# Body lives in ../../scripts/saturn-windows-image.sh; capture/deploy
+# self-sudo. See its --help.
 {
   lib,
   writeShellApplication,

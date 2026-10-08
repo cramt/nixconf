@@ -2,7 +2,7 @@
 let
   # Steam Link (patched, aarch64). Kept here for its udev rules + uinput
   # fragment; the launcher itself runs the copy home-manager installs.
-  steamlink = pkgs.callPackage ../../packages/steamlink {};
+  inherit (pkgs) steamlink;
 in
 {
   imports = [

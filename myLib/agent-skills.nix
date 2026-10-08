@@ -118,5 +118,5 @@ in {
     text = builtins.readFile "${skillsRoot}/dm-me/dm-me.sh";
   };
 
-  agent-browser = pkgs.callPackage ../packages/agent-browser {};
+  inherit (pkgs) agent-browser;
 }
