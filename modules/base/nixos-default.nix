@@ -87,6 +87,17 @@
       # orphaned puppeteer chrome profiles from runs weeks earlier.
       boot.tmp.cleanOnBoot = true;
 
+      # Chromium reserves terabytes of address space (V8 pointer cages), so one
+      # crashing headless renderer under agent-browser made systemd-coredump
+      # chew CPU for its full 5-minute timeout, peak 13.5G RAM and write 45G
+      # to a 94%-full root — then the next crash started another. With these
+      # caps an oversized process only gets a journal entry, no core.
+      systemd.coredump.settings.Coredump = {
+        ProcessSizeMax = "2G";
+        ExternalSizeMax = "2G";
+        MaxUse = "5G";
+      };
+
       programs.nix-ld.enable = true;
       nixpkgs = {
         overlays = import ../../overlays inputs;
