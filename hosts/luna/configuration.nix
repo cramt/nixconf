@@ -148,6 +148,9 @@
   # Configure console keymap
   console.keyMap = "dk-latin1";
 
+  # `just on=luna deploy` builds the whole fleet here, eros's aarch64 bits included.
+  boot.binfmt.emulatedSystems = ["aarch64-linux"];
+
   nix.settings = let
     caches = ["https://cache.nixos.org/" "http://192.168.0.107:5000/" "http://192.168.0.106:5000/"];
   in {
@@ -156,6 +159,7 @@
     # trusted-substituters = caches;
     # substituters = caches;
     experimental-features = ["nix-command" "flakes"];
+    extra-platforms = config.boot.binfmt.emulatedSystems;
   };
   environment.systemPackages = [
     pkgs.ghostty.terminfo

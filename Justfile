@@ -7,9 +7,15 @@ add_foundry_zips:
 # pins the machine for the whole deploy — fine on saturn, miserable on a laptop
 # you're still using. jobs * cores is the ceiling; the daemon honours both
 # because cramt is a trusted-user. Bump either for a one-off:
-# `just jobs=8 cores=8 deploy luna`.
-jobs := `nproc | awk '{n = int($1 / 4); print (n < 1 ? 1 : n)}'`
+# `just jobs=8 cores=8 deploy luna`. Empty jobs means nproc/4 of whichever
+# machine ends up building, which with `on=` isn't this one.
+jobs := ""
 cores := "2"
+
+# Run the deploy from another host: `just on=luna deploy` ships the flake to
+# luna and runs the deploy there, so luna builds and pushes closures out. Spares
+# the machine you're on the CPU, and the uplink when luna is a target anyway.
+on := ""
 
 # Build the current config and activate it on every fleet host that answers on
 # the network right now. Powered-off hosts are reported and skipped, not fatal,
@@ -45,6 +51,28 @@ deploy *hosts:
       # only `infra` named: an empty $want would otherwise mean every host
       if [ -n "{{hosts}}" ] && [ -z "$want" ]; then exit 0; fi
     fi
+
+    # infra already ran here (it executes on luna regardless), so the remote run
+    # gets an explicit host list: an empty one would mean "everything + infra".
+    if [ -n "{{on}}" ] && [ "{{on}}" != "$(hostname)" ]; then
+      addr=$(awk -v h="{{on}}" '$1 == h { print $2 }' <<<"$nodes")
+      [ -n "$addr" ] || { echo "unknown host for on=: {{on}}" >&2; exit 1; }
+      [ -n "$want" ] || want=$(cut -d' ' -f1 <<<"$nodes" | tr '\n' ' ')
+      # Source tree (uncommitted edits included) plus every locked input, so
+      # the remote eval is this one exactly, no git checkout needed over there.
+      # Not `flake archive --to`: Lix's has no --no-check-sigs, and fetched
+      # inputs are unsigned. Root over ssh owns the box anyway (see infra.nix).
+      tree=$(nix flake archive --json --dry-run .)
+      src=$(jq -r .path <<<"$tree")
+      nix copy --no-check-sigs --to "ssh-ng://root@$addr" $(jq -r '.. | .path? // empty' <<<"$tree")
+      # -A: the remote deploy reaches the fleet as root with our keys, same as
+      # from here. on= cleared so it can't bounce again. git because Lix shells
+      # out to it for eval-time fetchGit (niri's cargo git deps), and root's
+      # PATH on a server has none.
+      tty=(); if [ -t 0 ] && [ -t 1 ]; then tty=(-t); fi
+      exec ssh -A "${tty[@]}" "root@$addr" "cd $src && nix shell --inputs-from . nixpkgs#just nixpkgs#git --command \
+        just on= jobs={{jobs}} cores={{cores}} deploy $want"
+    fi
     wanted() { [ -z "$want" ] && return 0; for w in $want; do [ "$w" = "$1" ] && return 0; done; return 1; }
 
     # Probe over SSH rather than ping: a host can answer ICMP while sshd is down
@@ -74,10 +102,13 @@ deploy *hosts:
       exit 1
     fi
 
+    jobs="{{jobs}}"
+    [ -n "$jobs" ] || jobs=$(nproc | awk '{n = int($1 / 4); print (n < 1 ? 1 : n)}')
+
     # --inputs-from . pins the CLI to our locked nixpkgs, the same one the
     # activation wrappers are built from, rather than the ambient registry.
     exec nix run --inputs-from . nixpkgs#deploy-rs -- --targets "${targets[@]}" -- \
-      --fallback --max-jobs {{jobs}} --cores {{cores}}
+      --fallback --max-jobs "$jobs" --cores {{cores}}
 
 # Runs as cramt so it reads the server's ~/.t3 state, and by absolute path
 # because a non-interactive ssh shell has no user profile on PATH.
