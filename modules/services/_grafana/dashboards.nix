@@ -177,6 +177,21 @@
   realFs = ''fstype!~"tmpfs|ramfs|overlay|squashfs|fuse.*|vfat|nsfs", mountpoint!~"/nix/store|/var/lib/.*"'';
   # remote_write from every agent lands here, so it dwarfs real traffic.
   realVhost = ''host!="metrics.${domain}"'';
+
+  # One series per host whatever the vendor: nvidia from nvidia_gpu_exporter,
+  # amdgpu from node_exporter's drm and hwmon collectors. hwmon names chips by
+  # PCI path, so the amdgpu sensors are picked out by joining on chip_name.
+  gpuByHost = {
+    nvidia,
+    amd,
+  }: "(${nvidia}) or (${amd})";
+  amdgpuHwmon = metric: ''${metric} * on (instance, chip) group_left node_hwmon_chip_names{chip_name="amdgpu"}'';
+  gpuQuery = args: [
+    {
+      expr = gpuByHost args;
+      legend = "{{instance}}";
+    }
+  ];
 in {
   fleet = dashboard {
     uid = "fleet";
@@ -295,6 +310,47 @@ in {
             legend = "{{instance}} tx";
           }
         ];
+      })
+      (timeseries {
+        title = "GPU busy";
+        description = "NVIDIA and AMD cards. Intel iGPUs and the Pi's vc4 don't report.";
+        unit = "percent";
+        min = 0;
+        max = 100;
+        queries = gpuQuery {
+          nvidia = "100 * max by (instance) (nvidia_smi_utilization_gpu_ratio)";
+          amd = "max by (instance) (node_drm_gpu_busy_percent)";
+        };
+      })
+      (timeseries {
+        title = "VRAM used";
+        unit = "percent";
+        min = 0;
+        max = 100;
+        queries = gpuQuery {
+          nvidia = "100 * sum by (instance) (nvidia_smi_memory_used_bytes) / sum by (instance) (nvidia_smi_memory_total_bytes)";
+          amd = "100 * sum by (instance) (node_drm_memory_vram_used_bytes) / sum by (instance) (node_drm_memory_vram_size_bytes)";
+        };
+      })
+      (timeseries {
+        title = "GPU temperature";
+        description = "Edge temperature on AMD (hwmon temp1); junction runs hotter.";
+        unit = "celsius";
+        queries = gpuQuery {
+          nvidia = "max by (instance) (nvidia_smi_temperature_gpu)";
+          amd = "max by (instance) (${amdgpuHwmon ''node_hwmon_temp_celsius{sensor="temp1"}''})";
+        };
+      })
+      (timeseries {
+        title = "GPU power";
+        unit = "watt";
+        min = 0;
+        queries = gpuQuery {
+          nvidia = "sum by (instance) (nvidia_smi_power_draw_watts)";
+          # Older amdgpu exposes power1_average, newer power1_input; max picks
+          # whichever this kernel has without double counting.
+          amd = "max by (instance) (${amdgpuHwmon ''max by (instance, chip, sensor) ({__name__=~"node_hwmon_power_(average_)?watt"})''})";
+        };
       })
     ];
   };

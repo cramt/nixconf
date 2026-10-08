@@ -181,7 +181,10 @@
           # logind: seats and sessions, i.e. was a human actually at the machine.
           # processes: kernel-level process/thread counts, cheap context for the
           # per-binary detail process-exporter provides.
-          enabledCollectors = ["systemd" "logind" "processes"];
+          # drm: amdgpu busy % and VRAM. Temp and power already come from the
+          # default hwmon collector, so AMD needs no exporter of its own (nvidia
+          # does, see hardware/nvidia.nix). Other drivers it silently skips.
+          enabledCollectors = ["systemd" "logind" "processes" "drm"];
           extraFlags = ["--collector.systemd.enable-restarts-metrics"];
         };
 
