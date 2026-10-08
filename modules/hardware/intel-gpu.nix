@@ -43,40 +43,54 @@
             if (p[2] in kinds) add("intel_gpu_engine_" kinds[p[2]] "_ratio", "engine=\"" eng "\"", v / 100)
           }
         }
-        tmp = "${dir}/.intel_gpu.prom"
+        # Not *.prom, or a scrape mid-write would read it as a second file.
+        tmp = "${dir}/intel_gpu.prom.tmp"
         for (m in out) { print "# TYPE " m " gauge" > tmp; printf "%s", out[m] > tmp }
         close(tmp)
-        system("mv -f " tmp " ${dir}/intel_gpu.prom")
+        system("${pkgs.coreutils}/bin/mv -f " tmp " ${dir}/intel_gpu.prom")
       }
       function add(m, labels, v) { out[m] = out[m] m (labels == "" ? "" : "{" labels "}") " " v "\n" }
     '';
   in {
     options.myNixOS.intel-gpu.enable = lib.mkEnableOption "myNixOS.intel-gpu";
 
-    config = lib.mkIf (cfg.enable && config.myNixOS.services.metrics.exporter.enable) {
-      systemd.services.intel-gpu-metrics = {
-        description = "intel_gpu_top -> node_exporter textfile";
-        wantedBy = ["multi-user.target"];
-        script = ''
-          ${pkgs.intel-gpu-tools}/bin/intel_gpu_top -c -s ${toString periodMs} \
-            | ${pkgs.gawk}/bin/awk -f ${toProm}
-        '';
-        serviceConfig = {
-          DynamicUser = true;
-          # The i915 PMU and RAPL perf events are all it reads; perf_event_paranoid
-          # is 2, so without this it gets nothing.
-          AmbientCapabilities = ["CAP_PERFMON"];
-          CapabilityBoundingSet = ["CAP_PERFMON"];
-          # Removed on stop, so a dead bridge reads as missing data rather than
-          # its last sample frozen forever.
-          RuntimeDirectory = "intel-gpu-metrics";
-          RuntimeDirectoryMode = "0755";
-          Restart = "always";
-          RestartSec = 30;
+    config = lib.mkMerge [
+      (lib.mkIf cfg.enable {
+        # btop reads the same i915 PMU, so it needs CAP_PERFMON too. /run/wrappers/bin
+        # comes first in PATH, so this shadows the home-manager btop while still
+        # reading its ~/.config.
+        security.wrappers.btop = {
+          owner = "root";
+          group = "root";
+          capabilities = "cap_perfmon+ep";
+          source = lib.getExe pkgs.btop;
         };
-      };
+      })
+      (lib.mkIf (cfg.enable && config.myNixOS.services.metrics.exporter.enable) {
+        systemd.services.intel-gpu-metrics = {
+          description = "intel_gpu_top -> node_exporter textfile";
+          wantedBy = ["multi-user.target"];
+          script = ''
+            ${pkgs.intel-gpu-tools}/bin/intel_gpu_top -c -s ${toString periodMs} \
+              | ${pkgs.gawk}/bin/awk -f ${toProm}
+          '';
+          serviceConfig = {
+            DynamicUser = true;
+            # The i915 PMU and RAPL perf events are all it reads; perf_event_paranoid
+            # is 2, so without this it gets nothing.
+            AmbientCapabilities = ["CAP_PERFMON"];
+            CapabilityBoundingSet = ["CAP_PERFMON"];
+            # Removed on stop, so a dead bridge reads as missing data rather than
+            # its last sample frozen forever.
+            RuntimeDirectory = "intel-gpu-metrics";
+            RuntimeDirectoryMode = "0755";
+            Restart = "always";
+            RestartSec = 30;
+          };
+        };
 
-      services.prometheus.exporters.node.extraFlags = ["--collector.textfile.directory=${dir}"];
-    };
+        services.prometheus.exporters.node.extraFlags = ["--collector.textfile.directory=${dir}"];
+      })
+    ];
   };
 }
