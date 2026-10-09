@@ -49,7 +49,7 @@ The flake-parts plumbing lives in `modules/flake/`:
 
 The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`, `mercury`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
 
-A host only needs `hosts/<name>/host.nix` when it deviates from that; it takes `nixpkgs` (build from a vendor cache, as `eros` does with `nixpkgs-rpi`) and `address` (when DNS can't resolve the bare hostname).
+A host only needs `hosts/<name>/host.nix` when it deviates from that; it takes `nixpkgs` (build from a vendor cache, as `eros` does with `nixpkgs-rpi`), `address` (when DNS can't resolve the bare hostname), and `builder` (join the build pool, below).
 
 ### myLib (`myLib/default.nix`)
 
@@ -85,7 +85,8 @@ Each host in `hosts/<name>/` has:
 - `configuration.nix` — top-level NixOS config; enables `myNixOS.*` options
 - `home.nix` — Home Manager config for the user; enables `myHomeManager.*` options. Picked up automatically as `home-users.cramt.userConfig`
 - `hardware-configuration.nix` — auto-generated hardware config
-- `host.nix` — *optional* flake-level knobs (`nixpkgs`, `address`); only `eros` has one
+- `host.nix` — *optional* flake-level knobs (`nixpkgs`, `address`, `builder`)
+- `ssh_host_ed25519_key.pub` — the host key; required for build pool members
 - `monitors.nix` — monitor layout (used for kernel `video=` params and wayland config)
 - `ssh.pub.nix` — host SSH public key
 
@@ -98,6 +99,7 @@ what makes `just deploy` able to reach a host at all).
 - **Theming**: `stylix` (dark theme, Iosevka Nerd Font). Configured in `modules/bundles/nixos-general.nix`. The `stylixAsset` option accepts an image or `.mp4` (first frame is extracted).
 - **Secrets**: `opnix` (1Password-based). A host opts in with `myNixOS.opnix-secrets.enable = true` (it has `/etc/opnix-token`); each module declares the `services.onepassword-secrets.secrets` it reads behind its own enable, so a host renders only what it runs. `modules/security/opnix-secrets.nix` holds just the plumbing plus the secrets home-manager reads.
 - **Port assignment**: `modules/base/portselector.nix` provides a `port-selector` NixOS option that deterministically assigns ports to services by hashing their names, with manual overrides via `set-ports`.
+- **Build pool**: hosts whose `host.nix` sets `builder = { maxJobs; ... }` offload builds to each other over `ssh-ng://nix-ssh@`, authenticating with their SSH host keys (`modules/networking/build-pool.nix`). A timer probes the peers every 15s and the daemon reads `/run/build-pool/machines`, so powered-off members cost nothing: Lix retries a dead builder on every derivation. Members today: saturn, luna, ganymede. To add one, commit `ssh-keyscan -t ed25519 <host>` as its `ssh_host_ed25519_key.pub` and give it a `builder`.
 - **Non-flake pins**: `npins/` for sources that don't have flake support.
 - **Gems**: `gems/` — Ruby gems used by scripts (locked with `bundle lock`).
 - **Packages**: `packages/` — every `packages/<name>/default.nix` is `pkgs.<name>` on every host and a flake package (CI prebuilds it), with no list to edit: `overlays/local-packages.nix` discovers them the way `hosts.nix` discovers hosts. A folder named after a nixpkgs attr shadows it. Consumers use `pkgs.<name>`, never `callPackage ../packages/...`. `packages/rhystic-tracker/python/` is a small local python package set (UnityPy + its codec deps, none in nixpkgs) wired onto that app's PATH; each member is a flake output so `nix-update` can bump it.

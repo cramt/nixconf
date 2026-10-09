@@ -1,9 +1,9 @@
 {inputs}: let
   outputs = inputs.self.outputs;
 in {
-  mkSystem = { name, config, nixpkgs ? inputs.nixpkgs, ... }: nixpkgs.lib.nixosSystem {
+  mkSystem = { name, config, nixpkgs ? inputs.nixpkgs, buildPool ? {}, ... }: nixpkgs.lib.nixosSystem {
     specialArgs = {
-      inherit inputs outputs;
+      inherit inputs outputs buildPool;
       # The host's directory, so modules can derive per-host paths (e.g.
       # bundles.users pointing at hosts/<name>/home.nix) instead of every host
       # repeating them. A specialArg rather than config.networking.hostName so

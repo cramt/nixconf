@@ -9,6 +9,12 @@ let
   );
 
   knobsFor = name: hostsDir + "/${name}/host.nix";
+
+  # Resolved here rather than by peeking at other hosts' nixosConfigurations,
+  # which would make every host evaluate every other host.
+  buildPool = lib.mapAttrs
+    (_: host: host.builder // { inherit (host) address; })
+    (lib.filterAttrs (_: host: host.builder != null) config.nixosHosts);
 in
 {
   options.nixosHosts = lib.mkOption {
@@ -29,6 +35,38 @@ in
           default = name;
           description = "Where deploy-rs reaches this host. Bare hostnames resolve over the LAN's DNS; override if one can't.";
         };
+        builder = lib.mkOption {
+          type = lib.types.nullOr (lib.types.submodule {
+            options = {
+              maxJobs = lib.mkOption {
+                type = lib.types.ints.positive;
+                description = "Concurrent builds the rest of the pool may run here.";
+              };
+              speedFactor = lib.mkOption {
+                type = lib.types.ints.positive;
+                default = 1;
+                description = "Relative per-job speed; Nix prefers the higher one among equally loaded builders.";
+              };
+              systems = lib.mkOption {
+                type = lib.types.listOf lib.types.str;
+                default = [ "x86_64-linux" ];
+              };
+              features = lib.mkOption {
+                type = lib.types.listOf lib.types.str;
+                default = [ "nixos-test" "benchmark" "big-parallel" "kvm" ];
+              };
+              # Doubles as the client identity: the daemon (root) authenticates
+              # with the host key, so there's no builder keypair to provision.
+              hostKey = lib.mkOption {
+                type = lib.types.str;
+                default = lib.fileContents (hostsDir + "/${name}/ssh_host_ed25519_key.pub");
+                description = "The host's ed25519 SSH host public key.";
+              };
+            };
+          });
+          default = null;
+          description = "Join the build pool: offload builds to the other members and accept theirs. null = not a member.";
+        };
       };
     }));
     default = {};
@@ -43,7 +81,7 @@ in
         (import (knobsFor name) { inherit inputs; }));
 
     flake.nixosConfigurations = lib.mapAttrs
-      (name: host: myLib.mkSystem (host // { inherit name; }))
+      (name: host: myLib.mkSystem (host // { inherit name buildPool; }))
       config.nixosHosts;
   };
 }

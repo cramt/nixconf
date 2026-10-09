@@ -91,7 +91,8 @@ no list to edit. Everything is derived from the folder name:
 | deploy address | `<name>`, resolved over LAN DNS |
 
 Add `hosts/<name>/host.nix` only to deviate — it takes `nixpkgs` (build from a vendor
-cache, as `eros` does) and `address` (if DNS can't find the host). See
+cache, as `eros` does), `address` (if DNS can't find the host) and `builder` (join
+the distributed build pool; needs `ssh_host_ed25519_key.pub` next to it). See
 `hosts/eros/host.nix`.
 
 ### Key Subsystems
