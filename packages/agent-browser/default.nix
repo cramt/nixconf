@@ -23,7 +23,7 @@
 #     "https://registry.npmjs.org/agent-browser/-/agent-browser-<VERSION>.tgz" \
 #     | xargs nix hash to-sri --type sha256
 let
-  version = "0.38.2";
+  version = "0.39.0";
   binaryName =
     {
       x86_64-linux = "agent-browser-linux-x64";
@@ -38,7 +38,7 @@ in
 
     src = fetchurl {
       url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-      hash = "sha256-K7HW5GYLKhCckSyLtVL3JxJdvNaBxtHu/Br1c7RUbEk=";
+      hash = "sha256-8vo7KbFOw1Z1r0Gv5ChPrM0TVDTxiYa/wyJs6TTth6w=";
     };
 
     nativeBuildInputs = [autoPatchelfHook makeWrapper];
