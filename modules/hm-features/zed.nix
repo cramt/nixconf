@@ -1,8 +1,12 @@
 { ... }: {
   hmModules.features.zed = { config, lib, pkgs, ... }: let
     rubyGems = (import ../../gems/default.nix) { inherit pkgs; };
-    # JETLS formats by shelling out to runic, which nixpkgs doesn't package
+    # JETLS formats by shelling out to runic, which nixpkgs doesn't package.
+    # It runs formatters with its own JULIA_LOAD_PATH/JULIA_DEPOT_PATH, and a
+    # devshell may set JULIA_PROJECT; the withPackages wrapper defers to all of
+    # those, which drops Runic off the load path, so clear them first.
     runic = pkgs.writeShellScriptBin "runic" ''
+      unset JULIA_LOAD_PATH JULIA_DEPOT_PATH JULIA_PROJECT
       exec ${pkgs.julia.withPackages ["Runic"]}/bin/julia --startup-file=no -m Runic "$@"
     '';
   in {
@@ -23,6 +27,12 @@
         pkgs.zed-spade
         pkgs.zed-vixen
       ]);
+
+      # On PATH rather than via JETLS's `formatter.custom`: JETLS (2026-10-08)
+      # drops the settings from its initial workspace/configuration and only
+      # applies them after a didChangeConfiguration, so after every start it
+      # falls back to its default "Runic" preset, which looks up `runic` on PATH
+      home.packages = [runic];
 
       programs.zed-editor = {
         enable = true;
@@ -85,10 +95,6 @@
             };
             ruby-lsp.binary.path = lib.getExe rubyGems.ruby-lsp;
             rubocop.binary.path = lib.getExe rubyGems.rubocop;
-            jetls.settings.formatter.custom = {
-              executable = lib.getExe runic;
-              executable_range = lib.getExe runic;
-            };
           };
 
           project_panel.dock = "left";
