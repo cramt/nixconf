@@ -26,7 +26,7 @@
 
       programs.zed-editor = {
         enable = true;
-        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "scala" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin" "styx" "julia"];
+        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "scala" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin" "styx" "julia" "vhdl"];
         mutableUserSettings = false;
         mutableUserKeymaps = false;
         mutableUserTasks = false;
@@ -67,6 +67,12 @@
           languages = {
             Nix.language_servers = ["nil"];
             Ruby.language_servers = ["ruby-lsp" "rubocop"];
+            # vhdl_ls has no documentFormattingProvider; vhdl_lang ships alongside it
+            # and formats a path to stdout, so /dev/stdin makes it a pipe filter
+            VHDL.formatter.external = {
+              command = lib.getExe' pkgs.vhdl-ls "vhdl_lang";
+              arguments = ["--format" "/dev/stdin"];
+            };
           };
           lsp = {
             rust-analyzer.binary.path = lib.getExe pkgs.rust-analyzer;
