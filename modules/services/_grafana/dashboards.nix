@@ -905,4 +905,276 @@ in {
       })
     ];
   };
+
+  # progress-engine's insight driver (modules/hm-features/insight-driver.nix):
+  # what the quota gate saw, when batches ran, and what they bought. Built to
+  # tune the gate's minSlack/minFiveHour against what a batch really burns.
+  insight = let
+    # Stats here read the latest value as an instant query. These series only
+    # change per gate check or batch, and a narrow panel's range step over 7
+    # days is coarser than prometheus' 5m lookback, so a series younger than
+    # one step renders "No data".
+    latest = args: stat (args // {queries = map (q: q // {instant = true;}) args.queries;});
+
+    # A threshold drawn as a dashed line next to the value it gates.
+    threshold = name: {
+      matcher = {
+        id = "byName";
+        options = name;
+      };
+      properties = [
+        {
+          id = "custom.lineStyle";
+          value = {
+            fill = "dash";
+            dash = [10 10];
+          };
+        }
+        {
+          id = "color";
+          value = {
+            mode = "fixed";
+            fixedColor = "red";
+          };
+        }
+      ];
+    };
+  in dashboard {
+    uid = "insight-driver";
+    title = "Insight driver";
+    time = "now-7d";
+    panels = [
+      (latest {
+        title = "Running";
+        w = 4;
+        queries = [{expr = "insight_driver_running";}];
+        options.textMode = "value";
+        fieldConfig.defaults.mappings = [
+          {
+            type = "value";
+            options = {
+              "0" = {
+                text = "idle";
+                color = "text";
+              };
+              "1" = {
+                text = "batch running";
+                color = "green";
+              };
+            };
+          }
+        ];
+      })
+      (latest {
+        title = "Last gate check";
+        w = 4;
+        unit = "dateTimeFromNow";
+        queries = [{expr = "insight_driver_gate_timestamp_seconds * 1000";}];
+        options.textMode = "value";
+      })
+      (latest {
+        title = "Gate surplus";
+        description = "Pool 7-day surplus over even pace at the last check; a batch needs the threshold.";
+        w = 4;
+        queries = [{expr = "insight_driver_gate_surplus - insight_driver_gate_min_surplus";}];
+        options.textMode = "value";
+        fieldConfig.defaults = {
+          decimals = 2;
+          thresholds = {
+            mode = "absolute";
+            steps = [
+              {
+                color = "red";
+                value = null;
+              }
+              {
+                color = "green";
+                value = 0;
+              }
+            ];
+          };
+        };
+      })
+      (latest {
+        title = "Milestone abilities";
+        unit = "none";
+        w = 4;
+        queries = [
+          {
+            expr = "insight_driver_milestone_abilities";
+            legend = "{{milestone}}";
+          }
+        ];
+      })
+      (latest {
+        title = "Spent";
+        w = 4;
+        unit = "currencyUSD";
+        queries = [{expr = "insight_driver_lifetime_cost_usd";}];
+        options.textMode = "value";
+      })
+      (latest {
+        title = "Failures in a row";
+        description = "Two stops the driver until a human looks.";
+        w = 4;
+        queries = [{expr = "insight_driver_consecutive_failures";}];
+        options.textMode = "value";
+        fieldConfig.defaults.thresholds = {
+          mode = "absolute";
+          steps = [
+            {
+              color = "green";
+              value = null;
+            }
+            {
+              color = "orange";
+              value = 1;
+            }
+            {
+              color = "red";
+              value = 2;
+            }
+          ];
+        };
+      })
+      (timeseries {
+        title = "7-day surplus vs threshold";
+        description = "What's left minus the share of the window still to run, summed over the pool, at each gate check.";
+        queries = [
+          {
+            expr = "insight_driver_gate_surplus";
+            legend = "surplus";
+          }
+          {
+            expr = "insight_driver_gate_min_surplus";
+            legend = "threshold";
+          }
+        ];
+        fieldConfig.overrides = [(threshold "threshold")];
+      })
+      (timeseries {
+        title = "5-hour headroom vs threshold";
+        unit = "percentunit";
+        min = 0;
+        max = 1;
+        queries = [
+          {
+            expr = "insight_driver_gate_five_hour";
+            legend = "best usable 5-hour";
+          }
+          {
+            expr = "insight_driver_gate_min_five_hour";
+            legend = "threshold";
+          }
+        ];
+        fieldConfig.overrides = [(threshold "threshold")];
+      })
+      (timeseries {
+        title = "Quota while batches run";
+        description = "The shaded steps are batches; the drop in each quota line across one is what a batch costs.";
+        unit = "percentunit";
+        min = 0;
+        max = 1;
+        w = 24;
+        h = 10;
+        queries = [
+          {
+            expr = "cliproxy_quota_remaining_ratio";
+            legend = "{{email}} {{window}}";
+          }
+          {
+            expr = "insight_driver_running";
+            legend = "batch running";
+          }
+        ];
+        fieldConfig.overrides = [
+          {
+            matcher = {
+              id = "byName";
+              options = "batch running";
+            };
+            properties = [
+              {
+                id = "custom.fillOpacity";
+                value = 15;
+              }
+              {
+                id = "custom.lineWidth";
+                value = 0;
+              }
+              {
+                id = "custom.lineInterpolation";
+                value = "stepAfter";
+              }
+              {
+                id = "color";
+                value = {
+                  mode = "fixed";
+                  fixedColor = "green";
+                };
+              }
+            ];
+          }
+        ];
+      })
+      (timeseries {
+        title = "Milestone progress";
+        queries = [
+          {
+            expr = "insight_driver_milestone_abilities";
+            legend = "{{milestone}}";
+          }
+        ];
+      })
+      (timeseries {
+        title = "Spend";
+        unit = "currencyUSD";
+        queries = [
+          {
+            expr = "insight_driver_lifetime_cost_usd";
+            legend = "lifetime";
+          }
+        ];
+      })
+      (latest {
+        title = "Last batch";
+        w = 24;
+        queries = [
+          {
+            expr = "insight_driver_last_batch";
+            legend = "batch";
+          }
+          {
+            expr = "insight_driver_last_batch_cost_usd";
+            legend = "cost $";
+          }
+          {
+            expr = "insight_driver_last_batch_duration_seconds / 3600";
+            legend = "hours";
+          }
+          {
+            expr = "insight_driver_last_batch_abilities_gained";
+            legend = "gained {{scope}}";
+          }
+          {
+            expr = "insight_driver_last_batch_commits";
+            legend = "commits";
+          }
+        ];
+        fieldConfig.defaults.decimals = 1;
+      })
+      (bars {
+        title = "Batches by outcome";
+        w = 24;
+        h = 6;
+        queries = [
+          {
+            expr = "insight_driver_batches_total";
+            legend = "{{outcome}}";
+            instant = true;
+          }
+        ];
+      })
+    ];
+  };
 }
