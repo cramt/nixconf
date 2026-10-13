@@ -27,17 +27,16 @@
             "monitor.bluez.properties" = {
               "bluez5.codecs" = [ "aac" "sbc_xq" "sbc" ];
             };
-            "monitor.bluez.rules" = [
-              {
-                matches = [ { "device.name" = "~bluez_card.*"; } ];
-                actions.update-props = {
-                  # Don't auto-switch to HFP/HSP when an app opens the mic.
-                  # The WH-1000XM4 drops the link on the A2DP->HFP transition,
-                  # causing random disconnect/reconnect cycles.
-                  "bluez5.autoswitch-profile" = false;
-                };
-              }
-            ];
+            # Don't auto-switch to HFP/HSP when an app opens the mic. The
+            # WH-1000XM4 drops the link on the A2DP->HFP transition, and HFP
+            # here means CVSD (8 kHz mono), so a call app grabbing the mic
+            # turned all output into tinny echoey phone audio. This used to be
+            # a "bluez5.autoswitch-profile" device rule, which WirePlumber 0.5
+            # never reads; the setting below is the only knob
+            # autoswitch-bluetooth-profile.lua checks.
+            "wireplumber.settings" = {
+              "bluetooth.autoswitch-to-headset-profile" = false;
+            };
           };
         };
         systemWide = true;
