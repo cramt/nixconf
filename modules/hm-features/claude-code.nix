@@ -65,6 +65,12 @@
         # Left alone, Claude Code notices that and nags every session; opting
         # out explicitly makes it skip the fetch instead of warning about it.
         export ENABLE_CLAUDEAI_MCP_SERVERS=0
+        # An auth token isn't a claude.ai login, so Claude Code drops to the
+        # API-key default of a 5m prompt cache; a subscriber gets 1h on the
+        # main thread. This restores that, and only that: subagents read
+        # CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL and stay at 5m, as natively.
+        # The proxy passes a native client's cache_control through untouched.
+        export CLAUDE_CODE_PROMPT_CACHE_TTL=1h
       else
         # Drop any inherited routing so "fallback" really means direct — a
         # stale ANTHROPIC_BASE_URL in the shell (or a nested claude session)
