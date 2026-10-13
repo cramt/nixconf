@@ -93,6 +93,8 @@
         # op://Homelab/Metrics/remoteWritePassword and reaches agents via opnix.
         auth.hashedPassword = "$2a$14$np6mAmdVPkGBrPrFnV4rSeUw45WaHHvVngHupMyOSyClwwnL7444a";
       };
+      # The insight driver is a user unit, so it can't declare this itself.
+      metrics.textfiles.insight-driver = "${config.home-manager.users.cramt.myHomeManager.insight-driver.stateDir}/metrics.prom";
       # Dashboards over the above at grafana.<domain>, behind the passkey.
       grafana.enable = true;
       garage.enable = false;

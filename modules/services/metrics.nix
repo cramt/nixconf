@@ -30,6 +30,8 @@
 
     hostName = config.networking.hostName;
 
+    textfileDir = "/run/node-exporter-textfiles";
+
     # Pushing needs the shared credential, and that only exists where opnix
     # does. Hosts without it still run exporters (curl-able on loopback) but
     # stay out of the fleet view until they get an /etc/opnix-token.
@@ -83,6 +85,17 @@
           Per-service loopback endpoints, keyed by job name. Set them from the
           service's own module so a disabled service never leaves a dead
           target behind. Inert on hosts with neither an agent nor the server.
+        '';
+      };
+      textfiles = lib.mkOption {
+        type = lib.types.attrsOf lib.types.str;
+        default = {};
+        example = {insight-driver = "/pool/dev/insight-state/metrics.prom";};
+        description = ''
+          Prometheus text-format files node_exporter exports, keyed by name.
+          Each is symlinked into the textfile collector's directory, so a
+          producer writes wherever it already owns, like a user unit's state
+          dir. node_exporter runs with ProtectHome, so nothing under /home.
         '';
       };
       server = {
@@ -184,9 +197,16 @@
           # drm: amdgpu busy % and VRAM. Temp and power already come from the
           # default hwmon collector, so AMD needs no exporter of its own (nvidia
           # does, see hardware/nvidia.nix). Other drivers it silently skips.
-          enabledCollectors = ["systemd" "logind" "processes" "drm"];
-          extraFlags = ["--collector.systemd.enable-restarts-metrics"];
+          enabledCollectors =
+            ["systemd" "logind" "processes" "drm"]
+            ++ lib.optional (cfg.textfiles != {}) "textfile";
+          extraFlags =
+            ["--collector.systemd.enable-restarts-metrics"]
+            ++ lib.optional (cfg.textfiles != {}) "--collector.textfile.directory=${textfileDir}";
         };
+        systemd.tmpfiles.rules =
+          lib.optional (cfg.textfiles != {}) "d ${textfileDir} 0755 root root -"
+          ++ lib.mapAttrsToList (name: path: "L+ ${textfileDir}/${name}.prom - - - - ${path}") cfg.textfiles;
 
         services.prometheus.exporters.process = {
           enable = true;
