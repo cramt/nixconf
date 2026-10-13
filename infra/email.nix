@@ -59,6 +59,9 @@ in
     depends_on = routingDependsOn;
     for_each = "\${local.email_forwarding}";
     zone_id = "\${local.zone_id}";
+    # The API reads an unset name back as "", which the provider diffs
+    # against null on every plan; any explicit name keeps it stable.
+    name = "\${each.key}";
     actions = [{ type = "forward"; value = [ "\${each.value}" ]; }];
     matchers = [{ field = "to"; type = "literal"; value = "\${each.key}@\${var.domain}"; }];
     enabled = true;
