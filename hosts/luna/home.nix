@@ -27,6 +27,7 @@
     bundles.general.enable = true;
     bundles.development.enable = true;
     ssh.use1Password = false;
+    insight-driver.enable = true;
     gpg-agent.enableSshSupport = false;
     hyprland = {
       enable = false;
