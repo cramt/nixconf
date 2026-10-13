@@ -49,31 +49,24 @@
       else "${authDir}/management-key";
     configFile = "${authDir}/config.yaml";
 
-    # Upstream's web control panel, pinned as the cli-proxy-api-panel flake
-    # input so the server never fetches it from GitHub at runtime.
-    # MANAGEMENT_STATIC_PATH wants either a file literally named
-    # management.html or a directory containing one, and a file input lands in
-    # the store as "source" — hence the directory.
+    # Upstream's web control panel (pkgs.cli-proxy-api-panel), served from the
+    # store so the server never fetches it from GitHub at runtime.
     #
     # With panelAutoLogin, the stored-session restore is patched to always fire
     # with a placeholder key, which the reverse proxy in front then overwrites
     # with the real one. --replace-fail so a panel bump that reshuffles the
     # minified bundle breaks the build instead of quietly bringing the prompt
     # back.
-    managementPanel = pkgs.runCommand "cli-proxy-api-panel" {} (''
-        mkdir -p $out
-      ''
-      + (
-        if cfg.panelAutoLogin
-        then ''
-          substitute ${inputs.cli-proxy-api-panel} $out/management.html \
+    managementPanel =
+      if cfg.panelAutoLogin
+      then
+        pkgs.runCommand "cli-proxy-api-panel-autologin" {} ''
+          mkdir -p $out
+          substitute ${pkgs.cli-proxy-api-panel}/management.html $out/management.html \
             --replace-fail 'l=o||i||``,' 'l=o||i||`injected-by-proxy`,' \
             --replace-fail 'n&&c&&l)try' 'c&&l)try'
         ''
-        else ''
-          ln -s ${inputs.cli-proxy-api-panel} $out/management.html
-        ''
-      ));
+      else pkgs.cli-proxy-api-panel;
 
     # CPA only loads regular *.so files from plugins.dir (symlinks are skipped)
     # and takes the plugin id from the file name, so each library is copied in
