@@ -148,6 +148,26 @@
       mtg.enable =
         lib.mkEnableOption "MTG skills (general + Commander) + `scryfall` bulk-data CLI and `gauntlet`"
         // {default = true;};
+      agents = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.submodule {
+          options = {
+            description = lib.mkOption {
+              type = lib.types.str;
+              description = "When the main agent should delegate here; Claude Code routes on it.";
+            };
+            model = lib.mkOption {
+              type = lib.types.str;
+              description = "Anything `--model` takes, including a pool model id like `m365/gpt-5.5[1m]`.";
+            };
+            prompt = lib.mkOption {
+              type = lib.types.str;
+              description = "The subagent's system prompt.";
+            };
+          };
+        });
+        default = {};
+        description = "Subagents, rendered to ~/.claude/agents/<name>.md.";
+      };
     };
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
@@ -191,6 +211,34 @@
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude/skills/status".source = skills.status.path;
           ".claude/skills/write-like-alex".source = skills.write-like-alex.path;
+        }
+        // lib.mapAttrs' (name: agent:
+          lib.nameValuePair ".claude/agents/${name}.md" {
+            text = ''
+              ---
+              name: ${builtins.toJSON name}
+              description: ${builtins.toJSON agent.description}
+              model: ${builtins.toJSON agent.model}
+              ---
+
+              ${agent.prompt}
+            '';
+          })
+        cfg.agents;
+
+        # M365 Copilot through the pool (cli-proxy-api on luna routes m365/ to
+        # the M365 proxy). gpt-5.5-think-deeper because it's the proxy's best
+        # measured tool-caller (26/30 on its bench); a caller can still pass
+        # another m365/ model per Agent call.
+        myHomeManager.claude-code.agents.m365 = {
+          description = "General-purpose worker running on Microsoft 365 Copilot (GPT) instead of Claude. Use when asked to delegate to M365/Copilot/GPT, or to get a second opinion from a non-Claude model.";
+          model = "m365/gpt-5.5-think-deeper[1m]";
+          prompt = ''
+            You are a general-purpose coding subagent. Do the task you were
+            given with the tools you have, then report back concisely: what you
+            did, what you found, and anything left undone. Run commands rather
+            than guessing at their output.
+          '';
         };
       }
       # Vercel agent-browser: the CLI is a self-contained native binary (no
