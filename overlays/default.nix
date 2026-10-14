@@ -143,6 +143,26 @@ inputs: [
             name = "t3code-${nightly.version}-pnpm-deps";
             outputHash = nightly.pnpmDepsHash;
           };
+          # Upstream's reusable dev token (T3CODE_DEV_AUTH_TOKEN) only switches
+          # on alongside --dev-url, and that flag drags in dev behaviour we don't
+          # want: loopback-Host requests 302 to the dev server (which breaks the
+          # desktop app's SSH reuse probe, so it launched a second server on the
+          # same ~/.t3), and Codex's ChatGPT login returns there. Ungating the
+          # token makes it a plain "the proxy in front authenticates" switch,
+          # which is how proxyAuth uses it (modules/services/t3code.nix). No
+          # upstream issue for a trusted-proxy mode yet; drop this when one lands.
+          postPatch =
+            (old.postPatch or "")
+            + ''
+              substituteInPlace apps/server/src/cli/config.ts \
+                --replace-fail \
+                  'mode === "web" && devUrl !== undefined ? yield* DevAuthTokenConfig' \
+                  'mode === "web" ? yield* DevAuthTokenConfig'
+              substituteInPlace apps/server/src/auth/ReusableDevAuth.ts \
+                --replace-fail \
+                  'config.mode !== "web" || config.devUrl === undefined ||' \
+                  'config.mode !== "web" ||'
+            '';
           preBuild =
             builtins.replaceStrings
             ["update-release-package-versions.ts ${upstream.version}"]

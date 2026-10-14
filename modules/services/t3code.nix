@@ -24,12 +24,10 @@
 # ReusableDevAuth.ts) as a fixed session secret. Its matching cookie,
 # `t3_dev_session_<sha256 of token>`, authenticates any request that carries
 # no other credential, so caddy adds it after authelia lets a request through
-# and the browser never sees the pairing screen. The token only switches on
-# alongside --dev-url, and that flag's other effects are why the URL points
-# at a dead port: requests whose Host is loopback get redirected there (caddy
-# forwards the public Host, so only `curl localhost` on the box hits it), and
-# Codex's ChatGPT login returns there instead of to /welcome. No upstream
-# issue for a real trusted-proxy mode yet; drop this when one lands.
+# and the browser never sees the pairing screen. Upstream only honours the
+# token in dev mode (--dev-url); our build ungates it (overlays/default.nix),
+# since dev mode's redirects broke the desktop app's SSH reuse and Codex's
+# ChatGPT login.
 { ... }: {
   flake.nixosModules."services.t3code" = { config, lib, pkgs, ... }:
   let
@@ -106,7 +104,7 @@
       "--port ${toString port}"
       "--base-dir ${dataDir}"
       "--no-browser"
-    ] ++ lib.optional cfg.proxyAuth "--dev-url http://127.0.0.1:9";
+    ];
     # The token goes in through the environment, read here rather than via
     # EnvironmentFile so a not-yet-generated file is an ordinary failed start
     # that Restart= retries.
