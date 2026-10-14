@@ -151,8 +151,13 @@
     };
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
+        # Not for me, for the agent: it reaches for `python3 - <<'EOF'` to edit
+        # files no matter what CLAUDE.md says. Without it, 147 of those calls
+        # failed in a month of transcripts (2026-09-14..10-14, half of all
+        # sessions), and a few chained ones failed silently and shipped the
+        # unedited file, conflict markers included.
         home.packages =
-          [claudePoolPkg]
+          [claudePoolPkg pkgs.python3]
           ++ lib.optional cfg.ms365.enable m365ClaudePkg;
 
         # Sit out a rate limit instead of dying on it. Claude Code's default

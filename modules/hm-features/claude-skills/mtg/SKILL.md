@@ -131,7 +131,7 @@ genuinely not in either index (rulings, prices in other currencies), and then wi
 `User-Agent` header and a gap between calls. Per-card API loops got this machine a 403
 "restricted" once.
 
-There is no `bc` and no `python3` on this machine: use jq, awk and sed.
+There is no `bc` on this machine: use jq, awk or python3.
 
 ## Rules questions
 
