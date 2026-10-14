@@ -211,6 +211,7 @@
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude/skills/status".source = skills.status.path;
           ".claude/skills/write-like-alex".source = skills.write-like-alex.path;
+          ".claude/skills/gm".source = skills.gm.path;
         }
         // lib.mapAttrs' (name: agent:
           lib.nameValuePair ".claude/agents/${name}.md" {

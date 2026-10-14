@@ -66,6 +66,11 @@ in {
     path = "${skillsRoot}/write-like-alex";
   };
 
+  gm = {
+    name = "gm";
+    path = "${skillsRoot}/gm";
+  };
+
   # Two skills sharing one toolchain: `mtg` is format-agnostic (lookups, rules,
   # playtesting), `mtg-commander` layers the Commander-only parts on top of it.
   mtg = {
