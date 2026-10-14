@@ -105,6 +105,12 @@ inputs: [
   # now. Fix: decrypt under app name "Electron" and re-encrypt under
   # "T3 Code (Alpha)" (done on mars 2026-10-02).
   #
+  # electron_44 is swapped for ours: llm-agents doesn't follow our nixpkgs, so
+  # its electron links an older glibc and then can't dlopen the system mesa
+  # from /run/opengl-driver ("GLIBC_2.43 not found", no GPU). The electron
+  # binary is a nixpkgs cache hit either way; drop this only if llm-agents
+  # gets `inputs.nixpkgs.follows`.
+  #
   # providerPackages is emptied because the agents t3code spawns should be the
   # home-manager ones (claude-code's config, auth, etc.), not a second copy
   # pinned by llm-agents.
@@ -130,7 +136,7 @@ inputs: [
     unwrapped =
       assert prev.lib.assertMsg (!prev.lib.versionAtLeast upstream.version "0.0.46")
       "llm-agents ships t3code ${upstream.version} now, which has Orchestrator V2: drop the nightly pin in overlays/default.nix";
-        upstream.unwrapped.overrideAttrs (old: {
+        (upstream.unwrapped.override {inherit (final) electron_44;}).overrideAttrs (old: {
           inherit (nightly) version src;
           pnpmDeps = old.pnpmDeps.overrideAttrs {
             inherit (nightly) version src;
