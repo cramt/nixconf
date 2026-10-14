@@ -42,6 +42,16 @@
 
   myNixOS = {
     opnix-secrets.enable = true;
+    # Agents act as the bot by default; cramt is there for anything that has to
+    # be done as Alex (`gh auth switch`, or pinned in T3 Code's settings).
+    gh-accounts = {
+      enable = true;
+      active = {
+        login = "solemn-simulacrum";
+        tokenReference = "op://Homelab/GitHub/solemnSimulacrumToken";
+      };
+      others.cramt = "op://Homelab/GitHub/cramtToken";
+    };
     services.m365-copilot-proxy.enable = true;
     gnupg.enable = true;
     nvidia.enable = true;
