@@ -185,6 +185,7 @@
         home.file = {
           ".claude/CLAUDE.md".text = globalClaudeMd;
           ".claude/skills/status".source = skills.status.path;
+          ".claude/skills/write-like-alex".source = skills.write-like-alex.path;
         };
       }
       # Vercel agent-browser: the CLI is a self-contained native binary (no
