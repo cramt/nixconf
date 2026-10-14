@@ -35,6 +35,7 @@
     gnupg.enable = true;
     onepassword.enable = true;
     opnix-secrets.enable = true;
+    t3code-remotes.enable = true;
     docker.enable = true;
     bluetooth.enable = true;
     intel-gpu.enable = true;

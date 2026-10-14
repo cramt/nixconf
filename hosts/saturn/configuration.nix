@@ -121,6 +121,7 @@
     };
     niri.enable = true;
     opnix-secrets.enable = true;
+    t3code-remotes.enable = true;
     # Tunnel is declared but stays down until `systemctl start wg-quick-vxn`.
     vpn.vxn.enable = true;
     gnupg.enable = true;
