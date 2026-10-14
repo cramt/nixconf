@@ -9,25 +9,23 @@
 # unit too, but it also installs a self-updating launcher under ~/.t3 — Nix owns
 # the version here, so the unit is hand-rolled around `t3 serve` instead.
 #
-# Two ways in, both ending at t3code's own one-time pairing token (`just
-# t3_pair`), which upstream has no switch to turn off:
-#   - LAN: the server binds every interface and the port is opened, for the
-#     desktop app, which can't get through a browser login portal.
-#   - `subdomain`: a caddy vhost behind the authelia passkey portal, for a
-#     browser anywhere. No pairing there: see proxyAuth below.
+# Every client (desktop app, Android app, browser) pairs the stock way, over
+# the LAN port or the `subdomain` vhost. With `sharedSecret` set, the pairing
+# code is a fixed secret from 1Password instead of `just t3_pair`'s one-time
+# token, and it works any number of times, so a browser can bookmark
+# `https://<subdomain>/pair#token=<secret>`. The vhost then skips authelia,
+# because the apps can't get through a browser login portal: t3code's own auth
+# is the boundary.
+#
+# The secret rides on upstream's reusable dev token (T3CODE_DEV_AUTH_TOKEN,
+# apps/server/src/auth/ReusableDevAuth.ts), which the server also accepts as a
+# pairing credential. Upstream only honours it in dev mode (--dev-url), whose
+# redirects broke the desktop app's SSH reuse and Codex's ChatGPT login, so our
+# build ungates it (overlays/default.nix).
 #
 # We used to compile T3 Connect (Ping's Clerk login + cloud relay) in for the
 # off-LAN case. Its relay client downloaded its own cloudflared into
 # ~/.t3/tools/, outside Nix, which is why the caddy route replaced it.
-#
-# proxyAuth borrows upstream's reusable dev token (apps/server/src/auth/
-# ReusableDevAuth.ts) as a fixed session secret. Its matching cookie,
-# `t3_dev_session_<sha256 of token>`, authenticates any request that carries
-# no other credential, so caddy adds it after authelia lets a request through
-# and the browser never sees the pairing screen. Upstream only honours the
-# token in dev mode (--dev-url); our build ungates it (overlays/default.nix),
-# since dev mode's redirects broke the desktop app's SSH reuse and Codex's
-# ChatGPT login.
 { ... }: {
   flake.nixosModules."services.t3code" = { config, lib, pkgs, ... }:
   let
@@ -96,22 +94,20 @@
         mv "${settingsFile}.new" "${settingsFile}"
       '';
     };
-    proxyAuthDir = "/var/lib/t3code-proxy-auth";
-    proxyAuthToken = "${proxyAuthDir}/token";
-    proxyAuthCookie = "${proxyAuthDir}/cookie";
     serveArgs = [
       "--host ${cfg.host}"
       "--port ${toString port}"
       "--base-dir ${dataDir}"
       "--no-browser"
     ];
-    # The token goes in through the environment, read here rather than via
-    # EnvironmentFile so a not-yet-generated file is an ordinary failed start
-    # that Restart= retries.
+    sharedSecretPath = config.services.onepassword-secrets.secretPaths.t3codeSharedSecret;
+    # The secret goes in through the environment, read here rather than via
+    # EnvironmentFile so a not-yet-rendered opnix file is an ordinary failed
+    # start that Restart= retries.
     serve = pkgs.writeShellScript "t3code-serve" (
-      lib.optionalString cfg.proxyAuth ''
-        test -s ${proxyAuthToken}
-        T3CODE_DEV_AUTH_TOKEN=$(< ${proxyAuthToken})
+      lib.optionalString (cfg.sharedSecret != null) ''
+        test -s ${sharedSecretPath}
+        T3CODE_DEV_AUTH_TOKEN=$(< ${sharedSecretPath})
         export T3CODE_DEV_AUTH_TOKEN
       ''
       + "exec ${pkgs.t3code}/bin/t3 serve ${lib.concatStringsSep " " serveArgs}\n"
@@ -153,17 +149,20 @@
         default = null;
         example = "t3";
         description = ''
-          Expose the server as this caddy vhost, behind the authelia passkey
-          portal. Needs caddy and authelia on this host.
+          Expose the server as this caddy vhost: behind the authelia passkey
+          portal, or with `sharedSecret`, behind t3code's own pairing alone.
         '';
       };
-      proxyAuth = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
+      sharedSecret = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "op://Homelab/T3Code/password";
         description = ''
-          Skip pairing on the `subdomain` vhost: caddy presents a fixed session
-          to t3code once authelia has passed the request. LAN clients still
-          pair as usual.
+          1Password reference to a fixed pairing secret, at least 32
+          characters (upstream refuses to start on a shorter one). Every client
+          pairs with it, and the `subdomain` vhost drops authelia so the apps
+          can reach it. After rotating it, restart the user unit:
+          `systemctl --user -M <user>@ restart t3code`.
         '';
       };
       openFirewall = lib.mkOption {
@@ -235,10 +234,6 @@
       };
       assertions = [
         {
-          assertion = cfg.proxyAuth -> cfg.subdomain != null;
-          message = "myNixOS.services.t3code.proxyAuth needs a subdomain to proxy through.";
-        }
-        {
           assertion = lib.all (d: lib.elem d knownDrivers) declaredDrivers;
           message = ''
             myNixOS.services.t3code.{providers,customModels} have unknown driver kinds: ${
@@ -274,40 +269,16 @@
       myNixOS.services.caddy.serviceMap = lib.mkIf (cfg.subdomain != null) {
         ${cfg.subdomain} = {
           inherit port;
-          forward-auth = true;
-          reverse-proxy-config = lib.optionalString cfg.proxyAuth ''
-            header_up Cookie "{file.${proxyAuthCookie}}; {http.request.header.Cookie}"
-          '';
+          forward-auth = cfg.sharedSecret == null;
         };
       };
 
-      systemd.tmpfiles.settings."10-t3code-proxy-auth" = lib.mkIf cfg.proxyAuth {
-        ${proxyAuthDir}.d = {
-          user = cfg.user;
-          group = config.services.caddy.group;
-          mode = "0750";
-        };
-      };
-
-      systemd.services.t3code-proxy-auth = lib.mkIf cfg.proxyAuth {
-        description = "Generate the session secret caddy presents to t3code";
-        wantedBy = ["multi-user.target"];
-        after = ["systemd-tmpfiles-setup.service"];
-        serviceConfig.Type = "oneshot";
-        path = [pkgs.openssl pkgs.coreutils];
-        script = ''
-          umask 027
-          if [ ! -s ${proxyAuthToken} ]; then
-            openssl rand -hex 32 > ${proxyAuthToken}.new
-            mv ${proxyAuthToken}.new ${proxyAuthToken}
-          fi
-          token=$(< ${proxyAuthToken})
-          # Upstream names the cookie after the token's sha256 (ReusableDevAuth.ts).
-          hash=$(printf %s "$token" | sha256sum | cut -d" " -f1)
-          printf 't3_dev_session_%s=%s' "$hash" "$token" > ${proxyAuthCookie}
-          chown ${cfg.user}:${config.services.caddy.group} ${proxyAuthToken} ${proxyAuthCookie}
-          chmod 0640 ${proxyAuthToken} ${proxyAuthCookie}
-        '';
+      # owner, not a `services` restart: opnix only restarts system units and
+      # this is a user unit (see the paseoSshKey note above).
+      services.onepassword-secrets.secrets.t3codeSharedSecret = lib.mkIf (cfg.sharedSecret != null) {
+        reference = cfg.sharedSecret;
+        owner = cfg.user;
+        mode = "0400";
       };
 
       # `t3` CLI on the system PATH (stable /run/current-system/sw/bin) so

@@ -72,7 +72,7 @@
         enable = true;
         user = "cramt";
         subdomain = "t3";
-        proxyAuth = true;
+        sharedSecret = "op://Homelab/T3Code/password";
         # Headless: no 1Password agent here, so agents need the key on disk.
         onDiskSshKey.enable = true;
         # codex ships enabled in t3code, but there's no codex CLI to run.

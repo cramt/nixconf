@@ -147,10 +147,12 @@ inputs: [
           # on alongside --dev-url, and that flag drags in dev behaviour we don't
           # want: loopback-Host requests 302 to the dev server (which breaks the
           # desktop app's SSH reuse probe, so it launched a second server on the
-          # same ~/.t3), and Codex's ChatGPT login returns there. Ungating the
-          # token makes it a plain "the proxy in front authenticates" switch,
-          # which is how proxyAuth uses it (modules/services/t3code.nix). No
-          # upstream issue for a trusted-proxy mode yet; drop this when one lands.
+          # same ~/.t3), and Codex's ChatGPT login returns there. Ungated, it is
+          # a plain fixed pairing secret, which is how `sharedSecret` uses it
+          # (modules/services/t3code.nix). Upstream discussion for a supported
+          # way: https://github.com/pingdotgg/t3code/discussions/6750 (the
+          # unsafe-no-auth PR #13001 was closed pending it); drop this when one
+          # lands.
           postPatch =
             (old.postPatch or "")
             + ''
