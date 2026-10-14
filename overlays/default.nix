@@ -108,8 +108,43 @@ inputs: [
   # providerPackages is emptied because the agents t3code spawns should be the
   # home-manager ones (claude-code's config, auth, etc.), not a second copy
   # pinned by llm-agents.
+  #
+  # TEMP: unwrapped is pinned to a nightly for Orchestrator V2
+  # (https://github.com/pingdotgg/t3code/pull/2829), merged an hour after the
+  # v0.0.45 tag, so no stable release carries it and llm-agents only packages
+  # stable tags. Remove this pin once llm-agents ships a release that contains it
+  # (>= 0.0.46); the assert below fails eval when that happens. native/ is
+  # unchanged since 0.0.45, so the cached resourceMonitor is still the right one.
   (final: prev: let
-    t3code = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.t3code.override {
+    upstream = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.t3code;
+    nightly = rec {
+      version = "0.0.46-nightly.20261013.3053";
+      src = prev.fetchFromGitHub {
+        owner = "pingdotgg";
+        repo = "t3code";
+        tag = "v${version}";
+        hash = "sha256-nZ+NkxnsIppURFqMSV9VvT2USfp6M7/VQ8Zx0TevAcU=";
+      };
+      pnpmDepsHash = "sha256-cIsCMDSm5qwyfNcc5sHPb/sfRxDNyTjVSNyNg4P9+9k=";
+    };
+    unwrapped =
+      assert prev.lib.assertMsg (!prev.lib.versionAtLeast upstream.version "0.0.46")
+      "llm-agents ships t3code ${upstream.version} now, which has Orchestrator V2: drop the nightly pin in overlays/default.nix";
+        upstream.unwrapped.overrideAttrs (old: {
+          inherit (nightly) version src;
+          pnpmDeps = old.pnpmDeps.overrideAttrs {
+            inherit (nightly) version src;
+            name = "t3code-${nightly.version}-pnpm-deps";
+            outputHash = nightly.pnpmDepsHash;
+          };
+          preBuild =
+            builtins.replaceStrings
+            ["update-release-package-versions.ts ${upstream.version}"]
+            ["update-release-package-versions.ts ${nightly.version}"]
+            old.preBuild;
+        });
+    t3code = upstream.override {
+      t3code-unwrapped = unwrapped;
       providerPackages = [];
     };
   in {
