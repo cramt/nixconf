@@ -113,7 +113,7 @@
       # behind the shared API key. Every host's `claude` points here.
       cli-proxy-api.enable = true;
       foundryvtt = {
-        enable = true;
+        enable = false;
         dataVolume = "/pool/configs/foundryvtt_a";
       };
       homelab_system_controller = {
