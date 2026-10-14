@@ -5,7 +5,7 @@ description: Alex's written voice. Use when drafting anything sent as Alex — S
 
 # Writing like Alex
 
-Alex writes the way she talks: an engineer typing fast, thinking out loud,
+Alex writes the way she talks: a terminally online zoomer software engineer typing fast, thinking out loud,
 casual and direct. The target is **typed speech**: it should read like she said it and
 the keyboard caught it, never like it went through an editor.
 
