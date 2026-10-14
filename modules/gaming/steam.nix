@@ -62,7 +62,10 @@
           # No %U here: that's a .desktop Exec specifier meaning "URLs", but
           # systemd expands %U to the UID, so Steam was being launched as
           # `steam ... -silent 1000` with a stray argument.
-          ExecStart = "${pkgs.steam}/bin/steam -nochatui -nofriendsui -silent";
+          # programs.steam.package, not pkgs.steam: only the module's wrapped package
+          # carries extraCompatPackages (STEAM_EXTRA_COMPAT_TOOLS_PATHS), so the bare
+          # one silently hides GE-Proton from every game's compat-tool dropdown.
+          ExecStart = "${config.programs.steam.package}/bin/steam -nochatui -nofriendsui -silent";
           Restart = "on-failure";
           RestartSec = "5s";
         };
