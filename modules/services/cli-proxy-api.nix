@@ -75,6 +75,11 @@
           {
             name = "m365";
             prefix = "m365";
+            # One upstream behind one credential: cooling it after a failure
+            # (M365 throws the odd InternalError) leaves nothing to fail over
+            # to, so every client retry got an instant 503 instead of a fresh
+            # attempt.
+            disable-cooling = true;
             base-url = "http://127.0.0.1:${toString config.services.m365-copilot-proxy.port}/v1";
             models = map (name: {
               inherit name;

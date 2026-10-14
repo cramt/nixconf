@@ -79,9 +79,12 @@
         providers.codex = false;
         # M365 Copilot's GPT and Claude models, through Claude Code against
         # the cli-proxy-api pool, which routes the m365/ prefix to the proxy.
+        # [1m] is the proxy's real window (its /v1/models says 1M); Claude
+        # Code strips it before the request, and without it assumes 200k for
+        # a model it doesn't know and compacts there.
         customModels.claudeAgent =
           map (model: {
-            slug = "m365/${model}";
+            slug = "m365/${model}[1m]";
             name = "${model} (M365)";
           })
           config.myNixOS.services.m365-copilot-proxy.models;
