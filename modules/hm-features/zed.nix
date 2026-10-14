@@ -36,7 +36,7 @@
 
       programs.zed-editor = {
         enable = true;
-        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "scala" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin" "styx" "julia" "vhdl"];
+        extensions = ["toml" "ruby" "rust" "nix" "terraform" "go" "java" "scala" "zig" "cpp" "make" "just" "sql" "dockerfile" "html" "css" "json-schema" "catppuccin" "styx" "julia" "vhdl" "markdown-oxide"];
         mutableUserSettings = false;
         mutableUserKeymaps = false;
         mutableUserTasks = false;
@@ -95,6 +95,8 @@
             };
             ruby-lsp.binary.path = lib.getExe rubyGems.ruby-lsp;
             rubocop.binary.path = lib.getExe rubyGems.rubocop;
+            # wikilinks, backlinks and rename across a folder of notes, so Zed works as an Obsidian-style notes editor
+            markdown-oxide.binary.path = lib.getExe pkgs.markdown-oxide;
           };
 
           project_panel.dock = "left";
