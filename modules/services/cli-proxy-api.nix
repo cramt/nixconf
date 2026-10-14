@@ -22,6 +22,7 @@
     keyDir = "/var/lib/cli-proxy-api-management";
     keyFile = "${keyDir}/key";
     caddyGroup = config.services.caddy.group;
+    m365 = config.myNixOS.services.m365-copilot-proxy;
   in {
     options.myNixOS.services.cli-proxy-api = {
       enable = lib.mkEnableOption "myNixOS.services.cli-proxy-api";
@@ -67,6 +68,21 @@
         managementKeyFile = keyFile;
         apiKeyFile = config.services.onepassword-secrets.secretPaths.cliProxyApiKey;
         panelAutoLogin = true;
+        # M365 Copilot on the same host joins the pool as `m365/<model>`. The
+        # prefix is load-bearing: it serves claude-* ids too, and unprefixed
+        # those would get mixed into the subscription accounts' rotation.
+        openai-compatibility = lib.mkIf m365.enable [
+          {
+            name = "m365";
+            prefix = "m365";
+            base-url = "http://127.0.0.1:${toString config.services.m365-copilot-proxy.port}/v1";
+            models = map (name: {
+              inherit name;
+              alias = name;
+            })
+            m365.models;
+          }
+        ];
         # Only worth loading where something scrapes it.
         plugins = lib.mkIf config.services.prometheus.enable {
           cpa-prometheus.package = pkgs.cpa-prometheus;

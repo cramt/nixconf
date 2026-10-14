@@ -30,6 +30,26 @@
         default = false;
         description = "Open the proxy port in the firewall.";
       };
+      # The proxy's own list is a TS map (packages/core/src/copilot.ts), not
+      # something nix can read, and cli-proxy-api needs models spelled out:
+      # it never asks an openai-compatibility upstream for /v1/models. Copied
+      # from the running proxy's /v1/models; re-copy when bumping the input.
+      models = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [
+          "m365-copilot" "auto" "quick" "think-deeper"
+          "claude" "claude-sonnet" "claude-sonnet-4.5" "claude-sonnet-4.6"
+          "claude-sonnet-5" "claude-sonnet-5.5" "claude-sonnet-think-deeper"
+          "claude-opus" "claude-opus-4.5" "claude-opus-5" "claude-opus-5.5"
+          "gpt-5.2" "gpt-5.2-quick" "gpt-5.2-think-deeper"
+          "gpt-5.3" "gpt-5.3-quick" "gpt-5.3-think-deeper"
+          "gpt-5.4" "gpt-5.4-quick" "gpt-5.4-think-deeper"
+          "gpt-5.5" "gpt-5.5-quick" "gpt-5.5-think-deeper"
+          "gpt-5.6" "gpt-5.6-quick" "gpt-5.6-think-deeper"
+          "gpt-6-sol" "gpt-6-think-deeper"
+        ];
+        description = "Model ids the proxy serves, for clients that need them declared.";
+      };
     };
 
     config = lib.mkIf cfg.enable {

@@ -65,9 +65,20 @@
     # the envelope the registry actually resolves — an explicit envelope wins
     # over the mirror, so writing only one of them would leave the UI and the
     # running server disagreeing. The instance id is the driver kind itself.
+    #
+    # customModels only goes in the envelope's `config`: upstream migrates the
+    # `providers` mirror once and then drops it (apps/server/src/
+    # serverSettings.ts, migrateLegacyProviderSettings), so anything beyond
+    # `enabled` written there is never read.
+    declaredDrivers = lib.unique (lib.attrNames cfg.providers ++ lib.attrNames cfg.customModels);
     declaredSettings = (pkgs.formats.json {}).generate "t3code-declared-settings.json" {
       providers = lib.mapAttrs (_: enabled: {inherit enabled;}) cfg.providers;
-      providerInstances = lib.mapAttrs (driver: enabled: {inherit driver enabled;}) cfg.providers;
+      providerInstances = lib.genAttrs declaredDrivers (driver:
+        {inherit driver;}
+        // lib.optionalAttrs (cfg.providers ? ${driver}) {enabled = cfg.providers.${driver};}
+        // lib.optionalAttrs (cfg.customModels ? ${driver}) {
+          config.customModels = map (m: lib.filterAttrs (_: v: v != null) m) cfg.customModels.${driver};
+        });
     };
     seedSettings = pkgs.writeShellApplication {
       name = "t3code-seed-settings";
@@ -177,6 +188,28 @@
           left out are untouched and stay UI-owned.
         '';
       };
+      customModels = lib.mkOption {
+        type = lib.types.attrsOf (lib.types.listOf (lib.types.submodule {
+          options = {
+            slug = lib.mkOption {
+              type = lib.types.str;
+              description = "Model id handed to the agent CLI (claude --model).";
+            };
+            name = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Label in the model picker; the slug when unset.";
+            };
+          };
+        }));
+        default = {};
+        example = {claudeAgent = [{slug = "m365/gpt-5.5"; name = "GPT-5.5 (M365)";}];};
+        description = ''
+          Extra models in a driver's picker, keyed by driver kind. Replaces
+          that driver's custom model list on every start, so models added in
+          the UI for a driver named here don't survive a restart.
+        '';
+      };
       onDiskSshKey.enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
@@ -208,10 +241,10 @@
           message = "myNixOS.services.t3code.proxyAuth needs a subdomain to proxy through.";
         }
         {
-          assertion = lib.all (d: lib.elem d knownDrivers) (lib.attrNames cfg.providers);
+          assertion = lib.all (d: lib.elem d knownDrivers) declaredDrivers;
           message = ''
-            myNixOS.services.t3code.providers has unknown driver kinds: ${
-              lib.concatStringsSep ", " (lib.subtractLists knownDrivers (lib.attrNames cfg.providers))
+            myNixOS.services.t3code.{providers,customModels} have unknown driver kinds: ${
+              lib.concatStringsSep ", " (lib.subtractLists knownDrivers declaredDrivers)
             }. Known kinds: ${lib.concatStringsSep ", " knownDrivers}.
           '';
         }
@@ -314,7 +347,7 @@
             TimeoutStopSec = "15";
             ExecStartPre =
               lib.optional cfg.onDiskSshKey.enable "${prepare}/bin/t3code-prepare"
-              ++ lib.optional (cfg.providers != {}) "${seedSettings}/bin/t3code-seed-settings";
+              ++ lib.optional (declaredDrivers != []) "${seedSettings}/bin/t3code-seed-settings";
           };
         };
       };

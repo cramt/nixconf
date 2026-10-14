@@ -93,6 +93,9 @@
           session-affinity = cfg.session-affinity;
         };
       }
+      // lib.optionalAttrs (cfg.openai-compatibility != []) {
+        inherit (cfg) openai-compatibility;
+      }
       // lib.optionalAttrs (cfg.plugins != {}) {
         plugins = {
           enabled = true;
@@ -330,6 +333,17 @@
           Pin a conversation to the account it started on, so prompt caching
           survives. Failover to another account is still automatic once the
           bound one is exhausted.
+        '';
+      };
+
+      openai-compatibility = lib.mkOption {
+        type = lib.types.listOf (pkgs.formats.yaml {}).type;
+        default = [];
+        description = ''
+          Upstream's `openai-compatibility` providers, verbatim (see its
+          config.example.yaml). Requests to them are translated from whatever
+          protocol the client speaks, so Claude Code can reach an OpenAI-style
+          backend through /v1/messages.
         '';
       };
 

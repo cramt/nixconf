@@ -77,6 +77,14 @@
         onDiskSshKey.enable = true;
         # codex ships enabled in t3code, but there's no codex CLI to run.
         providers.codex = false;
+        # M365 Copilot's GPT and Claude models, through Claude Code against
+        # the cli-proxy-api pool, which routes the m365/ prefix to the proxy.
+        customModels.claudeAgent =
+          map (model: {
+            slug = "m365/${model}";
+            name = "${model} (M365)";
+          })
+          config.myNixOS.services.m365-copilot-proxy.models;
       };
       nixarr.enable = true;
       # Passkey portal for the owner-only vhosts (caddy serviceMap forward-auth).
