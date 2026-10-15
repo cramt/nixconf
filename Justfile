@@ -126,7 +126,11 @@ deploy *hosts:
 
     # --inputs-from . pins the CLI to our locked nixpkgs, the same one the
     # activation wrappers are built from, rather than the ambient registry.
-    exec nix run --inputs-from . nixpkgs#deploy-rs -- --targets "${targets[@]}" -- \
+    # --skip-checks: deploy-rs's pre-deploy `nix flake check` evaluates every
+    # host (stylix's palette IFD builds included) just to schema-check the
+    # deploy attrset, which costs minutes on luna and which the deploy itself
+    # would fail on anyway. A manual `nix flake check` still runs it.
+    exec nix run --inputs-from . nixpkgs#deploy-rs -- --skip-checks --targets "${targets[@]}" -- \
       --fallback --max-jobs "$jobs" --cores {{cores}}
 
 # Runs as cramt so it reads the server's ~/.t3 state, and by absolute path
