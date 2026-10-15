@@ -75,6 +75,9 @@
         sharedSecret = "op://Homelab/T3Code/password";
         # Headless: no 1Password agent here, so agents need the key on disk.
         onDiskSshKey.enable = true;
+        # Agents can `just deploy luna` (the Justfile moves the run out of
+        # the t3code unit, which the activation may restart).
+        selfDeploy.enable = true;
         # codex ships enabled in t3code, but there's no codex CLI to run.
         providers.codex = false;
         # M365 Copilot's GPT and Claude models, through Claude Code against

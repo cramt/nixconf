@@ -1,6 +1,5 @@
 # T3 Code server — self-hosted orchestrator that runs coding agents on this
-# host, so agent work can be offloaded from a laptop to a server. Replaces the
-# paseo daemon that used to hold this slot.
+# host, so agent work can be offloaded from a laptop to a server.
 #
 # Runs as a real login user's `systemd --user` service (not a system unit), so
 # the server lives in a genuine user session and the agents it spawns inherit
@@ -37,9 +36,7 @@
     # auth or sign against GitHub. Re-emit the key with exactly one trailing
     # newline into a stable path that git/ssh point at (the home-manager block
     # under onDiskSshKey below).
-    # Secret and key file keep their paseo-era names — same key, and renaming
-    # would churn both the opnix path and the on-disk file for nothing.
-    sshKey = "/home/${cfg.user}/.ssh/id_paseo";
+    sshKey = "/home/${cfg.user}/.ssh/id_personal";
     # `--base-dir` plus no dev server puts the server's mutable state here
     # (apps/server/src/config.ts, deriveServerPaths).
     stateDir = "${dataDir}/userdata";
@@ -120,9 +117,9 @@
         install -d -m700 "/home/${cfg.user}/.ssh"
         # `test -s` fails (→ ExecStartPre fails → systemd retries) if opnix
         # hasn't populated the secret yet, e.g. a boot race.
-        test -s "${config.services.onepassword-secrets.secretPaths.paseoSshKey}"
+        test -s "${config.services.onepassword-secrets.secretPaths.personalSshKey}"
         umask 077
-        printf '%s\n' "$(cat "${config.services.onepassword-secrets.secretPaths.paseoSshKey}")" > "${sshKey}"
+        printf '%s\n' "$(cat "${config.services.onepassword-secrets.secretPaths.personalSshKey}")" > "${sshKey}"
       '';
     };
   in {
@@ -218,6 +215,10 @@
           on disk there buys nothing.
         '';
       };
+      selfDeploy.enable = lib.mkEnableOption ''
+        letting agents `just deploy` this host: ssh to its own name offers the
+        on-disk key, which root already accepts (it's one of myLib/keys.nix's)
+      '';
     };
 
     config = lib.mkIf cfg.enable {
@@ -226,14 +227,18 @@
       # emit a stub system unit with no ExecStart and break activation. After
       # rotating the key, restart the user service by hand:
       #   systemctl --user -M cramt@ restart t3code
-      # Name kept from the paseo era: same 1Password item, same key, and
-      # renaming would only churn the rendered path for no gain.
-      services.onepassword-secrets.secrets.paseoSshKey = lib.mkIf cfg.onDiskSshKey.enable {
+      # The 1Password item is still named after paseo, which first needed the
+      # key on disk; it holds the Personal key (the one in myLib/keys.nix).
+      services.onepassword-secrets.secrets.personalSshKey = lib.mkIf cfg.onDiskSshKey.enable {
         reference = "op://Homelab/Paseo/sshPrivateKey";
         owner = "cramt";
         mode = "0600";
       };
       assertions = [
+        {
+          assertion = cfg.selfDeploy.enable -> cfg.onDiskSshKey.enable;
+          message = "myNixOS.services.t3code.selfDeploy needs onDiskSshKey: that's the key it logs in to root with.";
+        }
         {
           assertion = lib.all (d: lib.elem d knownDrivers) declaredDrivers;
           message = ''
@@ -275,7 +280,7 @@
       };
 
       # owner, not a `services` restart: opnix only restarts system units and
-      # this is a user unit (see the paseoSshKey note above).
+      # this is a user unit (see the personalSshKey note above).
       services.onepassword-secrets.secrets.t3codeSharedSecret = lib.mkIf (cfg.sharedSecret != null) {
         reference = cfg.sharedSecret;
         owner = cfg.user;
@@ -303,6 +308,12 @@
           IdentityFile = sshKey;
           IdentitiesOnly = true;
           StrictHostKeyChecking = "accept-new";
+        };
+        # deploy-rs and `just deploy`'s probe both reach the host by its bare
+        # name (the default `address` in modules/flake/hosts.nix).
+        programs.ssh.settings.${config.networking.hostName} = lib.mkIf cfg.selfDeploy.enable {
+          IdentityFile = sshKey;
+          IdentitiesOnly = true;
         };
         programs.git.settings.user.signingKey = lib.mkIf cfg.onDiskSshKey.enable (lib.mkForce sshKey);
 
