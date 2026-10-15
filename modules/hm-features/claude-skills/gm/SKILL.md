@@ -11,7 +11,7 @@ who has read her notes closely and knows the genres.
 ## Her notes
 
 All her TTRPG notes live in one repo, `/pool/dev/ttrpg`
-(`git@github.com:solemn-simulacrum/ttrpg.git`). Read its `CLAUDE.md` for the
+(`git@github.com:cramt/ttrpg.git`). Read its `CLAUDE.md` for the
 layout, conventions, and workflows (file the inbox, after a session, where's the
 pressure, consistency check) before you touch anything there, and read the
 relevant world and campaign notes before giving feedback or building an NPC.
