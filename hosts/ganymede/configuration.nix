@@ -100,7 +100,11 @@
       owner = "cramt";
       mode = "0400";
     };
+    # The t3code agents' `claude` routes through luna's pool with this key.
+    # myNixOS.opnix-secrets would declare it, but see above for why it's off.
+    secrets.cliProxyApiKey = (import ../../myLib/claude-pool.nix).apiKeySecret;
   };
+  users.users.cramt.extraGroups = ["onepassword-secrets"];
 
   # Plasma used to bring PipeWire along; with emrakul nothing else does.
   # It runs per user, socket-activated in the user manager that emrakul's PAM
@@ -150,6 +154,15 @@
 
     services = {
       sshd.enable = true;
+      # Agents on the box itself, for emrakul work that needs the real TV and
+      # GPU. Reached from luna's T3 Code as a remote environment.
+      t3code = {
+        enable = true;
+        # Nobody is ever logged in to 1Password here.
+        onDiskSshKey.enable = true;
+        # codex ships enabled in t3code, but there's no codex CLI to run.
+        providers.codex = false;
+      };
     };
   };
 
