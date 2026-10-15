@@ -35,7 +35,8 @@
     # opnix/op emit the SSH key with no trailing newline, and OpenSSH then
     # refuses to load it ("error in libcrypto: unsupported") — so agents can't
     # auth or sign against GitHub. Re-emit the key with exactly one trailing
-    # newline into a stable path that git/ssh point at (see hosts/luna/home.nix).
+    # newline into a stable path that git/ssh point at (the home-manager block
+    # under onDiskSshKey below).
     # Secret and key file keep their paseo-era names — same key, and renaming
     # would churn both the opnix path and the on-disk file for nothing.
     sshKey = "/home/${cfg.user}/.ssh/id_paseo";
@@ -291,6 +292,20 @@
       # HM uses INI-style Unit/Service/Install sections, not NixOS
       # serviceConfig/wantedBy.
       home-manager.users.${cfg.user} = { ... }: {
+        # No 1Password agent or op-ssh-sign on a headless host, so GitHub auth
+        # and commit signing both go through the on-disk key, letting agents
+        # clone, commit and push.
+        myHomeManager = lib.mkIf cfg.onDiskSshKey.enable {
+          ssh.use1Password = false;
+          gpg-agent.enableSshSupport = false;
+        };
+        programs.ssh.settings."github.com" = lib.mkIf cfg.onDiskSshKey.enable {
+          IdentityFile = sshKey;
+          IdentitiesOnly = true;
+          StrictHostKeyChecking = "accept-new";
+        };
+        programs.git.settings.user.signingKey = lib.mkIf cfg.onDiskSshKey.enable (lib.mkForce sshKey);
+
         systemd.user.services.t3code = {
           Unit.Description = "T3 Code - self-hosted server for AI coding agents";
           Install.WantedBy = [ "default.target" ];

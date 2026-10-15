@@ -7,28 +7,10 @@
   home.username = "cramt";
   home.homeDirectory = "/home/cramt";
 
-  # The T3 Code server runs headless as cramt, so 1Password's ssh-agent and
-  # op-ssh-sign (which need the desktop app) are unavailable. Use the personal
-  # SSH key that opnix drops on-disk for both GitHub auth and commit signing so
-  # agents can actually clone/commit/push. The path below is opnix's key
-  # re-emitted with a trailing newline by the t3code module (modules/services/
-  # t3code.nix) — OpenSSH rejects the raw opnix file without it.
-  programs.ssh.settings."github.com" = {
-    IdentityFile = "/home/cramt/.ssh/id_paseo";
-    IdentitiesOnly = true;
-    StrictHostKeyChecking = "accept-new";
-  };
-  programs.git.settings = {
-    gpg.ssh.program = lib.mkForce "${pkgs.openssh}/bin/ssh-keygen";
-    user.signingKey = lib.mkForce "/home/cramt/.ssh/id_paseo";
-  };
-
   myHomeManager = {
     bundles.general.enable = true;
     bundles.development.enable = true;
-    ssh.use1Password = false;
     insight-driver.enable = true;
-    gpg-agent.enableSshSupport = false;
     hyprland = {
       enable = false;
       exec = "firefox --kiosk https://example.com";
