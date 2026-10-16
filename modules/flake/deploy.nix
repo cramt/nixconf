@@ -32,6 +32,30 @@ let
     (lib.unique (map hostSystem (builtins.attrNames config.nixosHosts)))
     deployLibFor;
 
+  nodeFor = name: {
+    # Never build on the target — eros is a 2GB Pi that falls over on eval
+    # alone. Whoever runs `just deploy` builds, and the closure is copied.
+    remoteBuild = false;
+
+    profiles.system.path =
+      (deployLibs.${hostSystem name}).activate.nixos
+        inputs.self.nixosConfigurations.${name};
+  };
+
+  lanNodes = lib.mapAttrs
+    (name: host: nodeFor name // { hostname = host.address; })
+    config.nixosHosts;
+
+  # The same host and profile again, reached through its port forward. The
+  # `-remote` suffix is what the Justfile uses to leave these out of a bare
+  # `just deploy`: from the LAN, hairpin NAT means both would answer.
+  wanNodes = lib.mapAttrs'
+    (name: host: lib.nameValuePair "${name}-remote" (nodeFor name // {
+      hostname = host.wan.address;
+      sshOpts = [ "-p" (toString host.wan.port) ];
+    }))
+    (lib.filterAttrs (_: host: host.wan != null) config.nixosHosts);
+
   # Structure-only copy of the deploy tree; see the comment on `checks` below.
   schemaOnlyDeploy = inputs.self.deploy // {
     nodes = lib.mapAttrs
@@ -54,17 +78,7 @@ in
     activationTimeout = 900;
     confirmTimeout = 120;
 
-    nodes = lib.mapAttrs (name: host: {
-      hostname = host.address;
-
-      # Never build on the target — eros is a 2GB Pi that falls over on eval
-      # alone. Whoever runs `just deploy` builds, and the closure is copied.
-      remoteBuild = false;
-
-      profiles.system.path =
-        (deployLibs.${hostSystem name}).activate.nixos
-          inputs.self.nixosConfigurations.${name};
-    }) config.nixosHosts;
+    nodes = lanNodes // wanNodes;
   };
 
   # Schema validation for the above. Only for platforms we actually deploy to,

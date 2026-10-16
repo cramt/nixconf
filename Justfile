@@ -33,9 +33,13 @@ deploy *hosts:
     set -euo pipefail
 
     # Node list comes straight out of the flake, so it tracks hosts/ with no
-    # second table to keep in sync.
+    # second table to keep in sync. One line per node: name, address, ssh opts.
     nodes=$(nix eval --raw .#deploy.nodes --apply \
-      'ns: builtins.concatStringsSep "\n" (builtins.attrValues (builtins.mapAttrs (n: v: n + " " + v.hostname) ns))')
+      'ns: builtins.concatStringsSep "\n" (builtins.attrValues (builtins.mapAttrs (n: v: builtins.concatStringsSep " " ([ n v.hostname ] ++ (v.sshOpts or [ ]))) ns))')
+    # `<host>-remote` nodes are the same machine through its WAN port forward
+    # (modules/flake/deploy.nix), for when you're off the home network. Only
+    # deployed when named, or luna would go out twice from the LAN.
+    defaults=$(cut -d' ' -f1 <<<"$nodes" | grep -v -- '-remote$' | tr '\n' ' ')
 
     want=""; infra=false
     if [ -z "{{hosts}}" ]; then infra=true; fi
@@ -55,25 +59,26 @@ deploy *hosts:
     # infra already ran here (it executes on luna regardless), so the remote run
     # gets an explicit host list: an empty one would mean "everything + infra".
     if [ -n "{{on}}" ] && [ "{{on}}" != "$(hostname)" ]; then
-      addr=$(awk -v h="{{on}}" '$1 == h { print $2 }' <<<"$nodes")
-      [ -n "$addr" ] || { echo "unknown host for on=: {{on}}" >&2; exit 1; }
-      [ -n "$want" ] || want=$(cut -d' ' -f1 <<<"$nodes" | tr '\n' ' ')
+      read -r _ addr opts < <(awk -v h="{{on}}" '$1 == h' <<<"$nodes") \
+        || { echo "unknown host for on=: {{on}}" >&2; exit 1; }
+      [ -n "$want" ] || want=$defaults
       # Source tree (uncommitted edits included) plus every locked input, so
       # the remote eval is this one exactly, no git checkout needed over there.
       # Not `flake archive --to`: Lix's has no --no-check-sigs, and fetched
       # inputs are unsigned. Root over ssh owns the box anyway (see infra.nix).
       tree=$(nix flake archive --json --dry-run .)
       src=$(jq -r .path <<<"$tree")
-      nix copy --no-check-sigs --to "ssh-ng://root@$addr" $(jq -r '.. | .path? // empty' <<<"$tree")
+      NIX_SSHOPTS="$opts" nix copy --no-check-sigs --to "ssh-ng://root@$addr" $(jq -r '.. | .path? // empty' <<<"$tree")
       # -A: the remote deploy reaches the fleet as root with our keys, same as
       # from here. on= cleared so it can't bounce again. git because Lix shells
       # out to it for eval-time fetchGit (niri's cargo git deps), and root's
       # PATH on a server has none.
       tty=(); if [ -t 0 ] && [ -t 1 ]; then tty=(-t); fi
-      exec ssh -A "${tty[@]}" "root@$addr" "cd $src && nix shell --inputs-from . nixpkgs#just nixpkgs#git --command \
+      exec ssh -A "${tty[@]}" $opts "root@$addr" "cd $src && nix shell --inputs-from . nixpkgs#just nixpkgs#git --command \
         just on= jobs={{jobs}} cores={{cores}} deploy $want"
     fi
-    wanted() { [ -z "$want" ] && return 0; for w in $want; do [ "$w" = "$1" ] && return 0; done; return 1; }
+    [ -n "$want" ] || want=$defaults
+    wanted() { for w in $want; do [ "$w" = "$1" ] && return 0; done; return 1; }
 
     # A T3 Code agent deploying its own host runs inside the t3code user unit,
     # which home-manager restarts whenever the unit changes. KillMode=mixed then
@@ -81,7 +86,7 @@ deploy *hosts:
     # rollback undoes a good deploy. So hop into a transient unit of our own and
     # follow its journal. If the agent dies, the deploy carries on, and
     # `journalctl --user -u deploy-*` still has the tail.
-    if [ -z "${JUST_DEPLOY_DETACHED:-}" ] && wanted "$(hostname)" \
+    if [ -z "${JUST_DEPLOY_DETACHED:-}" ] && { wanted "$(hostname)" || wanted "$(hostname)-remote"; } \
         && grep -q '/t3code\.service$' /proc/self/cgroup; then
       unit="deploy-$(date +%s)"
       since=$(date '+%Y-%m-%d %H:%M:%S')
@@ -98,15 +103,15 @@ deploy *hosts:
     # or absent, and that's the case deploy-rs would choke on. All in parallel —
     # an offline host otherwise costs the full connect timeout, serially.
     tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
-    while read -r name addr; do
+    while read -r name addr opts; do
       wanted "$name" || continue
-      ( ssh -o BatchMode=yes -o ConnectTimeout=4 -o StrictHostKeyChecking=accept-new \
+      ( ssh -o BatchMode=yes -o ConnectTimeout=4 -o StrictHostKeyChecking=accept-new $opts \
           "root@$addr" true >/dev/null 2>&1 && : > "$tmp/$name" ) &
     done <<<"$nodes"
     wait
 
     targets=()
-    while read -r name addr; do
+    while read -r name addr _; do
       wanted "$name" || continue
       if [ -e "$tmp/$name" ]; then
         echo "  $name ($addr): online"

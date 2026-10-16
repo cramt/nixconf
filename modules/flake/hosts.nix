@@ -35,6 +35,16 @@ in
           default = name;
           description = "Where deploy-rs reaches this host. Bare hostnames resolve over the LAN's DNS; override if one can't.";
         };
+        wan = lib.mkOption {
+          type = lib.types.nullOr (lib.types.submodule {
+            options = {
+              address = lib.mkOption { type = lib.types.str; };
+              port = lib.mkOption { type = lib.types.port; };
+            };
+          });
+          default = null;
+          description = "Route to the host from off the LAN (a router port forward). Adds a `<name>-remote` deploy target, used only when named.";
+        };
         builder = lib.mkOption {
           type = lib.types.nullOr (lib.types.submodule {
             options = {
