@@ -77,6 +77,8 @@
           languages = {
             Nix.language_servers = ["nil"];
             Ruby.language_servers = ["ruby-lsp" "rubocop"];
+            # Zed's defaults turn format-on-save off for Markdown; Prettier is already wired up
+            Markdown.format_on_save = "on";
             # vhdl_ls has no documentFormattingProvider; vhdl_lang ships alongside it
             # and formats a path to stdout, so /dev/stdin makes it a pipe filter
             VHDL.formatter.external = {
