@@ -56,6 +56,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # T3 Code. Our own flake (cramt/t3code-nix), built from upstream nightlies and
+    # auto-bumped hourly by its CI; `just update` pulls the new version in.
+    t3code-nix = {
+      url = "github:cramt/t3code-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # OpenAI-compatible proxy for M365 Copilot (Nitro service + NixOS module).
     m365-copilot-proxy = {
       url = "github:cramt/m365-copilot-proxy";

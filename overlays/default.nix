@@ -92,97 +92,13 @@ inputs: [
     zed-vixen = final.mkZedExtension {src = final.npinsSources.vixen-zed;};
   })
 
-  # T3 Code comes from llm-agents (release-tracked, bumped daily by numtide).
-  # Their build ships with T3 Connect compiled out, which is what we want: luna
-  # is reached through caddy + authelia (modules/services/t3code.nix), not
-  # Ping's cloud relay. Only the wrapper is overridden, so the unwrapped build
-  # still comes straight from cache.numtide.com.
-  #
-  # Switching from our old pnpm2nix build: that one launched electron on a bare
-  # main.cjs, so safeStorage sometimes keyed off the keyring entry for app
-  # "Electron" instead of "T3 Code (Alpha)". Anything it encrypted that way
-  # (seen: connection-catalog.json) fails with ElectronSafeStorageDecryptError
-  # now. Fix: decrypt under app name "Electron" and re-encrypt under
-  # "T3 Code (Alpha)" (done on mars 2026-10-02).
-  #
-  # electron_44 is swapped for ours: llm-agents doesn't follow our nixpkgs, so
-  # its electron links an older glibc and then can't dlopen the system mesa
-  # from /run/opengl-driver ("GLIBC_2.43 not found", no GPU). The electron
-  # binary is a nixpkgs cache hit either way; drop this only if llm-agents
-  # gets `inputs.nixpkgs.follows`.
-  #
-  # providerPackages is emptied because the agents t3code spawns should be the
-  # home-manager ones (claude-code's config, auth, etc.), not a second copy
-  # pinned by llm-agents.
-  #
-  # TEMP: unwrapped is pinned to a nightly for Orchestrator V2
-  # (https://github.com/pingdotgg/t3code/pull/2829), merged an hour after the
-  # v0.0.45 tag, so no stable release carries it and llm-agents only packages
-  # stable tags. Remove this pin once llm-agents ships a release that contains it
-  # (>= 0.0.46); the assert below fails eval when that happens. native/ is
-  # unchanged since 0.0.45, so the cached resourceMonitor is still the right one.
-  (final: prev: let
-    upstream = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.t3code;
-    nightly = rec {
-      version = "0.1.1-nightly.20261016.3190";
-      src = prev.fetchFromGitHub {
-        owner = "pingdotgg";
-        repo = "t3code";
-        tag = "v${version}";
-        hash = "sha256-F4wtsef12vR7aTk0pX+diQn3NHSw9K4dygfqW/W3P30=";
-      };
-      pnpmDepsHash = "sha256-XRgN5NIC94VsLIhoMsMj8ocLtxiVfLFvG+nlK1spqmI=";
-    };
-    unwrapped =
-      assert prev.lib.assertMsg (!prev.lib.versionAtLeast upstream.version "0.0.46")
-      "llm-agents ships t3code ${upstream.version} now, which has Orchestrator V2: drop the nightly pin in overlays/default.nix";
-        (upstream.unwrapped.override {inherit (final) electron_44;}).overrideAttrs (old: {
-          inherit (nightly) version src;
-          pnpmDeps = old.pnpmDeps.overrideAttrs {
-            inherit (nightly) version src;
-            name = "t3code-${nightly.version}-pnpm-deps";
-            outputHash = nightly.pnpmDepsHash;
-          };
-          # Upstream's reusable dev token (T3CODE_DEV_AUTH_TOKEN) only switches
-          # on alongside --dev-url, and that flag drags in dev behaviour we don't
-          # want: loopback-Host requests 302 to the dev server (which breaks the
-          # desktop app's SSH reuse probe, so it launched a second server on the
-          # same ~/.t3), and Codex's ChatGPT login returns there. Ungated, it is
-          # a plain fixed pairing secret, which is how `sharedSecret` uses it
-          # (modules/services/t3code.nix). Upstream discussion for a supported
-          # way: https://github.com/pingdotgg/t3code/discussions/6750 (the
-          # unsafe-no-auth PR #13001 was closed pending it); drop this when one
-          # lands.
-          postPatch =
-            (old.postPatch or "")
-            + ''
-              substituteInPlace apps/server/src/cli/config.ts \
-                --replace-fail \
-                  'mode === "web" && devUrl !== undefined ? yield* DevAuthTokenConfig' \
-                  'mode === "web" ? yield* DevAuthTokenConfig'
-              substituteInPlace apps/server/src/auth/ReusableDevAuth.ts \
-                --replace-fail \
-                  'config.mode !== "web" || config.devUrl === undefined ||' \
-                  'config.mode !== "web" ||'
-            '';
-          preBuild =
-            builtins.replaceStrings
-            ["update-release-package-versions.ts ${upstream.version}"]
-            ["update-release-package-versions.ts ${nightly.version}"]
-            old.preBuild;
-        });
-    t3code = upstream.override {
-      t3code-unwrapped = unwrapped;
-      providerPackages = [];
-    };
-  in {
-    inherit t3code;
-    t3code-desktop = final.symlinkJoin {
-      name = "t3code-desktop-${t3code.version}";
-      paths = [t3code.desktop];
-      meta = t3code.meta // {mainProgram = "t3code-desktop";};
-    };
-  })
+  # T3 Code (`t3code`, `t3code-desktop`) from our own flake (cramt/t3code-nix),
+  # built from upstream nightlies against our nixpkgs and auto-bumped hourly by
+  # its CI. It carries the dev-auth-token patch that `sharedSecret` relies on
+  # (modules/services/t3code.nix), and no provider wrapper, so t3code spawns the
+  # home-manager agents. luna is reached through caddy + authelia, not Ping's
+  # cloud relay.
+  inputs.t3code-nix.overlays.default
 
   # niri-stable (v25.08) links libdisplay-info-sys 0.2.2, which only binds a
   # system libdisplay-info of the same major.minor. nixpkgs dropped

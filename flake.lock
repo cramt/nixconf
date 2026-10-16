@@ -2057,6 +2057,7 @@
         "progress-engine": "progress-engine",
         "quadlet-nix": "quadlet-nix",
         "stylix": "stylix",
+        "t3code-nix": "t3code-nix",
         "terranix": "terranix_2",
         "winapps": "winapps",
         "yazi": "yazi",
@@ -2508,6 +2509,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "t3code-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792146034,
+        "narHash": "sha256-CJnVMDPBg0YEfD37hVGg5dhIs5paEIVhAgrTJ/DNk24=",
+        "owner": "cramt",
+        "repo": "t3code-nix",
+        "rev": "343affa915e9488d1a26a713644f31116b799863",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cramt",
+        "repo": "t3code-nix",
         "type": "github"
       }
     },
