@@ -124,14 +124,14 @@ inputs: [
   (final: prev: let
     upstream = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.t3code;
     nightly = rec {
-      version = "0.0.46-nightly.20261013.3053";
+      version = "0.1.1-nightly.20261016.3190";
       src = prev.fetchFromGitHub {
         owner = "pingdotgg";
         repo = "t3code";
         tag = "v${version}";
-        hash = "sha256-nZ+NkxnsIppURFqMSV9VvT2USfp6M7/VQ8Zx0TevAcU=";
+        hash = "sha256-F4wtsef12vR7aTk0pX+diQn3NHSw9K4dygfqW/W3P30=";
       };
-      pnpmDepsHash = "sha256-cIsCMDSm5qwyfNcc5sHPb/sfRxDNyTjVSNyNg4P9+9k=";
+      pnpmDepsHash = "sha256-XRgN5NIC94VsLIhoMsMj8ocLtxiVfLFvG+nlK1spqmI=";
     };
     unwrapped =
       assert prev.lib.assertMsg (!prev.lib.versionAtLeast upstream.version "0.0.46")
