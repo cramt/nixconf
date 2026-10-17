@@ -28,6 +28,10 @@
 
     nixarr.url = "github:nix-media-server/nixarr";
     jellarr.url = "github:cramt/jellarr";
+    chipsmith = {
+      url = "github:A-H-Technology/chipsmith";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
 
     # mattpocock/skills — engineering-process skills for Claude Code (spec →

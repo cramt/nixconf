@@ -53,6 +53,7 @@
           # recorded. Try dropping the pin next time work AWS access is handy.
           inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.awscli2
           gcc-arm-embedded
+          inputs.chipsmith.packages.${pkgs.stdenv.hostPlatform.system}.default
           zig
           futhark
           agent-browser
