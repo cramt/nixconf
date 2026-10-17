@@ -90,12 +90,16 @@ let
   # are ABI-locked to libavcodec.so.59 / libavutil.so.57 and nixpkgs only ships
   # ffmpeg 6+ (libavcodec.so.60+). Tracked separately so updating the upstream
   # ffmpeg in nixpkgs doesn't break the patchelf step.
+  #
+  # Every .deb below comes from snapshot.debian.org, not the live pool: Debian
+  # deletes the old version from the pool on each bookworm security update,
+  # which 404'd ffmpeg 5.1.8 when 5.1.9 landed and took out eros' CI leg.
   libavcodec59 = fetchurl {
-    url = "http://deb.debian.org/debian/pool/main/f/ffmpeg/libavcodec59_5.1.8-0+deb12u1_arm64.deb";
+    url = "https://snapshot.debian.org/archive/debian-security/20251210T222759Z/pool/updates/main/f/ffmpeg/libavcodec59_5.1.8-0+deb12u1_arm64.deb";
     hash = "sha256-O1+QTKIC3KV6HTigZg8Ip0l3iIFE+1rFV7W2KLF4skE=";
   };
   libavutil57 = fetchurl {
-    url = "http://deb.debian.org/debian/pool/main/f/ffmpeg/libavutil57_5.1.8-0+deb12u1_arm64.deb";
+    url = "https://snapshot.debian.org/archive/debian-security/20251210T222759Z/pool/updates/main/f/ffmpeg/libavutil57_5.1.8-0+deb12u1_arm64.deb";
     hash = "sha256-KYdMGJXRNTWWgzUUBVIkueOC1FnDIsZxLSi+ibJ+iwo=";
   };
 
@@ -106,44 +110,44 @@ let
   # LD_LIBRARY_PATH find them.
   vendoredDebs = {
     libvpx7 = fetchurl {
-      url = "http://security.debian.org/debian-security/pool/updates/main/libv/libvpx/libvpx7_1.12.0-1+deb12u5_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian-security/20260219T202037Z/pool/updates/main/libv/libvpx/libvpx7_1.12.0-1+deb12u5_arm64.deb";
       hash = "sha256-STK5UVdIykgxHgDKVIdBrveCIwDJwUnEAP0KfLC2w5Q=";
     };
     libdav1d6 = fetchurl {
-      url = "http://ftp.debian.org/debian/pool/main/d/dav1d/libdav1d6_1.0.0-2+deb12u1_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian-security/20240509T143936Z/pool/updates/main/d/dav1d/libdav1d6_1.0.0-2+deb12u1_arm64.deb";
       hash = "sha256-V5yCC4DONJEUPEEaNCs6Iizjo4HHwFLoyFAd5brOlU8=";
     };
     libcodec2 = fetchurl {
-      url = "http://ftp.debian.org/debian/pool/main/c/codec2/libcodec2-1.0_1.0.5-1_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian/20220718T031307Z/pool/main/c/codec2/libcodec2-1.0_1.0.5-1_arm64.deb";
       hash = "sha256-E8UYKVjQETM9MOFFnl5yrLJKKzQzrE3QJ9NfGv3LYzg=";
     };
     libgsm1 = fetchurl {
-      url = "http://ftp.debian.org/debian/pool/main/libg/libgsm/libgsm1_1.0.22-1_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian/20221001T092433Z/pool/main/libg/libgsm/libgsm1_1.0.22-1_arm64.deb";
       hash = "sha256-TABBtFo+JTXfzbkSIvvZyyp5yboOONbUStcnQktFd3U=";
     };
     libjxl07 = fetchurl {
-      url = "http://ftp.debian.org/debian/pool/main/j/jpeg-xl/libjxl0.7_0.7.0-10+deb12u1_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian-security/20250704T070620Z/pool/updates/main/j/jpeg-xl/libjxl0.7_0.7.0-10+deb12u1_arm64.deb";
       hash = "sha256-/EbZ0kwi4WcmzA/hMfUsSzzAjbe6QI7xUXOEG9OTPy4=";
     };
     librav1e0 = fetchurl {
-      url = "http://ftp.debian.org/debian/pool/main/r/rust-rav1e/librav1e0_0.5.1-6_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian/20221230T151741Z/pool/main/r/rust-rav1e/librav1e0_0.5.1-6_arm64.deb";
       hash = "sha256-BUv/fi8troaT6TPYUF0a1NmaDIuuXVz+R1CLAHy0RVU=";
     };
     libsvtav1enc1 = fetchurl {
-      url = "http://ftp.debian.org/debian/pool/main/s/svt-av1/libsvtav1enc1_1.4.1+dfsg-1_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian/20221217T033412Z/pool/main/s/svt-av1/libsvtav1enc1_1.4.1+dfsg-1_arm64.deb";
       hash = "sha256-hhVpLhN5ejRbKup3fjlq1vnBnm/0lFliX5B4uzMZmv4=";
     };
     libtheora0 = fetchurl {
-      url = "http://ftp.debian.org/debian/pool/main/libt/libtheora/libtheora0_1.1.1+dfsg.1-16.1+deb12u1_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian/20250708T084135Z/pool/main/libt/libtheora/libtheora0_1.1.1+dfsg.1-16.1+deb12u1_arm64.deb";
       hash = "sha256-2dp5aWpqiGpgbsvCWUl5ePTWFty2FUQBGkig4Eht0QU=";
     };
     libx265-199 = fetchurl {
-      url = "http://ftp.debian.org/debian/pool/main/x/x265/libx265-199_3.5-2+b1_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian/20220919T063113Z/pool/main/x/x265/libx265-199_3.5-2+b1_arm64.deb";
       hash = "sha256-MUK5yfsAUBPO5Xq+5Rq714ygppP8YaolL+/Vvl0HSwM=";
     };
     # libjxl 0.7 needs libhwy.so.1; nixpkgs only ships libhwy as a static .a.
     libhwy1 = fetchurl {
-      url = "http://ftp.debian.org/debian/pool/main/h/highway/libhwy1_1.0.3-3+deb12u1_arm64.deb";
+      url = "https://snapshot.debian.org/archive/debian/20230928T030030Z/pool/main/h/highway/libhwy1_1.0.3-3+deb12u1_arm64.deb";
       hash = "sha256-v9SSuwxcUHLGfqBTw8qIY99n0U0Ga03d1Rnuroy82S8=";
     };
   };
