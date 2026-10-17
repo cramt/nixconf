@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Emits a GitHub Actions matrix (one entry per flake package, per Linux system)
-# so each package is prebuilt on its own runner and pushed to cachix. The set of
+# Emits two GitHub Actions matrices: `matrix` (one entry per flake package, per
+# Linux system) so each package is prebuilt on its own runner and pushed to
+# cachix, and `hosts` (one entry per nixosConfiguration) for the toplevel builds. The set of
 # things CI builds is exactly `nix flake show`'s packages — drop a folder into
 # packages/ (or add an output to modules/flake/packages.nix) and it joins.
 set -euo pipefail
@@ -45,5 +46,18 @@ for system in "${!runners[@]}"; do
 done
 
 echo "matrix={\"include\":${include}}" >>"$GITHUB_OUTPUT"
-echo "Generated matrix:"
+echo "Generated package matrix:"
 jq <<<"{\"include\":${include}}"
+
+# One leg per nixosConfiguration, on a runner native to its system. hosts.nix
+# discovers hosts from hosts/, so a new host joins CI with no edit here.
+runners_json=$(for s in "${!runners[@]}"; do echo "$s ${runners[$s]}"; done |
+  jq -Rn '[inputs | split(" ") | {(.[0]): .[1]}] | add')
+hosts=$(nix eval --json .#nixosConfigurations \
+  --apply 'cs: builtins.mapAttrs (_: c: c.pkgs.stdenv.hostPlatform.system) cs' |
+  jq -c --argjson runners "$runners_json" \
+    '[to_entries[] | { host: .key, runner: ($runners[.value] // error("no runner for \(.key) (\(.value))")) }]')
+
+echo "hosts={\"include\":${hosts}}" >>"$GITHUB_OUTPUT"
+echo "Generated host matrix:"
+jq <<<"{\"include\":${hosts}}"

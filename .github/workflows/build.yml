@@ -18,6 +18,7 @@ jobs:
       statuses: write
     outputs:
       matrix: ${{ steps.gen.outputs.matrix }}
+      hosts: ${{ steps.gen.outputs.hosts }}
     steps:
       - uses: actions/checkout@v4
 
@@ -90,26 +91,15 @@ jobs:
   # if:!cancelled() lets these run even if a prebuild leg failed, so a single
   # bad package never blocks the host builds — they just fall back to compiling.
   build:
-    needs: prebuild
+    needs: [matrix, prebuild]
     if: ${{ !cancelled() }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - host: saturn
-            runner: ubuntu-latest
-          - host: mars
-            runner: ubuntu-latest
-          - host: luna
-            runner: ubuntu-latest
-          - host: eros
-            runner: ubuntu-24.04-arm
-          # mercury's kernel is Terasic's fork via nixos-fpga, which Hydra has
-          # never seen. nixos-fpga's own CI caches it, but only against *its*
-          # nixpkgs lock — ours follows nixpkgs, so this leg is what guarantees
-          # the exact closure lands in cachix and the board only substitutes.
-          - host: mercury
-            runner: ubuntu-24.04-arm
+      # One leg per host, from build-matrix.sh. mercury's leg matters most:
+      # its kernel is Terasic's fork via nixos-fpga, which Hydra has never
+      # seen, and nixos-fpga's CI only caches it against *its* nixpkgs lock —
+      # this is what guarantees the exact closure lands in cachix.
+      matrix: ${{ fromJSON(needs.matrix.outputs.hosts) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 350
     steps:
