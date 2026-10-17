@@ -4,7 +4,9 @@
   fetchurl,
   nodejs_24,
   procps,
+  ghidra,
   makeWrapper,
+  runCommand,
 }:
 # REA (https://github.com/morluto/rea): reverse-engineering CLI + stdio MCP
 # server (`rea mcp`). Built from the published npm tarball, which already
@@ -42,14 +44,28 @@ buildNpmPackage (finalAttrs: {
   dontNpmBuild = true;
 
   # Linux process-ownership checks shell out to a procps `ps` (upstream
-  # docs/installation.md, "Linux owned-process prerequisite").
+  # docs/installation.md, "Linux owned-process prerequisite"). Ghidra is the
+  # native decompiler; without it only the static/JS tools work.
   postFixup = ''
     for b in $out/bin/*; do
-      wrapProgram $b --prefix PATH : ${lib.makeBinPath [procps]}
+      wrapProgram $b --prefix PATH : ${lib.makeBinPath [procps]} \
+        --set-default GHIDRA_INSTALL_DIR ${ghidra}/lib/ghidra
     done
   '';
 
-  passthru.skill = "${finalAttrs.finalPackage}/lib/node_modules/rea-agents/skills/reverse-engineer-anything";
+  # Upstream's skill assumes the MCP server and walks the agent through
+  # `rea setup` when its tools are missing, which would write MCP config into
+  # ~/.claude.json. We ship the CLI only, so the skill gets a note right after
+  # its frontmatter pointing at the matching `rea <command>` instead.
+  passthru.skill = runCommand "rea-skill-${finalAttrs.version}" {} ''
+    cp -r ${finalAttrs.finalPackage}/lib/node_modules/rea-agents/skills/reverse-engineer-anything $out
+    chmod -R u+w $out
+    awk 'NR==FNR { note = note $0 "\n"; next }
+         { print }
+         /^---$/ && ++fences == 2 { printf "%s", note }' ${./cli-only.md} $out/SKILL.md > SKILL.md
+    grep -q 'CLI only, no MCP server' SKILL.md
+    mv SKILL.md $out/SKILL.md
+  '';
 
   meta = {
     description = "Reverse engineer anything: CLI and MCP server for binaries, apps and runtime behaviour";

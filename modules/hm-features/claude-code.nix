@@ -39,37 +39,6 @@
 
     cfg = config.myHomeManager.claude-code;
 
-    # `reaclaude`: regular (pooled) Claude plus REA's reverse-engineering MCP
-    # server and skill, loaded as a session-only plugin (or into plain `claude`
-    # with rea.alwaysOn, as on luna). Kept out of the
-    # always-on servers for the same reason as m365: 207 tools cost 75K
-    # context tokens over a 32K floor even with the compact input and no-output
-    # schema profiles (3 MB of JSON → 215 KB); full schemas would be ~750K.
-    # Measured with the m365 benchmark below. The skill rides along in the
-    # plugin because it's only useful with the server attached.
-    reaPlugin = pkgs.linkFarm "rea-claude-plugin" {
-      ".claude-plugin/plugin.json" = pkgs.writeText "plugin.json" (builtins.toJSON {
-        name = "rea";
-        inherit (pkgs.rea-agents) version;
-        description = "REA reverse-engineering MCP server and skill";
-      });
-      ".mcp.json" = pkgs.writeText "rea-mcp.json" (builtins.toJSON {
-        mcpServers.rea = {
-          command = lib.getExe pkgs.rea-agents;
-          args = ["mcp"];
-          env = {
-            REA_MCP_INPUT_SCHEMA_PROFILE = "compact";
-            REA_MCP_OUTPUT_SCHEMA_PROFILE = "off";
-            GHIDRA_INSTALL_DIR = "${pkgs.ghidra}/lib/ghidra";
-          };
-        };
-      });
-      "skills/reverse-engineer-anything" = pkgs.rea-agents.skill;
-    };
-    reaClaudePkg = pkgs.writeShellScriptBin "reaclaude" ''
-      exec ${claudePoolPkg}/bin/claude --plugin-dir ${reaPlugin} "$@"
-    '';
-    reaAlwaysOn = cfg.rea.enable && cfg.rea.alwaysOn;
 
     # `claude` wrapper: point Claude Code at the cli-proxy-api pool on luna
     # (myLib/claude-pool.nix) so requests are spread over the pooled Claude
@@ -118,7 +87,7 @@
         fi
       fi
 
-      exec ${claudeCodePkg}/bin/claude ${lib.optionalString reaAlwaysOn "--plugin-dir ${reaPlugin}"} "$@"
+      exec ${claudeCodePkg}/bin/claude "$@"
     '');
 
     globalClaudeMd = builtins.readFile ./global-agent-instructions.md;
@@ -175,9 +144,8 @@
         description = "Regex handed to ms-365-mcp-server --enabled-tools, narrowing which of its 336 tools reach the context.";
       };
       rea.enable =
-        lib.mkEnableOption "`reaclaude` launcher (regular Claude + REA reverse-engineering MCP, skill and Ghidra). Kept out of the always-on servers because its 207 tool schemas cost 75K context tokens per session"
+        lib.mkEnableOption "REA reverse-engineering skill + `rea` CLI (with Ghidra)"
         // {default = true;};
-      rea.alwaysOn = lib.mkEnableOption "loading the REA plugin into plain `claude` on every session instead of behind `reaclaude`, paying its 75K context tokens each time";
       dm-me.enable =
         lib.mkEnableOption "Discord DM-to-Alex skill + `dm-me` CLI (yelliv bot)"
         // {default = true;};
@@ -214,9 +182,7 @@
         # unedited file, conflict markers included.
         home.packages =
           [claudePoolPkg pkgs.python3]
-          ++ lib.optional cfg.ms365.enable m365ClaudePkg
-          ++ lib.optional cfg.rea.enable pkgs.rea-agents
-          ++ lib.optional (cfg.rea.enable && !reaAlwaysOn) reaClaudePkg;
+          ++ lib.optional cfg.ms365.enable m365ClaudePkg;
 
         # Sit out a rate limit instead of dying on it. Claude Code's default
         # 429 path gives up two ways: a retry-after longer than 60s is
@@ -295,6 +261,12 @@
       (lib.mkIf cfg.dm-me.enable {
         home.packages = [skills.dm-me-bin];
         home.file.".claude/skills/dm-me/SKILL.md".source = skills.dm-me.path;
+      })
+      # CLI rather than MCP server, so the skill costs only its description
+      # instead of 207 tool schemas (75K tokens) in every session.
+      (lib.mkIf cfg.rea.enable {
+        home.packages = [pkgs.rea-agents];
+        home.file.".claude/skills/reverse-engineer-anything".source = pkgs.rea-agents.skill;
       })
       (lib.mkIf cfg.mtg.enable {
         home.packages = [skills.scryfall skills.gauntlet skills.mtg-lore];
