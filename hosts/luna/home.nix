@@ -11,6 +11,7 @@
     bundles.general.enable = true;
     bundles.development.enable = true;
     insight-driver.enable = true;
+    claude-code.rea.alwaysOn = true;
     hyprland = {
       enable = false;
       exec = "firefox --kiosk https://example.com";

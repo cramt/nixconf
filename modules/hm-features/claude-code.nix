@@ -40,7 +40,8 @@
     cfg = config.myHomeManager.claude-code;
 
     # `reaclaude`: regular (pooled) Claude plus REA's reverse-engineering MCP
-    # server and skill, loaded as a session-only plugin. Kept out of the
+    # server and skill, loaded as a session-only plugin (or into plain `claude`
+    # with rea.alwaysOn, as on luna). Kept out of the
     # always-on servers for the same reason as m365: 207 tools cost 75K
     # context tokens over a 32K floor even with the compact input and no-output
     # schema profiles (3 MB of JSON → 215 KB); full schemas would be ~750K.
@@ -68,6 +69,7 @@
     reaClaudePkg = pkgs.writeShellScriptBin "reaclaude" ''
       exec ${claudePoolPkg}/bin/claude --plugin-dir ${reaPlugin} "$@"
     '';
+    reaAlwaysOn = cfg.rea.enable && cfg.rea.alwaysOn;
 
     # `claude` wrapper: point Claude Code at the cli-proxy-api pool on luna
     # (myLib/claude-pool.nix) so requests are spread over the pooled Claude
@@ -116,7 +118,7 @@
         fi
       fi
 
-      exec ${claudeCodePkg}/bin/claude "$@"
+      exec ${claudeCodePkg}/bin/claude ${lib.optionalString reaAlwaysOn "--plugin-dir ${reaPlugin}"} "$@"
     '');
 
     globalClaudeMd = builtins.readFile ./global-agent-instructions.md;
@@ -175,6 +177,7 @@
       rea.enable =
         lib.mkEnableOption "`reaclaude` launcher (regular Claude + REA reverse-engineering MCP, skill and Ghidra). Kept out of the always-on servers because its 207 tool schemas cost 75K context tokens per session"
         // {default = true;};
+      rea.alwaysOn = lib.mkEnableOption "loading the REA plugin into plain `claude` on every session instead of behind `reaclaude`, paying its 75K context tokens each time";
       dm-me.enable =
         lib.mkEnableOption "Discord DM-to-Alex skill + `dm-me` CLI (yelliv bot)"
         // {default = true;};
@@ -212,7 +215,8 @@
         home.packages =
           [claudePoolPkg pkgs.python3]
           ++ lib.optional cfg.ms365.enable m365ClaudePkg
-          ++ lib.optionals cfg.rea.enable [reaClaudePkg pkgs.rea-agents];
+          ++ lib.optional cfg.rea.enable pkgs.rea-agents
+          ++ lib.optional (cfg.rea.enable && !reaAlwaysOn) reaClaudePkg;
 
         # Sit out a rate limit instead of dying on it. Claude Code's default
         # 429 path gives up two ways: a retry-after longer than 60s is
