@@ -1985,11 +1985,11 @@
         "terranix": "terranix"
       },
       "locked": {
-        "lastModified": 1792229238,
-        "narHash": "sha256-nI5C3ZCW1j+3mQRT9ZQhdIFxVsDwtDzcAA5y0g6UStM=",
+        "lastModified": 1791296942,
+        "narHash": "sha256-CvMUr6L9cvKuW2Ui6nd5Oo/HsBLdskiB5E+BS7wGY+k=",
         "owner": "cramt",
         "repo": "progress-engine",
-        "rev": "6184404f7e62684fb0f56838549f81c6dc3ce50d",
+        "rev": "4725f9f1594831d4d3e73a51e524ce382a689ffe",
         "type": "github"
       },
       "original": {
