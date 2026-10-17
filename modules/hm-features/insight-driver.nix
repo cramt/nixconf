@@ -162,14 +162,23 @@
           git -C "$wt" branch -q --set-upstream-to "origin/$branch"
         fi
         cd "$wt"
-        exec nix develop --command bash -c '
-          pnpm install --frozen-lockfile --silent &&
-          exec node crates/vivisurgeons-insight/driver/src/main.ts "$@"' _ \
-          --branch "$branch" \
-          --state-dir ${lib.escapeShellArg cfg.stateDir} \
-          --max-batches 1 \
-          --max-cost-usd ${toString cfg.maxCostUsdPerBatch} \
-          --claude-path ${config.home.profileDirectory}/bin/claude
+        # 75: taking in main changed the driver, which node loaded before the
+        # merge; start again so the batch runs main's driver (and devshell).
+        # Bounded, in case main keeps moving under it.
+        for _ in 1 2 3; do
+          status=0
+          nix develop --command bash -c '
+            pnpm install --frozen-lockfile --silent &&
+            exec node crates/vivisurgeons-insight/driver/src/main.ts "$@"' _ \
+            --branch "$branch" \
+            --state-dir ${lib.escapeShellArg cfg.stateDir} \
+            --max-batches 1 \
+            --max-cost-usd ${toString cfg.maxCostUsdPerBatch} \
+            --claude-path ${config.home.profileDirectory}/bin/claude \
+            || status=$?
+          [ "$status" = 75 ] || exit "$status"
+        done
+        exit 75
       '';
     };
   in {
