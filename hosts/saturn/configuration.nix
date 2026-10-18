@@ -170,12 +170,12 @@
       # reachable from a phone/laptop without the desktop app being open. No
       # on-disk SSH key: this host has a session with 1Password's agent.
       #
-      # It shares ~/.t3 with the desktop app, which spawns its own backend on
-      # launch — nothing upstream locks the data dir (verified: two servers
-      # start happily over one), so don't run both at once. Use the web UI at
-      # this host's t3code port, or stop the unit before opening the app.
+      # The server locks ~/.t3, so the desktop app runs out of ~/.t3-desktop
+      # and reaches this server as a saved connection (t3code-remotes), which
+      # is what the shared secret is for.
       t3code = {
         enable = true;
+        sharedSecret = "op://Homelab/T3Code/password";
         # codex ships enabled in t3code, but there's no codex CLI to run.
         providers.codex = false;
       };

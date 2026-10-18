@@ -13,24 +13,40 @@
 # The stored credential is the server's shared secret itself
 # (myNixOS.services.t3code.sharedSecret): the server takes it as a bearer
 # token, so no pairing round-trip is needed.
+#
+# A host that also runs the background server (myNixOS.services.t3code) can't
+# give the app ~/.t3: the server holds a lock on it and the app quits with
+# "This T3 home is unavailable". The app gets its own T3CODE_HOME there, and the
+# local server is added as one more connection, like luna.
 { ... }: {
   flake.nixosModules."desktop.t3code-remotes" = { config, lib, pkgs, ... }:
   let
     cfg = config.myNixOS.t3code-remotes;
+    localServer = config.myNixOS.services.t3code;
+    sharesHome = localServer.enable && localServer.user == cfg.user;
+    appHome = "/home/${cfg.user}/${if sharesHome then ".t3-desktop" else ".t3"}";
     # opnix only takes camelCase keys.
     secretName = name: "t3codeRemote${lib.toUpper (lib.substring 0 1 name)}${lib.substring 1 (-1) name}";
     catalogEntries = lib.mapAttrsToList (name: r: {
       inherit (r) environmentId label;
       url = lib.removeSuffix "/" r.url;
       secretPath = config.services.onepassword-secrets.secretPaths.${secretName name};
-    }) cfg.servers;
+    }) cfg.servers
+    # The server mints its environment id on first start, so it's read off
+    # disk at sync time rather than declared.
+    ++ lib.optional sharesHome {
+      label = config.networking.hostName;
+      url = "http://127.0.0.1:${toString config.port-selector.ports.t3code}";
+      environmentIdFile = "/home/${localServer.user}/.t3/userdata/environment-id";
+      secretPath = config.services.onepassword-secrets.secretPaths.t3codeSharedSecret;
+    };
     entriesFile = (pkgs.formats.json {}).generate "t3code-remotes.json" catalogEntries;
     sync = pkgs.writeShellApplication {
       name = "t3code-remotes-sync";
       runtimeInputs = [pkgs.coreutils pkgs.jq pkgs.openssl pkgs.libsecret pkgs.procps];
       text = ''
         app="T3 Code (Alpha)"
-        dir="$HOME/.t3/userdata"
+        dir="${appHome}/userdata"
         catalog="$dir/connection-catalog.json"
 
         # The app holds the catalog in memory and writes it back, so an edit
@@ -60,8 +76,17 @@
 
         # Secrets are read into jq here, never onto a command line.
         entries=$(jq -c '.[]' ${entriesFile} | while read -r e; do
-          jq -c --rawfile token "$(jq -r .secretPath <<<"$e")" \
-            '. + {token: ($token | rtrimstr("\n")), connectionId: "bearer:\(.environmentId):\(.url)"}' <<<"$e"
+          id=$(jq -r '.environmentId // empty' <<<"$e")
+          if [ -z "$id" ]; then
+            idFile=$(jq -r .environmentIdFile <<<"$e")
+            if [ ! -s "$idFile" ]; then
+              echo "$idFile missing, the server hasn't started yet; skipping $(jq -r .label <<<"$e")"
+              continue
+            fi
+            id=$(tr -d '[:space:]' < "$idFile")
+          fi
+          jq -c --arg id "$id" --rawfile token "$(jq -r .secretPath <<<"$e")" \
+            '. + {environmentId: $id, token: ($token | rtrimstr("\n")), connectionId: "bearer:\($id):\(.url)"}' <<<"$e"
         done | jq -s .)
 
         updated=$(jq -c --argjson entries "$entries" '
@@ -127,6 +152,11 @@
     };
 
     config = lib.mkIf cfg.enable {
+      assertions = [{
+        assertion = sharesHome -> localServer.sharedSecret != null;
+        message = "myNixOS.t3code-remotes adds this host's own t3code server as a connection, which needs myNixOS.services.t3code.sharedSecret.";
+      }];
+
       services.onepassword-secrets.secrets = lib.mapAttrs' (name: r:
         lib.nameValuePair (secretName name) {
           reference = r.sharedSecret;
@@ -135,6 +165,14 @@
         }) cfg.servers;
 
       home-manager.users.${cfg.user} = { ... }: {
+        nixpkgs.overlays = lib.optional sharesHome (final: prev: {
+          t3code-desktop = prev.symlinkJoin {
+            inherit (prev.t3code-desktop) name meta;
+            paths = [prev.t3code-desktop];
+            nativeBuildInputs = [final.makeWrapper];
+            postBuild = "wrapProgram $out/bin/t3code-desktop --set T3CODE_HOME ${appHome}";
+          };
+        });
         systemd.user.services.t3code-remotes = {
           Unit = {
             Description = "Add our T3 Code servers to the desktop app's connections";
