@@ -80,8 +80,10 @@
           ENV{ID_VENDOR_ID}=="6969", ENV{ID_MODEL_ID}=="b00b", MODE="7777"
           SUBSYSTEM=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="0003", MODE="0666"
           ACTION=="add|change", SUBSYSTEM=="usb|tty|hidraw", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="27dd", MODE="0666", GROUP="plugdev", TAG+="uaccess"
-          # Altera USB-Blaster (DE2 onboard), so openFPGALoader can flash without root
-          SUBSYSTEM=="usb", ATTRS{idVendor}=="09fb", ATTRS{idProduct}=="6001", TAG+="uaccess"
+          # Altera USB-Blaster (DE2 onboard), so openFPGALoader can flash without root.
+          # uaccess alone only reaches a seated desktop session; plugdev covers
+          # headless use over ssh / from agents.
+          SUBSYSTEM=="usb", ATTRS{idVendor}=="09fb", ATTRS{idProduct}=="6001", MODE="0660", GROUP="plugdev", TAG+="uaccess"
         '';
         packages = [inputs.probe-rs-rules.packages.${pkgs.stdenv.hostPlatform.system}.default];
       };
