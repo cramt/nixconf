@@ -113,6 +113,30 @@
       };
     });
 
+  # A threshold drawn as a dashed line next to the value it gates.
+  threshold = name: {
+    matcher = {
+      id = "byName";
+      options = name;
+    };
+    properties = [
+      {
+        id = "custom.lineStyle";
+        value = {
+          fill = "dash";
+          dash = [10 10];
+        };
+      }
+      {
+        id = "color";
+        value = {
+          mode = "fixed";
+          fixedColor = "red";
+        };
+      }
+    ];
+  };
+
   text = content: {
     type = "text";
     title = "";
@@ -840,51 +864,29 @@ in {
         timeFrom = "48h";
         format = "HH:mm";
       })
-      # Same math as the insight driver's gate, but continuous rather than
-      # sampled at gate checks, and broken out per account.
+      # The gate's 7-day surplus only looks at the current window; this asks the
+      # same question of whatever range is on screen. 1 - remaining climbs like
+      # a counter and drops to 0 at each window reset, so increase() over it is
+      # what the pool burned in the trailing range, across resets. The exporter
+      # sometimes reads 0 for a fresh window (half an hour on 2026-10-19), which
+      # increase() would take as a whole week burned; max_over_time drops
+      # glitches shorter than an hour, at the cost of showing real burn late.
       (timeseries {
-        title = "7-day pace";
-        description = "What's left minus the share of the window still to run. Above 0 is under even pace (banked), below is burning faster than the week allows. The pool line is the sum, in account-weeks.";
+        title = "Pace";
+        description = "Usage the trailing dashboard range allows at even pace (range / 1 week per account), minus what the pool actually used, in account-weeks. Above 0 is banked, below is burning faster than the week allows.";
         w = 24;
-        queries = let
-          surplus = ''cliproxy_quota_remaining_ratio{window="seven_day"} - (cliproxy_quota_reset_timestamp_seconds{window="seven_day"} - time()) / 604800'';
-        in [
+        fieldConfig.defaults.decimals = 2;
+        queries = [
           {
-            expr = surplus;
-            legend = "{{email}}";
-          }
-          {
-            expr = "sum(${surplus})";
+            expr = ''sum($__range_s / 604800 - increase((1 - max_over_time(cliproxy_quota_remaining_ratio{window="seven_day"}[1h]))[$__range:5m]))'';
             legend = "pool";
           }
+          {
+            expr = "vector(0)";
+            legend = "even pace";
+          }
         ];
-        fieldConfig = {
-          defaults = {
-            decimals = 2;
-            custom.thresholdsStyle.mode = "dashed";
-            thresholds = {
-              mode = "absolute";
-              steps = [
-                {
-                  color = "red";
-                  value = null;
-                }
-                {
-                  color = "green";
-                  value = 0;
-                }
-              ];
-            };
-          };
-          overrides = [
-            (byName "pool" [
-              {
-                id = "custom.lineWidth";
-                value = 3;
-              }
-            ])
-          ];
-        };
+        fieldConfig.overrides = [(threshold "even pace")];
       })
       (timeseries {
         title = "Quota remaining";
@@ -961,30 +963,6 @@ in {
     # days is coarser than prometheus' 5m lookback, so a series younger than
     # one step renders "No data".
     latest = args: stat (args // {queries = map (q: q // {instant = true;}) args.queries;});
-
-    # A threshold drawn as a dashed line next to the value it gates.
-    threshold = name: {
-      matcher = {
-        id = "byName";
-        options = name;
-      };
-      properties = [
-        {
-          id = "custom.lineStyle";
-          value = {
-            fill = "dash";
-            dash = [10 10];
-          };
-        }
-        {
-          id = "color";
-          value = {
-            mode = "fixed";
-            fixedColor = "red";
-          };
-        }
-      ];
-    };
   in dashboard {
     uid = "insight-driver";
     title = "Insight driver";
