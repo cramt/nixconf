@@ -177,6 +177,13 @@ cmd_sync() {
                  + (($c.card_faces // []) | map(.oracle_text // "") | join("\n"))),
         any_number: (($c.oracle_text // "")
                      | test("A deck can have any number of cards named"; "i")),
+        # Nazgûl and Seven Dwarves cap at a count instead ("up to nine"), so a
+        # boolean any_number flagged a legal 9x Nazgûl as a singleton violation.
+        copy_limit: (($c.oracle_text // "")
+                     | capture("A deck can have up to (?<n>\\w+) cards named"; "i").n
+                     | ascii_downcase
+                     | {"two":2,"three":3,"four":4,"five":5,"six":6,"seven":7,
+                        "eight":8,"nine":9,"ten":10}[.] // tonumber?) // null,
         usd: ($c.prices.usd // null),
         # Scryfall records what the mana abilities of the card make, both
         # faces. Authoritative where reading "Add" out of oracle text guessed.
@@ -380,7 +387,8 @@ cmd_check() {
         singleton_violations: [ $deck[]
           | select(.qty > 1)
           | select(((.rec | is_basic) or .rec.any_number) | not)
-          | {name: .rec.name, qty: .qty} ],
+          | select(.qty > (.rec.copy_limit // 1))
+          | {name: .rec.name, qty: .qty, limit: (.rec.copy_limit // 1)} ],
         game_changers: ([ $deck[] | select(.rec.game_changer) | .rec.name ] | sort),
         house_ban_violations: [ $deck[]
           | select(.rec.name | ascii_downcase | IN($house[]))

@@ -42,7 +42,7 @@ decklist is by construction.
 
 The first `sync` takes about a minute and then serves everything from disk. Each card record
 is `{name, ci, commander_legal, game_changer, type_line, layout, cmc, mana_cost, keywords,
-oracle, any_number, usd, uri, produced, power, toughness, loyalty, defense}`, keyed by lowercased name under `.cards`, so open-ended
+oracle, any_number, copy_limit, usd, uri, produced, power, toughness, loyalty, defense}`, keyed by lowercased name under `.cards`, so open-ended
 questions are a jq away with **zero** API calls. One type trap: **`commander_legal` is a
 string** (`"legal"`, `"not_legal"`, `"banned"`), so filter with `.commander_legal == "legal"`.
 A bare `select(.commander_legal)` is always true and lets illegal cards through. `produced` is
