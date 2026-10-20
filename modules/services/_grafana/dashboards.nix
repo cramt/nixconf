@@ -840,6 +840,52 @@ in {
         timeFrom = "48h";
         format = "HH:mm";
       })
+      # Same math as the insight driver's gate, but continuous rather than
+      # sampled at gate checks, and broken out per account.
+      (timeseries {
+        title = "7-day pace";
+        description = "What's left minus the share of the window still to run. Above 0 is under even pace (banked), below is burning faster than the week allows. The pool line is the sum, in account-weeks.";
+        w = 24;
+        queries = let
+          surplus = ''cliproxy_quota_remaining_ratio{window="seven_day"} - (cliproxy_quota_reset_timestamp_seconds{window="seven_day"} - time()) / 604800'';
+        in [
+          {
+            expr = surplus;
+            legend = "{{email}}";
+          }
+          {
+            expr = "sum(${surplus})";
+            legend = "pool";
+          }
+        ];
+        fieldConfig = {
+          defaults = {
+            decimals = 2;
+            custom.thresholdsStyle.mode = "dashed";
+            thresholds = {
+              mode = "absolute";
+              steps = [
+                {
+                  color = "red";
+                  value = null;
+                }
+                {
+                  color = "green";
+                  value = 0;
+                }
+              ];
+            };
+          };
+          overrides = [
+            (byName "pool" [
+              {
+                id = "custom.lineWidth";
+                value = 3;
+              }
+            ])
+          ];
+        };
+      })
       (timeseries {
         title = "Quota remaining";
         description = "How fast each window burns down.";
