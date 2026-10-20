@@ -99,6 +99,11 @@ in
       config_hdmi_boost = { enable = true; value = 4; };
       # Bigger CMA window so the GPU has room for video decode buffers.
       gpu_mem = { enable = true; value = 256; };
+      # Keep the mini-UART (ttyS0, GPIO 14/15) powered up with a pinned core
+      # clock now that it's no longer eros's own console — see the serial-bridge
+      # block below. Without this the firmware would leave the UART down once we
+      # stop using it as the console, and nothing would reach /dev/ttyS0.
+      enable_uart = { enable = true; value = 1; };
     };
 
     # swiotlb: the Pi 4's BCM2711 can only DMA-address the lower 1 GiB of RAM,
@@ -136,6 +141,25 @@ in
     # gives proper Xbox controller (rumble, battery) support over Bluetooth.
     boot.kernelModules = [ "uinput" ];
     boot.extraModulePackages = [ config.boot.kernelPackages.xpadneo ];
+
+    # --- Serial bridge: eros as an ssh -> UART jig -------------------------
+    # The GPIO mini-UART (ttyS0, pins 8/10) is wired to a target's TTL serial
+    # console (e.g. a router under teardown) and reached by sshing in and
+    # running `tio /dev/ttyS0`. For that the Pi must NOT own the line itself:
+    #
+    # nixos-raspberrypi's sd-image defaults put a login getty here AND a kernel
+    # console=ttyS0,115200n8 on the cmdline (confirmed via /proc/cmdline). A
+    # getty actively echoes login prompts at whatever the target spews, so it's
+    # the hard blocker — kill it. (The kernel console= param is cosmetic by
+    # comparison: nothing holds the port open, tio still opens it fine; worst
+    # case a boot-time dmesg burst goes out TX once. Dropping that param too
+    # needs the rpi module's console knob, which isn't realised locally to
+    # inspect right now — revisit if the boot spam ever interrupts a target's
+    # bootloader autoboot in practice.)
+    systemd.services."serial-getty@ttyS0".enable = lib.mkForce false;
+    # Mini-UART stays on GPIO; PL011 (ttyAMA0) stays bonded to Bluetooth for the
+    # Steam Controller, so no disable-bt / miniuart-bt overlay and the couch
+    # shell is untouched. ttyS0 is proven stable at 115200 (it was the console).
 
     networking = {
       useNetworkd = true;
@@ -177,7 +201,9 @@ in
     # wired directly below instead.
     users.users.cramt = {
       isNormalUser = true;
-      extraGroups = [ "wheel" "video" "render" "input" "audio" "plugdev" ];
+      # dialout: open /dev/ttyS0 as cramt for the serial bridge. eros opts out
+      # of bundles.users, which is where every other host's cramt gets dialout.
+      extraGroups = [ "wheel" "video" "render" "input" "audio" "plugdev" "dialout" ];
       openssh.authorizedKeys.keys = (import ../../myLib/keys.nix).alex;
     };
 
@@ -221,6 +247,7 @@ in
       raspberrypi-eeprom
       neovim
       btop
+      tio # serial terminal for the ssh -> UART bridge (tio /dev/ttyS0)
       # sway's `output * bg <img>` shells out to swaybg; it isn't in
       # programs.sway's default helper set, so without it the image bg silently
       # no-ops to a black screen. In systemPackages (not just home.packages) so
