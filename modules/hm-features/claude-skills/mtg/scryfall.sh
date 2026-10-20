@@ -81,6 +81,17 @@ def produces($ci):
         ($made | index($c))
         or ($o | test("[Ss]earch your library[^.\\n]*" + $b))) | $c ]
     end;
+# Karsten counts a fetch fully for every colour it can find, and a fetch for
+# "an Island card" also finds Watery Grave or a Triome. So the colours of the
+# deck's own lands carrying a type it names count too, not just the basic's.
+def produces($ci; $pool):
+  produces($ci) as $base | .oracle as $o
+  | [ basic_type[] as $b
+      | select($o | test("[Ss]earch your library for an? [^.\\n]*\\b" + $b + "\\b"))
+      | select($o | test("[Ss]earch your library[^.\\n]*basic") | not) | $b ] as $types
+  | if ($types | length) == 0 then $base
+    else ($base + [ $pool[] | select(.type_line as $t | $types | any(. as $b | $t | test("\\b" + $b + "\\b")))
+                    | (.produced // [])[] | select(. as $c | $ci | index($c)) ]) | unique end;
 # Karsten's 2022 table, 99-card column: coloured sources a spell of mana value
 # $mv with $n pips of one colour needs to be cast on curve (assumes 41 lands).
 # Rows past the table clamp to its last entry. See the mtg skill for the source.
@@ -107,7 +118,7 @@ MIN_MDFCS=4
 # Newline-separated; override for other people's decks.
 HOUSE_BANS="${MTG_HOUSE_BANS:-Sol Ring}"
 # Bump when the index gains or changes a field; `fresh` rebuilds on mismatch.
-INDEX_SCHEMA=4
+INDEX_SCHEMA=5
 
 die() {
   printf 'scryfall: %s\n' "$*" >&2
@@ -417,7 +428,8 @@ cmd_check() {
               | max_by(.need) // {need: 0}
               | .need = ((.need * $efflands / 41 * 10 | round) / 10))}) | add // {}) as $karsten
           # Sources counted the Karsten way: a land/spell MDFC is 0.8 of a source.
-          | ($cmdci | map(. as $c | {($c): ([ $lands[] | select(.rec | produces($cmdci) | index($c))
+          | ([ $lands[].rec ]) as $pool
+          | ($cmdci | map(. as $c | {($c): ([ $lands[] | select(.rec | produces($cmdci; $pool) | index($c))
                 | .qty * (if .rec | is_mdfc then 0.8 else 1 end) ] | add // 0)}) | add // {}) as $src
           | {
               lands: $nland,
