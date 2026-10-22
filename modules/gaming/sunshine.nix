@@ -98,6 +98,21 @@
         '';
       };
 
+      prepCommands = lib.mkOption {
+        type = lib.types.listOf (lib.types.submodule {
+          options = {
+            do = lib.mkOption {type = lib.types.str;};
+            undo = lib.mkOption {type = lib.types.str;};
+          };
+        });
+        default = [];
+        description = ''
+          Run around every stream, whichever app (Sunshine's global_prep_cmd):
+          the `do`s in order before it starts, the `undo`s in reverse after.
+          A failing `do` keeps the stream from starting.
+        '';
+      };
+
       wakeOnLan.macAddress = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
@@ -154,6 +169,7 @@
           # Relative: under the config dir, where sunshine-seed writes them.
           file_state = "sunshine_state.json";
           credentials_file = "web_ui_login.json";
+          global_prep_cmd = lib.mkIf (cfg.prepCommands != []) (builtins.toJSON cfg.prepCommands);
         };
         applications.apps =
           [

@@ -12,6 +12,7 @@
     inputs.disko.nixosModules.default
     ./disko.nix
     ./sunshine.nix
+    ./tv-controller.nix
   ];
 
   # /nix rides on the same btrfs pool as /, but keep it mounted in stage-1 so the

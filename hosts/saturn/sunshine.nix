@@ -148,8 +148,8 @@ in {
     ''}";
   }) (import ./games.nix);
 
-  # Global, so Desktop gets it too.
-  services.sunshine.settings.global_prep_cmd = builtins.toJSON [
+  # Every app's, so Desktop gets it too.
+  myNixOS.sunshine.prepCommands = [
     {
       do = "${lib.getExe display} do";
       undo = "${lib.getExe display} undo";
