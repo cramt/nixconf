@@ -189,14 +189,53 @@ update_packages:
     nix run nixpkgs#nix-update -- --flake fmod-toolkit
     nix run nixpkgs#nix-update -- --flake pyfmodex
 
-# Bump every pinned source (flake.lock, gems, npins, packages). Run daily by
-# .github/workflows/update.yml, which pushes the result to the `update` branch
-# as a PR and prebuilds it into cachix — merge that PR to update.
+# Merge the newest commit on `update` that CI built green into main and push.
+# update.yml keeps that branch bumped and caught up with main every 6h, and a
+# green commit there means every host toplevel is already in cachix — so this
+# never asks you to build something uncached. Older green commits are a fallback
+# when the tip is red or still building, with a warning saying so.
+update:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    [ "$(git branch --show-current)" = main ] || { echo "not on main" >&2; exit 1; }
+    git fetch -q origin main update
+    tip=$(git rev-parse origin/update)
+
+    # Combined status is the latest per context; "Build & Cache" is what
+    # build.yml's report job posts on dispatched runs. Walk first-parent so a
+    # merged-in main commit (built on main's own trigger, not here) is skipped.
+    status() {
+      gh api "repos/{owner}/{repo}/commits/$1/status" \
+        --jq '[.statuses[] | select(.context == "Build & Cache")][0] // {state: "unbuilt", target_url: ""} | "\(.state) \(.target_url)"' 2>/dev/null
+    }
+    green=""; first=""
+    for sha in $(git rev-list --first-parent -n 30 origin/update); do
+      read -r state url <<<"$(status "$sha")" || true
+      [ -n "$first" ] || first="${state:-none} ${url:-}"
+      if [ "${state:-}" = success ]; then green=$sha; break; fi
+    done
+
+    if [ "$green" != "$tip" ]; then
+      read -r state url <<<"$first"
+      echo -e "\033[1;33mwarning:\033[0m update tip ${tip:0:9} is not green (${state}${url:+, $url})" >&2
+    fi
+    [ -n "$green" ] || { echo "no green commit in the last 30 on update, nothing to merge" >&2; exit 1; }
+    if git merge-base --is-ancestor "$green" HEAD; then
+      echo "main already has the newest green update (${green:0:9})"
+      exit 0
+    fi
+    [ "$green" = "$tip" ] || echo "merging older green commit ${green:0:9}: $(git log -1 --format=%s "$green")" >&2
+    git merge --no-edit "$green"
+    git push origin main
+
+# Bump every pinned source (flake.lock, gems, npins, packages) in place. This is
+# what update.yml runs; locally it means building whatever isn't cached yet, so
+# `just update` is the normal path.
 #
 # Anonymous GitHub API calls cap out at 60/h, which flake update + npins +
 # nix-update blow through fast. Borrow gh's token (or CI's GITHUB_TOKEN) and
 # hand it to all three: nix via access-tokens, npins/nix-update via GITHUB_TOKEN.
-update:
+hard_update:
     #!/usr/bin/env bash
     set -euo pipefail
     GITHUB_TOKEN="${GITHUB_TOKEN:-$(gh auth token 2>/dev/null || true)}"

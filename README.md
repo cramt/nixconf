@@ -28,7 +28,8 @@ just jobs=8 cores=8 deploy
 # Apply config to the current host only, without the network
 nh os switch
 
-just update           # Update flake inputs, gems, npins, and packages (CI runs this weekly — see below)
+just update           # Merge the newest CI-green `update` commit into main (see below)
+just hard_update      # Bump flake inputs, gems, npins, and packages in place
 just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
 
@@ -42,11 +43,15 @@ npins update          # Update non-flake pinned sources
 
 ## Updating
 
-A daily GitHub Actions workflow (`update.yml`) runs `just update`, force-pushes the
-result to the `update` branch, keeps a single open PR against `main`, and triggers
-the build workflow on that branch so every package and host toplevel lands in cachix.
-To update a machine: merge the PR when it's green, then `nh os switch` — everything
-substitutes from the cache.
+Every 6 hours a GitHub Actions workflow (`update.yml`) merges `main` into the
+long-lived `update` branch, runs `just hard_update` on top, commits, and triggers
+the build workflow there, so every package and host toplevel lands in cachix. The
+build posts a `Build & Cache` commit status on each commit.
+
+To update: `just update` merges the newest green commit on `update` into `main` and
+pushes. If the tip is red or still building it warns and falls back to the newest
+green commit, so you never end up building something uncached. Then `just deploy`
+(or `nh os switch`) substitutes everything from the cache.
 
 ## Architecture
 
