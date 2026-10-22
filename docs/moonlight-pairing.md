@@ -24,6 +24,21 @@ saturn's web UI login (port 47990) comes from the same 1Password item:
 `username` and `password`, which `sunshine-seed` hashes into the
 `web_ui_login.json` file that Sunshine reads.
 
+## Clients paired by PIN, kept
+
+A client that isn't in nix (the living-room LG TV's moonlight-tv, `tv`,
+192.168.178.36) pairs by PIN, which `sunshine-seed` would forget at the next
+Sunshine restart. To keep one, copy its entry from saturn's live state into
+`clients` in `moonlight-pairing.json` while it's still paired:
+
+```sh
+jq '.root.named_devices[] | select(.name=="tv") | {uuid, cert}' ~/.config/sunshine/sunshine_state.json
+```
+
+It carries only `uuid` and `cert`, the two things Sunshine pins; its key never
+leaves the client. `nix run .#moonlight-pairing` doesn't know about it, so
+regenerating the pairing drops it, and the client has to pair by PIN again.
+
 ## Games on Home
 
 Home's Games aren't listed in nix. The `emrakul-games` user service
