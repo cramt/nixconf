@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "8932c0a3bd303e48f8d9f693deca7a50a98223e1",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/8932c0a3bd303e48f8d9f693deca7a50a98223e1.tar.gz",
-      "hash": "sha256-Aqzl3e20j6CabQFxC5RPa4ognm0/KzKSPwoa6ih1STA="
+      "revision": "7902c281c17cd9231c1ceb8b7ecd6048dbb2e429",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/7902c281c17cd9231c1ceb8b7ecd6048dbb2e429.tar.gz",
+      "hash": "sha256-bNHxYoXIHBq03IKkmE5ajElFv2i8ZsekqysF2RJn1aE="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
