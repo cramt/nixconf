@@ -11,6 +11,8 @@
     # Declarative partitioning: two-SSD btrfs pool (see disko.nix).
     inputs.disko.nixosModules.default
     ./disko.nix
+    ./sunshine.nix
+    ./tv-controller.nix
   ];
 
   # /nix rides on the same btrfs pool as /, but keep it mounted in stage-1 so the
@@ -133,29 +135,11 @@
     steam.enable = true;
     # ganymede's Moonlight streams games from here. Only up while a graphical
     # session is; autologin and suspend-for-WoL are still undecided.
+    # Its apps and stream display mode: ./sunshine.nix.
     sunshine = {
       enable = true;
       user = "cramt";
       wakeOnLan.macAddress = (import ./lan.nix).macAddress;
-      apps = map (game: {
-        inherit (game) name;
-        # Detached: the steam:// URL hands off to the already running Steam
-        # and returns at once, so there's no process for Sunshine to wait on.
-        # Through systemd-run, not as Sunshine's child: Sunshine's capability
-        # wrapper (capSysAdmin, for KMS capture) leaves CAP_SYS_ADMIN
-        # inheritable, and Steam's bwrap refuses to start with unexpected
-        # capabilities, so the launch died silently and Moonlight just showed
-        # the desktop. https://github.com/containers/bubblewrap/issues/380 — drop
-        # systemd-run once Sunshine stops passing the capability to its children.
-        detached = ["${pkgs.systemd}/bin/systemd-run --user --collect ${lib.getExe config.programs.steam.package} steam://rungameid/${toString game.steamAppId}"];
-        # Sunshine only takes .png box art.
-        image-path = "${pkgs.runCommand "steam-${toString game.steamAppId}.png" {nativeBuildInputs = [pkgs.imagemagick];} ''
-          magick ${pkgs.fetchurl {
-            url = "https://cdn.cloudflare.steamstatic.com/steam/apps/${toString game.steamAppId}/library_600x900.jpg";
-            hash = game.artHash;
-          }} $out
-        ''}";
-      }) (import ./games.nix);
     };
     amd.enable = true;
     bundles.users.enable = true;

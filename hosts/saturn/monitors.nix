@@ -1,6 +1,6 @@
 [
   {
-    port = "DP-2";
+    port = "DP-1";
     name = "Philips Consumer Electronics Company 49M2C8900 AU42447000108";
     res = {
       width = 5120;
