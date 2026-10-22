@@ -103,7 +103,7 @@ in
       # clock now that it's no longer eros's own console — see the serial-bridge
       # block below. Without this the firmware would leave the UART down once we
       # stop using it as the console, and nothing would reach /dev/ttyS0.
-      enable_uart = { enable = true; value = 1; };
+      enable_uart = { enable = true; value = true; };
     };
 
     # swiotlb: the Pi 4's BCM2711 can only DMA-address the lower 1 GiB of RAM,
