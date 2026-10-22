@@ -85,7 +85,10 @@
   # quitting the game ends the stream; a `detached` launch did neither.
   #
   # Steam hands the launch to its running instance and returns at once, so
-  # the game is found by the reaper Steam runs every game under.
+  # the game is found by the reaper Steam runs every game under. Only the
+  # game's: Steam first runs the install scripts under a reaper of their own,
+  # `AppId=<id> Install=1 --`, which exits seconds before the game starts and
+  # ended the stream with it.
   #
   # The launch goes through systemd-run, not as Sunshine's child: Sunshine's
   # capability wrapper (capSysAdmin, for KMS capture) leaves CAP_SYS_ADMIN
@@ -99,7 +102,7 @@
     text = ''
       app=$1
       shift
-      reaper="SteamLaunch AppId=$app( |$)"
+      reaper="SteamLaunch AppId=$app -- "
 
       tree() {
         local pid
