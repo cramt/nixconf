@@ -17,8 +17,11 @@ just jobs=8 cores=8 deploy  # ...or lift the default nproc/4 x 2 build cap
 nh os switch
 
 # Shortcut recipes (via just)
-just update           # Update flake inputs, gems, npins, and packages (run daily by CI's update.yml,
-                      # which maintains an `update` branch PR prebuilt into cachix — merge it to update)
+just update           # Merge the newest CI-green commit of the `update` branch into main and push.
+                      # update.yml runs `just hard_update` every 6h on that branch (main merged in
+                      # first) and prebuilds it into cachix, so this never means building uncached.
+                      # Warns when the branch tip is red or still building.
+just hard_update      # Bump flake inputs, gems, npins, and packages in place (builds whatever isn't cached)
 just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
 

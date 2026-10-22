@@ -2,23 +2,29 @@ name: Update
 
 on:
   schedule:
-    # Daily 04:00 UTC — PR is green and cached by the time anyone's awake.
-    - cron: "0 4 * * *"
+    # Every 6h, so `update` never trails main by much and a fix pushed to main
+    # gets a fresh green build on `update` the same day.
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
-concurrency: update-pr
+concurrency: update-branch
 
 permissions:
   contents: write
-  pull-requests: write
   actions: write
 
+# `update` is a long-lived branch: main merged in, then `just hard_update`
+# committed on top, every run. Never force-pushed, so older commits keep their
+# green "Build & Cache" status and `just update` can fall back to the newest
+# green one when the tip is red.
 jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
@@ -26,7 +32,31 @@ jobs:
             accept-flake-config = true
             access-tokens = github.com=${{ github.token }}
 
+      - name: Catch update up with main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git rev-parse -q --verify origin/update >/dev/null; then
+            git switch -c update origin/update
+            # The branch only ever diverges from main in the pinned files this
+            # job rewrites next anyway, so main wins every conflict.
+            if ! git merge --no-edit origin/main; then
+              for f in $(git diff --name-only --diff-filter=U); do
+                if git cat-file -e "origin/main:$f" 2>/dev/null; then
+                  git checkout origin/main -- "$f"
+                else
+                  git rm -q "$f"
+                fi
+              done
+              git commit --no-edit
+            fi
+          else
+            git switch -c update origin/main
+          fi
+
       - name: Update flake.lock, gems, npins, packages
+        id: bump
+        continue-on-error: true
         env:
           # ubuntu-latest ships a v1-format /etc/containers/registries.conf,
           # which the skopeo behind npins' docker pins refuses to parse
@@ -34,29 +64,38 @@ jobs:
           # config instead (override mechanism: containers/skopeo#2002).
           # Remove once the runner image ships a v2 registries.conf.
           CONTAINERS_REGISTRIES_CONF: /dev/null
-          # npins and nix-update read this for GitHub API calls; `just update`
+          # npins and nix-update read this for GitHub API calls; `just hard_update`
           # also forwards it to nix as access-tokens.
           GITHUB_TOKEN: ${{ github.token }}
-        run: nix shell nixpkgs#just nixpkgs#npins nixpkgs#bundler --command just update
+        run: nix shell nixpkgs#just nixpkgs#npins nixpkgs#bundler --command just hard_update
 
-      # Pushes with GITHUB_TOKEN don't fire pull_request events (GitHub's
-      # recursion guard), so the build workflow is dispatched explicitly —
-      # its checks attach to the branch head and show up on the PR.
-      - name: Push update branch, ensure PR, trigger build
+      # A bump that died halfway (one nix-update erroring) can leave a file
+      # half-rewritten, so drop it rather than commit it. The main merge above
+      # still gets pushed and built, so `update` keeps tracking main.
+      - name: Commit bump
+        run: |
+          if [ "${{ steps.bump.outcome }}" != success ]; then
+            git reset -q --hard
+          elif ! git diff --quiet; then
+            git commit -qam "update: flake.lock, gems, npins, packages ($(date -u +'%F %H:%M'))"
+          fi
+
+      # Pushes with GITHUB_TOKEN don't fire push events (GitHub's recursion
+      # guard), so the build is dispatched explicitly; its report job posts the
+      # "Build & Cache" commit status that `just update` reads.
+      - name: Push and build
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet; then
-            echo "Everything already up to date"
-            exit 0
+          if [ "$(git rev-parse HEAD)" = "$(git rev-parse -q --verify origin/update || true)" ]; then
+            echo "update is already current, nothing to build"
+          else
+            git push origin update
+            gh workflow run build.yml --ref update
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c update
-          git commit -am "update: flake.lock, gems, npins, packages ($(date -u +%F))"
-          git push -f origin update
-          if [ "$(gh pr list --head update --state open --json number --jq length)" = 0 ]; then
-            gh pr create --head update --title "Scheduled dependency update" \
-              --body "Automated \`just update\`: flake.lock, gems, npins, and packages. Merging when green means every host toplevel is already in cachix — \`nh os switch\` after merge is pure substitution."
-          fi
-          gh workflow run build.yml --ref update
+
+      - name: Fail if the bump failed
+        if: ${{ steps.bump.outcome != 'success' }}
+        run: |
+          echo "::error::just hard_update failed; main was merged and built, but nothing was bumped"
+          exit 1
