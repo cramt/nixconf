@@ -5,8 +5,11 @@
 # The app has no config file, env var or deep link for this. Its connection
 # list lives in ~/.t3/userdata/connection-catalog.json, encrypted with Electron
 # safeStorage, which on Linux is Chromium's os_crypt "v11": AES-128-CBC, key =
-# PBKDF2-SHA1(password from the keyring item for app "T3 Code (Alpha)", salt
-# "saltysalt", 1 iteration), IV of 16 spaces. A user unit at login decrypts it,
+# PBKDF2-SHA1(password from the keyring item for the app's productName, salt
+# "saltysalt", 1 iteration), IV of 16 spaces. The productName is read off the
+# package rather than written here: 0.1 renamed "T3 Code (Alpha)" to "T3 Code
+# (Beta)", which got the app a fresh keyring item and left it unable to read a
+# catalog we kept encrypting under the old one. A user unit at login decrypts it,
 # upserts each declared server and re-encrypts, so everything else in there
 # (learned LAN routes, servers added by hand) stays UI-owned.
 #
@@ -45,7 +48,7 @@
       name = "t3code-remotes-sync";
       runtimeInputs = [pkgs.coreutils pkgs.jq pkgs.openssl pkgs.libsecret pkgs.procps];
       text = ''
-        app="T3 Code (Alpha)"
+        app=$(jq -r .productName ${pkgs.t3code-desktop}/libexec/t3code/apps/desktop/package.json)
         dir="${appHome}/userdata"
         catalog="$dir/connection-catalog.json"
 
@@ -64,14 +67,32 @@
                 xdg:schema chrome_libsecret_os_crypt_password_v2 application "$app"
           pw=$(secret-tool lookup application "$app")
         fi
-        key=$(openssl kdf -keylen 16 -kdfopt digest:SHA1 -kdfopt pass:"$pw" \
-          -kdfopt salt:saltysalt -kdfopt iter:1 PBKDF2 | tr -d :)
+        derive_key() {
+          openssl kdf -keylen 16 -kdfopt digest:SHA1 -kdfopt pass:"$1" \
+            -kdfopt salt:saltysalt -kdfopt iter:1 PBKDF2 | tr -d :
+        }
+        key=$(derive_key "$pw")
         iv=20202020202020202020202020202020
+        decrypt() {
+          jq -r .encryptedCatalog "$catalog" | base64 -d | tail -c +4 \
+            | openssl enc -d -aes-128-cbc -K "$1" -iv "$iv" 2>/dev/null \
+            | jq -c . 2>/dev/null
+        }
 
         current='{"schemaVersion":1,"targets":[],"profiles":[],"credentials":[],"remoteDpopTokens":[],"disabledEnvironmentIds":[]}'
         if [ -s "$catalog" ]; then
-          current=$(jq -r .encryptedCatalog "$catalog" | base64 -d | tail -c +4 \
-            | openssl enc -d -aes-128-cbc -K "$key" -iv "$iv")
+          if decrypted=$(decrypt "$key"); then
+            current=$decrypted
+          # A catalog from before the app was renamed is under the old
+          # name's key; re-encrypting it below carries its learned routes
+          # and hand-added servers over. Drop this branch once saturn and
+          # mars have each logged in on the Beta build.
+          elif old=$(secret-tool lookup application "T3 Code (Alpha)") \
+              && decrypted=$(decrypt "$(derive_key "$old")"); then
+            current=$decrypted
+          else
+            echo "$catalog is under a key we don't have; starting it over"
+          fi
         fi
 
         # Secrets are read into jq here, never onto a command line.
