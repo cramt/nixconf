@@ -128,7 +128,7 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 - `saturn` — Alex's desktop (COSMIC daily driver, niri secondary). Home machine; work happens on a separate laptop.
 - `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.47. `eros` — 2GB RPi4 TV kiosk. `mars` — secondary desktop.
 - `mercury` — Terasic DE25-Nano (Agilex 5 SoC FPGA), headless, serial console only. Board support (kernel, boot chain, SD image) lives in our `A-H-Technology/nixos-fpga` flake (local checkout `~/code/nixos-fpga`); the host file only carries fleet bits. Kernel bumps come through that repo's `needs-hardware-test` PRs, never from nixconf.
-- `venus` — Digilent Zybo, the original (Zynq-7010, 32-bit armv7l, 512 MB), mercury's Xilinx counterpart; board support also in nixos-fpga. Cross-built from x86 by its own config (`nixpkgs.buildPlatform`), home-manager included, since nothing can build armv7l natively; CI's `venus-img` is what gets flashed. Kernel and U-Boot are mainline and follow nixpkgs.
+- `venus` — Digilent Zybo, the original (Zynq-7010, 32-bit armv7l, 512 MB), mercury's Xilinx counterpart; board support also in nixos-fpga. Cross-built from x86 by its own config (`nixpkgs.buildPlatform`), home-manager included, since Hydra caches nothing for armv7l; `nix build .#venus-img` is what gets flashed. Kernel and U-Boot are mainline and follow nixpkgs.
 - Fleet hostnames resolve over the router's DNS, so `just deploy` addresses hosts by name, not IP.
 - Daily browser is Zen. Firefox is installed on `mars` (profiles configured, never launched); helium is kept on `saturn` for the occasional chromium.
 - `/external_storage` is a mergerfs pool over slow HDDs — no heavy IO through the mergerfs mount.
