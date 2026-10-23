@@ -87,7 +87,9 @@
           # Digilent FT2232 JTAG+UART (Zybo PROG UART), for chipsmith/openFPGALoader.
           SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0660", GROUP="plugdev", TAG+="uaccess"
         '';
-        packages = [inputs.probe-rs-rules.packages.${pkgs.stdenv.hostPlatform.system}.default];
+        # Plain rules files, so the build platform's copy is the right one; the
+        # flake has no outputs for cross targets like venus's armv7l.
+        packages = [inputs.probe-rs-rules.packages.${pkgs.stdenv.buildPlatform.system}.default];
       };
 
       stylix = {

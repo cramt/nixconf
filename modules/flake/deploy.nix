@@ -1,18 +1,26 @@
 { lib, config, inputs, ... }:
 let
-  hostSystem = name:
-    inputs.self.nixosConfigurations.${name}.config.nixpkgs.hostPlatform.system;
+  platformsOf = name: let
+    inherit (inputs.self.nixosConfigurations.${name}.config.nixpkgs) buildPlatform hostPlatform;
+  in {
+    localSystem = buildPlatform.system;
+    crossSystem = hostPlatform.system;
+  };
+  hostSystem = name: (platformsOf name).crossSystem;
 
   # deploy-rs's own lib builds the activation binary from its flake's source.
   # Swap in nixpkgs' prebuilt deploy-rs while keeping deploy-rs's lib functions,
   # otherwise eros's aarch64 wrapper compiles Rust under binfmt on every deploy.
   # Documented pattern: https://github.com/serokell/deploy-rs#overall-usage
-  deployLibFor = system:
+  #
+  # Imported with the host's own build/host pair, so a cross-built host (venus)
+  # gets a cross-compiled activate-rs instead of one nothing here can build.
+  # Native hosts pass the same system twice, which nixpkgs treats as native.
+  deployLibFor = platforms:
     let
-      basePkgs = import inputs.nixpkgs { inherit system; };
+      basePkgs = import inputs.nixpkgs platforms;
     in
-    (import inputs.nixpkgs {
-      inherit system;
+    (import inputs.nixpkgs (platforms // {
       overlays = [
         inputs.deploy-rs.overlays.default
         (final: prev: {
@@ -22,15 +30,17 @@ let
           };
         })
       ];
-    }).deploy-rs.lib;
+    })).deploy-rs.lib;
 
   # The activation wrapper runs on the *target*, so index deploy-rs's lib by the
   # host's own platform rather than the deploying machine's — eros needs
   # aarch64. One lib per distinct platform, not per host: instantiating nixpkgs
-  # is expensive and saturn/mars/luna/ganymede all share x86_64-linux.
-  deployLibs = lib.genAttrs
-    (lib.unique (map hostSystem (builtins.attrNames config.nixosHosts)))
-    deployLibFor;
+  # is expensive and saturn/mars/luna/ganymede all share x86_64-linux. Keyed by
+  # host system alone, which assumes no two hosts share a target but build it
+  # from different platforms.
+  deployLibs = lib.listToAttrs (map
+    (name: lib.nameValuePair (hostSystem name) (deployLibFor (platformsOf name)))
+    (builtins.attrNames config.nixosHosts));
 
   nodeFor = name: {
     # Never build on the target — eros is a 2GB Pi that falls over on eval
