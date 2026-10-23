@@ -50,7 +50,7 @@ The flake-parts plumbing lives in `modules/flake/`:
 | `modules/flake/packages.nix` | `perSystem` packages: every `packages/<name>` plus images and tools (e.g. `eros-img`, `flash-eros`) |
 | `modules/flake/hm-modules.nix` | Typed accumulator options (`hmModules.default/features/bundles`) wired into `flake.homeManagerModules` once, to avoid freeform merge conflicts |
 
-The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`, `mercury`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
+The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`, `mercury`, `venus`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
 
 A host only needs `hosts/<name>/host.nix` when it deviates from that; it takes `nixpkgs` (build from a vendor cache, as `eros` does with `nixpkgs-rpi`), `address` (when DNS can't resolve the bare hostname), and `builder` (join the build pool, below).
 
@@ -128,6 +128,7 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 - `saturn` — Alex's desktop (COSMIC daily driver, niri secondary). Home machine; work happens on a separate laptop.
 - `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.47. `eros` — 2GB RPi4 TV kiosk. `mars` — secondary desktop.
 - `mercury` — Terasic DE25-Nano (Agilex 5 SoC FPGA), headless, serial console only. Board support (kernel, boot chain, SD image) lives in our `A-H-Technology/nixos-fpga` flake (local checkout `~/code/nixos-fpga`); the host file only carries fleet bits. Kernel bumps come through that repo's `needs-hardware-test` PRs, never from nixconf.
+- `venus` — Digilent Zybo, the original (Zynq-7010, 32-bit armv7l, 512 MB), mercury's Xilinx counterpart; board support also in nixos-fpga. Cross-built from x86 by its own config (`nixpkgs.buildPlatform`), home-manager included, since nothing can build armv7l natively; CI's `venus-img` is what gets flashed. Kernel and U-Boot are mainline and follow nixpkgs.
 - Fleet hostnames resolve over the router's DNS, so `just deploy` addresses hosts by name, not IP.
 - Daily browser is Zen. Firefox is installed on `mars` (profiles configured, never launched); helium is kept on `saturn` for the occasional chromium.
 - `/external_storage` is a mergerfs pool over slow HDDs — no heavy IO through the mergerfs mount.
@@ -136,7 +137,7 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 ## Build Policy
 
 - Small config changes build locally on saturn. Chunky/uncached/aarch64 builds go through GitHub Actions (ARM runner) + cachix.
-- NEVER build or eval on eros (2GB RAM, hard-crashes) or mercury (957 MB). `just deploy` already builds everything locally and only copies closures out (`remoteBuild = false`), so this holds by construction.
+- NEVER build or eval on eros (2GB RAM, hard-crashes) mercury (957 MB) or venus (512 MB). `just deploy` already builds everything locally and only copies closures out (`remoteBuild = false`), so this holds by construction.
 - If Alex is gaming: `--cores 1`, run in background.
 - Flakes only see git-tracked files — `git add` new files before `nix build`.
 - "CI is failing" unqualified = the saturn build.

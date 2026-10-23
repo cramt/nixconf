@@ -1,0 +1,111 @@
+# venus — Digilent Zybo (the original, Zynq-7010), mercury's Xilinx counterpart
+# (PS side only).
+#
+# Everything the board itself needs — U-Boot SPL, the extlinux boot chain, the
+# SD image layout — lives in A-H-Technology/nixos-fpga. This file is only what
+# makes the board a fleet member, and it deliberately tracks
+# hosts/mercury/configuration.nix; the comments there explain the shared bits.
+# What's here is what differs: venus is 32-bit and cross-built.
+{
+  inputs,
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
+  imports = [
+    inputs.nixos-fpga.nixosModules.digilent-zybo
+    inputs.nixos-fpga.nixosModules.digilent-zybo-sd-image
+  ];
+
+  # Hydra builds nothing for armv7l and the Cortex-A9s have 512 MB between
+  # them, so nothing native will ever build this host: cross from x86, on CI or
+  # whoever runs `just deploy`.
+  nixpkgs = {
+    hostPlatform = "armv7l-linux";
+    buildPlatform = "x86_64-linux";
+  };
+
+  image.baseName = "venus";
+
+  nix.package = pkgs.nix;
+  boot.supportedFilesystems.zfs = lib.mkForce false;
+
+  environment.systemPackages = [
+    pkgs.ghostty.terminfo
+  ];
+
+  myNixOS = {
+    services.sshd.enable = true;
+    bundles.general = {
+      enable = true;
+      stylixAsset = ../../media/artemis2_1.jpg;
+    };
+  };
+
+  programs.zsh.enable = true;
+
+  users.users = {
+    cramt = {
+      isNormalUser = true;
+      extraGroups = ["wheel"];
+      shell = pkgs.zsh;
+      openssh.authorizedKeys.keys = (import ../../myLib/keys.nix).alex;
+    };
+    root.openssh.authorizedKeys.keys = (import ../../myLib/keys.nix).alex;
+  };
+
+  security.sudo.wheelNeedsPassword = false;
+
+  home-manager = {
+    backupFileExtension = "hm-bak";
+    extraSpecialArgs = {inherit inputs;};
+
+    users.cramt = hmArgs: let
+      hm = inputs.self.outputs.homeManagerModules;
+
+      # Same list as mercury, so keep the two in sync.
+      cliFeatures = [
+        "btop"
+        "fzf"
+        "git"
+        "gpg-agent"
+        "lazygit"
+        "neovim"
+        "nix-index"
+        "nushell"
+        "ssh"
+        "starship"
+        "yazi"
+        "zellij"
+        "zoxide"
+        "zsh"
+      ];
+    in {
+      imports =
+        [
+          (import ./home.nix)
+          hm.default
+          hm.bundles.general
+          inputs.nix-index-database.homeModules.nix-index
+        ]
+        ++ map (n: hm.features.${n}) cliFeatures;
+
+      # home-manager imports its own nixpkgs with only `system` set, so it would
+      # build this user's whole environment natively for armv7l, which nothing
+      # in the fleet can do. Re-import it as the same cross set the system uses.
+      # useGlobalPkgs would get there too, but it asserts against the HM-side
+      # nixpkgs options hmModules.default sets (see mercury).
+      _module.args.pkgs = lib.mkForce (import inputs.nixpkgs {
+        localSystem = config.nixpkgs.buildPlatform;
+        crossSystem = config.nixpkgs.hostPlatform;
+        inherit (hmArgs.config.nixpkgs) config overlays;
+      });
+    };
+  };
+
+  # 2 cores and 512 MB: this board substitutes, it never compiles.
+  nix.settings.max-jobs = 1;
+
+  system.stateVersion = "26.05";
+}

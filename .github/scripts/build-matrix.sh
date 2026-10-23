@@ -25,12 +25,10 @@ filter='set: builtins.filter (n: let r = builtins.tryEval (set.${n}.meta.availab
 #
 # mercury-img-cross: cross-compiling the whole mercury system from x86 doesn't
 # work yet, and it isn't what gets flashed (that's the natively-built
-# mercury-img on the ARM runner). Two blockers are fixed — stylix's
-# hostPlatform-indexed palette generator, and home-manager building its own
-# native aarch64 pkgs — but it now dies on a package in the HM closure putting
-# makeWrapper in buildInputs instead of nativeBuildInputs, which is a nixpkgs
-# bug to find and fix upstream. saturn never sees any of this because binfmt
-# lets it execute aarch64 builds anyway. Un-skip once that's resolved.
+# mercury-img on the ARM runner). stylix's palette generator and btop's
+# wrapper are fixed; home-manager still builds its own native aarch64 pkgs
+# (see the comment on mercury-img-cross). saturn never sees any of this because
+# binfmt lets it execute aarch64 builds anyway. Un-skip once that's resolved.
 skip='["flash-eros", "mercury-img-cross"]'
 
 include='[]'
@@ -49,12 +47,13 @@ echo "matrix={\"include\":${include}}" >>"$GITHUB_OUTPUT"
 echo "Generated package matrix:"
 jq <<<"{\"include\":${include}}"
 
-# One leg per nixosConfiguration, on a runner native to its system. hosts.nix
+# One leg per nixosConfiguration, on a runner native to the platform that builds
+# it: its own system, or x86 for a cross-built host like venus (armv7l). hosts.nix
 # discovers hosts from hosts/, so a new host joins CI with no edit here.
 runners_json=$(for s in "${!runners[@]}"; do echo "$s ${runners[$s]}"; done |
   jq -Rn '[inputs | split(" ") | {(.[0]): .[1]}] | add')
 hosts=$(nix eval --json .#nixosConfigurations \
-  --apply 'cs: builtins.mapAttrs (_: c: c.pkgs.stdenv.hostPlatform.system) cs' |
+  --apply 'cs: builtins.mapAttrs (_: c: c.pkgs.stdenv.buildPlatform.system) cs' |
   jq -c --argjson runners "$runners_json" \
     '[to_entries[] | { host: .key, runner: ($runners[.value] // error("no runner for \(.key) (\(.value))")) }]')
 

@@ -89,21 +89,23 @@
       # pinned in flake.nix, whose paletteGenerator was indexed by hostPlatform
       # and so ran an aarch64 binary at IFD time.
       #
-      # The next one is home-manager instantiating its own nixpkgs at the host
-      # system, making every HM derivation a native aarch64 build that an x86
-      # runner rejects with "Reason: platform mismatch". Do NOT fix that by
-      # forcing HM's pkgs arg to the cross set: it works, but only exposes
-      # btop-nvml putting makeWrapper in buildInputs instead of
-      # nativeBuildInputs, and nixpkgs raises that at *eval* time — which fails
-      # `nix flake check` and takes `just deploy` down for every host, not just
-      # this package. Left evaluable-but-unbuildable on purpose until btop-nvml
-      # is fixed upstream.
+      # The remaining one is home-manager instantiating its own nixpkgs at the
+      # host system, making every HM derivation a native aarch64 build that an
+      # x86 runner rejects with "Reason: platform mismatch". venus fixes exactly
+      # that by forcing HM's pkgs arg to the cross set (see its
+      # configuration.nix); this extendModules would need the same override.
       mercury-img-cross = let
         crossed = inputs.self.nixosConfigurations.mercury.extendModules {
           modules = [{ nixpkgs.buildPlatform = "x86_64-linux"; }];
         };
       in pkgs.runCommand "mercury-img-cross" {} ''
         cp ${crossed.config.system.build.sdImage}/sd-image/*.img $out
+      '';
+
+      # venus (Zybo) SD image. venus is cross-built by its own config, so this
+      # x86 leg is the one that gets flashed, unlike mercury's.
+      venus-img = pkgs.runCommand "venus-img" {} ''
+        cp ${inputs.self.nixosConfigurations.venus.config.system.build.sdImage}/sd-image/*.img $out
       '';
 
       # NOTE: scripts/windows-vm.sh (boot the physical Windows partition in a VM)

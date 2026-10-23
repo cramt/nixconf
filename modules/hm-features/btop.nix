@@ -4,7 +4,7 @@
       pkgs.symlinkJoin {
         name = "${(btopPkg.pname or "btop")}-nvml";
         paths = [btopPkg];
-        buildInputs = [pkgs.makeWrapper];
+        nativeBuildInputs = [pkgs.makeWrapper];
         postBuild = ''
           wrapProgram "$out/bin/btop" \
             --prefix LD_LIBRARY_PATH : /run/opengl-driver/lib
