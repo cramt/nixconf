@@ -34,5 +34,12 @@
     ];
   };
 
+  # nix-xilinx's FHS wrappers read this to find the imperative Vivado install
+  # (AMD's installer can't be packaged); tmpfiles creates /pool/Xilinx in configuration.nix.
+  xdg.configFile."xilinx/nix.sh".text = ''
+    INSTALL_DIR=/pool/Xilinx
+    VERSION=2026.1
+  '';
+
   home.stateVersion = "26.05";
 }

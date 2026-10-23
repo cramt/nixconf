@@ -215,6 +215,8 @@
     "z /pool 0755 root root - -"
     "z /pool/media/.state 0755 root root - -"
     "z /pool/media/.state/nixarr 0755 root root - -"
+    # Vivado (via gitlab:doronbehar/nix-xilinx) is tens of GB; keep it off root.
+    "d /pool/Xilinx 0755 cramt users - -"
   ];
 
   # List services that you want to enable:
