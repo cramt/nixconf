@@ -84,6 +84,8 @@
           # uaccess alone only reaches a seated desktop session; plugdev covers
           # headless use over ssh / from agents.
           SUBSYSTEM=="usb", ATTRS{idVendor}=="09fb", ATTRS{idProduct}=="6001", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+          # Digilent FT2232 JTAG+UART (Zybo PROG UART), for chipsmith/openFPGALoader.
+          SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0660", GROUP="plugdev", TAG+="uaccess"
         '';
         packages = [inputs.probe-rs-rules.packages.${pkgs.stdenv.hostPlatform.system}.default];
       };
