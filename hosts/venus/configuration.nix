@@ -48,10 +48,19 @@ in {
   nix.package = pkgs.nix;
   boot.supportedFilesystems.zfs = lib.mkForce false;
 
-  # The terminfo is plain data, but taking it from the armv7l ghostty would
-  # cross-build the whole terminal, GStreamer and gfortran included.
+  # Ghostty sets TERM=xterm-ghostty, but even the build-platform ghostty misses
+  # the cache here (the board overlay shifts its hash), so taking its terminfo
+  # output means building the terminal, gtk4 and all. ncurses ships the same
+  # entry as plain `ghostty`; recompile it under Ghostty's name instead.
   environment.systemPackages = [
-    pkgs.buildPackages.ghostty.terminfo
+    (pkgs.buildPackages.runCommand "xterm-ghostty-terminfo" {
+        nativeBuildInputs = [pkgs.buildPackages.ncurses];
+      } ''
+        mkdir -p $out/share/terminfo
+        infocmp -x -A ${pkgs.buildPackages.ncurses}/share/terminfo ghostty \
+          | sed 's/^ghostty|/xterm-ghostty|ghostty|/' > ghostty.src
+        tic -x -o $out/share/terminfo ghostty.src
+      '')
   ];
 
   # nh wraps nix-output-monitor, which is Haskell, and GHC doesn't cross-compile
@@ -62,6 +71,10 @@ in {
     enable = lib.mkForce false;
     clean.enable = lib.mkForce false;
   };
+
+  # nix-ld is for running foreign binaries, which nobody does on this board,
+  # and it doesn't compile for 32-bit ARM (mismatched pointer-width types).
+  programs.nix-ld.enable = lib.mkForce false;
 
   myNixOS = {
     services.sshd.enable = true;

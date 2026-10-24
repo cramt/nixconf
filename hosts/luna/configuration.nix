@@ -230,6 +230,11 @@
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
+  # lg-b4-re first-boot (docs/first-boot.md Phase 1): slopbro/dangbro root the
+  # TV over LAN by having it pull an HTTP payload back from this host. Default
+  # inbound-deny was silently dropping those requests. LAN-only exposure, no
+  # auth on that port while it's listening, but nothing listens on it outside
+  # a rooting session. Remove once the B4 is rooted for good.
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave

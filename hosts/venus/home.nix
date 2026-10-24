@@ -27,10 +27,16 @@
   myHomeManager.nix-index.enable = lib.mkForce false;
   programs.nix-index.enable = lib.mkForce false;
 
-  # The neovim feature turns on neovide, a GUI with nothing to draw on here.
-  # Its bindgen hook also needs a GCC that runs on armv7l, and that GCC's
-  # libgomp fails to cross-build.
-  programs.neovide.enable = lib.mkForce false;
+  # Even a plain neovim links tree-sitter, whose rquickjs-sys bindings assume a
+  # 64-bit target and fail to compile for armv7l, so vim stands in.
+  myHomeManager.neovim.enable = lib.mkForce false;
+  home.packages = [pkgs.vim];
+  home.sessionVariables.EDITOR = lib.mkForce "vim";
+
+  # HM writes each tool's nushell hook by running it at build time
+  # (`starship init nu`, `zoxide init nushell`, ...), and the armv7l binaries
+  # can't execute on the x86 builder. zsh is the login shell anyway.
+  myHomeManager.nushell.enable = lib.mkForce false;
 
   # Renders a KDE colour scheme through imagemagick, which drags in fftw and a
   # cross gfortran. There's no KDE to read it.
