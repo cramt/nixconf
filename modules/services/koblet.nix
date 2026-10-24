@@ -1,4 +1,4 @@
-{...}: {
+{inputs, ...}: {
   flake.nixosModules."services.koblet" = {
     config,
     lib,
@@ -6,6 +6,63 @@
     ...
   }: let
     cfg = config.myNixOS.services.koblet;
+    system = pkgs.stdenv.hostPlatform.system;
+    fenix = inputs.fenix.packages.${system};
+
+    # A starting toolset for jobs, not a sandbox, aimed at embedded work.
+    # Mirrors the development bundle where they overlap (fenix rust,
+    # gcc-arm-embedded, chipsmith) so a job builds what the desktop builds.
+    jobTools = with pkgs; [
+      bashInteractive
+      coreutils
+      git
+      # koblet probes for python3 >= 3.11 specifically.
+      (python3.withPackages (ps: with ps; [pyserial intelhex]))
+      gnumake
+      cmake
+      ninja
+      pkg-config
+      (lib.hiPrio gcc)
+      usbutils
+      file
+
+      # Cortex-M: M0/M0+, M3, M4/M7 with and without FPU, M33.
+      (fenix.combine ([
+          fenix.stable.rustc
+          fenix.stable.cargo
+          fenix.stable.rustfmt
+          fenix.stable.clippy
+          fenix.stable.rust-src
+          fenix.stable.llvm-tools
+        ]
+        ++ map (t: fenix.targets.${t}.stable.rust-std) [
+          "thumbv6m-none-eabi"
+          "thumbv7m-none-eabi"
+          "thumbv7em-none-eabi"
+          "thumbv7em-none-eabihf"
+          "thumbv8m.main-none-eabihf"
+        ]))
+      cargo-binutils
+      cargo-generate
+      flip-link
+
+      # C side: arm-none-eabi-{gcc,gdb,objcopy} + newlib.
+      gcc-arm-embedded
+      srecord
+
+      # Flashing and debugging.
+      probe-rs-tools
+      stlink
+      stm32flash
+      dfu-util
+      openocd
+      openfpgaloader
+      inputs.chipsmith.packages.${system}.default
+
+      # Serial consoles.
+      tio
+      picocom
+    ];
     configFile = "${cfg.stateDir}/.config/koblet/config.json";
     bin = "${cfg.stateDir}/bin/koblet";
     # Shown at enrollment as "plain boxes" until koblet can reach its own user
@@ -98,12 +155,11 @@
         # Boxes: a user manager for boxfsd, and subuids for rootless podman.
         linger = true;
         autoSubUidGidRange = true;
-        # A starting toolset for jobs, not a sandbox. It goes in the user's
-        # profile rather than the unit's path: koblet takes the job environment
-        # from `$SHELL -l -i`, and boxfsd runs under the user manager, and both
-        # see /etc/profiles/per-user/koblet but neither sees the unit's PATH.
-        # koblet probes for python3 >= 3.11 specifically.
-        packages = with pkgs; [bashInteractive coreutils git python3 probe-rs-tools stlink dfu-util openocd];
+        # The user's profile rather than the unit's path: koblet takes the job
+        # environment from `$SHELL -l -i`, and boxfsd runs under the user
+        # manager, and both see /etc/profiles/per-user/koblet but neither sees
+        # the unit's PATH.
+        packages = jobTools;
         # STM32 flashing: plugdev for the ST-Link / DFU USB devices (see the
         # 0483 rule in bundles/nixos-general.nix), dialout for the ST-Link's VCP.
         extraGroups = ["plugdev" "dialout"];
