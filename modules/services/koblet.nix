@@ -8,6 +8,19 @@
     cfg = config.myNixOS.services.koblet;
     configFile = "${cfg.stateDir}/.config/koblet/config.json";
     bin = "${cfg.stateDir}/bin/koblet";
+    # Shown at enrollment as "plain boxes" until koblet can reach its own user
+    # manager: it runs boxfsd as a `systemctl --user` unit, and a system
+    # service doesn't inherit the address of that bus.
+    run = pkgs.writeShellScript "koblet-run" ''
+      export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+      # Lingering starts user@ in parallel with us at boot; koblet only probes
+      # for it once, at startup.
+      for _ in $(seq 30); do
+        [ -S "$XDG_RUNTIME_DIR/bus" ] && break
+        sleep 1
+      done
+      exec "${bin}" run
+    '';
     # Only koblet-linux-x86_64 is published as of 2026-10-24; aarch64 404s.
     url = "${cfg.server}/runner/dist/koblet-linux-${pkgs.stdenv.hostPlatform.uname.processor}";
 
@@ -81,7 +94,14 @@
         home = cfg.stateDir;
         # koblet reads the job environment from `$SHELL -l -i`, which nologin can't serve.
         shell = pkgs.bashInteractive;
+        # Boxes: a user manager for boxfsd, and subuids for rootless podman.
+        linger = true;
+        autoSubUidGidRange = true;
       };
+
+      virtualisation.podman.enable = true;
+      # boxfs mounts each box's root over FUSE, which needs the setuid fusermount3.
+      programs.fuse.enable = true;
 
       systemd.tmpfiles.rules = ["d ${cfg.stateDir} 0700 koblet koblet -"];
 
@@ -93,7 +113,7 @@
 
         # A starting toolset for jobs, not a sandbox. koblet probes for
         # python3 >= 3.11 specifically.
-        path = with pkgs; [bashInteractive coreutils git python3];
+        path = with pkgs; [bashInteractive coreutils git python3 config.virtualisation.podman.package fuse3 "/run/wrappers"];
 
         environment = {
           HOME = cfg.stateDir;
@@ -107,7 +127,7 @@
           User = "koblet";
           Group = "koblet";
           ExecStartPre = lib.getExe prestart;
-          ExecStart = "${bin} run";
+          ExecStart = run;
           Restart = "always";
           RestartSec = 5;
           UMask = "0077";
