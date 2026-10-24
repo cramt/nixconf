@@ -235,8 +235,6 @@
   # inbound-deny was silently dropping those requests. LAN-only exposure, no
   # auth on that port while it's listening, but nothing listens on it outside
   # a rooting session. Remove once the B4 is rooted for good.
-  networking.firewall.allowedTCPPorts = [8080];
-
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
