@@ -129,6 +129,9 @@
           SHELL = lib.getExe pkgs.bashInteractive;
         };
 
+        # koblet only checks whether this host can run boxes once, at startup.
+        restartTriggers = [config.environment.etc."fuse.conf".text];
+
         unitConfig.RequiresMountsFor = [cfg.stateDir];
 
         serviceConfig = {
