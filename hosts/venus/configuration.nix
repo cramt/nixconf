@@ -12,28 +12,56 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  # Shared by the system and home-manager package sets, which are imported
+  # separately (see home-manager below).
+  boardOverlay = _: prev: {
+    # libpcap (via iptables) pulls rdma-core for InfiniBand, which the Zybo
+    # doesn't have, and rdma-core's CMake rejects the build-platform Python
+    # when cross-compiling.
+    libpcap = prev.libpcap.override {withRdma = false;};
+
+    # Drops yazi's image/video previewers (imagemagick, ffmpeg, chafa, resvg,
+    # poppler): there's no screen to preview on, and imagemagick alone drags
+    # fftw and a cross gfortran in.
+    yazi = prev.yazi.override {
+      optionalDeps = with prev; [jq _7zz fd ripgrep fzf zoxide];
+    };
+  };
+in {
   imports = [
     inputs.nixos-fpga.nixosModules.digilent-zybo
     inputs.nixos-fpga.nixosModules.digilent-zybo-sd-image
   ];
 
   # Hydra builds nothing for armv7l and the Cortex-A9s have 512 MB between
-  # them, so nothing native will ever build this host: cross from x86, on CI or
-  # whoever runs `just deploy`.
+  # them, so cross from x86: whoever runs `just deploy` builds it.
   nixpkgs = {
     hostPlatform = "armv7l-linux";
     buildPlatform = "x86_64-linux";
   };
+
+  nixpkgs.overlays = [boardOverlay];
 
   image.baseName = "venus";
 
   nix.package = pkgs.nix;
   boot.supportedFilesystems.zfs = lib.mkForce false;
 
+  # The terminfo is plain data, but taking it from the armv7l ghostty would
+  # cross-build the whole terminal, GStreamer and gfortran included.
   environment.systemPackages = [
-    pkgs.ghostty.terminfo
+    pkgs.buildPackages.ghostty.terminfo
   ];
+
+  # nh wraps nix-output-monitor, which is Haskell, and GHC doesn't cross-compile
+  # to armv7l. Nothing runs `nh os switch` here anyway: deploys come from
+  # elsewhere, and nix.gc covers what nh's clean did.
+  # clean has its own timer that doesn't follow enable.
+  programs.nh = {
+    enable = lib.mkForce false;
+    clean.enable = lib.mkForce false;
+  };
 
   myNixOS = {
     services.sshd.enable = true;
@@ -42,6 +70,11 @@
       stylixAsset = ../../media/artemis2_1.jpg;
     };
   };
+
+  # stylix stays on for the CLI themes (see mercury), but its Qt target
+  # installs qt5ct/qt6ct, i.e. two whole Qt builds plus GTK3, for a board with
+  # no display.
+  stylix.targets.qt.enable = false;
 
   programs.zsh.enable = true;
 
@@ -99,7 +132,8 @@
       _module.args.pkgs = lib.mkForce (import inputs.nixpkgs {
         localSystem = config.nixpkgs.buildPlatform;
         crossSystem = config.nixpkgs.hostPlatform;
-        inherit (hmArgs.config.nixpkgs) config overlays;
+        inherit (hmArgs.config.nixpkgs) config;
+        overlays = hmArgs.config.nixpkgs.overlays ++ [boardOverlay];
       });
     };
   };

@@ -26,8 +26,11 @@
         fzf.enable = true;
       };
       home.packages = with pkgs; [
-        git gnupg nushell zellij eza zoxide bat ripgrep sd fd wget unzip dnsutils nix-output-monitor jq gping httptap
-      ];
+        git gnupg nushell zellij eza zoxide bat ripgrep sd fd wget unzip dnsutils jq gping httptap
+      ]
+      # nom is Haskell, and GHC doesn't cross-compile to venus's armv7l. A no-op
+      # wherever the build machine can run the host's code, i.e. every native host.
+      ++ lib.optional (stdenv.buildPlatform.canExecute stdenv.hostPlatform) nix-output-monitor;
       home.sessionVariables = {
         NH_FLAKE = "${config.home.homeDirectory}/nixconf";
         EDITOR = "nvim";

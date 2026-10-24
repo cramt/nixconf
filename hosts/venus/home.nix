@@ -10,6 +10,7 @@
   myHomeManager = {
     bundles.general.enable = true;
     ssh.use1Password = false;
+    ssh.desktopEntries = false;
     gpg-agent.enableSshSupport = false;
 
     # Headless: the Zybo's HDMI and VGA are wired to the PL, so there is no
@@ -25,6 +26,18 @@
   # nix-community/nix-index-database ships an armv7l-linux database.
   myHomeManager.nix-index.enable = lib.mkForce false;
   programs.nix-index.enable = lib.mkForce false;
+
+  # The neovim feature turns on neovide, a GUI with nothing to draw on here.
+  # Its bindgen hook also needs a GCC that runs on armv7l, and that GCC's
+  # libgomp fails to cross-build.
+  programs.neovide.enable = lib.mkForce false;
+
+  # Renders a KDE colour scheme through imagemagick, which drags in fftw and a
+  # cross gfortran. There's no KDE to read it.
+  stylix.targets.kde.enable = false;
+  # HM's own Qt target, separate from the system one configuration.nix disables:
+  # qt5ct/qt6ct again, LLVM included this time.
+  stylix.targets.qt.enable = false;
 
   home.stateVersion = "26.05";
 }

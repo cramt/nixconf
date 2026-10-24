@@ -30,6 +30,14 @@ in {
   in {
     options.myHomeManager.ssh = {
       enable = lib.mkEnableOption "myHomeManager.ssh";
+      desktopEntries = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Install a launcher per ssh target that opens it in ghostty. Pointless
+          on a headless host, and it makes ghostty part of the closure.
+        '';
+      };
       use1Password = lib.mkOption {
         type = lib.types.bool;
         default = true;
@@ -65,7 +73,9 @@ in {
             };
           };
         };
-        home.packages = (builtins.attrValues sshTargetPackages) ++ (builtins.attrValues sshTargetDesktops);
+        home.packages =
+          builtins.attrValues sshTargetPackages
+          ++ lib.optionals config.myHomeManager.ssh.desktopEntries (builtins.attrValues sshTargetDesktops);
       }
       (lib.mkIf config.myHomeManager.ssh.use1Password {
         programs.ssh.settings."*".IdentityAgent = "~/.1password/agent.sock";
