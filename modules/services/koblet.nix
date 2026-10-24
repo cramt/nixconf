@@ -88,6 +88,7 @@
       };
 
       users.groups.koblet = {};
+      users.groups.plugdev = {};
       users.users.koblet = {
         isSystemUser = true;
         group = "koblet";
@@ -102,7 +103,10 @@
         # from `$SHELL -l -i`, and boxfsd runs under the user manager, and both
         # see /etc/profiles/per-user/koblet but neither sees the unit's PATH.
         # koblet probes for python3 >= 3.11 specifically.
-        packages = with pkgs; [bashInteractive coreutils git python3];
+        packages = with pkgs; [bashInteractive coreutils git python3 probe-rs-tools stlink dfu-util openocd];
+        # STM32 flashing: plugdev for the ST-Link / DFU USB devices (see the
+        # 0483 rule in bundles/nixos-general.nix), dialout for the ST-Link's VCP.
+        extraGroups = ["plugdev" "dialout"];
       };
 
       virtualisation.podman.enable = true;

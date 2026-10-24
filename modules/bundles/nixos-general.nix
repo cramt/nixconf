@@ -86,6 +86,9 @@
           SUBSYSTEM=="usb", ATTRS{idVendor}=="09fb", ATTRS{idProduct}=="6001", MODE="0660", GROUP="plugdev", TAG+="uaccess"
           # Digilent FT2232 JTAG+UART (Zybo PROG UART), for chipsmith/openFPGALoader.
           SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+          # Anything from ST: ST-Link probes and the STM32 ROM DFU bootloader. probe-rs-rules
+          # below cover the ST-Links with uaccess only, which a headless user never gets.
+          SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", MODE="0660", GROUP="plugdev", TAG+="uaccess"
         '';
         # Plain rules files, so the build platform's copy is the right one; the
         # flake has no outputs for cross targets like venus's armv7l.
