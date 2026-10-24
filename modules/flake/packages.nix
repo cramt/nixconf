@@ -108,6 +108,54 @@
         cp ${inputs.self.nixosConfigurations.venus.config.system.build.sdImage}/sd-image/*.img $out
       '';
 
+      # `nix run .#flash-venus [-- /dev/sdX]` — dd venus-img onto an SD card.
+      # venus has no opnix, so unlike flash-eros there's nothing to bake in. With
+      # no argument it picks the only removable disk; it refuses non-removable
+      # ones outright, since the image is the size of a whole disk and a typo'd
+      # /dev/sdX would otherwise eat a data drive.
+      flash-venus = pkgs.writeShellApplication {
+        name = "flash-venus";
+        runtimeInputs = with pkgs; [ pv util-linux coreutils gawk ];
+        text = ''
+          img=${inputs.self.packages.${system}.venus-img}
+          dev="''${1:-}"
+
+          if [ -z "$dev" ]; then
+            mapfile -t removable < <(lsblk -dnpo NAME,RM,TYPE | awk '$2 == 1 && $3 == "disk" { print $1 }')
+            if [ "''${#removable[@]}" -ne 1 ]; then
+              echo "found ''${#removable[@]} removable disks, pass one: nix run .#flash-venus -- /dev/sdX" >&2
+              lsblk -dpo NAME,SIZE,RM,TRAN,MODEL >&2
+              exit 1
+            fi
+            dev="''${removable[0]}"
+          fi
+
+          if [ ! -b "$dev" ] || [ "$(lsblk -dno TYPE "$dev")" != disk ]; then
+            echo "$dev is not a whole block device" >&2
+            exit 1
+          fi
+          if [ "$(lsblk -dno RM "$dev" | tr -d ' ')" != 1 ]; then
+            echo "$dev is not removable, refusing" >&2
+            exit 1
+          fi
+
+          echo ">> target device:"
+          lsblk -po NAME,SIZE,MODEL,TRAN,MOUNTPOINTS "$dev"
+          read -r -p ">> ERASE $dev and flash venus? type 'yes' to confirm: " ans
+          if [ "$ans" != "yes" ]; then echo "aborted"; exit 1; fi
+
+          # A card from a previous flash gets its partitions automounted.
+          lsblk -lnpo NAME,MOUNTPOINT "$dev" | awk 'NF == 2 { print $1 }' | while read -r part; do
+            sudo umount "$part"
+          done
+
+          echo ">> flashing $(du -hL "$img" | cut -f1)..."
+          pv "$img" | sudo dd of="$dev" bs=4M conv=fsync oflag=direct status=none
+          sync
+          echo ">> done, eject and boot venus."
+        '';
+      };
+
       # NOTE: scripts/windows-vm.sh (boot the physical Windows partition in a VM)
       # is SHELVED — Windows aborts very early on the synthesized disk topology
       # with no BSOD/log to diagnose. Kept in-tree as a reference but deliberately

@@ -72,6 +72,11 @@ in {
     clean.enable = lib.mkForce false;
   };
 
+  # Nobody generates a config on this board, and the tool hard-depends
+  # on bcachefs-tools, whose fusemount.rs doesn't compile on 32-bit (tv_sec is
+  # i32, so unsigned_abs() hands Duration::from_secs a u32).
+  system.tools.nixos-generate-config.enable = false;
+
   # nix-ld is for running foreign binaries, which nobody does on this board,
   # and it doesn't compile for 32-bit ARM (mismatched pointer-width types).
   programs.nix-ld.enable = lib.mkForce false;
