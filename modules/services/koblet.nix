@@ -97,11 +97,21 @@
         # Boxes: a user manager for boxfsd, and subuids for rootless podman.
         linger = true;
         autoSubUidGidRange = true;
+        # A starting toolset for jobs, not a sandbox. It goes in the user's
+        # profile rather than the unit's path: koblet takes the job environment
+        # from `$SHELL -l -i`, and boxfsd runs under the user manager, and both
+        # see /etc/profiles/per-user/koblet but neither sees the unit's PATH.
+        # koblet probes for python3 >= 3.11 specifically.
+        packages = with pkgs; [bashInteractive coreutils git python3];
       };
 
       virtualisation.podman.enable = true;
       # boxfs mounts each box's root over FUSE, which needs the setuid fusermount3.
-      programs.fuse.enable = true;
+      programs.fuse = {
+        enable = true;
+        # So a box's own (subuid) users reach the files of the boxfs mount koblet owns.
+        userAllowOther = true;
+      };
 
       systemd.tmpfiles.rules = ["d ${cfg.stateDir} 0700 koblet koblet -"];
 
@@ -111,9 +121,7 @@
         wants = ["network-online.target"];
         after = ["network-online.target"];
 
-        # A starting toolset for jobs, not a sandbox. koblet probes for
-        # python3 >= 3.11 specifically.
-        path = with pkgs; [bashInteractive coreutils git python3 config.virtualisation.podman.package fuse3 "/run/wrappers"];
+        path = config.users.users.koblet.packages ++ [config.virtualisation.podman.package pkgs.fuse3 "/run/wrappers"];
 
         environment = {
           HOME = cfg.stateDir;
