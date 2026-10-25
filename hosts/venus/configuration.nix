@@ -94,7 +94,8 @@ in {
   users.users = {
     cramt = {
       isNormalUser = true;
-      extraGroups = ["wheel"];
+      # fpga: nixos-fpga's /dev/fpga-load, for `chipsmith flash --ssh venus`.
+      extraGroups = ["wheel" "fpga"];
       shell = pkgs.zsh;
       openssh.authorizedKeys.keys = (import ../../myLib/keys.nix).alex;
     };

@@ -93,6 +93,11 @@
           config.myNixOS.services.m365-copilot-proxy.models;
       };
       nixarr.enable = true;
+      # Kobl host runner. Home on /pool: jobs clone repos and build in there.
+      koblet = {
+        enable = true;
+        stateDir = "/pool/koblet";
+      };
       # Passkey portal for the owner-only vhosts (caddy serviceMap forward-auth).
       authelia = {
         enable = true;
