@@ -6,23 +6,7 @@
     pkgs,
     ...
   }: let
-    # patchelf 0.19.2 applying --interpreter and --set-rpath in one call
-    # leaves .dynamic on a page mapped read-only, so ld.so segfaults writing
-    # DT_DEBUG and nvidia-smi dies before main. Backports the builder.sh split
-    # from https://github.com/NixOS/nixpkgs/pull/576397 (issue #576412).
-    # Remove when our nixpkgs contains ae9ba0c0 -- the patch then stops
-    # applying and the build fails, which is the cue.
-    driver = config.myNixOS.nvidia.package.overrideAttrs (old: {
-      builder = pkgs.runCommand "nvidia-x11-builder.sh" {} ''
-        cp ${old.builder} $out
-        chmod u+w $out
-        patch $out ${pkgs.fetchpatch {
-          url = "https://github.com/NixOS/nixpkgs/commit/ae9ba0c0ab398dd76b2e34721c9c19fbed16e0b1.patch";
-          relative = "pkgs/os-specific/linux/nvidia-x11";
-          hash = "sha256-i7B44In5P74RU4GKVWmVO4VnughlbT+4PDpqzry3hcc=";
-        }}
-      '';
-    });
+    driver = config.myNixOS.nvidia.package;
   in {
     options.myNixOS.nvidia = {
       enable = lib.mkEnableOption "myNixOS.nvidia";

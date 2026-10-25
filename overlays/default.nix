@@ -148,54 +148,6 @@ inputs: [
       else prev.moonlight-qt;
   })
 
-  # nixpkgs now signs kernel modules with per-module certificates
-  # (https://github.com/NixOS/nixpkgs/pull/571181), and aggregateModules cats
-  # every external module's `.ko.cer` into modules.cer. ddcci-driver installs
-  # its modules by hand instead of through Kbuild's modules_install, so it never
-  # emits those and saturn's linux-zen-modules fails with
-  # `cat: extra/ddcci.ko.cer: No such file or directory`.
-  # Tracked in https://github.com/NixOS/nixpkgs/issues/575192; this is a
-  # backport of the fix in https://github.com/NixOS/nixpkgs/pull/576387.
-  # Remove once that PR is merged and in our nixpkgs pin.
-  (final: prev: {
-    linuxKernel =
-      prev.linuxKernel
-      // {
-        packages =
-          builtins.mapAttrs (
-            _: kp:
-              if builtins.isAttrs kp && kp ? extend
-              then
-                kp.extend (kfinal: kprev: {
-                  ddcci-driver = kprev.ddcci-driver.overrideAttrs (old: let
-                    kdir = "${kfinal.kernel.dev}/lib/modules/${kfinal.kernel.modDirVersion}/build";
-                  in {
-                    prePatch = ''
-                      substituteInPlace ./ddcci/Makefile --replace '"$(src)"' '$(PWD)'
-                      substituteInPlace ./ddcci-backlight/Makefile --replace '"$(src)"' '$(PWD)'
-                    '';
-                    makeFlags =
-                      builtins.filter (
-                        f: !(prev.lib.hasPrefix "KERNEL_MODLIB=" f || prev.lib.hasPrefix "INCLUDEDIR=" f)
-                      )
-                      old.makeFlags;
-                    installPhase = ''
-                      runHook preInstall
-                      for module in ddcci ddcci-backlight; do
-                        make -C "${kdir}" M="$PWD/$module" modules_install \
-                          INSTALL_MOD_PATH="$out" INSTALL_MOD_DIR=extra DEPMOD=true $makeFlags
-                      done
-                      install -Dm644 include/linux/ddcci.h -t "$out/include/linux"
-                      runHook postInstall
-                    '';
-                  });
-                })
-              else kp
-          )
-          prev.linuxKernel.packages;
-      };
-  })
-
   (final: prev: {
     docker = prev.docker.override {
       buildxSupport = true;
