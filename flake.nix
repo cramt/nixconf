@@ -67,6 +67,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Packages nixpkgs lacks or lags on. Our own flake (cramt/my-nixpkgs), auto-bumped
+    # hourly by its CI; `just update` pulls the new versions in.
+    my-nixpkgs = {
+      url = "github:cramt/my-nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # OpenAI-compatible proxy for M365 Copilot (Nitro service + NixOS module).
     m365-copilot-proxy = {
       url = "github:cramt/m365-copilot-proxy";

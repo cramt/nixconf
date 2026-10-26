@@ -100,6 +100,11 @@ inputs: [
   # cloud relay.
   inputs.t3code-nix.overlays.default
 
+  # Only cherry-picks from cramt/my-nixpkgs for now: it also carries agentsview,
+  # cockatrice and others that packages/ still defines here, and the full overlay
+  # would silently swap those out. Widen it once packages/ drops its copies.
+  (final: prev: {inherit (inputs.my-nixpkgs.overlays.default final prev) fluxer;})
+
   # niri-stable (v25.08) links libdisplay-info-sys 0.2.2, which only binds a
   # system libdisplay-info of the same major.minor. nixpkgs dropped
   # `libdisplay-info_0_2` (keeping only _0_3 and the current 0.4) and left a
