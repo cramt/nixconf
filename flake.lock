@@ -1277,6 +1277,26 @@
         "type": "github"
       }
     },
+    "my-nixpkgs": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793009199,
+        "narHash": "sha256-9hnYJ1bwohB/Pyfk9j5jb61AKaLmRseRQD+0T5X4jpE=",
+        "owner": "cramt",
+        "repo": "my-nixpkgs",
+        "rev": "be36afca998de7bc30a86b83ac21f9b1c2611d25",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cramt",
+        "repo": "my-nixpkgs",
+        "type": "github"
+      }
+    },
     "nh": {
       "inputs": {
         "nixpkgs": "nixpkgs_5"
@@ -2074,6 +2094,7 @@
         "llm-agents": "llm-agents",
         "m365-copilot-proxy": "m365-copilot-proxy",
         "mattpocock-skills": "mattpocock-skills",
+        "my-nixpkgs": "my-nixpkgs",
         "nh": "nh",
         "niri-flake": "niri-flake",
         "nix-colors": "nix-colors",

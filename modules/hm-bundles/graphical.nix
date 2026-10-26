@@ -3,7 +3,7 @@
     options.myHomeManager.bundles.graphical.enable = lib.mkEnableOption "myHomeManager.bundles.graphical";
     config = lib.mkIf config.myHomeManager.bundles.graphical.enable {
       home.packages = with pkgs; [
-        wl-clipboard brightnessctl pavucontrol adwaita-qt t3code-desktop
+        wl-clipboard brightnessctl pavucontrol adwaita-qt t3code-desktop fluxer
       ];
       xdg.enable = true;
       # Keep the Orca screen reader off declaratively. COSMIC/GDM pull in the
