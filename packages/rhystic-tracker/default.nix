@@ -40,7 +40,7 @@
     owner = "Balthazzahr";
     repo = "Rhystic-Tracker";
     tag = "v${version}";
-    hash = "sha256-iWJF8grHoiA/7TRkV5MwNXl5CFAF0FuFWK2HMt7elsw=";
+    hash = "sha256-0M0BvKYEwCPnm3M2rQb0v+qDbXfYPp9qM58+rzxO12w=";
   };
 
   frontend = buildNpmPackage {
