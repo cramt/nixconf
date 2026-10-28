@@ -37,8 +37,8 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1103464.f05535a0efcb/nixexprs.tar.xz",
-      "hash": "sha256-8VGQQhZfWvvWCoqOf5lb8AzUVbKJKvnihiXwJKKPH0s="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1103743.58deea654ec5/nixexprs.tar.xz",
+      "hash": "sha256-CspxJVDICG/YlT1IKANbHnw2jUEAD3/6tYqp4FyAf+w="
     },
     "vixen-zed": {
       "type": "Git",
