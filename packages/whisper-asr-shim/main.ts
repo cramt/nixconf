@@ -2,7 +2,8 @@
 // provider uses (/asr and /detect-language), backed by a whisper.cpp server.
 // whisper.cpp has its own /inference API, and whisper-asr-webservice would
 // mean a second Python whisper stack next to the one we already run.
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { createServer, request, type IncomingMessage, type ServerResponse } from "node:http";
+import { Readable } from "node:stream";
 
 const listen = new URL(requiredEnv("SHIM_LISTEN"));
 const backend = requiredEnv("WHISPER_URL");
@@ -73,7 +74,21 @@ async function infer(audio: Uint8Array, fields: Record<string, string>): Promise
   const form = new FormData();
   form.set("file", new Blob([audio], { type: "audio/wav" }), "audio.wav");
   for (const [k, v] of Object.entries(fields)) form.set(k, v);
-  const res = await fetch(`${backend}/inference`, { method: "POST", body: form });
+  // Not fetch: undici gives up waiting for response headers after 300s, and
+  // whisper.cpp sends none until it is done, which translating a 24-minute
+  // episode takes longer than. node:http has no such default.
+  const encoded = new Response(form);
+  const contentType = encoded.headers.get("content-type");
+  if (!contentType) throw new Error("FormData encoded without a content-type");
+  const body = new Uint8Array(await encoded.arrayBuffer());
+  const raw = await new Promise<IncomingMessage>((resolve, reject) =>
+    request(
+      `${backend}/inference`,
+      { method: "POST", headers: { "content-type": contentType, "content-length": body.byteLength } },
+      resolve,
+    ).on("error", reject).end(body),
+  );
+  const res = new Response(Readable.toWeb(raw) as ReadableStream, { status: raw.statusCode });
   if (!res.ok) throw new HttpError(502, `whisper.cpp ${res.status}: ${await res.text()}`);
   return res;
 }
