@@ -210,8 +210,8 @@
         whisper = config.myNixOS.services.whisper.subtitles;
         # Jellyfin takes any extra dotted segment of an external subtitle's
         # name as the track title, so "Ep.Whisper.en.srt" shows as "Whisper"
-        # next to the real subs. Bazarr picks the renamed file up on its next
-        # disk scan.
+        # next to the real subs. Bazarr only indexes the renamed file because
+        # its package below is patched to look past the tag.
         tagWhisper = pkgs.writeShellScript "bazarr-tag-whisper" ''
           provider=$1 video=$2 subs=$3
           [ "$provider" = whisperai ] || exit 0
@@ -274,6 +274,12 @@
           # equality includes the hi flag. opensubtitlescom adds the hi
           # variants the same way. No upstream issue yet; drop this once
           # whisperai.py's `languages` includes them.
+          #
+          # The disk indexer only takes "Ep.<lang>[.hi].srt" for "Ep.mkv", so
+          # the "Ep.Whisper.en.hi.srt" that bazarr-tag-whisper leaves behind
+          # was invisible: every search found en:hi still missing and whisper
+          # redid the episode. Ours, so no upstream issue; drop it along with
+          # the tag.
           package = pkgs.bazarr.overrideAttrs (old: {
             postPatch =
               (old.postPatch or "")
@@ -283,6 +289,11 @@
                     "    languages = wlm.get_all_language_objects()" \
                     "    languages = wlm.get_all_language_objects()
                     languages.update(set(Language.rebuild(lang, hi=True) for lang in languages if lang))"
+                substituteInPlace custom_libs/subliminal_patch/core.py \
+                  --replace-fail \
+                    "        p_root_lower = p_root_bare.lower()" \
+                    "        p_root_bare = re.sub(r'\.whisper$', ''', p_root_bare, flags=re.IGNORECASE)
+                        p_root_lower = p_root_bare.lower()"
               '';
           });
         };
