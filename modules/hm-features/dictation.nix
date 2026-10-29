@@ -4,7 +4,7 @@
 #
 # The hotkey is voxtype's own evdev listener rather than a compositor binding,
 # because COSMIC can't bind key release and push-to-talk needs it. That works
-# because the user is in the `input` group (bundles/nixos-home-manager.nix).
+# because enabling this puts the user in the `input` group (bundles/nixos-users.nix).
 # Right Ctrl because Right Alt is AltGr on the Danish layout.
 #
 # The whisper prompt is set server-side, so it's deliberately not sent from

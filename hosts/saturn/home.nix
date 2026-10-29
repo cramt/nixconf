@@ -18,6 +18,8 @@
     helium.enable = true;
     agentsview.enable = true;
     agentsview.service.enable = true;
+    # Push-to-talk on Right Ctrl, transcribed by whisper on luna.
+    dictation.enable = true;
     # Diagnostic for the intermittent WAN loss seen 2026-07-30 (affected multiple
     # devices, cleared on its own, every local component measured clean afterwards).
     # Turn off once the ISP-side cause is identified or ruled out.
