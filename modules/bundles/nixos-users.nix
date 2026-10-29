@@ -75,10 +75,7 @@
                 "plugdev"
                 "dialout"
                 "systemd-journal"
-              ]
-              # voxtype reads the push-to-talk key straight from evdev, since
-              # COSMIC can't bind key release.
-              ++ lib.optional config.home-manager.users.${name}.myHomeManager.dictation.enable "input";
+              ];
               openssh.authorizedKeys.keys = user.authorizedKeys;
             })
             cfg.home-users)
