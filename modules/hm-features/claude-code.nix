@@ -104,6 +104,9 @@
         commit = "";
         pr = "";
       };
+      # Also gates idle compaction, so this one key turns off every automatic
+      # compact. Manual /compact still works (DISABLE_COMPACT would kill that too).
+      autoCompactEnabled = false;
     };
     mergeSettings = pkgs.writeShellApplication {
       name = "claude-merge-settings";
@@ -206,6 +209,16 @@
         # Remove when upstream makes waiting the default for subscription
         # limits rather than something the runner opts into.
         home.sessionVariables.CLAUDE_CODE_RETRY_WATCHDOG = "1";
+
+        # Kills the per-subagent progress summaries (the "Reading foo.ts" line
+        # under a running agent, regenerated every 30s by a forked model call).
+        # Interactive sessions only run them because the fork-subagent gate is
+        # on; there's no dedicated switch (the served summary config has modes
+        # full/short, no off). Side effect: subagent_type "fork" goes away too.
+        # Measured on 2.1.312 with two tmux sessions spawning the same subagent:
+        # default logged [AgentSummary] for each agent, this logged none.
+        # Remove if upstream ships a real setting for it.
+        home.sessionVariables.CLAUDE_CODE_FORK_SUBAGENT = "0";
 
         home.activation.claude-settings = lib.hm.dag.entryAfter ["writeBoundary"] ''
           run ${lib.getExe mergeSettings}

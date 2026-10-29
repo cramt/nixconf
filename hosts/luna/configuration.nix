@@ -141,8 +141,12 @@
       # cramt's Claude pool at cliproxy.<domain>: panel behind the passkey, /v1
       # behind the shared API key. Every host's `claude` points here.
       cli-proxy-api.enable = true;
-      # LAN speech-to-text on the 1660 for the desktops' push-to-talk.
-      whisper.enable = true;
+      # Speech-to-text on the 1660: push-to-talk for the desktops, and Bazarr's
+      # fallback when no provider has subtitles that match a dub.
+      whisper = {
+        dictation.enable = true;
+        subtitles.enable = true;
+      };
       foundryvtt = {
         enable = false;
         dataVolume = "/pool/configs/foundryvtt_a";

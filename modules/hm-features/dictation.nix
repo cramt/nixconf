@@ -1,11 +1,11 @@
-# Push-to-talk dictation into whatever window has focus: hold Right Ctrl, talk,
-# release, and voxtype types the transcript. Transcription happens on luna's GPU
+# Dictation into whatever window has focus: press Super+Shift+D, talk, press it
+# again, and voxtype types the transcript. Transcription happens on luna's GPU
 # (modules/services/whisper.nix); this side only records and types.
 #
-# The hotkey is voxtype's own evdev listener rather than a compositor binding,
-# because COSMIC can't bind key release and push-to-talk needs it. That works
-# because the user is in the `input` group (bundles/nixos-home-manager.nix).
-# Right Ctrl because Right Alt is AltGr on the Danish layout.
+# The hotkey is a compositor binding running `voxtype record toggle`, not
+# voxtype's own evdev listener: that one needs the user in `input`, which can
+# read every keyboard on the box. The cost is toggle instead of push-to-talk,
+# since neither COSMIC nor niri can bind key release.
 #
 # The whisper prompt is set server-side, so it's deliberately not sent from
 # here: a request's own prompt would replace the vocabulary.
@@ -17,13 +17,10 @@
     ...
   }: let
     dictation = import ../../myLib/dictation.nix;
+    toggle = "${lib.getExe pkgs.voxtype} record toggle";
     settings = {
       state_file = "auto";
-      hotkey = {
-        enabled = true;
-        key = "RIGHTCTRL";
-        mode = "push_to_talk";
-      };
+      hotkey.enabled = false;
       audio = {
         device = "default";
         sample_rate = 16000;
@@ -51,6 +48,19 @@
 
     config = lib.mkIf config.myHomeManager.dictation.enable {
       home.packages = [pkgs.voxtype];
+      wayland.desktopManager.cosmic.shortcuts = lib.mkIf config.myHomeManager.cosmic.enable [
+        {
+          key = "Super+Shift+d";
+          action = config.lib.cosmic.mkRON "enum" {
+            variant = "Spawn";
+            value = [toggle];
+          };
+        }
+      ];
+      programs.niri.settings.binds = lib.mkIf config.myHomeManager.niri.enable {
+        "Mod+Shift+D".action.spawn = ["${lib.getExe pkgs.voxtype}" "record" "toggle"];
+      };
+
       xdg.configFile."voxtype/config.toml".source = (pkgs.formats.toml {}).generate "voxtype.toml" settings;
 
       systemd.user.services.voxtype = {

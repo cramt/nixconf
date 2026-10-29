@@ -74,12 +74,17 @@
           "https://yazi.cachix.org"
           "https://nvf.cachix.org"
           "https://nixos-raspberrypi.cachix.org"
+          # The CUDA team's Hydra: cache.nixos.org builds no unfree CUDA.
+          # Fleet-wide because whichever host runs `just deploy` builds
+          # luna's CUDA whisper.cpp.
+          "https://cache.nixos-cuda.org"
         ];
         trusted-public-keys = [
           "cramt.cachix.org-1:F7DlWw50o0gCn5TxMuep2PPku+7L9dxTIarTnPaNvls="
           "yazi.cachix.org-1:Dcdz63NZKfvUCbDGngQDAZq6kOroIrFoyO064uvLh8k="
           "nvf.cachix.org-1:GMQWiUhZ6ux9D5CvFFMwnc2nFrUHTeGaXRlVBXo+naI="
           "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
+          "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
         ];
       };
       # /tmp lives on the root fs and survives reboots, so whatever a crashed
