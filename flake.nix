@@ -63,13 +63,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # T3 Code. Our own flake (cramt/t3code-nix), built from upstream nightlies and
-    # auto-bumped hourly by its CI; `just update` pulls the new version in.
-    t3code-nix = {
-      url = "github:cramt/t3code-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Packages nixpkgs lacks or lags on. Our own flake (cramt/my-nixpkgs), auto-bumped
     # hourly by its CI; `just update` pulls the new versions in.
     my-nixpkgs = {

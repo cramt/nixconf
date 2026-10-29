@@ -1284,11 +1284,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793127461,
-        "narHash": "sha256-k032ivW/irtT3Nn3FRcUysV7R8KNImG9ADcIH2KLiMM=",
+        "lastModified": 1793291137,
+        "narHash": "sha256-Y7ikCk2NqWs56kOi1D90nIhlCOoNUfBev9fz5rVqJ3U=",
         "owner": "cramt",
         "repo": "my-nixpkgs",
-        "rev": "7ae8771a73bd9a1c295858d5a0b4d69040679fa4",
+        "rev": "fb312601ae85ffae2064b3978e0c2a6e32dea146",
         "type": "github"
       },
       "original": {
@@ -2118,7 +2118,6 @@
         "progress-engine": "progress-engine",
         "quadlet-nix": "quadlet-nix",
         "stylix": "stylix",
-        "t3code-nix": "t3code-nix",
         "terranix": "terranix_2",
         "winapps": "winapps",
         "yazi": "yazi",
@@ -2585,26 +2584,6 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
-        "type": "github"
-      }
-    },
-    "t3code-nix": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1793127984,
-        "narHash": "sha256-7VXlPWTo0XO2B7w6sGeaP3FECxelGkgsSPj9gPC5D/c=",
-        "owner": "cramt",
-        "repo": "t3code-nix",
-        "rev": "bb4e70da1496e1f5439f3fb0733a80ed47f16414",
-        "type": "github"
-      },
-      "original": {
-        "owner": "cramt",
-        "repo": "t3code-nix",
         "type": "github"
       }
     },

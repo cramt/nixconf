@@ -92,18 +92,15 @@ inputs: [
     zed-vixen = final.mkZedExtension {src = final.npinsSources.vixen-zed;};
   })
 
-  # T3 Code (`t3code`, `t3code-desktop`) from our own flake (cramt/t3code-nix),
-  # built from upstream nightlies against our nixpkgs and auto-bumped hourly by
-  # its CI. It carries the dev-auth-token patch that `sharedSecret` relies on
-  # (modules/services/t3code.nix), and no provider wrapper, so t3code spawns the
-  # home-manager agents. luna is reached through caddy + authelia, not Ping's
-  # cloud relay.
-  inputs.t3code-nix.overlays.default
-
   # Only cherry-picks from cramt/my-nixpkgs for now: it also carries agentsview,
   # cockatrice and others that packages/ still defines here, and the full overlay
   # would silently swap those out. Widen it once packages/ drops its copies.
-  (final: prev: {inherit (inputs.my-nixpkgs.overlays.default final prev) fluxer;})
+  #
+  # Its t3code is built from upstream nightlies with the dev-auth-token patch
+  # that `sharedSecret` relies on (modules/services/t3code.nix), and no provider
+  # wrapper, so t3code spawns the home-manager agents. luna is reached through
+  # caddy + authelia, not Ping's cloud relay.
+  (final: prev: {inherit (inputs.my-nixpkgs.overlays.default final prev) fluxer t3code t3code-desktop;})
 
   # niri-stable (v25.08) links libdisplay-info-sys 0.2.2, which only binds a
   # system libdisplay-info of the same major.minor. nixpkgs dropped
