@@ -200,17 +200,48 @@
 
       # Bazarr's post-processing hook is a shell command any UI user can set,
       # i.e. RCE as the bazarr user. Before the authelia gate, a scanner set it
-      # to fetch and run an xmrig dropper. Nothing here uses the hook, so wipe
-      # it on every start rather than trust whatever the UI last saved.
+      # to fetch and run an xmrig dropper. So it is pinned on every start rather
+      # than trusting whatever the UI last saved: to the whisper tagger when
+      # the subtitle server runs, to nothing otherwise. The whisperai endpoint
+      # is pinned too since its port comes from here; enabling the provider
+      # and its fallback stays in the UI.
       # nixarr's bazarr settings-sync only covers the sonarr/radarr links.
-      systemd.services.bazarr.serviceConfig.ExecStartPre = lib.mkBefore [
-        (pkgs.writeShellScript "bazarr-no-postprocessing" ''
-          conf=${config.nixarr.bazarr.stateDir}/config/config.yaml
-          [ -e "$conf" ] || exit 0
-          ${pkgs.yq-go}/bin/yq -i \
-            '.general.use_postprocessing = false | .general.postprocessing_cmd = ""' "$conf"
-        '')
-      ];
+      systemd.services.bazarr.serviceConfig.ExecStartPre = let
+        whisper = config.myNixOS.services.whisper.subtitles;
+        # Jellyfin takes any extra dotted segment of an external subtitle's
+        # name as the track title, so "Ep.Whisper.en.srt" shows as "Whisper"
+        # next to the real subs. Bazarr picks the renamed file up on its next
+        # disk scan.
+        tagWhisper = pkgs.writeShellScript "bazarr-tag-whisper" ''
+          provider=$1 video=$2 subs=$3
+          [ "$provider" = whisperai ] || exit 0
+          stem=''${video%.*}
+          suffix=''${subs#"$stem"}
+          if [ "$suffix" = "$subs" ]; then
+            echo "$subs is not named after $video, leaving it" >&2
+            exit 1
+          fi
+          mv -- "$subs" "$stem.Whisper$suffix"
+          echo "tagged as $stem.Whisper$suffix"
+        '';
+        pin =
+          if whisper.enable
+          then ''
+            .general.use_postprocessing = true
+            | .general.postprocessing_cmd = "${tagWhisper} {{provider}} {{episode}} {{subtitles}}"
+            | .general.use_postprocessing_threshold = false
+            | .general.use_postprocessing_threshold_movie = false
+            | .whisperai.endpoint = "http://127.0.0.1:${toString whisper.port}"
+          ''
+          else ''.general.use_postprocessing = false | .general.postprocessing_cmd = ""'';
+      in
+        lib.mkBefore [
+          (pkgs.writeShellScript "bazarr-pin-postprocessing" ''
+            conf=${config.nixarr.bazarr.stateDir}/config/config.yaml
+            [ -e "$conf" ] || exit 0
+            ${pkgs.yq-go}/bin/yq -i ${lib.escapeShellArg pin} "$conf"
+          '')
+        ];
 
       # Prowlarr generates its own API key into its state dir, so lifting it into
       # 1Password would mean two copies to keep in step. Read it at activation
