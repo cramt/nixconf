@@ -266,7 +266,26 @@
         shelfmark.enable = true;
         jellyfin.enable = true;
         jellyseerr.enable = true;
-        bazarr.enable = true;
+        bazarr = {
+          enable = true;
+          # The whisperai provider declares only plain languages, so a profile
+          # asking for HI (the "dubtitles" one, where HI stands in for subs
+          # that match the dub) never even queries it: subzero's Language
+          # equality includes the hi flag. opensubtitlescom adds the hi
+          # variants the same way. No upstream issue yet; drop this once
+          # whisperai.py's `languages` includes them.
+          package = pkgs.bazarr.overrideAttrs (old: {
+            postPatch =
+              (old.postPatch or "")
+              + ''
+                substituteInPlace custom_libs/subliminal_patch/providers/whisperai.py \
+                  --replace-fail \
+                    "    languages = wlm.get_all_language_objects()" \
+                    "    languages = wlm.get_all_language_objects()
+                    languages.update(set(Language.rebuild(lang, hi=True) for lang in languages if lang))"
+              '';
+          });
+        };
         sonarr = {
           enable = true;
           settings-sync.transmission.enable = true;
