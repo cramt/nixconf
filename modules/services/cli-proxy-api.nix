@@ -94,6 +94,14 @@
         };
       };
 
+      # A T3 Code server on this host, as the pool's own user, shows the pool's
+      # limits under Usage. Same user only: the key file is cfg.user:caddy 0640.
+      myNixOS.services.t3code.usageHub = lib.mkIf (config.myNixOS.services.t3code.enable && config.myNixOS.services.t3code.user == cfg.user) {
+        url = "http://127.0.0.1:${toString config.home-manager.users.${cfg.user}.myHomeManager.cli-proxy-api.port}";
+        managementKeyFile = keyFile;
+        label = "Claude pool";
+      };
+
       # CPA has no /metrics of its own; the plugin serves it on a management
       # route, behind the same key caddy injects. systemd hands prometheus a
       # copy, so the key stays readable by cramt and caddy only.
