@@ -65,6 +65,7 @@
     # serverSettings.ts, migrateLegacyProviderSettings), so anything beyond
     # `enabled` written there is never read.
     declaredDrivers = lib.unique (lib.attrNames cfg.providers ++ lib.attrNames cfg.customModels);
+    hasDeclaredSettings = declaredDrivers != [] || cfg.usageHub != null;
     declaredSettings = (pkgs.formats.json {}).generate "t3code-declared-settings.json" {
       providers = lib.mapAttrs (_: enabled: {inherit enabled;}) cfg.providers;
       providerInstances = lib.genAttrs declaredDrivers (driver:
@@ -73,6 +74,11 @@
         // lib.optionalAttrs (cfg.customModels ? ${driver}) {
           config.customModels = map (m: lib.filterAttrs (_: v: v != null) m) cfg.customModels.${driver};
         });
+    };
+    usageHubSettings = (pkgs.formats.json {}).generate "t3code-usage-hub.json" {
+      kind = "cliproxy";
+      inherit (cfg.usageHub) label url;
+      enabled = true;
     };
     seedSettings = pkgs.writeShellApplication {
       name = "t3code-seed-settings";
@@ -89,6 +95,17 @@
         printf '%s' "$current" \
           | jq --slurpfile declared ${declaredSettings} '. * $declared[0]' \
           > "${settingsFile}.new"
+      '' + lib.optionalString (cfg.usageHub != null) ''
+        # The key is read here rather than baked into declaredSettings so it
+        # never lands in the store. `test -s` turns a not-yet-generated key
+        # into a failed start that Restart= retries.
+        test -s ${lib.escapeShellArg cfg.usageHub.managementKeyFile}
+        jq --slurpfile hub ${usageHubSettings} \
+          --rawfile key ${lib.escapeShellArg cfg.usageHub.managementKeyFile} \
+          '.usageLimitSources.cliproxy = $hub[0] + {managementKey: ($key | rtrimstr("\n"))}' \
+          "${settingsFile}.new" > "${settingsFile}.hub"
+        mv "${settingsFile}.hub" "${settingsFile}.new"
+      '' + ''
         mv "${settingsFile}.new" "${settingsFile}"
       '';
     };
@@ -203,6 +220,37 @@
           Extra models in a driver's picker, keyed by driver kind. Replaces
           that driver's custom model list on every start, so models added in
           the UI for a driver named here don't survive a restart.
+        '';
+      };
+      usageHub = lib.mkOption {
+        type = lib.types.nullOr (lib.types.submodule {
+          options = {
+            url = lib.mkOption {
+              type = lib.types.str;
+              example = "http://127.0.0.1:8317";
+              description = "CLIProxyAPI base URL; t3code appends /v0/management itself.";
+            };
+            managementKeyFile = lib.mkOption {
+              type = lib.types.str;
+              description = ''
+                File holding the management key, readable by `user`. Read at
+                start, never copied into the store; the server then moves it
+                out of settings.json into its own secret store.
+              '';
+            };
+            label = lib.mkOption {
+              type = lib.types.str;
+              default = "CLIProxyAPI";
+              description = "Name shown under Usage → Limits.";
+            };
+          };
+        });
+        default = null;
+        description = ''
+          CLIProxyAPI hub whose pooled account limits show under Usage →
+          Limits. Usage only: agent requests reach the pool through each
+          CLI's own config (claude's wrapper), not through this. Rewritten on
+          every start, so the hub can't be edited or removed in the UI.
         '';
       };
       onDiskSshKey.enable = lib.mkOption {
@@ -342,7 +390,7 @@
             TimeoutStopSec = "15";
             ExecStartPre =
               lib.optional cfg.onDiskSshKey.enable "${prepare}/bin/t3code-prepare"
-              ++ lib.optional (declaredDrivers != []) "${seedSettings}/bin/t3code-seed-settings";
+              ++ lib.optional hasDeclaredSettings "${seedSettings}/bin/t3code-seed-settings";
           };
         };
       };

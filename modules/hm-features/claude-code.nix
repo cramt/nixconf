@@ -47,6 +47,17 @@
     # sends is the pool's api key — ANTHROPIC_API_KEY is cleared so it can't
     # fall back to a real Anthropic key. hiPrio to win over the raw claude-code
     # binary the development bundle installs.
+    #
+    # The key rides in x-api-key rather than ANTHROPIC_AUTH_TOKEN whenever
+    # ~/.claude holds a live claude.ai login: an auth token outranks that
+    # login, and /voice only exists while the login is the winning auth (its
+    # speech-to-text goes straight to Anthropic, never through the base URL,
+    # and costs no usage). The OAuth bearer still lands in Authorization, which
+    # CPA just doesn't match; it accepts a request when any of Authorization,
+    # x-api-key, x-goog-api-key or ?key= holds a configured key
+    # (internal/access/config_access/provider.go). Without a login, or with a
+    # refresh token past its expiry, Claude Code refuses to start rather than
+    # use the base URL, so that case keeps the auth token.
     # Falls back to Claude Code's own OAuth whenever the pool can't be reached
     # (luna down, opnix not rendered yet): silently routing at that point
     # would break `claude` entirely rather than degrade.
@@ -57,27 +68,35 @@
       if [ -r "$keyfile" ] && [ -s "$keyfile" ] &&
          timeout 2 bash -c '</dev/tcp/${pool.host}/443' 2>/dev/null; then
         export ANTHROPIC_BASE_URL="${pool.url}"
-        export ANTHROPIC_AUTH_TOKEN="$(cat "$keyfile")"
         # Must be empty, not unset: a real key here would let Claude Code bill
         # the API directly instead of going through the pooled subscriptions.
         export ANTHROPIC_API_KEY=""
-        # claude.ai cloud connectors need the OAuth login to be the winning
-        # auth source, which it never is while we're routing through the pool.
-        # Left alone, Claude Code notices that and nags every session; opting
-        # out explicitly makes it skip the fetch instead of warning about it.
-        export ENABLE_CLAUDEAI_MCP_SERVERS=0
-        # An auth token isn't a claude.ai login, so Claude Code drops to the
-        # API-key default of a 5m prompt cache; a subscriber gets 1h on the
-        # main thread. This restores that, and only that: subagents read
-        # CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL and stay at 5m, as natively.
-        # The proxy passes a native client's cache_control through untouched.
-        export CLAUDE_CODE_PROMPT_CACHE_TTL=1h
+        if ${lib.getExe pkgs.jq} -e --argjson now "$(date +%s000)" \
+             '.claudeAiOauth.refreshToken and ((.claudeAiOauth.refreshTokenExpiresAt // $now + 1) > $now)' \
+             "$HOME/.claude/.credentials.json" >/dev/null 2>&1; then
+          unset ANTHROPIC_AUTH_TOKEN
+          export ANTHROPIC_CUSTOM_HEADERS="x-api-key: $(cat "$keyfile")"
+        else
+          unset ANTHROPIC_CUSTOM_HEADERS
+          export ANTHROPIC_AUTH_TOKEN="$(cat "$keyfile")"
+          # claude.ai cloud connectors need the OAuth login to be the winning
+          # auth source, which an auth token never lets it be. Left alone,
+          # Claude Code notices that and nags every session; opting out
+          # explicitly makes it skip the fetch instead of warning about it.
+          export ENABLE_CLAUDEAI_MCP_SERVERS=0
+          # Without a claude.ai login Claude Code drops to the API-key default
+          # of a 5m prompt cache; a subscriber gets 1h on the main thread. This
+          # restores that, and only that: subagents read
+          # CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL and stay at 5m, as natively.
+          # The proxy passes a native client's cache_control through untouched.
+          export CLAUDE_CODE_PROMPT_CACHE_TTL=1h
+        fi
       else
         # Drop any inherited routing so "fallback" really means direct — a
         # stale ANTHROPIC_BASE_URL in the shell (or a nested claude session)
         # would otherwise silently survive into the fallback path. Connectors
         # do work on this path, so the opt-out goes too.
-        unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ENABLE_CLAUDEAI_MCP_SERVERS
+        unset ANTHROPIC_BASE_URL ANTHROPIC_AUTH_TOKEN ANTHROPIC_CUSTOM_HEADERS ENABLE_CLAUDEAI_MCP_SERVERS
 
         if [ ! -r "$keyfile" ]; then
           echo "claude: cannot read $keyfile — using the direct OAuth login." >&2
