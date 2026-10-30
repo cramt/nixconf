@@ -12,11 +12,11 @@
 # named management.html or a directory containing one.
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "cli-proxy-api-panel";
-  version = "1.26.7";
+  version = "1.27.0";
 
   src = fetchurl {
     url = "https://github.com/router-for-me/Cli-Proxy-API-Management-Center/releases/download/v${finalAttrs.version}/management.html";
-    hash = "sha256-jJxrfT+zEeaq1dBuGZPlOi0oOJ5kBEihvGME7SCwV7U=";
+    hash = "sha256-LKeiJvjS+gePtS4S/Vt1di3tLcWFIF09pQnr+xfqKt8=";
   };
 
   dontUnpack = true;
