@@ -126,22 +126,60 @@
       # Also gates idle compaction, so this one key turns off every automatic
       # compact. Manual /compact still works (DISABLE_COMPACT would kill that too).
       autoCompactEnabled = false;
+      # MCP connect timeout, default 30s. On luna, with agents' builds holding
+      # load at 40-50 on 8 cores, three node servers starting in parallel inside
+      # an agent's cgroup measured 35-46s, so every one of them dropped with
+      # CONNECT_TIMEOUT. Servers connect in the background either way, so a
+      # slow one costs nothing until its tools are called.
+      env.MCP_TIMEOUT = "120000";
     };
+    # User-scope MCP servers live in ~/.claude.json, which Claude Code rewrites
+    # constantly (project state, counters), so same deal: these keys get merged
+    # in, any server not named here is left alone. Store paths rather than
+    # `npx -y`: npx resolved the package on every launch (context7 measured
+    # 13.5s to initialize vs 6-7s from the store), and it fetched playwright
+    # and chrome-devtools builds that look for Google Chrome in /opt.
+    declaredClaudeJson = (pkgs.formats.json {}).generate "claude-declared-mcp.json" {
+      mcpServers = {
+        # nixpkgs' playwright-mcp is linked against the playwright that
+        # matches playwright-driver.browsers and defaults to its chromium, so
+        # no executable path is needed. Headless because the agent is the only
+        # one looking; isolated (fresh profile per session) is the wrapper's
+        # default. The old `--extension` mode drove a Chrome extension, and
+        # the daily browser is Zen.
+        playwright = {
+          command = lib.getExe pkgs.playwright-mcp;
+          args = ["--headless"];
+        };
+        chrome-devtools = {
+          command = lib.getExe pkgs.chrome-devtools-mcp;
+          args = ["--headless" "--isolated" "--no-usage-statistics" "--no-performance-crux"];
+        };
+        context7 = {
+          command = lib.getExe pkgs.context7-mcp;
+          args = [];
+        };
+      };
+    };
+    mergeJson = file: declared: ''
+      f=${file}
+      install -d "$(dirname "$f")"
+      # Refuse to clobber a file we can't parse — that's hand-edited state
+      # worth more than our few keys.
+      if [ -e "$f" ]; then
+        current=$(jq . "$f") || { echo "claude-merge-settings: $f is not valid JSON, skipping" >&2; exit 0; }
+      else
+        current='{}'
+      fi
+      printf '%s' "$current" | jq --slurpfile declared ${declared} '. * $declared[0]' > "$f.new"
+      mv "$f.new" "$f"
+    '';
     mergeSettings = pkgs.writeShellApplication {
       name = "claude-merge-settings";
       runtimeInputs = [pkgs.coreutils pkgs.jq];
       text = ''
-        f="$HOME/.claude/settings.json"
-        install -d "$HOME/.claude"
-        # Refuse to clobber a file we can't parse — that's hand-edited state
-        # worth more than our two keys.
-        if [ -e "$f" ]; then
-          current=$(jq . "$f") || { echo "claude-merge-settings: $f is not valid JSON, skipping" >&2; exit 0; }
-        else
-          current='{}'
-        fi
-        printf '%s' "$current" | jq --slurpfile declared ${declaredSettings} '. * $declared[0]' > "$f.new"
-        mv "$f.new" "$f"
+        (${mergeJson ''"$HOME/.claude/settings.json"'' declaredSettings})
+        (${mergeJson ''"$HOME/.claude.json"'' declaredClaudeJson})
       '';
     };
   in {
