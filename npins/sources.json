@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "f08f0fb7d56d0fbc9f78ce18e0e06e0300500f38",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/f08f0fb7d56d0fbc9f78ce18e0e06e0300500f38.tar.gz",
-      "hash": "sha256-dZtCeGI0FZIYjhPME5tFAkhq/5bYQ28YIaJne2001TU="
+      "revision": "e3a8f16ad639f9821fe8ad9b811167916787cfc5",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/e3a8f16ad639f9821fe8ad9b811167916787cfc5.tar.gz",
+      "hash": "sha256-smoGmz46R2/il6/m/1DZdZCYltqARtYbDUkhsS3hsNU="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -70,9 +70,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "bcab2e4132d2769df9888c03a8c45403fc4380f8",
-      "url": "https://codeberg.org/spade-lang/zed-spade/archive/bcab2e4132d2769df9888c03a8c45403fc4380f8.tar.gz",
-      "hash": "sha256-oF3oI6NoabgUIU7K/vEJwtClu9Y/LMp2Q62Mz2RLTAE="
+      "revision": "17086ff4958d99c9fdf82c77ff664e77a51da492",
+      "url": "https://codeberg.org/spade-lang/zed-spade/archive/17086ff4958d99c9fdf82c77ff664e77a51da492.tar.gz",
+      "hash": "sha256-+ZAA6DGe7OAzujlGc1VZAorLEspohhbi1RyR5Kry6is="
     }
   },
   "version": 8
