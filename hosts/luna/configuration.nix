@@ -126,6 +126,8 @@
       metrics.textfiles.insight-driver = "${config.home-manager.users.cramt.myHomeManager.insight-driver.stateDir}/metrics.prom";
       # Dashboards over the above at grafana.<domain>, behind the passkey.
       grafana.enable = true;
+      # Prometheus alerts as Discord DMs from yelliv.
+      alerts.enable = true;
       garage.enable = false;
       btopttyd.enable = false;
       minecraft-forge = {

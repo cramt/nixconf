@@ -23,6 +23,9 @@
     keyFile = "${keyDir}/key";
     caddyGroup = config.services.caddy.group;
     m365 = config.myNixOS.services.m365-copilot-proxy;
+    hmCfg = config.home-manager.users.${cfg.user};
+    authDir = "${hmCfg.home.homeDirectory}/.cli-proxy-api";
+    tokenDir = "/run/cli-proxy-api-tokens";
   in {
     options.myNixOS.services.cli-proxy-api = {
       enable = lib.mkEnableOption "myNixOS.services.cli-proxy-api";
@@ -118,6 +121,70 @@
         after = ["cli-proxy-api-management-key.service"];
         serviceConfig.LoadCredential = ["cli-proxy-api-management:${keyFile}"];
       };
+
+      # "Logged out" means the refresh token stopped working, and the only
+      # place that shows is the access token's expiry in the account's auth
+      # file: CPA rewrites it every ~4h, so a timestamp in the past means
+      # refreshing failed. The plugin's auth_unavailable can't tell this apart
+      # from an ordinary usage-limit cooldown, and its last_refresh lags the
+      # file by hours. A system unit as cfg.user, because node_exporter runs
+      # with ProtectHome and can't read auth-dir itself.
+      systemd.services.cli-proxy-api-token-expiry = lib.mkIf config.myNixOS.services.alerts.enable {
+        description = "Export cli-proxy-api OAuth token expiry for prometheus";
+        path = [pkgs.jq pkgs.coreutils];
+        serviceConfig = {
+          Type = "oneshot";
+          User = cfg.user;
+          RuntimeDirectory = baseNameOf tokenDir;
+          RuntimeDirectoryMode = "0755";
+          # Oneshot: without this the file vanishes the moment it's written.
+          RuntimeDirectoryPreserve = true;
+        };
+        script = ''
+          out=${tokenDir}/tokens.prom
+          {
+            echo '# HELP cli_proxy_api_token_expiry_timestamp_seconds When the account access token expires; in the past means refresh is failing.'
+            echo '# TYPE cli_proxy_api_token_expiry_timestamp_seconds gauge'
+            for f in ${authDir}/*.json; do
+              [ -e "$f" ] || continue
+              # jq's fromdateiso8601 rejects the +01:00 offsets CPA writes.
+              jq -r 'select(.type != null and .expired != null) | [.type, .email // "unknown", .expired] | @tsv' "$f" |
+                while IFS=$'\t' read -r provider email expired; do
+                  echo "cli_proxy_api_token_expiry_timestamp_seconds{provider=\"$provider\",email=\"$email\"} $(date -d "$expired" +%s)"
+                done
+            done
+          } > "$out.tmp"
+          mv "$out.tmp" "$out"
+        '';
+      };
+      systemd.timers.cli-proxy-api-token-expiry = lib.mkIf config.myNixOS.services.alerts.enable {
+        wantedBy = ["timers.target"];
+        timerConfig = {
+          OnBootSec = "1m";
+          OnUnitActiveSec = "1m";
+        };
+      };
+      myNixOS.services.metrics.textfiles = lib.mkIf config.myNixOS.services.alerts.enable {
+        cli-proxy-api-tokens = "${tokenDir}/tokens.prom";
+      };
+      myNixOS.services.alerts.alertRules.cli-proxy-api = [
+        {
+          alert = "ClaudeAccountLoggedOut";
+          expr = "cli_proxy_api_token_expiry_timestamp_seconds < time()";
+          "for" = "15m";
+          annotations = {
+            summary = "{{ $labels.email }} got logged out of the Claude pool";
+            description = "Token expired and CPA couldn't refresh it. Log back in on luna: `agent-accounts add {{ $labels.provider }}`";
+          };
+        }
+        {
+          # Deleted auth file: the series just stops, which `<` never sees.
+          alert = "ClaudeAccountGone";
+          expr = "max_over_time(cli_proxy_api_token_expiry_timestamp_seconds[1d]) unless cli_proxy_api_token_expiry_timestamp_seconds";
+          "for" = "5m";
+          annotations.summary = "{{ $labels.email }} vanished from the Claude pool";
+        }
+      ];
 
       myNixOS.services.caddy.serviceMap.${cfg.subdomain} = {
         inherit (config.home-manager.users.${cfg.user}.myHomeManager.cli-proxy-api) port;
