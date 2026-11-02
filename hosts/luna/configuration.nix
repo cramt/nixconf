@@ -78,6 +78,12 @@
         # Agents can `just deploy luna` (the Justfile moves the run out of
         # the t3code unit, which the activation may restart).
         selfDeploy.enable = true;
+        # Device panel + agent access, tools from the store. No Android SDK
+        # here, so its sources are remote ones: SSH device hosts, EAS, Simlock.
+        devices = {
+          enable = true;
+          simlock.enable = true;
+        };
         # codex ships enabled in t3code, but there's no codex CLI to run.
         providers.codex = false;
         # M365 Copilot's GPT and Claude models, through Claude Code against

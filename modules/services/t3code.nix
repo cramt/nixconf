@@ -65,7 +65,10 @@
     # serverSettings.ts, migrateLegacyProviderSettings), so anything beyond
     # `enabled` written there is never read.
     declaredDrivers = lib.unique (lib.attrNames cfg.providers ++ lib.attrNames cfg.customModels);
-    hasDeclaredSettings = declaredDrivers != [] || cfg.usageHub != null;
+    simlockHosts = cfg.devices.simlock.hosts;
+    # Declared in t3code-policy.nix, next to the hosts option.
+    simlockSecretName = config.myNixOS.services.t3code.devices.simlock.secretName;
+    hasDeclaredSettings = declaredDrivers != [] || cfg.usageHub != null || simlockHosts != {};
     declaredSettings = (pkgs.formats.json {}).generate "t3code-declared-settings.json" {
       providers = lib.mapAttrs (_: enabled: {inherit enabled;}) cfg.providers;
       providerInstances = lib.genAttrs declaredDrivers (driver:
@@ -80,6 +83,14 @@
       inherit (cfg.usageHub) label url;
       enabled = true;
     };
+    # agentToken holds the opnix secret's name until the seed script swaps
+    # the secret itself in.
+    simlockSettings = (pkgs.formats.json {}).generate "t3code-simlock-hosts.json" (lib.mapAttrsToList (name: h: {
+      kind = "simlock";
+      id = name;
+      inherit (h) label gatewayUrl maxLeases maxLeaseMinutes;
+      agentToken = simlockSecretName name;
+    }) simlockHosts);
     seedSettings = pkgs.writeShellApplication {
       name = "t3code-seed-settings";
       runtimeInputs = [pkgs.coreutils pkgs.jq];
@@ -105,6 +116,16 @@
           '.usageLimitSources.cliproxy = $hub[0] + {managementKey: ($key | rtrimstr("\n"))}' \
           "${settingsFile}.new" > "${settingsFile}.hub"
         mv "${settingsFile}.hub" "${settingsFile}.new"
+      '' + lib.optionalString (simlockHosts != {}) ''
+        # Tokens are read here for the same reason as the hub's key; the
+        # server then moves each agentToken into its own secret store.
+        jq ${lib.concatStrings (lib.mapAttrsToList (name: _: let
+          path = config.services.onepassword-secrets.secretPaths.${simlockSecretName name};
+        in "--rawfile ${simlockSecretName name} ${lib.escapeShellArg path} ") simlockHosts)}\
+          --slurpfile hosts ${simlockSettings} \
+          '.simlockDeviceHosts = [$hosts[0][] | .agentToken = ($ARGS.named[.agentToken] | rtrimstr("\n"))]' \
+          "${settingsFile}.new" > "${settingsFile}.simlock"
+        mv "${settingsFile}.simlock" "${settingsFile}.new"
       '' + ''
         mv "${settingsFile}.new" "${settingsFile}"
       '';
@@ -326,6 +347,8 @@
           forward-auth = cfg.sharedSecret == null;
         };
       };
+
+      myNixOS.services.t3code.policy.homes = [{ path = dataDir; inherit (cfg) user; }];
 
       # owner, not a `services` restart: opnix only restarts system units and
       # this is a user unit (see the personalSshKey note above).

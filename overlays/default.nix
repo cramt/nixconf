@@ -100,7 +100,7 @@ inputs: [
   # that `sharedSecret` relies on (modules/services/t3code.nix), and no provider
   # wrapper, so t3code spawns the home-manager agents. luna is reached through
   # caddy + authelia, not Ping's cloud relay.
-  (final: prev: {inherit (inputs.my-nixpkgs.overlays.default final prev) fluxer t3code t3code-desktop;})
+  (final: prev: {inherit (inputs.my-nixpkgs.overlays.default final prev) fluxer t3code t3code-desktop t3code-device-tools;})
 
   # niri-stable (v25.08) links libdisplay-info-sys 0.2.2, which only binds a
   # system libdisplay-info of the same major.minor. nixpkgs dropped

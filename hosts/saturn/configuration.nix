@@ -162,6 +162,12 @@
         sharedSecret = "op://Homelab/T3Code/password";
         # codex ships enabled in t3code, but there's no codex CLI to run.
         providers.codex = false;
+        # Device panel + agent access, tools from the store. No Android SDK
+        # here, so its sources are remote ones: SSH device hosts, EAS, Simlock.
+        devices = {
+          enable = true;
+          simlock.enable = true;
+        };
       };
       # colibrì streams MoE expert weights off the dedicated /llm partitions
       # (hosts/saturn/disko.nix). The CLI ships now because staging the weights

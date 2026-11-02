@@ -178,6 +178,9 @@
         message = "myNixOS.t3code-remotes adds this host's own t3code server as a connection, which needs myNixOS.services.t3code.sharedSecret.";
       }];
 
+      # The app runs its own server out of appHome, which reads the same policy.
+      myNixOS.services.t3code.policy.homes = [{ path = appHome; inherit (cfg) user; }];
+
       services.onepassword-secrets.secrets = lib.mapAttrs' (name: r:
         lib.nameValuePair (secretName name) {
           reference = r.sharedSecret;
