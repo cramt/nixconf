@@ -54,17 +54,19 @@
     #
     # With panelAutoLogin, the stored-session restore is patched to always fire
     # with a placeholder key, which the reverse proxy in front then overwrites
-    # with the real one. --replace-fail so a panel bump that reshuffles the
-    # minified bundle breaks the build instead of quietly bringing the prompt
-    # back.
+    # with the real one. The restorability check (shared by restoreSession and
+    # hasRestorableSession) is cut down to "has an apiBase", since neither the
+    # isLoggedIn flag nor a stored key means anything when the proxy supplies
+    # the key. --replace-fail so a panel bump that reshuffles the minified
+    # bundle breaks the build instead of quietly bringing the prompt back.
     managementPanel =
       if cfg.panelAutoLogin
       then
         pkgs.runCommand "cli-proxy-api-panel-autologin" {} ''
           mkdir -p $out
           substitute ${pkgs.cli-proxy-api-panel}/management.html $out/management.html \
-            --replace-fail 'l=o||i||``,' 'l=o||i||`injected-by-proxy`,' \
-            --replace-fail 'n&&c&&l)try' 'c&&l)try'
+            --replace-fail 'c=a||``,l=o;' 'c=a||`injected-by-proxy`,l=o;' \
+            --replace-fail 'dh=(e,t,n)=>e&&!!t&&!!n,' 'dh=(e,t,n)=>!!t,'
         ''
       else pkgs.cli-proxy-api-panel;
 
