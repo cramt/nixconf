@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "d145e91173846d6e562940e2551f7782d8ffab35",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/d145e91173846d6e562940e2551f7782d8ffab35.tar.gz",
-      "hash": "sha256-G7uTZe0+BPDZtHrwpysCT0rosGXzF66DGfgEdgONNNw="
+      "revision": "812f7c0350b65b74038a83a22b206b83c38dfe11",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/812f7c0350b65b74038a83a22b206b83c38dfe11.tar.gz",
+      "hash": "sha256-cT45CfZX9SwkKJmhW/i2/aSl4bPRMR3ttjbdC1puI/8="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -37,8 +37,8 @@
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1104102.e62746b0b472/nixexprs.tar.xz",
-      "hash": "sha256-GYpArmwi/iMuX2ov31oCBhAXRMJdNX9kOl2LZHCuR6M="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1106208.d357a2b54f0b/nixexprs.tar.xz",
+      "hash": "sha256-gh035dq/sQ/OwPltGyvjNl1zNWZgVnng2zug7xKqSu8="
     },
     "vixen-zed": {
       "type": "Git",
@@ -70,9 +70,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "bcab2e4132d2769df9888c03a8c45403fc4380f8",
-      "url": "https://codeberg.org/spade-lang/zed-spade/archive/bcab2e4132d2769df9888c03a8c45403fc4380f8.tar.gz",
-      "hash": "sha256-oF3oI6NoabgUIU7K/vEJwtClu9Y/LMp2Q62Mz2RLTAE="
+      "revision": "17086ff4958d99c9fdf82c77ff664e77a51da492",
+      "url": "https://codeberg.org/spade-lang/zed-spade/archive/17086ff4958d99c9fdf82c77ff664e77a51da492.tar.gz",
+      "hash": "sha256-+ZAA6DGe7OAzujlGc1VZAorLEspohhbi1RyR5Kry6is="
     }
   },
   "version": 8
