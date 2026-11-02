@@ -52,6 +52,11 @@
         # an already-warm session, which is what made it look intermittent.
         after = ["graphical-session.target"];
         partOf = ["graphical-session.target"];
+        # switch-to-configuration restarts changed user units, and the steam
+        # store path in ExecStart changes on nearly every update — so every
+        # activation killed Steam mid-game. The new unit gets picked up at the
+        # next login instead.
+        restartIfChanged = false;
         serviceConfig = {
           # Ordering alone relies on graphical-session.target implying a
           # *usable* X display, which isn't something the target actually
