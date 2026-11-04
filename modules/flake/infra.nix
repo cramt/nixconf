@@ -67,6 +67,10 @@
           work="''${XDG_STATE_HOME:-$HOME/.local/state}/nixconf-infra"
           mkdir -p "$work"
           ln -sfn ${tfConfig} "$work/config.tf.json"
+          # Nix pins the provider, so tofu's own lock only adds a second pin
+          # that can disagree: once it recorded a version's registry checksums,
+          # the nix build of that same version fails init's verification.
+          rm -f "$work/.terraform.lock.hcl"
           tofu -chdir="$work" init -input=false -upgrade >/dev/null
           tofu -chdir="$work" "$@"
         '';
