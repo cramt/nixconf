@@ -31,6 +31,7 @@
     cfg = config.myNixOS.services.t3code;
     port = config.port-selector.ports.t3code;
     dataDir = "/home/${cfg.user}/.t3";
+    inherit (config.myNixOS.services.metrics) otlpMetricsUrl;
     # opnix/op emit the SSH key with no trailing newline, and OpenSSH then
     # refuses to load it ("error in libcrypto: unsupported") — so agents can't
     # auth or sign against GitHub. Re-emit the key with exactly one trailing
@@ -412,6 +413,14 @@
               # + the claude CLI. systemd --user does not reliably put
               # the per-user profile on PATH, so set it here.
               "PATH=/home/${cfg.user}/.nix-profile/bin:/etc/profiles/per-user/${cfg.user}/bin:/run/current-system/sw/bin:/run/wrappers/bin:/nix/var/nix/profiles/default/bin"
+            ]
+            # Metrics only: there's no trace or log backend in the fleet.
+            # Without a pinned service.instance.id upstream mints a random UUID
+            # per process, so every restart would start a fresh set of series.
+            ++ lib.optionals (otlpMetricsUrl != null) [
+              "T3CODE_OTLP_METRICS_URL=${otlpMetricsUrl}"
+              "T3CODE_OTLP_PROTOCOL=http/protobuf"
+              "OTEL_RESOURCE_ATTRIBUTES=service.instance.id=${config.networking.hostName}"
             ];
             Restart = "on-failure";
             RestartSec = "5";
