@@ -68,8 +68,8 @@
     simlockHosts = cfg.devices.simlock.hosts;
     # Declared in t3code-policy.nix, next to the hosts option.
     simlockSecretName = config.myNixOS.services.t3code.devices.simlock.secretName;
-    hasDeclaredSettings = declaredDrivers != [] || cfg.usageHub != null || simlockHosts != {};
     declaredSettings = (pkgs.formats.json {}).generate "t3code-declared-settings.json" {
+      continueThreadsAfterServerUpdate = cfg.continueThreadsAfterRestart;
       providers = lib.mapAttrs (_: enabled: {inherit enabled;}) cfg.providers;
       providerInstances = lib.genAttrs declaredDrivers (driver:
         {inherit driver;}
@@ -219,6 +219,17 @@
           Merged into settings.json on every start, so a toggle made in the UI
           for a provider named here is undone on the next restart. Providers
           left out are untouched and stay UI-owned.
+        '';
+      };
+      continueThreadsAfterRestart = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Settings → Maintenance → Continue threads after restarts. When on,
+          threads that were mid-turn when the server stopped (deploy, crash,
+          reboot) get resumed with a "continue where you left off" prompt on
+          the next start. Rewritten on every start, so the UI toggle doesn't
+          stick. Per-project overrides set in the UI still win.
         '';
       };
       customModels = lib.mkOption {
@@ -413,7 +424,7 @@
             TimeoutStopSec = "15";
             ExecStartPre =
               lib.optional cfg.onDiskSshKey.enable "${prepare}/bin/t3code-prepare"
-              ++ lib.optional hasDeclaredSettings "${seedSettings}/bin/t3code-seed-settings";
+              ++ ["${seedSettings}/bin/t3code-seed-settings"];
           };
         };
       };
