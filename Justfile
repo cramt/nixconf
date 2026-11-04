@@ -80,20 +80,22 @@ deploy *hosts:
     [ -n "$want" ] || want=$defaults
     wanted() { for w in $want; do [ "$w" = "$1" ] && return 0; done; return 1; }
 
-    # A T3 Code agent deploying its own host runs inside the t3code user unit,
-    # which home-manager restarts whenever the unit changes. KillMode=mixed then
-    # takes deploy-rs down mid-activation, the confirm never arrives, and magic
-    # rollback undoes a good deploy. So hop into a transient unit of our own and
-    # follow its journal. If the agent dies, the deploy carries on, and
-    # `journalctl --user -u deploy-*` still has the tail.
-    if [ -z "${JUST_DEPLOY_DETACHED:-}" ] && { wanted "$(hostname)" || wanted "$(hostname)-remote"; } \
-        && grep -q '/t3code\.service$' /proc/self/cgroup; then
+    # Deploying the host you're on: activation restarts units, and whatever ran
+    # this may die with one of them. A T3 Code agent's scope gets stopped by the
+    # restarted server, and a shell under any other restarted unit dies with it.
+    # deploy-rs goes too, the confirm never arrives, and magic rollback undoes a
+    # good deploy. So it runs in a transient unit of its own and we follow its
+    # journal. If the caller dies, the deploy carries on, and
+    # `journalctl --user -u 'deploy-*'` still has the tail. Interrupting
+    # systemd-run alone leaves the unit running, hence the INT trap for Ctrl-C.
+    if [ -z "${JUST_DEPLOY_DETACHED:-}" ] && { wanted "$(hostname)" || wanted "$(hostname)-remote"; }; then
       unit="deploy-$(date +%s)"
       since=$(date '+%Y-%m-%d %H:%M:%S')
       journalctl --user -f -o cat -u "$unit" --since "$since" & follow=$!
+      trap 'systemctl --user stop "$unit"; kill "$follow" 2>/dev/null; exit 130' INT
       rc=0
       systemd-run --user --quiet --wait --collect --same-dir --unit="$unit" \
-        -E PATH="$PATH" -E JUST_DEPLOY_DETACHED=1 \
+        -E PATH="$PATH" -E JUST_DEPLOY_DETACHED=1 ${SSH_AUTH_SOCK:+-E SSH_AUTH_SOCK} \
         just on= jobs={{jobs}} cores={{cores}} deploy $want || rc=$?
       sleep 1; kill "$follow" 2>/dev/null || true
       exit "$rc"

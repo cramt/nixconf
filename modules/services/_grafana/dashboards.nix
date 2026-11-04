@@ -1201,4 +1201,228 @@ in {
       })
     ];
   };
+
+  # Pushed over OTLP by each t3code server into its host's prometheus
+  # (services/t3code.nix). OTLP names series by unit, so timers land as
+  # `_milliseconds_bucket` and unitless gauges gain `_ratio`.
+  t3code = let
+    t3 = ''job="t3code/t3code-server"'';
+    p = q: metric: by: ''histogram_quantile(${q}, sum by (${by}le) (rate(${metric}_milliseconds_bucket{${t3}}[$__rate_interval])))'';
+  in
+    dashboard {
+      uid = "t3code";
+      title = "T3 Code";
+      time = "now-7d";
+      panels = [
+        (text ''
+          Every t3code server (luna, saturn) pushes its metrics to the host's prometheus. A run is one agent turn, start to finish.
+          `group` splits the server's process tree: claude/codex are agent CLIs, terminal is shells, other is everything else (mostly the tools agents call).
+        '')
+        (bars {
+          title = "Runs in range";
+          w = 8;
+          queries = [
+            {
+              expr = ''sum by (instance, outcome) (increase(t3_runs_total{${t3}}[$__range]))'';
+              legend = "{{instance}} {{outcome}}";
+              instant = true;
+            }
+          ];
+          fieldConfig.defaults.decimals = 0;
+        })
+        (bars {
+          title = "Runs in range by model";
+          w = 8;
+          queries = [
+            {
+              expr = ''sum by (provider, modelFamily) (increase(t3_runs_total{${t3}}[$__range]))'';
+              legend = "{{provider}} {{modelFamily}}";
+              instant = true;
+            }
+          ];
+          fieldConfig.defaults.decimals = 0;
+        })
+        (bars {
+          title = "Delegated vs top-level runs";
+          description = "delegated=true is a subagent run another thread started.";
+          w = 8;
+          queries = [
+            {
+              expr = ''sum by (delegated) (increase(t3_runs_total{${t3}}[$__range]))'';
+              legend = "delegated={{delegated}}";
+              instant = true;
+            }
+          ];
+          fieldConfig.defaults.decimals = 0;
+        })
+        (timeseries {
+          title = "Runs finished per hour";
+          queries = [
+            {
+              expr = ''sum by (instance, outcome) (increase(t3_runs_total{${t3}}[1h]))'';
+              legend = "{{instance}} {{outcome}}";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Run duration";
+          unit = "ms";
+          queries = [
+            {
+              expr = p "0.5" "t3_run_duration" "instance, ";
+              legend = "{{instance}} p50";
+            }
+            {
+              expr = p "0.9" "t3_run_duration" "instance, ";
+              legend = "{{instance}} p90";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Run queue wait (p90)";
+          description = "Requested to started: time a run sat behind another on the same thread.";
+          unit = "ms";
+          queries = [
+            {
+              expr = p "0.9" "t3_run_queue_wait" "instance, ";
+              legend = "{{instance}}";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Turn start latency (p90)";
+          description = "How long the provider adapter takes to start a turn, not how long the turn runs.";
+          unit = "ms";
+          queries = [
+            {
+              expr = p "0.9" "t3_provider_turn_duration" "provider, ";
+              legend = "{{provider}}";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Memory by process group";
+          unit = "bytes";
+          options.tooltip.sort = "desc";
+          fieldConfig.defaults.custom = {
+            stacking.mode = "normal";
+            fillOpacity = 30;
+          };
+          queries = [
+            {
+              expr = ''sum by (instance, group) (t3_process_group_resident_bytes{${t3}})'';
+              legend = "{{instance}} {{group}}";
+            }
+          ];
+        })
+        (timeseries {
+          title = "CPU by process group";
+          description = "100 is one full core.";
+          unit = "percent";
+          options.tooltip.sort = "desc";
+          fieldConfig.defaults.custom = {
+            stacking.mode = "normal";
+            fillOpacity = 30;
+          };
+          queries = [
+            {
+              expr = ''sum by (instance, group) (t3_process_group_cpu_percent{${t3}})'';
+              legend = "{{instance}} {{group}}";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Processes by group";
+          queries = [
+            {
+              expr = ''sum by (instance, group) (t3_process_group_count{${t3}})'';
+              legend = "{{instance}} {{group}}";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Server memory";
+          unit = "bytes";
+          queries = [
+            {
+              expr = ''t3_server_resident_bytes{${t3}}'';
+              legend = "{{instance}} rss";
+            }
+            {
+              expr = ''t3_server_heap_used_bytes{${t3}}'';
+              legend = "{{instance}} heap";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Event loop";
+          description = "Utilization is the share of time the loop was busy. A saturated loop is what makes the UI feel stuck.";
+          unit = "percentunit";
+          max = 1;
+          queries = [
+            {
+              expr = ''t3_server_event_loop_utilization_ratio{${t3}}'';
+              legend = "{{instance}} utilization";
+            }
+            {
+              expr = ''t3_server_cpu_utilization_ratio{${t3}}'';
+              legend = "{{instance}} cpu";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Event loop delay (max)";
+          unit = "ms";
+          queries = [
+            {
+              expr = ''t3_server_event_loop_delay_max_milliseconds{${t3}}'';
+              legend = "{{instance}}";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Slowest RPC methods (p95)";
+          unit = "ms";
+          options.tooltip.sort = "desc";
+          queries = [
+            {
+              expr = "topk(8, ${p "0.95" "t3_rpc_request_duration" "method, "})";
+              legend = "{{method}}";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Failed RPCs";
+          # Not outcome!="success": every subscription a client drops ends as
+          # an interrupt, which would bury the real failures.
+          queries = [
+            {
+              expr = ''sum by (instance, method) (rate(t3_rpc_requests_total{${t3}, outcome="failure"}[$__rate_interval]))'';
+              legend = "{{instance}} {{method}}";
+            }
+          ];
+          unit = "reqps";
+        })
+        (timeseries {
+          title = "Git commands";
+          unit = "ops";
+          queries = [
+            {
+              expr = ''sum by (instance, outcome) (rate(t3_git_commands_total{${t3}}[$__rate_interval]))'';
+              legend = "{{instance}} {{outcome}}";
+            }
+          ];
+        })
+        (timeseries {
+          title = "Git command duration (p95)";
+          unit = "ms";
+          queries = [
+            {
+              expr = p "0.95" "t3_git_command_duration" "instance, ";
+              legend = "{{instance}}";
+            }
+          ];
+        })
+      ];
+    };
 }

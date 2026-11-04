@@ -31,6 +31,7 @@
     cfg = config.myNixOS.services.t3code;
     port = config.port-selector.ports.t3code;
     dataDir = "/home/${cfg.user}/.t3";
+    inherit (config.myNixOS.services.metrics) otlpMetricsUrl;
     # opnix/op emit the SSH key with no trailing newline, and OpenSSH then
     # refuses to load it ("error in libcrypto: unsupported") — so agents can't
     # auth or sign against GitHub. Re-emit the key with exactly one trailing
@@ -68,8 +69,8 @@
     simlockHosts = cfg.devices.simlock.hosts;
     # Declared in t3code-policy.nix, next to the hosts option.
     simlockSecretName = config.myNixOS.services.t3code.devices.simlock.secretName;
-    hasDeclaredSettings = declaredDrivers != [] || cfg.usageHub != null || simlockHosts != {};
     declaredSettings = (pkgs.formats.json {}).generate "t3code-declared-settings.json" {
+      continueThreadsAfterServerUpdate = cfg.continueThreadsAfterRestart;
       providers = lib.mapAttrs (_: enabled: {inherit enabled;}) cfg.providers;
       providerInstances = lib.genAttrs declaredDrivers (driver:
         {inherit driver;}
@@ -219,6 +220,17 @@
           Merged into settings.json on every start, so a toggle made in the UI
           for a provider named here is undone on the next restart. Providers
           left out are untouched and stay UI-owned.
+        '';
+      };
+      continueThreadsAfterRestart = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Settings → Maintenance → Continue threads after restarts. When on,
+          threads that were mid-turn when the server stopped (deploy, crash,
+          reboot) get resumed with a "continue where you left off" prompt on
+          the next start. Rewritten on every start, so the UI toggle doesn't
+          stick. Per-project overrides set in the UI still win.
         '';
       };
       customModels = lib.mkOption {
@@ -401,6 +413,14 @@
               # + the claude CLI. systemd --user does not reliably put
               # the per-user profile on PATH, so set it here.
               "PATH=/home/${cfg.user}/.nix-profile/bin:/etc/profiles/per-user/${cfg.user}/bin:/run/current-system/sw/bin:/run/wrappers/bin:/nix/var/nix/profiles/default/bin"
+            ]
+            # Metrics only: there's no trace or log backend in the fleet.
+            # Without a pinned service.instance.id upstream mints a random UUID
+            # per process, so every restart would start a fresh set of series.
+            ++ lib.optionals (otlpMetricsUrl != null) [
+              "T3CODE_OTLP_METRICS_URL=${otlpMetricsUrl}"
+              "T3CODE_OTLP_PROTOCOL=http/protobuf"
+              "OTEL_RESOURCE_ATTRIBUTES=service.instance.id=${config.networking.hostName}"
             ];
             Restart = "on-failure";
             RestartSec = "5";
@@ -413,7 +433,7 @@
             TimeoutStopSec = "15";
             ExecStartPre =
               lib.optional cfg.onDiskSshKey.enable "${prepare}/bin/t3code-prepare"
-              ++ lib.optional hasDeclaredSettings "${seedSettings}/bin/t3code-seed-settings";
+              ++ ["${seedSettings}/bin/t3code-seed-settings"];
           };
         };
       };

@@ -37,6 +37,11 @@
     # stay out of the fleet view until they get an /etc/opnix-token.
     runAgent = cfg.exporter.enable && !cfg.server.enable && config.myNixOS.opnix-secrets.enable;
 
+    # Apps that speak OpenTelemetry push to their own host's prometheus over
+    # loopback, so they never hold the remote_write credential; agent mode
+    # takes OTLP too and forwards it like any scraped sample.
+    otlpFlag = "--web.enable-otlp-receiver";
+
     # Every agent scrapes 127.0.0.1, so without pinning `instance` here every
     # host would report the same target and only be tellable apart by accident.
     localJob = jobName: port: {
@@ -96,6 +101,19 @@
           Each is symlinked into the textfile collector's directory, so a
           producer writes wherever it already owns, like a user unit's state
           dir. node_exporter runs with ProtectHome, so nothing under /home.
+        '';
+      };
+      otlpMetricsUrl = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        readOnly = true;
+        default =
+          if runAgent || cfg.server.enable
+          then "http://127.0.0.1:${toString ports.prometheus}/api/v1/otlp/v1/metrics"
+          else null;
+        description = ''
+          OTLP/HTTP metrics endpoint of this host's prometheus, null where none
+          runs. Point an app's OTLP metrics exporter here; resource attribute
+          `service.instance.id` becomes `instance`, so set it to the hostname.
         '';
       };
       server = {
@@ -248,6 +266,7 @@
         services.prometheus = {
           enable = true;
           enableAgentMode = true;
+          extraFlags = [otlpFlag];
           port = ports.prometheus;
           listenAddress = "127.0.0.1";
           globalConfig.scrape_interval = cfg.server.scrapeInterval;
@@ -293,6 +312,7 @@
           extraFlags = [
             # The receiving half of the push design; off by default.
             "--web.enable-remote-write-receiver"
+            otlpFlag
             # The NixOS module only wires up retention.time, and a time-only
             # bound has no idea how big the fleet's cardinality is.
             "--storage.tsdb.retention.size=${cfg.server.retentionSize}"
