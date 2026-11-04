@@ -1393,10 +1393,12 @@ in {
         })
         (timeseries {
           title = "Failed RPCs";
+          # Not outcome!="success": every subscription a client drops ends as
+          # an interrupt, which would bury the real failures.
           queries = [
             {
-              expr = ''sum by (instance, method, outcome) (rate(t3_rpc_requests_total{${t3}, outcome!="success"}[$__rate_interval]))'';
-              legend = "{{instance}} {{method}} {{outcome}}";
+              expr = ''sum by (instance, method) (rate(t3_rpc_requests_total{${t3}, outcome="failure"}[$__rate_interval]))'';
+              legend = "{{instance}} {{method}}";
             }
           ];
           unit = "reqps";
