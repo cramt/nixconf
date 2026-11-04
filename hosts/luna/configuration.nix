@@ -72,6 +72,8 @@
         enable = true;
         user = "cramt";
         subdomain = "t3";
+        # <port>.t3.<domain> for "open in system browser" on a preview.
+        portsSubdomain = "t3";
         sharedSecret = "op://Homelab/T3Code/password";
         # Headless: no 1Password agent here, so agents need the key on disk.
         onDiskSshKey.enable = true;
