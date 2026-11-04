@@ -84,6 +84,8 @@
           # uaccess alone only reaches a seated desktop session; plugdev covers
           # headless use over ssh / from agents.
           SUBSYSTEM=="usb", ATTRS{idVendor}=="09fb", ATTRS{idProduct}=="6001", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+          # Altera USB-Blaster III (DE25-Nano onboard), for agilex5-re's tools/board/run.sh.
+          SUBSYSTEM=="usb", ATTRS{idVendor}=="09fb", ATTRS{idProduct}=="6022", MODE="0660", GROUP="plugdev", TAG+="uaccess"
           # Digilent FT2232 JTAG+UART (Zybo PROG UART), for chipsmith/openFPGALoader.
           SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0660", GROUP="plugdev", TAG+="uaccess"
           # Anything from ST: ST-Link probes and the STM32 ROM DFU bootloader. probe-rs-rules
