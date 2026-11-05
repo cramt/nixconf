@@ -64,25 +64,40 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: wimpysworld/nothing-but-nix@main
-        # nothing-but-nix hands almost the whole root filesystem to the /nix
-        # pool and points TMPDIR at /mnt, which is on that same root fs — so
-        # nix builds get only root-safe-haven (default 2048MB) of scratch.
-        # A from-source nodejs overran it and killed the mars job with "No
-        # space left on device" on the runner's own log, ~35min in. 16GB off
-        # a ~115GB pool is cheap insurance for any big from-source build.
+        # Build scratch lives on the /nix pool (build-dir below), so nothing
+        # needs to be held back on / — every GB there belongs in the pool.
+        # Rampage because some ubuntu-latest runners come with a 72G root
+        # that is already full and a 13G /mnt: under cleave plus the old 16G
+        # root reserve the pool topped out at 29G and filled mars on
+        # 2026-11-03, while 16G sat unused on /. The build jobs need nothing
+        # from the runner image beyond what rampage leaves.
         with:
-          root-safe-haven: 16384
+          hatchet-protocol: rampage
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
+          # build-dir: put builds on the reclaimed /nix pool, as
+          # nothing-but-nix expects; it creates /nix/build but leaves the
+          # setting to us. fallback: a substituter that dies mid-download
+          # (cache.numtide.com's HTTP 416s on resume took out ganymede on
+          # 2026-11-03) builds that path instead of failing the whole leg.
           extra-conf: |
             accept-flake-config = true
             access-tokens = github.com=${{ github.token }}
+            build-dir = /nix/build
+            fallback = true
 
-      - uses: cachix/cachix-action@v15
+      - uses: cachix/cachix-action@v17
         with:
           name: cramt
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          # The daemon fails the job when an upload stalls past its hard 60s
+          # shutdown drain, even with every path already pushed (saturn,
+          # venus-img, flash-venus on 2026-11-04). Plain `cachix push` in the
+          # post step has no such cap. Go back to the daemon once a cachix
+          # release ships https://github.com/cachix/cachix/pull/749 (bounded
+          # stalled requests; unreleased after 1.13.0).
+          useDaemon: false
 
       - name: Build ${{ matrix.package }} (${{ matrix.system }})
         run: nix build ".#packages.${{ matrix.system }}.${{ matrix.package }}" --print-build-logs
@@ -106,25 +121,40 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: wimpysworld/nothing-but-nix@main
-        # nothing-but-nix hands almost the whole root filesystem to the /nix
-        # pool and points TMPDIR at /mnt, which is on that same root fs — so
-        # nix builds get only root-safe-haven (default 2048MB) of scratch.
-        # A from-source nodejs overran it and killed the mars job with "No
-        # space left on device" on the runner's own log, ~35min in. 16GB off
-        # a ~115GB pool is cheap insurance for any big from-source build.
+        # Build scratch lives on the /nix pool (build-dir below), so nothing
+        # needs to be held back on / — every GB there belongs in the pool.
+        # Rampage because some ubuntu-latest runners come with a 72G root
+        # that is already full and a 13G /mnt: under cleave plus the old 16G
+        # root reserve the pool topped out at 29G and filled mars on
+        # 2026-11-03, while 16G sat unused on /. The build jobs need nothing
+        # from the runner image beyond what rampage leaves.
         with:
-          root-safe-haven: 16384
+          hatchet-protocol: rampage
 
       - uses: DeterminateSystems/nix-installer-action@main
         with:
+          # build-dir: put builds on the reclaimed /nix pool, as
+          # nothing-but-nix expects; it creates /nix/build but leaves the
+          # setting to us. fallback: a substituter that dies mid-download
+          # (cache.numtide.com's HTTP 416s on resume took out ganymede on
+          # 2026-11-03) builds that path instead of failing the whole leg.
           extra-conf: |
             accept-flake-config = true
             access-tokens = github.com=${{ github.token }}
+            build-dir = /nix/build
+            fallback = true
 
-      - uses: cachix/cachix-action@v15
+      - uses: cachix/cachix-action@v17
         with:
           name: cramt
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          # The daemon fails the job when an upload stalls past its hard 60s
+          # shutdown drain, even with every path already pushed (saturn,
+          # venus-img, flash-venus on 2026-11-04). Plain `cachix push` in the
+          # post step has no such cap. Go back to the daemon once a cachix
+          # release ships https://github.com/cachix/cachix/pull/749 (bounded
+          # stalled requests; unreleased after 1.13.0).
+          useDaemon: false
 
       - name: Build ${{ matrix.host }}
         run: nix build ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel" --print-build-logs
