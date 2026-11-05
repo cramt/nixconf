@@ -54,6 +54,9 @@
           inputs.nixpkgs-stable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.awscli2
           gcc-arm-embedded
           inputs.chipsmith.packages.${pkgs.stdenv.hostPlatform.system}.default
+          # The Quartus runner the RE repos' tools/quartus.sh call; it has to
+          # share this nixpkgs, or installs it patched stop matching.
+          inputs.chipsmith.packages.${pkgs.stdenv.hostPlatform.system}.chipsmith-vendor
           zig
           futhark
           agent-browser

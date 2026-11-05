@@ -58,6 +58,7 @@
       openocd
       openfpgaloader
       inputs.chipsmith.packages.${system}.default
+      inputs.chipsmith.packages.${system}.chipsmith-vendor
 
       # Serial consoles.
       tio

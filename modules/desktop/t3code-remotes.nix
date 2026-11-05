@@ -179,7 +179,10 @@
       }];
 
       # The app runs its own server out of appHome, which reads the same policy.
-      myNixOS.services.t3code.policy.homes = [{ path = appHome; inherit (cfg) user; }];
+      services.t3code.policy = {
+        enable = true;
+        homes = [{ path = appHome; inherit (cfg) user; }];
+      };
 
       services.onepassword-secrets.secrets = lib.mapAttrs' (name: r:
         lib.nameValuePair (secretName name) {
