@@ -88,6 +88,10 @@
           # onboard one (an FT4232H, enumerating as "TERASIC DE25-Nano"), for
           # agilex5-re's tools/board/run.sh.
           SUBSYSTEM=="usb", ATTRS{idVendor}=="09fb", ATTRS{idProduct}=="6022|6026", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+          # The bench webcam (FULL HD 1080P Webcam, Realtek 0bda:58b0) watching the
+          # FPGA boards' LEDs: plugdev like the JTAG cables, so agents and ssh
+          # sessions can grab frames without the video group.
+          SUBSYSTEM=="video4linux", ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="58b0", MODE="0660", GROUP="plugdev", TAG+="uaccess"
           # Digilent FT2232 JTAG+UART (Zybo PROG UART), for chipsmith/openFPGALoader.
           SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0660", GROUP="plugdev", TAG+="uaccess"
           # Anything from ST: ST-Link probes and the STM32 ROM DFU bootloader. probe-rs-rules
