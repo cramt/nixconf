@@ -30,7 +30,7 @@
   libayatana-appindicator,
   xdotool,
 }: let
-  version = "1.8.0";
+  version = "1.8.2";
 
   unityPython = python3.withPackages (_: [
     (callPackage ./python {}).unitypy
@@ -40,7 +40,7 @@
     owner = "Balthazzahr";
     repo = "Rhystic-Tracker";
     tag = "v${version}";
-    hash = "sha256-0M0BvKYEwCPnm3M2rQb0v+qDbXfYPp9qM58+rzxO12w=";
+    hash = "sha256-WnXei17heHvGrlcRZW15O97AW7fmY/Z8y5GaBA/hwMY=";
   };
 
   frontend = buildNpmPackage {
@@ -60,7 +60,7 @@ in
 
     cargoRoot = "src-tauri";
     buildAndTestSubdir = "src-tauri";
-    cargoHash = "sha256-0acovS6Ii/1zrCdpaUOOcT9MhzcF1tK4C/Jb/qDpzdw=";
+    cargoHash = "sha256-zdfSsHkLokgsDcPKuDWlM4FnlK5+hD7SpVxOXmzn2fU=";
 
     # production-env is the feature upstream's release workflow builds with: it
     # selects the real DB instead of the dev one. custom-protocol is what
