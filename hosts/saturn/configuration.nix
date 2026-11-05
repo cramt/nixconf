@@ -160,14 +160,6 @@
       t3code = {
         enable = true;
         sharedSecret = "op://Homelab/T3Code/password";
-        # codex ships enabled in t3code, but there's no codex CLI to run.
-        providers.codex = false;
-        # Device panel + agent access, tools from the store. No Android SDK
-        # here, so its sources are remote ones: SSH device hosts, EAS, Simlock.
-        devices = {
-          enable = true;
-          simlock.enable = true;
-        };
       };
       # colibrì streams MoE expert weights off the dedicated /llm partitions
       # (hosts/saturn/disko.nix). The CLI ships now because staging the weights
@@ -234,6 +226,19 @@
   };
 
   networking.networkmanager.enable = true;
+
+  # The T3 Code server's own settings (myNixOS.services.t3code is the fleet
+  # wiring: port, secrets).
+  services.t3code = {
+    # codex ships enabled in t3code, but there's no codex CLI to run.
+    providers.codex = false;
+    # Device panel + agent access, tools from the store. No Android SDK
+    # here, so its sources are remote ones: SSH device hosts, EAS, Simlock.
+    devices = {
+      enable = true;
+      simlock.enable = true;
+    };
+  };
   # NetworkManager pulls ModemManager in by default; there is no modem here.
   networking.modemmanager.enable = false;
 

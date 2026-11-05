@@ -109,6 +109,9 @@
   # Plasma used to bring PipeWire along; with emrakul nothing else does.
   # It runs per user, socket-activated in the user manager that emrakul's PAM
   # login session starts, so it comes up when a web app first plays sound.
+  # codex ships enabled in t3code, but there's no codex CLI to run.
+  services.t3code.providers.codex = false;
+
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -160,8 +163,6 @@
         enable = true;
         # Nobody is ever logged in to 1Password here.
         onDiskSshKey.enable = true;
-        # codex ships enabled in t3code, but there's no codex CLI to run.
-        providers.codex = false;
       };
     };
   };

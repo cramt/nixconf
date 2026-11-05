@@ -80,25 +80,6 @@
         # Agents can `just deploy luna` (the Justfile moves the run out of
         # the t3code unit, which the activation may restart).
         selfDeploy.enable = true;
-        # Device panel + agent access, tools from the store. No Android SDK
-        # here, so its sources are remote ones: SSH device hosts, EAS, Simlock.
-        devices = {
-          enable = true;
-          simlock.enable = true;
-        };
-        # codex ships enabled in t3code, but there's no codex CLI to run.
-        providers.codex = false;
-        # M365 Copilot's GPT and Claude models, through Claude Code against
-        # the cli-proxy-api pool, which routes the m365/ prefix to the proxy.
-        # [1m] is the proxy's real window (its /v1/models says 1M); Claude
-        # Code strips it before the request, and without it assumes 200k for
-        # a model it doesn't know and compacts there.
-        customModels.claudeAgent =
-          map (model: {
-            slug = "m365/${model}[1m]";
-            name = "${model} (M365)";
-          })
-          config.myNixOS.services.m365-copilot-proxy.models;
       };
       nixarr.enable = true;
       # Kobl host runner. Home on /pool: jobs clone repos and build in there.
@@ -185,6 +166,30 @@
   programs.nix-ld.enable = true;
 
   # Configure keymap in X11
+  # The T3 Code server's own settings (myNixOS.services.t3code above is the
+  # fleet wiring: port, vhost, secrets).
+  services.t3code = {
+    # Device panel + agent access, tools from the store. No Android SDK
+    # here, so its sources are remote ones: SSH device hosts, EAS, Simlock.
+    devices = {
+      enable = true;
+      simlock.enable = true;
+    };
+    # codex ships enabled in t3code, but there's no codex CLI to run.
+    providers.codex = false;
+    # M365 Copilot's GPT and Claude models, through Claude Code against
+    # the cli-proxy-api pool, which routes the m365/ prefix to the proxy.
+    # [1m] is the proxy's real window (its /v1/models says 1M); Claude
+    # Code strips it before the request, and without it assumes 200k for
+    # a model it doesn't know and compacts there.
+    customModels.claudeAgent =
+      map (model: {
+        slug = "m365/${model}[1m]";
+        name = "${model} (M365)";
+      })
+      config.myNixOS.services.m365-copilot-proxy.models;
+  };
+
   services.xserver = {
     xkb = {
       variant = "nodeadkeys";
