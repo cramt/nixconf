@@ -174,6 +174,10 @@
     };
     # codex ships enabled in t3code, but there's no codex CLI to run.
     providers.codex = false;
+    # Dictation for every client paired to luna, on the 1660 over Vulkan
+    # (about 2s per 11s of speech, against 9s on the CPU). Pinned from the
+    # store so a fresh ~/.t3 doesn't sit on a 700 MB download first.
+    speech.model = "handy-computer/parakeet-unified-en-0.6b-gguf";
     # M365 Copilot's GPT and Claude models, through Claude Code against
     # the cli-proxy-api pool, which routes the m365/ prefix to the proxy.
     # [1m] is the proxy's real window (its /v1/models says 1M); Claude
