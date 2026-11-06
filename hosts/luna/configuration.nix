@@ -132,12 +132,9 @@
       # cramt's Claude pool at cliproxy.<domain>: panel behind the passkey, /v1
       # behind the shared API key. Every host's `claude` points here.
       cli-proxy-api.enable = true;
-      # Speech-to-text on the 1660: push-to-talk for the desktops, and Bazarr's
-      # fallback when no provider has subtitles that match a dub.
-      whisper = {
-        dictation.enable = true;
-        subtitles.enable = true;
-      };
+      # Speech-to-text on the 1660: Bazarr's fallback when no provider has
+      # subtitles that match a dub.
+      whisper.subtitles.enable = true;
       foundryvtt = {
         enable = false;
         dataVolume = "/pool/configs/foundryvtt_a";
@@ -177,6 +174,48 @@
     };
     # codex ships enabled in t3code, but there's no codex CLI to run.
     providers.codex = false;
+    # Dictation for every client paired to luna, on the 1660 over Vulkan
+    # (about 2s per 11s of speech, against 9s on the CPU). Pinned from the
+    # store so a fresh ~/.t3 doesn't sit on a 700 MB download first.
+    speech.model = "handy-computer/parakeet-unified-en-0.6b-gguf";
+    # Daily look at upstream's voice work against Alex's relay-call design
+    # (discussion 22091), DMing only when something moved. Drop it once
+    # thread calls ship for non-Codex providers.
+    scheduledTasks.voice-watch = {
+      title = "t3code voice watch";
+      project = "/pool/dev/nixconf";
+      schedule.daily.timeOfDay = "09:00";
+      model.model = "claude-sonnet-5-5";
+      prompt = ''
+        Watch pingdotgg/t3code for progress toward Alex's voice-call design
+        (https://github.com/pingdotgg/t3code/discussions/22091#discussioncomment-19395387):
+        a relay-style call on any thread, with VAD, send or steer, the reply read
+        back aloud, working with the screen locked, provider-agnostic, and STT/TTS
+        on-device or OpenAI-compatible. This is read-only research: change nothing
+        in this repo, and post nothing on GitHub.
+
+        1. Read ~/.local/state/t3code-voice-watch/state.md, the last state seen.
+        2. Collect the current state with gh:
+           - PR 29394 (Codex voice conversations): state, draft, head sha,
+             updatedAt, new commits and review comments since the recorded sha.
+           - Open and recently merged PRs about voice, dictation, speech,
+             transcription, TTS or realtime (gh search prs -R pingdotgg/t3code).
+           - Discussion 22091: comment count and any new comments
+             (gh api graphql).
+           - On main: the kinds in VoiceTranscriptionDestination
+             (packages/contracts/src/settings.ts), and whether a voice/call
+             session contract exists and what kinds it takes.
+        3. Compare with state.md. Substantive changes: a PR opened, merged or
+           closed; new commits or reviews on a tracked PR; a new
+           transcription or TTS backend; a call or session contract that
+           gains a non-Codex or relay kind; new comments on 22091. A bumped
+           updatedAt with nothing behind it doesn't count.
+        4. On substantive change, send a single DM with `dm-me "<message>"`:
+           a few short lines in plain language on what changed and how close
+           it brings the design, with PR links. Stay quiet otherwise.
+        5. Always rewrite state.md with what you saw today, keeping its format.
+      '';
+    };
     # M365 Copilot's GPT and Claude models, through Claude Code against
     # the cli-proxy-api pool, which routes the m365/ prefix to the proxy.
     # [1m] is the proxy's real window (its /v1/models says 1M); Claude

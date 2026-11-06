@@ -1,10 +1,7 @@
-# whisper.cpp on luna's GPU, as two servers sharing one model file:
-#
-# - dictation: the OpenAI /v1/audio/transcriptions API on the LAN for voxtype
-#   and anything else OpenAI-shaped. Vocabulary and the address live in
-#   myLib/dictation.nix.
-# - subtitles: transcribes whole episodes for Bazarr's whisperai provider,
-#   behind whisper-asr-shim (Bazarr only speaks whisper-asr-webservice's API).
+# whisper.cpp on luna's GPU, transcribing whole episodes for Bazarr's whisperai
+# provider, behind whisper-asr-shim (Bazarr only speaks whisper-asr-webservice's
+# API). Dictation used to run here too, for voxtype on the desktops; t3code's
+# own environment dictation replaced it.
 #
 # CUDA by default: on a 5-minute clip of a dub, large-v3-turbo with beam 5
 # took 58s on CUDA against 155s on Vulkan. The old reason for Vulkan, that CUDA
@@ -12,8 +9,7 @@
 # cache.nixos-cuda.org (in modules/base/nixos-default.nix) started carrying
 # whisper-cpp.
 #
-# No auth on either, so the dictation port is LAN-only (firewall, no caddy
-# entry) and the subtitle servers bind to localhost.
+# No auth, so the servers bind to localhost.
 {...}: {
   flake.nixosModules."services.whisper" = {
     config,
@@ -22,7 +18,6 @@
     ...
   }: let
     cfg = config.myNixOS.services.whisper;
-    dictation = import ../../myLib/dictation.nix;
     ports = config.port-selector.ports;
 
     package =
@@ -92,14 +87,6 @@
         default = "cuda";
         description = "GPU backend whisper.cpp is built with.";
       };
-      dictation = {
-        enable = lib.mkEnableOption "the dictation server (OpenAI API, LAN)";
-        openFirewall = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Open the API port so the desktops can reach it.";
-        };
-      };
       subtitles = {
         enable = lib.mkEnableOption "the subtitle server Bazarr's whisperai provider talks to";
         port = lib.mkOption {
@@ -114,32 +101,6 @@
     };
 
     config = lib.mkMerge [
-      (lib.mkIf cfg.dictation.enable {
-        port-selector.set-ports.${toString dictation.port} = "whisper";
-
-        systemd.services.whisper = server {
-          name = "dictation";
-          host = "0.0.0.0";
-          port = dictation.port;
-          inferencePath = "/v1/audio/transcriptions";
-          # Beam search (-bs 5) and no timestamps (-nt) were picked on a jargon
-          # bench: beam fixed "luna", "deploy-rs" and "Ephemerate" for ~150ms,
-          # and -nt stops segment breaks from showing up as newlines
-          # mid-sentence.
-          args = [
-            "--language"
-            "en"
-            "--prompt"
-            dictation.prompt
-            "--beam-size"
-            "5"
-            "--no-timestamps"
-          ];
-        };
-
-        networking.firewall.allowedTCPPorts = lib.mkIf cfg.dictation.openFirewall [dictation.port];
-      })
-
       (lib.mkIf cfg.subtitles.enable {
         port-selector = {
           set-ports.${toString cfg.subtitles.port} = "whisper_asr_shim";
@@ -151,8 +112,8 @@
           host = "127.0.0.1";
           port = ports.whisper_subtitles;
           inferencePath = "/inference";
-          # No prompt: the dictation vocabulary would only pull character
-          # names towards MTG cards. Language comes per request from Bazarr.
+          # No prompt: a jargon vocabulary would only pull character names
+          # towards MTG cards. Language comes per request from Bazarr.
           #
           # From a bench on 5 minutes of Witch Hat Atelier's dub:
           # - --max-context 0: carrying earlier text into each window looped

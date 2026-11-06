@@ -12,68 +12,103 @@
     localPackages = hostPkgs: keep:
       lib.filterAttrs (_: keep)
       (lib.genAttrs (import ../../overlays/local-packages.nix).names (n: hostPkgs.${n}));
+
+    # `nix run .#flash-<host> [-- /dev/sdX]`: dd a host's raw SD image onto a
+    # card. With no argument it picks the only removable disk; it refuses
+    # non-removable ones outright, since the image is the size of a whole disk
+    # and a typo'd /dev/sdX would otherwise eat a data drive.
+    #
+    # opnix hosts get the local /etc/opnix-token baked into the image's rootfs
+    # (p2, the sd-image.nix layout every board here uses) through a loopback
+    # mount of a scratch copy, so opnix works on first boot with no manual step
+    # and the token never enters the nix store.
+    mkFlash = { host, img, opnix }: pkgs.writeShellApplication {
+      name = "flash-${host}";
+      runtimeInputs = with pkgs; [ pv util-linux coreutils gawk ];
+      text = ''
+        img=${img}
+        dev="''${1:-}"
+
+        if [ -z "$dev" ]; then
+          mapfile -t removable < <(lsblk -dnpo NAME,RM,TYPE | awk '$2 == 1 && $3 == "disk" { print $1 }')
+          if [ "''${#removable[@]}" -ne 1 ]; then
+            echo "found ''${#removable[@]} removable disks, pass one: nix run .#flash-${host} -- /dev/sdX" >&2
+            lsblk -dpo NAME,SIZE,RM,TRAN,MODEL >&2
+            exit 1
+          fi
+          dev="''${removable[0]}"
+        fi
+
+        if [ ! -b "$dev" ] || [ "$(lsblk -dno TYPE "$dev")" != disk ]; then
+          echo "$dev is not a whole block device" >&2
+          exit 1
+        fi
+        if [ "$(lsblk -dno RM "$dev" | tr -d ' ')" != 1 ]; then
+          echo "$dev is not removable, refusing" >&2
+          exit 1
+        fi
+      '' + lib.optionalString opnix ''
+
+        token="''${OPNIX_TOKEN:-/etc/opnix-token}"
+        if [ ! -r "$token" ]; then
+          echo "cannot read opnix token at $token (set OPNIX_TOKEN=/path)" >&2
+          exit 1
+        fi
+
+        work="$(mktemp --suffix=.img)"
+        mnt="$(mktemp -d)"
+        loop=""
+        cleanup() {
+          if mountpoint -q "$mnt"; then sudo umount "$mnt"; fi
+          if [ -n "$loop" ]; then sudo losetup -d "$loop" 2>/dev/null || true; fi
+          rm -rf "$work" "$mnt"
+        }
+        trap cleanup EXIT
+
+        echo ">> baking $token into a copy of the image (needs sudo)..."
+        cp --sparse=always "$img" "$work"
+        chmod u+w "$work"
+        loop="$(sudo losetup -Pf --show "$work")"
+        # losetup -P hands partition scanning to udev, so the node shows up late.
+        root="''${loop}p2"
+        for _ in 1 2 3 4 5 6 7 8 9 10; do [ -b "$root" ] && break; sleep 1; done
+        if [ ! -b "$root" ]; then echo "rootfs partition $root never appeared" >&2; exit 1; fi
+        sudo mount "$root" "$mnt"
+        sudo install -D -m0640 -o0 -g0 "$token" "$mnt/etc/opnix-token"
+        sudo umount "$mnt"
+        sudo losetup -d "$loop"; loop=""
+        img="$work"
+      '' + ''
+
+        echo ">> target device:"
+        lsblk -po NAME,SIZE,MODEL,TRAN,MOUNTPOINTS "$dev"
+        read -r -p ">> ERASE $dev and flash ${host}? type 'yes' to confirm: " ans
+        if [ "$ans" != "yes" ]; then echo "aborted"; exit 1; fi
+
+        # A card from a previous flash gets its partitions automounted.
+        lsblk -lnpo NAME,MOUNTPOINT "$dev" | awk 'NF == 2 { print $1 }' | while read -r part; do
+          sudo umount "$part"
+        done
+
+        echo ">> flashing $(du -hL "$img" | cut -f1)..."
+        pv "$img" | sudo dd of="$dev" bs=4M conv=fsync oflag=direct status=none
+        sync
+        echo ">> done, eject and boot ${host}."
+      '';
+    };
   in {
     packages = lib.optionalAttrs (system == "x86_64-linux") ({
-      # `nix run .#flash-eros -- /dev/sdX` — flash a ready-to-boot eros SD card.
-      # Builds the aarch64 SD image (substituted from cache), then bakes the
-      # local /etc/opnix-token into the image's rootfs /etc *post-build* (via a
-      # loopback mount — we need sudo for the flash anyway), so opnix works on
-      # first boot with no manual step and the token never enters the nix store.
-      # Flashes with a pv progress bar + ETA. Runs on the flashing host (x86);
-      # references the aarch64 image as a build input.
-      flash-eros = let
-        sdImage = inputs.self.nixosConfigurations.eros.config.system.build.sdImage;
-      in pkgs.writeShellApplication {
-        name = "flash-eros";
-        runtimeInputs = with pkgs; [ zstd pv util-linux coreutils ];
-        text = ''
-          dev="''${1:-}"
-          if [ ! -b "$dev" ]; then
-            echo "usage: nix run .#flash-eros -- /dev/sdX   (target block device)" >&2
-            exit 1
-          fi
-          token="''${OPNIX_TOKEN:-/etc/opnix-token}"
-          if [ ! -r "$token" ]; then
-            echo "cannot read opnix token at $token (set OPNIX_TOKEN=/path)" >&2
-            exit 1
-          fi
-
-          work="$(mktemp --suffix=.img)"
-          mnt="$(mktemp -d)"
-          loop=""
-          cleanup() {
-            mountpoint -q "$mnt" && sudo umount "$mnt" || true
-            [ -n "$loop" ] && sudo losetup -d "$loop" 2>/dev/null || true
-            rm -rf "$work" "$mnt"
-          }
-          trap cleanup EXIT
-
-          echo ">> decompressing SD image..."
-          imgs=(${sdImage}/sd-image/*.img.zst)
-          zstd -d -f -o "$work" "''${imgs[0]}"
-
-          echo ">> baking /etc/opnix-token into rootfs (needs sudo)..."
-          loop="$(sudo losetup -Pf --show "$work")"
-          # rpi sd-image layout: p1 = FAT firmware, p2 = ext4 root (NIXOS_SD).
-          # Wait for the partition node to appear (losetup -P + udev is async).
-          root="''${loop}p2"
-          for _ in 1 2 3 4 5 6 7 8 9 10; do [ -b "$root" ] && break; sleep 1; done
-          if [ ! -b "$root" ]; then echo "rootfs partition $root never appeared" >&2; exit 1; fi
-          sudo mount "$root" "$mnt"
-          sudo install -D -m0640 -o0 -g0 "$token" "$mnt/etc/opnix-token"
-          sudo umount "$mnt"
-          sudo losetup -d "$loop"; loop=""
-
-          echo ">> target device:"
-          lsblk -do NAME,SIZE,MODEL,TRAN "$dev" || true
-          read -r -p ">> ERASE $dev and flash eros? type 'yes' to confirm: " ans
-          if [ "$ans" != "yes" ]; then echo "aborted"; exit 1; fi
-
-          echo ">> flashing (pv shows progress + ETA)..."
-          pv "$work" | sudo dd of="$dev" bs=4M conv=fsync oflag=direct
-          sync
-          echo ">> done — eject and boot eros."
-        '';
+      # The images are built for the board's own arch (cachix has them from the
+      # ARM runner); only the wrapper is x86.
+      flash-eros = mkFlash {
+        host = "eros";
+        img = inputs.self.packages.aarch64-linux.eros-img;
+        opnix = true;
+      };
+      flash-mercury = mkFlash {
+        host = "mercury";
+        img = inputs.self.packages.aarch64-linux.mercury-img;
+        opnix = true;
       };
 
       # Same mercury host, cross-compiled from x86 instead of built natively — for
@@ -108,52 +143,11 @@
         cp ${inputs.self.nixosConfigurations.venus.config.system.build.sdImage}/sd-image/*.img $out
       '';
 
-      # `nix run .#flash-venus [-- /dev/sdX]` — dd venus-img onto an SD card.
-      # venus has no opnix, so unlike flash-eros there's nothing to bake in. With
-      # no argument it picks the only removable disk; it refuses non-removable
-      # ones outright, since the image is the size of a whole disk and a typo'd
-      # /dev/sdX would otherwise eat a data drive.
-      flash-venus = pkgs.writeShellApplication {
-        name = "flash-venus";
-        runtimeInputs = with pkgs; [ pv util-linux coreutils gawk ];
-        text = ''
-          img=${inputs.self.packages.${system}.venus-img}
-          dev="''${1:-}"
-
-          if [ -z "$dev" ]; then
-            mapfile -t removable < <(lsblk -dnpo NAME,RM,TYPE | awk '$2 == 1 && $3 == "disk" { print $1 }')
-            if [ "''${#removable[@]}" -ne 1 ]; then
-              echo "found ''${#removable[@]} removable disks, pass one: nix run .#flash-venus -- /dev/sdX" >&2
-              lsblk -dpo NAME,SIZE,RM,TRAN,MODEL >&2
-              exit 1
-            fi
-            dev="''${removable[0]}"
-          fi
-
-          if [ ! -b "$dev" ] || [ "$(lsblk -dno TYPE "$dev")" != disk ]; then
-            echo "$dev is not a whole block device" >&2
-            exit 1
-          fi
-          if [ "$(lsblk -dno RM "$dev" | tr -d ' ')" != 1 ]; then
-            echo "$dev is not removable, refusing" >&2
-            exit 1
-          fi
-
-          echo ">> target device:"
-          lsblk -po NAME,SIZE,MODEL,TRAN,MOUNTPOINTS "$dev"
-          read -r -p ">> ERASE $dev and flash venus? type 'yes' to confirm: " ans
-          if [ "$ans" != "yes" ]; then echo "aborted"; exit 1; fi
-
-          # A card from a previous flash gets its partitions automounted.
-          lsblk -lnpo NAME,MOUNTPOINT "$dev" | awk 'NF == 2 { print $1 }' | while read -r part; do
-            sudo umount "$part"
-          done
-
-          echo ">> flashing $(du -hL "$img" | cut -f1)..."
-          pv "$img" | sudo dd of="$dev" bs=4M conv=fsync oflag=direct status=none
-          sync
-          echo ">> done, eject and boot venus."
-        '';
+      # venus has no opnix, so there's nothing to bake in.
+      flash-venus = mkFlash {
+        host = "venus";
+        img = inputs.self.packages.${system}.venus-img;
+        opnix = false;
       };
 
       # NOTE: scripts/windows-vm.sh (boot the physical Windows partition in a VM)

@@ -47,7 +47,7 @@ The flake-parts plumbing lives in `modules/flake/`:
 | `modules/flake/hosts.nix` | Discovers hosts by reading `hosts/`, declares the `nixosHosts` option (hostname → `{ config; nixpkgs; address; }`) and builds `flake.nixosConfigurations` via `myLib.mkSystem` |
 | `modules/flake/deploy.nix` | Derives `flake.deploy` (deploy-rs nodes) from `nixosHosts`; driven by `just deploy` |
 | `modules/flake/systems.nix` | The `systems` list for `perSystem` |
-| `modules/flake/packages.nix` | `perSystem` packages: every `packages/<name>` plus images and tools (e.g. `eros-img`, `flash-eros`) |
+| `modules/flake/packages.nix` | `perSystem` packages: every `packages/<name>` plus images and `flash-<host>` SD flashers (eros, mercury, venus) |
 | `modules/flake/hm-modules.nix` | Typed accumulator options (`hmModules.default/features/bundles`) wired into `flake.homeManagerModules` once, to avoid freeform merge conflicts |
 
 The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`, `mercury`, `venus`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
@@ -127,7 +127,7 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 
 - `saturn` — Alex's desktop (COSMIC daily driver, niri secondary). Home machine; work happens on a separate laptop.
 - `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.47. `eros` — 2GB RPi4 TV kiosk. `mars` — secondary desktop.
-- `mercury` — Terasic DE25-Nano (Agilex 5 SoC FPGA), headless, serial console only. Board support (kernel, boot chain, SD image) lives in our `A-H-Technology/nixos-fpga` flake (local checkout `~/code/nixos-fpga`); the host file only carries fleet bits. Kernel bumps come through that repo's `needs-hardware-test` PRs, never from nixconf.
+- `mercury` — Terasic DE25-Nano (Agilex 5 SoC FPGA), headless, serial console only. Board support (kernel, boot chain, SD image) lives in our `A-H-Technology/nixos-fpga` flake (local checkout `~/code/nixos-fpga`); the host file only carries fleet bits. Kernel bumps come through that repo's `needs-hardware-test` PRs, never from nixconf. `nix run .#flash-mercury` writes its SD card with the opnix token baked in, like `flash-eros`.
 - `venus` — Digilent Zybo, the original (Zynq-7010, 32-bit armv7l, 512 MB), mercury's Xilinx counterpart; board support also in nixos-fpga. Cross-built from x86 by its own config (`nixpkgs.buildPlatform`), home-manager included, since Hydra caches nothing for armv7l; `nix build .#venus-img` is what gets flashed. Kernel and U-Boot are mainline and follow nixpkgs.
 - Fleet hostnames resolve over the router's DNS, so `just deploy` addresses hosts by name, not IP.
 - Daily browser is Zen. Firefox is installed on `mars` (profiles configured, never launched); helium is kept on `saturn` for the occasional chromium.

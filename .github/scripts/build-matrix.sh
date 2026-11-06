@@ -17,11 +17,11 @@ declare -A runners=(
 # (e.g. steamlink), which would otherwise fail the build job at eval time.
 filter='set: builtins.filter (n: let r = builtins.tryEval (set.${n}.meta.available or true); in r.success && r.value) (builtins.attrNames set)'
 
-# Skipped: trivial wrappers around a cross-platform artifact. flash-eros (x86)
-# only substitutes the aarch64 eros image — it can't build it, and its own
-# eros-img leg races it in the same wave, so it fails whenever the image drv
-# changed (e.g. every update PR). The wrapper builds in seconds locally once
-# eros-img is cached, so prebuilding it adds nothing.
+# Skipped: trivial wrappers around a cross-platform artifact. flash-eros and
+# flash-mercury (x86) only substitute their aarch64 image — they can't build
+# it, and the image's own leg races them in the same wave, so they fail
+# whenever the image drv changed (e.g. every update PR). The wrapper builds in
+# seconds locally once the image is cached, so prebuilding it adds nothing.
 #
 # mercury-img-cross: cross-compiling the whole mercury system from x86 doesn't
 # work yet, and it isn't what gets flashed (that's the natively-built
@@ -29,7 +29,7 @@ filter='set: builtins.filter (n: let r = builtins.tryEval (set.${n}.meta.availab
 # wrapper are fixed; home-manager still builds its own native aarch64 pkgs
 # (see the comment on mercury-img-cross). saturn never sees any of this because
 # binfmt lets it execute aarch64 builds anyway. Un-skip once that's resolved.
-skip='["flash-eros", "mercury-img-cross"]'
+skip='["flash-eros", "flash-mercury", "mercury-img-cross"]'
 
 include='[]'
 for system in "${!runners[@]}"; do
