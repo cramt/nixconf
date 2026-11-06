@@ -148,11 +148,11 @@
         "openxc7": "openxc7"
       },
       "locked": {
-        "lastModified": 1793885134,
-        "narHash": "sha256-LuRraYtZGxR8UpA3mZ7/hOTMbZQxWTm4F9+et0u/6pk=",
+        "lastModified": 1793937348,
+        "narHash": "sha256-XfIkzXxnAucDI7zrLlEyleQB1/9aUgndhbkXAZRhrfg=",
         "owner": "A-H-Technology",
         "repo": "chipsmith",
-        "rev": "1400504b92988d7f26f9f0b7701cbbbc600cbf25",
+        "rev": "fc675730bcbcb9fa6e5c6e22847d3862b7b5a01d",
         "type": "github"
       },
       "original": {
