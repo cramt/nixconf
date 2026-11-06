@@ -1327,11 +1327,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793933379,
-        "narHash": "sha256-BvnepFCTm4FWYNpFcfi3tfC0OWJxp4i2S7SGIzkz0OA=",
+        "lastModified": 1793956947,
+        "narHash": "sha256-2ZV8bhpwpaii2HotbkR6hvhCbErK7mdIFQeC2HUW6bI=",
         "owner": "cramt",
         "repo": "my-nixpkgs",
-        "rev": "1ab53beae12d9df0c646e118428b8fb92679b73d",
+        "rev": "28b59cf2d09000b4ebdab3f63e8d15908a6934f0",
         "type": "github"
       },
       "original": {
