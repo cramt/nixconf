@@ -9,6 +9,9 @@
   flake.nixosModules."features.opnix-secrets" = { config, lib, ... }:
   let
     anyHmUser = pred: lib.any pred (lib.attrValues config.home-manager.users);
+    # Hosts like mercury import only a subset of the hm features, so the option
+    # can be absent, which can only mean off.
+    hmEnabled = path: u: lib.attrByPath (path ++ ["enable"]) false u.myHomeManager;
   in {
     options.myNixOS.opnix-secrets.enable = lib.mkEnableOption ''
       opnix on this host. Needs the 1Password service-account token at
@@ -36,7 +39,7 @@
           enable = true;
           tokenFile = "/etc/opnix-token";
           secrets =
-            lib.optionalAttrs (anyHmUser (u: u.myHomeManager.bundles.general.enable)) {
+            lib.optionalAttrs (anyHmUser (hmEnabled ["bundles" "general"])) {
               # Included by the user nix.conf (modules/hm-bundles/general.nix)
               # for authenticated github.com tarball fetches. Flake inputs are
               # fetched by the evaluating *client*, not the daemon, so the file
@@ -49,7 +52,7 @@
                 group = "onepassword-secrets";
               };
             }
-            // lib.optionalAttrs (anyHmUser (u: u.myHomeManager.claude-code.enable || u.myHomeManager.delta.enable)) {
+            // lib.optionalAttrs (lib.any (p: anyHmUser (hmEnabled [p])) ["claude-code" "delta"]) {
               cliProxyApiKey = (import ../../myLib/claude-pool.nix).apiKeySecret;
             };
         };

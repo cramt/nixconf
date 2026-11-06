@@ -41,6 +41,10 @@
   myNixOS = {
     services.sshd.enable = true;
 
+    # flash-mercury bakes /etc/opnix-token into the image, so this works from
+    # first boot. Also what lets the metrics agent push to luna.
+    opnix-secrets.enable = true;
+
     # Unlike eros, mercury keeps the general bundle and stylix on. It isn't a
     # desktop bundle — it's the fleet's system baseline (locale, timezone, nh,
     # comma, trippy, udev) — and it's also what supplies stylix.image/cursor/
