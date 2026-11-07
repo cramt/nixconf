@@ -32,5 +32,7 @@ in rec {
   sharedSecret = "op://Homelab/T3Code/password";
 
   # Fixed rather than port-selector's, because the hub dials it on other hosts.
-  previewGatewayPort = 3774;
+  # Clear of 377x: the desktop app's own server takes the first free port
+  # after 3773, so on a host also running the background server it sits on 3774.
+  previewGatewayPort = 38774;
 }
