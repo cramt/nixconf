@@ -49,11 +49,10 @@ inputs: [
   (import ./local-packages.nix).overlay
 
   # pkgs.felix from Felix's own package.nix: Lix's recipe, which knows how to
-  # cross-compile (nixpkgs' lix_2_96 copy fails at configure for venus'
-  # armv7l). Its scope is spliced for cross, which only works with the overlay
-  # applied to a whole nixpkgs, so it gets a private instance: applying it here
-  # would replace pkgs.lix (the root daemon, which stays stock Lix) and rebuild
-  # everything that links nix. Installed as the client `nix` via home-manager.
+  # cross-compile (nixpkgs' lix recipes fail at configure for venus' armv7l).
+  # Its scope is spliced for cross, which only works with the overlay applied
+  # to a whole nixpkgs, so it gets a private instance: applying it to the
+  # system pkgs would rebuild everything that links nix against Felix.
   (final: prev: {
     felix =
       (import inputs.nixpkgs {

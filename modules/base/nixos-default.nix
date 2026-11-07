@@ -16,10 +16,11 @@
       systemd.user.settings.Manager.DefaultEnvironment = ''"PATH=/run/wrappers/bin:/etc/profiles/per-user/%u/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"'';
       stylix.enable = true;
       services.gnome.gcr-ssh-agent.enable = false;
-      # mkDefault so eros can swap in a lix from a different nixpkgs without a
-      # mkForce. Hosts Hydra doesn't cache lix for (venus' armv7l cross) still
-      # get it via the CI cachix push, so every host stays on lix.
-      nix.package = lib.mkDefault pkgs.lix;
+      # Felix (Alex's Lix fork, see overlays/default.nix) is the whole Nix on
+      # every host, root daemon included. That makes Lix security releases
+      # urgent: rebase Felix onto them and bump the input before anything
+      # else. It also covers venus, whose stock nixpkgs lix can't cross-build.
+      nix.package = pkgs.felix;
 
       # quadlet-nix auto-enables when this is left null (its default), which
       # pulls podman — and transitively matplotlib — into the build of hosts that

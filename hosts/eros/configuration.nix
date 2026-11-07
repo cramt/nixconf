@@ -58,12 +58,6 @@ in
     # modules/base/nixos-default.nix.) zfs keeps its mkForce because an input's
     # module, not this repo, turns it on at normal priority.
     stylix.enable = lib.mkForce false;
-    # lix comes from our main nixpkgs, not the rpi pin: the pin's lix is
-    # 2.94.2, vulnerable to the Oct 2026 daemon repair privesc
-    # (https://lix.systems/blog/2026-10-13-lix-cves/, fixed in 2.94.3/2.95.4).
-    # Main nixpkgs' aarch64 lix is Hydra-cached. Drop this once
-    # nixos-raspberrypi's pin carries a fixed lix.
-    nix.package = inputs.nixpkgs.legacyPackages.aarch64-linux.lix;
     boot.supportedFilesystems.zfs = lib.mkForce false;
 
     nixpkgs = {
