@@ -316,11 +316,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1794085674,
-        "narHash": "sha256-iTaxL66yK2LTto6cpRk9x3MhneDZn1kJMZ1SBpKL5Ps=",
+        "lastModified": 1794089436,
+        "narHash": "sha256-DcQQ4QhDsgl7l5XaJsV0j7bIq82dhws7j/1WYR5RS/Q=",
         "owner": "cramt",
         "repo": "defenestrate",
-        "rev": "5c03a17cd4069ee5c3cc99a60767a92d4b0c50f6",
+        "rev": "8de4e19525d9c0c617ba7616bd751e6ccafe7bf6",
         "type": "github"
       },
       "original": {
@@ -427,12 +427,13 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1794071752,
-        "narHash": "sha256-W9c5UymEOGYelJih/sALyu/Dr3ZnfZCBVsP0KpGz99o=",
-        "owner": "cramt",
-        "repo": "felix",
-        "rev": "6552abfa85f0bed8f8eac34cb4161dbfbab4a843",
-        "type": "github"
+        "lastModified": 1794089160,
+        "narHash": "sha256-Mdk70KNsMgNPPTldTnjHw2IH7Tb9omI1qLZ3h8bndmw=",
+        "ref": "refs/heads/felix",
+        "rev": "6f2d23f669477a94732023a50d2317dd21a734d3",
+        "revCount": 19577,
+        "type": "git",
+        "url": "file:///home/cramt/code/felix"
       },
       "original": {
         "owner": "cramt",
