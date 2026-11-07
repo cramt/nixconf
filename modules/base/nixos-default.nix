@@ -16,11 +16,9 @@
       systemd.user.settings.Manager.DefaultEnvironment = ''"PATH=/run/wrappers/bin:/etc/profiles/per-user/%u/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"'';
       stylix.enable = true;
       services.gnome.gcr-ssh-agent.enable = false;
-      # mkDefault, because this lands on every host including the small ARM ones
-      # (eros, mercury) that have no cached aarch64 lix and shouldn't compile a
-      # nix implementation to boot. Those set `nix.package = pkgs.nix;` plainly;
-      # without mkDefault here that's an option conflict and they'd each need a
-      # mkForce to say something this ordinary.
+      # mkDefault so eros can swap in a lix from a different nixpkgs without a
+      # mkForce. Hosts Hydra doesn't cache lix for (venus' armv7l cross) still
+      # get it via the CI cachix push, so every host stays on lix.
       nix.package = lib.mkDefault pkgs.lix;
 
       # quadlet-nix auto-enables when this is left null (its default), which

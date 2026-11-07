@@ -45,7 +45,6 @@ in {
 
   image.baseName = "venus";
 
-  nix.package = pkgs.nix;
   boot.supportedFilesystems.zfs = lib.mkForce false;
 
   # Ghostty sets TERM=xterm-ghostty, but even the build-platform ghostty misses
