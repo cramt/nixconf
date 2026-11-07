@@ -6,7 +6,7 @@ My personal NixOS configuration, managing a fleet of machines using [flake-parts
 
 | Host | Type | Description |
 |------|------|-------------|
-| `saturn` | Desktop | AMD gaming PC with Wayland/COSMIC, Secure Boot (lanzaboote), colibrì MoE inference (ROCm) |
+| `saturn` | Desktop | AMD gaming PC with Wayland/COSMIC, Secure Boot (lanzaboote) |
 | `luna` | Server | Home server with NAS, game servers, Caddy, fleet Prometheus |
 | `mars` | Desktop | Secondary desktop, AMD gaming PC with COSMIC |
 | `ganymede` | Laptop | TV box: boots straight into [emrakul](https://github.com/cramt/emrakul) with Firefox (YouTube's TV UI, Nebula) and Chromium (Jellyfin) web apps, always-on (lid-close ignored) |

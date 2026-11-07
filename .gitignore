@@ -3,3 +3,7 @@ homeManagerModules/features/rio.nix
 infra/terraform.tfstate
 infra/terraform.tfstate.backup
 infra/.terraform
+
+# docs/saturn-dual-boot.md: the stock Windows ISO GC root and the built ISO
+windows-iso.gcroot
+saturn-windows.iso

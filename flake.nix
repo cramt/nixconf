@@ -81,6 +81,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Declarative Windows install ISOs from the stock Microsoft ISO; saturn's
+    # Windows SSD is installed from one (docs/saturn-dual-boot.md). Our own
+    # flake. No nixpkgs follows: its Windows cross-builds are only verified
+    # against its own lock.
+    defenestrate.url = "github:cramt/defenestrate";
+
     # Games that need more than "install it from nixpkgs" — each package carries
     # its own workarounds. Currently Legends of Runeterra, which is blocked by
     # Riot's Packman anti-tamper on current wine and so pins GE-Proton8-27-LoL.
