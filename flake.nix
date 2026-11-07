@@ -33,7 +33,7 @@
     # never bumps it: every Felix commit has to clear felix/bench.py first.
     # Bump the rev by hand.
     felix = {
-      url = "github:cramt/felix/6552abfa85f0bed8f8eac34cb4161dbfbab4a843";
+      url = "github:cramt/felix/cdc51d5710ec1547e493be6679b4987b6a893579";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

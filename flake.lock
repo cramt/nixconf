@@ -427,18 +427,17 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1794089160,
-        "narHash": "sha256-Mdk70KNsMgNPPTldTnjHw2IH7Tb9omI1qLZ3h8bndmw=",
-        "ref": "refs/heads/felix",
-        "rev": "6f2d23f669477a94732023a50d2317dd21a734d3",
-        "revCount": 19577,
-        "type": "git",
-        "url": "file:///home/cramt/code/felix"
+        "lastModified": 1794090488,
+        "narHash": "sha256-llDYmsjFODzkCs+XBLNVh3THk02t90li3JyX1Ng4zeA=",
+        "owner": "cramt",
+        "repo": "felix",
+        "rev": "cdc51d5710ec1547e493be6679b4987b6a893579",
+        "type": "github"
       },
       "original": {
         "owner": "cramt",
         "repo": "felix",
-        "rev": "6552abfa85f0bed8f8eac34cb4161dbfbab4a843",
+        "rev": "cdc51d5710ec1547e493be6679b4987b6a893579",
         "type": "github"
       }
     },
