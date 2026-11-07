@@ -73,7 +73,8 @@
       };
       sharedSecret = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
-        default = null;
+        # The fleet's links pair with it (t3code-fleet.nix).
+        default = (import ../../myLib/t3code-fleet.nix).sharedSecret;
         example = "op://Homelab/T3Code/password";
         description = ''
           1Password reference to a fixed pairing secret, at least 32
@@ -132,6 +133,8 @@
           organization = "nixconf";
           limits.telemetry = lib.mkDefault false;
         };
+        # Beta. Locked on in the policy, so the desktop app gets it as well.
+        services.t3code.linkedEnvironments.enable = true;
       }
 
       (lib.mkIf cfg.enable {

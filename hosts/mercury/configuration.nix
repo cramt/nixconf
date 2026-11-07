@@ -20,15 +20,12 @@
 
   image.baseName = "mercury";
 
-  # nixosModules.default ships lix/zfs, neither of which has cached aarch64
-  # builds worth having on a 957 MB board. Same reasoning as eros — but note
   # stylix deliberately stays ON here, see below. (quadlet used to need
   # disabling too; it now defaults off in modules/base/nixos-default.nix.)
   #
-  # zfs still needs mkForce because it's enabled at normal priority by an input's
+  # zfs needs mkForce because it's enabled at normal priority by an input's
   # module (nixarr), not by anything in this repo — drop the mkForce if that ever
   # becomes conditional upstream.
-  nix.package = pkgs.nix;
   boot.supportedFilesystems.zfs = lib.mkForce false;
 
   # Alex ssh's in from Ghostty, which exports TERM=xterm-ghostty; without the

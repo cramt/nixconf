@@ -48,26 +48,19 @@ inputs: [
 
   (import ./local-packages.nix).overlay
 
-  # colibrì's GPU tiers: ROCm/Vulkan builds Hydra never caches. Spelled out
-  # HERE rather than .override'd inside the service module so that
-  # modules/services/colibri.nix, which selects one of these by name, and the
-  # prebuilt flake package resolve to the same store path.
-  #
-  # gfx1101 = Navi 32 = saturn's RX 7800 XT, and it is a compile-time target,
-  # not llama.cpp's runtime HSA_OVERRIDE_GFX_VERSION — RDNA3 has WMMA matrix
-  # cores, which is what rocWMMA needs to map the CUDA nvcuda::wmma kernels onto.
+  # pkgs.felix from Felix's own package.nix: Lix's recipe, which knows how to
+  # cross-compile (nixpkgs' lix recipes fail at configure for venus' armv7l).
+  # Its scope is spliced for cross, which only works with the overlay applied
+  # to a whole nixpkgs, so it gets a private instance: applying it to the
+  # system pkgs would rebuild everything that links nix against Felix.
   (final: prev: {
-    colibri-rocm = final.colibri.override {
-      rocmSupport = true;
-      rocmGpuTarget = "gfx1101";
-    };
-    # RADV compute path. Upstream measures the VRAM-resident int4 expert
-    # primitive ~35% faster than ROCm/HIP on RDNA4 — unmeasured on RDNA3, which
-    # is exactly why both variants are built and A/B'd rather than one being
-    # declared the winner up front (docs/saturn-llm-storage.md).
-    colibri-vulkan = final.colibri.override {
-      vulkanSupport = true;
-    };
+    felix =
+      (import inputs.nixpkgs {
+        localSystem = final.stdenv.buildPlatform;
+        crossSystem = final.stdenv.hostPlatform;
+        overlays = [inputs.felix.overlays.default];
+      })
+      .lix;
   })
 
   # Zed's Delta agent, as `zed-delta` (`delta` is git-delta).

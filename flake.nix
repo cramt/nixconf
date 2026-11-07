@@ -29,6 +29,14 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-26.05";
 
+    # Felix: Alex's soft fork of Lix. Pinned by rev in the URL so `just update`
+    # never bumps it: every Felix commit has to clear felix/bench.py first.
+    # Bump the rev by hand.
+    felix = {
+      url = "github:cramt/felix/6552abfa85f0bed8f8eac34cb4161dbfbab4a843";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixarr.url = "github:nix-media-server/nixarr";
     jellarr.url = "github:cramt/jellarr";
     chipsmith = {
@@ -80,6 +88,12 @@
       url = "github:winapps-org/winapps";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Declarative Windows install ISOs from the stock Microsoft ISO; saturn's
+    # Windows SSD is installed from one (docs/saturn-dual-boot.md). Our own
+    # flake. No nixpkgs follows: its Windows cross-builds are only verified
+    # against its own lock.
+    defenestrate.url = "github:cramt/defenestrate";
 
     # Games that need more than "install it from nixpkgs" — each package carries
     # its own workarounds. Currently Legends of Runeterra, which is blocked by

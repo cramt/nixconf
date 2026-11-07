@@ -52,13 +52,12 @@ in
       services.metrics.exporter.enable = true;
     };
 
-    # nixosModules.default ships stylix/lix/zfs by default. None has cached
+    # nixosModules.default ships stylix/zfs by default. Neither has cached
     # aarch64 builds for nvmd's nixpkgs pin — switch off to keep cache-only.
     # (quadlet needed forcing off here too; it now defaults off in
     # modules/base/nixos-default.nix.) zfs keeps its mkForce because an input's
     # module, not this repo, turns it on at normal priority.
     stylix.enable = lib.mkForce false;
-    nix.package = pkgs.nix;
     boot.supportedFilesystems.zfs = lib.mkForce false;
 
     nixpkgs = {

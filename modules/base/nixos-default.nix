@@ -16,12 +16,11 @@
       systemd.user.settings.Manager.DefaultEnvironment = ''"PATH=/run/wrappers/bin:/etc/profiles/per-user/%u/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"'';
       stylix.enable = true;
       services.gnome.gcr-ssh-agent.enable = false;
-      # mkDefault, because this lands on every host including the small ARM ones
-      # (eros, mercury) that have no cached aarch64 lix and shouldn't compile a
-      # nix implementation to boot. Those set `nix.package = pkgs.nix;` plainly;
-      # without mkDefault here that's an option conflict and they'd each need a
-      # mkForce to say something this ordinary.
-      nix.package = lib.mkDefault pkgs.lix;
+      # Felix (Alex's Lix fork, see overlays/default.nix) is the whole Nix on
+      # every host, root daemon included. That makes Lix security releases
+      # urgent: rebase Felix onto them and bump the input before anything
+      # else. It also covers venus, whose stock nixpkgs lix can't cross-build.
+      nix.package = pkgs.felix;
 
       # quadlet-nix auto-enables when this is left null (its default), which
       # pulls podman — and transitively matplotlib — into the build of hosts that
@@ -68,6 +67,12 @@
         # back to building from source on any host where the system-level
         # substituters list below doesn't already cover them.
         accept-flake-config = true;
+        # Cachix GCs NARs when cramt fills up, and CI re-pushes them under a
+        # new nar/<uuid> URL. The default 30-day cache keeps the daemon on the
+        # old, now-404 URL, so a build that should be fully cached rebuilds or
+        # crashes the daemon instead (deploy 2026-10-13, flash-venus 2026-11-07).
+        # One hour still covers back-to-back deploys.
+        narinfo-cache-positive-ttl = 3600;
         trusted-users = ["cramt" "root"];
         substituters = [
           "https://cramt.cachix.org"

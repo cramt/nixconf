@@ -8,14 +8,14 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    # Declarative partitioning: two-SSD btrfs pool (see disko.nix).
+    # Declarative partitioning: Linux on the 980, Windows owns the 970 EVO (see disko.nix).
     inputs.disko.nixosModules.default
     ./disko.nix
     ./sunshine.nix
     ./tv-controller.nix
   ];
 
-  # /nix rides on the same btrfs pool as /, but keep it mounted in stage-1 so the
+  # /nix rides on the same btrfs filesystem as /, but keep it mounted in stage-1 so the
   # store is available before switch-root (matches the pre-disko behaviour).
   fileSystems."/nix".neededForBoot = true;
 
@@ -26,19 +26,28 @@
   # memtest86+ entry in the boot menu (run it to chase the Bank-0 memory MCEs;
   # see docs/saturn-mce-bios.md). No USB stick needed.
   boot.loader.systemd-boot.memtest86.enable = true;
-  # systemd-boot doesn't reliably auto-detect the Windows Boot Manager, so add an
-  # explicit chainload entry for the League dual-boot on the 970 EVO's part1. Windows'
-  # \EFI\Microsoft\Boot lives on this shared ESP (put there by
-  # scripts/saturn-windows-image.sh; see docs/saturn-disko-migration.md).
-  boot.loader.systemd-boot.extraEntries."windows.conf" = ''
-    title   Windows 11
-    efi     /EFI/Microsoft/Boot/bootmgfw.efi
-  '';
+  # Windows has the 970 EVO to itself, ESP included, and systemd-boot can only
+  # load from its own ESP, so there's no menu entry for it. This points the
+  # firmware's one-shot BootNext at Windows Boot Manager and reboots.
+  environment.systemPackages = [
+    (pkgs.writeShellApplication {
+      name = "reboot-to-windows";
+      runtimeInputs = [pkgs.efibootmgr pkgs.gawk];
+      text = ''
+        entry=$(efibootmgr | awk '/Windows Boot Manager/ { sub(/^Boot/, "", $1); sub(/\*$/, "", $1); print $1; exit }')
+        if [ -z "$entry" ]; then
+          echo "no Windows Boot Manager entry in the firmware" >&2
+          exit 1
+        fi
+        sudo efibootmgr --bootnext "$entry" > /dev/null
+        systemctl reboot
+      '';
+    })
+  ];
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
-  # woeusb mounts its freshly-made target with `mount -t ntfs-3g` when building
-  # Windows install media, and NixOS ships no mount.ntfs-3g helper unless NTFS is
-  # declared here. Also what makes the League dual-boot partition mountable at all.
+  # Mounts the Windows SSD. Read-write works because defenestrate turns off Fast
+  # Startup, which would otherwise leave NTFS marked in use.
   boot.supportedFilesystems.ntfs = true;
 
   # Saturn ran swapless, so under memory pressure the only reclaimable thing was
@@ -115,12 +124,6 @@
 
   myNixOS = {
     secureboot.enable = false;
-    # Keep the cached Windows image from rotting. Rebuild only — deploying to
-    # the real partition stays a deliberate `--deploy-only` you run yourself.
-    services.windows-image-refresh = {
-      enable = true;
-      user = "cramt";
-    };
     niri.enable = true;
     opnix-secrets.enable = true;
     t3code-remotes.enable = true;
@@ -157,51 +160,7 @@
       # The server locks ~/.t3, so the desktop app runs out of ~/.t3-desktop
       # and reaches this server as a saved connection (t3code-remotes), which
       # is what the shared secret is for.
-      t3code = {
-        enable = true;
-        sharedSecret = "op://Homelab/T3Code/password";
-      };
-      # colibrì streams MoE expert weights off the dedicated /llm partitions
-      # (hosts/saturn/disko.nix). The CLI ships now because staging the weights
-      # NEEDS it — `coli convert`/`download` populate /llm/primary, and
-      # `coli doctor`/`plan`/`tune` are how you find out what this box actually
-      # does before committing a tuned profile.
-      #
-      # serve.enable stays false until /llm/primary holds a model: the daemon
-      # would otherwise crash-loop against an empty mountpoint. Flip it, set
-      # model/mirror, and put whatever `coli tune` measures into
-      # serve.environment. See docs/saturn-llm-storage.md.
-      colibri = {
-        enable = true;
-        backend = "rocm";
-        serve = {
-          enable = true;
-          # NOT at boot. The engine needs ~20GB free and a logged-in COSMIC
-          # session routinely holds that, in which case it refuses to start
-          # rather than be OOM-killed — at boot that is just a failed unit.
-          # `systemctl start colibri` when you actually want it.
-          autoStart = false;
-          # Run as the human, not a system user: `.coli_usage` lives next to the
-          # model, so the daemon and an interactive `coli chat` have to be the
-          # same identity or they learn separate histories.
-          user = "cramt";
-          model = "/llm/primary/glm52-i4";
-          mirror = "/llm/mirror/glm52-i4";
-          # Measured RSS on the first run was 13.7 GB and the planner budgets
-          # ~21 GB from *available* RAM, so it self-limits before this bites.
-          # This is the backstop that makes an overshoot degrade rather than take
-          # the desktop session down with it — 22G leaves ~9 GiB plus zram.
-          memoryMax = "22G";
-          # Leave the desktop ~6 GB of the 16 GB. Letting the planner size this
-          # itself took 13.3 GB and killed Discord outright, which is not a
-          # tradeoff worth making on the machine you are sitting at.
-          vram = 10;
-          # serve.environment stays empty until `coli tune` has actually run on
-          # the GPU-detected plan. The current auto-tune hints (DRAFT=0,
-          # COLI_CUDA_PIPE=1) come from a plan taken before the rocm-smi fix was
-          # deployed, and hardcoding those would be guessing with extra steps.
-        };
-      };
+      t3code.enable = true;
       nixarr.enable = false;
       caddy = {
         enable = false;
