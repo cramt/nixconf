@@ -28,16 +28,20 @@ already holds the ESP and the larger pool member (p2), and its LLM partition
 **Destroys:** the LLM weights on both drives, and the old Windows install on
 the 970 EVO's p1. Copy anything you want off the Windows partition first.
 
-### 1. Deploy the new config
+### 1. Boot the new config
 
 Safe before any data moves: `/`, `/nix` and `/home` now mount via
 `disk-ssd_a-pool`, which is already a member of the two-device filesystem, and
-stage 1 scans for all btrfs members before mounting. The deploy drops the
-`/llm/*` mounts and colibri, which frees both LLM partitions.
+the systemd initrd waits for every btrfs member before mounting. The new
+config drops the `/llm/*` mounts and colibri, which frees both LLM partitions.
+Boot it rather than switch, so you see it come up off the 980's label before
+anything is destroyed:
 
 ```sh
-just deploy saturn
+nh os boot /path/to/nixconf && systemctl reboot
 ```
+
+Check `/etc/fstab` says `disk-ssd_a-pool` before going on.
 
 ### 2. Grow the 980's member over its LLM partition
 
@@ -79,55 +83,61 @@ sudo efibootmgr                   # delete any stale "Windows Boot Manager": sud
 The install is declared in `hosts/saturn/windows.nix`: local account `cramt`,
 Danish keyboard, Copenhagen time, and defenestrate's debloat and shell.
 
-### 1. Build the ISO
+### 1. Get the stock ISO into the store
 
 defenestrate builds from Microsoft's stock ISO, which can't be fetched
-automatically (download links expire after 24 hours). Download the exact ISO
-`nix build` asks for from
-<https://www.microsoft.com/software-download/windows11>, then add it to the
-store with a GC root so the next garbage collection doesn't delete it:
+automatically (download links expire after 24 hours). luna's store keeps a
+copy, so pull that and give it a GC root so the next garbage collection
+doesn't delete it:
 
 ```sh
-cd /pool/dev/nixconf   # or wherever nixconf is checked out
-nix-store --add-root ./windows-iso.gcroot -r \
-  "$(nix-store --add-fixed sha256 ~/Downloads/Windows11_Client_x64_*.iso)"
-nix build .#windows.saturn.build.iso -o saturn-windows.iso
+cd /path/to/nixconf
+iso=$(nix eval --raw .#windows.saturn.source.outPath)
+nix copy --from ssh-ng://luna --no-check-sigs "$iso"
+nix-store --add-root ./windows-iso.gcroot -r "$iso"
 ```
 
-The build needs ~25G of scratch space and takes a few minutes.
+If luna doesn't have it either, download the exact ISO `nix build` asks for
+from <https://www.microsoft.com/software-download/windows11> and add it with
+`nix-store --add-fixed sha256 <file>` in place of the copy.
 
-### 2. Put it on a USB stick
+### 2. Install straight onto the 970
 
-The ISO isn't hybrid, so `dd` won't make a bootable stick. Its install image is
-split into parts under 4 GiB, so copying the files onto a FAT32 stick works,
-and UEFI firmware boots that directly. This wipes the stick:
+No USB stick: defenestrate's `build.install` runs setup in a QEMU VM that sees
+the 970 and nothing else, presented as NVMe like the real controller. QEMU
+exits at setup's first reboot, with Windows applied and the 970's own ESP
+written. Specialize and OOBE then run on saturn itself.
+
+Because the VM can't see the 980, setup can't put its boot files on Linux's
+ESP or install to the wrong disk, so it wipes "disk 0" without a picker. The
+runner refuses anything not addressed by-id, any partition, and any disk with
+a mounted filesystem or a member of a mounted btrfs, and asks you to type
+`ERASE` first.
 
 ```sh
-stick=/dev/disk/by-id/usb-...      # ls /dev/disk/by-id/usb-*, the whole disk, not -part1
-sudo sgdisk --zap-all -n 1:0:0 -t 1:0700 "$stick"
-sudo mkfs.vfat -F 32 -n WININSTALL "$stick-part1"
-sudo mkdir -p /mnt/iso /mnt/stick
-sudo mount -o loop,ro saturn-windows.iso/*.iso /mnt/iso
-sudo mount "$stick-part1" /mnt/stick
-sudo cp -r /mnt/iso/. /mnt/stick/
-sudo umount /mnt/iso /mnt/stick
+nix run .#windows.saturn.build.install
 ```
 
-### 3. Install
+The target is `installTarget` in `hosts/saturn/windows.nix`, the 970 by-id.
+It builds and checks as you and only asks for sudo to write the disk, like
+`flash-venus`. The build needs ~25G of scratch space and takes a few minutes.
+Afterwards the runner checks the 970's ESP holds Windows Boot Manager and adds a firmware
+entry for it, leaving the boot order alone.
 
-1. Unplug the network cable. Online, OOBE's update check can fail and wait for a
-   click; offline the install runs through without input.
-2. Boot the stick from the firmware boot menu, and press a key at "Press any
-   key to boot from CD or DVD".
-3. In setup's disk picker, choose the 970 EVO: the ~931G disk with only
-   unallocated space. Don't choose the 980; it holds Linux. Setup partitions
-   the 970 itself, its own ESP included.
-4. The rest runs unattended: specialize, OOBE, then one reboot on first logon
-   to switch the shell.
+Unplug the network cable, then `reboot-to-windows`. Online, OOBE's update
+check can fail and wait for a click; offline it runs through: specialize,
+OOBE, then one reboot on first logon to switch the shell.
 
-Back on Linux, check that setup created its own ESP and didn't reuse the 980's:
-`ls /boot/EFI` must not show `Microsoft`. If it does, move it to the 970's ESP
-or reinstall with the 980 unplugged.
+### 3. Fallback: a USB stick
+
+If the VM route misbehaves, the plain ISO (`.#windows.saturn.build.iso`)
+installs from a stick. It isn't hybrid, so `dd` won't work; copy its files
+onto FAT32 (its install image is split under 4 GiB), boot it from the
+firmware menu, and pick the ~931G unallocated 970 in setup's disk picker.
+With the 980 visible, setup may put its boot files on Linux's ESP: if
+`ls /boot/EFI` shows `Microsoft` afterwards, shrink C: on the 970, give it an
+ESP and run `bcdboot C:\Windows /s S: /f UEFI` from Windows, then delete
+`/boot/EFI/Microsoft`.
 
 ### 4. Booting Windows
 
