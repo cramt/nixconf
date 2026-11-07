@@ -150,22 +150,11 @@
         opnix = false;
       };
 
-      # NOTE: scripts/windows-vm.sh (boot the physical Windows partition in a VM)
-      # is SHELVED — Windows aborts very early on the synthesized disk topology
-      # with no BSOD/log to diagnose. Kept in-tree as a reference but deliberately
-      # NOT exposed as a flake app until someone kernel-debugs the early-boot abort.
-
       # Overlay patches and from-source GPU builds Hydra never caches, pulled
       # from saturn's package set for the same reason as localPackages.
       inherit
         (saturnPkgs)
         cosmic-comp
-        # colibrì's GPU tiers. The HIP build compiles backend_cuda.cu through
-        # hipcc for gfx1101 and the Vulkan one runs glslc over the compute
-        # shaders — neither is anything Hydra has, and saturn is a desktop we'd
-        # rather not have compiling HIP kernels.
-        colibri-rocm
-        colibri-vulkan
         ;
     }
     // localPackages saturnPkgs (p: lib.meta.availableOn saturnPkgs.stdenv.hostPlatform p)
