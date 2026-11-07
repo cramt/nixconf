@@ -68,6 +68,12 @@
         # back to building from source on any host where the system-level
         # substituters list below doesn't already cover them.
         accept-flake-config = true;
+        # Cachix GCs NARs when cramt fills up, and CI re-pushes them under a
+        # new nar/<uuid> URL. The default 30-day cache keeps the daemon on the
+        # old, now-404 URL, so a build that should be fully cached rebuilds or
+        # crashes the daemon instead (deploy 2026-10-13, flash-venus 2026-11-07).
+        # One hour still covers back-to-back deploys.
+        narinfo-cache-positive-ttl = 3600;
         trusted-users = ["cramt" "root"];
         substituters = [
           "https://cramt.cachix.org"
