@@ -29,6 +29,14 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-26.05";
 
+    # Felix: Alex's soft fork of Lix. Pinned by rev in the URL so `just update`
+    # never bumps it: every Felix commit has to clear felix/bench.py first.
+    # Bump the rev by hand.
+    felix = {
+      url = "github:cramt/felix/6552abfa85f0bed8f8eac34cb4161dbfbab4a843";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixarr.url = "github:nix-media-server/nixarr";
     jellarr.url = "github:cramt/jellarr";
     chipsmith = {

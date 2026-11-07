@@ -26,8 +26,12 @@
     waybar.monitors = ["DP-2"];
   };
 
+  # Felix as the client `nix`: the per-user profile precedes the system path,
+  # so evaluation runs on Felix while root (sudo nixos-rebuild, which opens the
+  # store directly) and the daemon stay on stock Lix. See packages/felix.
   home.packages = [
     (import ../../scripts/keep_awake.nix { inherit pkgs; })
+    pkgs.felix
   ];
 
   home.stateVersion = "26.05";
