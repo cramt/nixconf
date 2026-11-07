@@ -104,10 +104,11 @@ from <https://www.microsoft.com/software-download/windows11> and add it with
 ### 2. Flash Windows onto the 970
 
 No USB stick and no installer on the real disk. defenestrate's `build.image`
-runs setup in a VM inside the nix sandbox (it needs the `kvm` system
-feature, which saturn has) against a 64G scratch disk, stops at setup's
-first reboot, and outputs that disk as a compressed image. `build.install`
-flashes it, like `flash-venus` flashes an SD card:
+runs the whole unattended install (setup, specialize, OOBE, first logon) in
+an offline VM inside the nix sandbox (it needs the `kvm` system feature,
+which saturn has) against a 64G scratch disk, and outputs that disk as a
+compressed image. `build.install` flashes it, like `flash-venus` flashes an
+SD card:
 
 ```sh
 nix run .#windows.saturn.build.install
@@ -117,21 +118,19 @@ The target is `installTarget` in `hosts/saturn/windows.nix`, the 970 by-id.
 It builds and checks as you and only asks for sudo to write the disk. It
 refuses anything not addressed by-id, a partition, and any disk with a
 mounted filesystem or a member of a mounted btrfs, and asks you to type
-`ERASE`. Then it discards the 970, writes the image (~64G), moves the backup
-GPT to the disk's end, grows C: over the rest in place (the partition GUID
-the boot entry uses stays the same) with `ntfsresize`, and adds a firmware
-entry for the 970's ESP without touching the boot order.
+`ERASE`. Then it discards the 970, writes the image (~64G, about a minute),
+moves the backup GPT to the disk's end, grows C: over the rest in place
+(the partition GUID the boot entry uses stays the same) with `ntfsresize`,
+and adds a firmware entry for the 970's ESP without touching the boot order.
 
-The image build takes ~5 minutes and ~55G of space: the 64G sparse scratch
+The image build takes ~10 minutes and ~55G of space: the 64G sparse scratch
 disk fills ~29G under `/nix/var/nix/b`, and the compressed image is ~23G in
-the store. The VM only ever sees the scratch disk, so setup can't
-put boot files on the 980's ESP or pick the wrong disk.
+the store.
 
-Unplug the network cable, then `reboot-to-windows`. Online, OOBE's update
-check can fail and wait for a click; offline it runs through: specialize,
-OOBE and the shell switch, about 6 minutes to the defenestrate shell when
-tested on a disk-sized file. Windows runs a chkdsk on the first boot,
-because `ntfsresize` marks the volume for one.
+Then `reboot-to-windows`. The install already finished in the sandbox, so
+the first boot just finds saturn's hardware (like after a motherboard swap),
+runs a chkdsk because `ntfsresize` asks for one, and comes up at the
+defenestrate shell. No setup screens, and the network cable can stay in.
 
 ### 3. Fallback: a USB stick
 
