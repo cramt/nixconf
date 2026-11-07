@@ -50,6 +50,10 @@
 
     services = {
       sshd.enable = true;
+      # T3 Code server, linked with the rest of the fleet (myLib/t3code-fleet.nix).
+      # Like saturn: it takes ~/.t3, and the desktop app moves to ~/.t3-desktop
+      # and reaches it as a saved connection (t3code-remotes).
+      t3code.enable = true;
       tailscale.enable = false;
       caddy = {
         enable = false;

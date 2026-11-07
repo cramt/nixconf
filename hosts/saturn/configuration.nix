@@ -157,10 +157,7 @@
       # The server locks ~/.t3, so the desktop app runs out of ~/.t3-desktop
       # and reaches this server as a saved connection (t3code-remotes), which
       # is what the shared secret is for.
-      t3code = {
-        enable = true;
-        sharedSecret = "op://Homelab/T3Code/password";
-      };
+      t3code.enable = true;
       # colibrì streams MoE expert weights off the dedicated /llm partitions
       # (hosts/saturn/disko.nix). The CLI ships now because staging the weights
       # NEEDS it — `coli convert`/`download` populate /llm/primary, and
