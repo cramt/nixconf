@@ -30,7 +30,10 @@
   # Even a plain neovim links tree-sitter, whose rquickjs-sys bindings assume a
   # 64-bit target and fail to compile for armv7l, so vim stands in.
   myHomeManager.neovim.enable = lib.mkForce false;
-  home.packages = [pkgs.vim];
+  # Felix as the client `nix`: the per-user profile precedes the system path,
+  # so evaluation runs on Felix while root (anything run through sudo, which
+  # opens the store directly) and the daemon stay on stock Lix. See packages/felix.
+  home.packages = [pkgs.vim pkgs.felix];
   home.sessionVariables.EDITOR = lib.mkForce "vim";
 
   # HM writes each tool's nushell hook by running it at build time
