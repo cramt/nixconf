@@ -99,6 +99,16 @@ jobs:
           # stalled requests; unreleased after 1.13.0).
           useDaemon: false
 
+      # Felix (nix.package on every host) is never in a public cache, so legs
+      # compile it, and its functional tests nest the Nix sandbox. Ubuntu
+      # 24.04 images strip capabilities from unprivileged user namespaces via
+      # AppArmor, so nested unshare fails and the tests' golden output gains
+      # "auto-disabling sandboxing". The runner image keeps this on by design
+      # (https://github.com/actions/runner-images/issues/10443); drop the step
+      # if the images ever ship with it off.
+      - name: Allow unprivileged user namespaces
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Build ${{ matrix.package }} (${{ matrix.system }})
         run: nix build ".#packages.${{ matrix.system }}.${{ matrix.package }}" --print-build-logs
 
@@ -155,6 +165,16 @@ jobs:
           # release ships https://github.com/cachix/cachix/pull/749 (bounded
           # stalled requests; unreleased after 1.13.0).
           useDaemon: false
+
+      # Felix (nix.package on every host) is never in a public cache, so legs
+      # compile it, and its functional tests nest the Nix sandbox. Ubuntu
+      # 24.04 images strip capabilities from unprivileged user namespaces via
+      # AppArmor, so nested unshare fails and the tests' golden output gains
+      # "auto-disabling sandboxing". The runner image keeps this on by design
+      # (https://github.com/actions/runner-images/issues/10443); drop the step
+      # if the images ever ship with it off.
+      - name: Allow unprivileged user namespaces
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Build ${{ matrix.host }}
         run: nix build ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel" --print-build-logs
