@@ -251,7 +251,12 @@
     # substituters = caches;
     experimental-features = ["nix-command" "flakes"];
     extra-platforms = config.boot.binfmt.emulatedSystems;
+    # Build scratch off the 228G root: defenestrate's Windows ISO build alone
+    # needs ~25G, and a failed one leaves / full for everything else.
+    build-dir = "/pool/nix-build";
   };
+  # Otherwise a late /pool mount sends builds to the bare mountpoint on /.
+  systemd.services.nix-daemon.unitConfig.RequiresMountsFor = ["/pool"];
   environment.systemPackages = [
     pkgs.ghostty.terminfo
   ];
@@ -280,6 +285,7 @@
     "z /pool/media/.state/nixarr 0755 root root - -"
     # Vivado (via gitlab:doronbehar/nix-xilinx) is tens of GB; keep it off root.
     "d /pool/Xilinx 0755 cramt users - -"
+    "d /pool/nix-build 0755 root root - -"
   ];
 
   # List services that you want to enable:
