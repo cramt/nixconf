@@ -40,6 +40,31 @@
     # auth or sign against GitHub. Re-emit the key with exactly one trailing
     # newline into a stable path that git/ssh point at.
     sshKey = "/home/${cfg.user}/.ssh/id_personal";
+    # t3code is a user unit, so it can't be ordered after the system
+    # op-secrets.service. On a deploy home-manager restarts it during
+    # activation, which can be before op-secrets has rendered (it did on the
+    # opnix -> op-secrets move: three failed starts in 0.3 s, start limit hit,
+    # deploy rolled back). Wait for the files instead of failing on the race.
+    waitForSecrets = pkgs.writeShellApplication {
+      name = "t3code-wait-for-secrets";
+      runtimeInputs = [pkgs.coreutils];
+      text = ''
+        # Under the user manager's default 90 s start timeout.
+        for _ in $(seq 80); do
+          ok=1
+          for f in ${lib.escapeShellArgs neededSecrets}; do
+            [ -s "$f" ] || ok=0
+          done
+          [ "$ok" = 1 ] && exit 0
+          sleep 1
+        done
+        echo "t3code: secrets still missing after 80 s: ${lib.concatStringsSep " " neededSecrets}" >&2
+        exit 1
+      '';
+    };
+    neededSecrets =
+      lib.optional cfg.onDiskSshKey.enable config.myNixOS.secrets.personalSshKey.path
+      ++ lib.optional (cfg.sharedSecret != null) config.myNixOS.secrets.t3codeSharedSecret.path;
     prepareSshKey = pkgs.writeShellApplication {
       name = "t3code-prepare-ssh-key";
       runtimeInputs = [pkgs.coreutils];
@@ -151,7 +176,9 @@
           inherit port;
           openFirewall = true;
           sharedSecretFile = lib.mkIf (cfg.sharedSecret != null) config.myNixOS.secrets.t3codeSharedSecret.path;
-          preStart = lib.optional cfg.onDiskSshKey.enable (lib.getExe prepareSshKey);
+          preStart =
+            lib.optional (neededSecrets != []) (lib.getExe waitForSecrets)
+            ++ lib.optional cfg.onDiskSshKey.enable (lib.getExe prepareSshKey);
           # Threads that were mid-turn when the server stopped (deploy, crash,
           # reboot) resume with a "continue where you left off" prompt.
           settings = lib.mkMerge [
