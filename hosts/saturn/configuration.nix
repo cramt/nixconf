@@ -32,11 +32,20 @@
   environment.systemPackages = [
     (pkgs.writeShellApplication {
       name = "reboot-to-windows";
-      runtimeInputs = [pkgs.efibootmgr pkgs.gawk];
+      runtimeInputs = [pkgs.efibootmgr pkgs.gnused];
       text = ''
-        entry=$(efibootmgr | awk '/Windows Boot Manager/ { sub(/^Boot/, "", $1); sub(/\*$/, "", $1); print $1; exit }')
+        # Each reflash leaves the firmware a "Windows Boot Manager" entry for
+        # an ESP that no longer exists, so go by the ESP's partition UUID,
+        # not the label: the first entry whose ESP is actually present.
+        entry=
+        while read -r num uuid; do
+          if [ -e "/dev/disk/by-partuuid/$uuid" ]; then
+            entry=$num
+            break
+          fi
+        done < <(efibootmgr -v | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? Windows Boot Manager.*HD\([0-9]+,GPT,([0-9a-fA-F-]+),.*/\1 \2/p')
         if [ -z "$entry" ]; then
-          echo "no Windows Boot Manager entry in the firmware" >&2
+          echo "no Windows Boot Manager entry for an ESP on this machine" >&2
           exit 1
         fi
         sudo efibootmgr --bootnext "$entry" > /dev/null

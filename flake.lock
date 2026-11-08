@@ -316,11 +316,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1794085674,
-        "narHash": "sha256-iTaxL66yK2LTto6cpRk9x3MhneDZn1kJMZ1SBpKL5Ps=",
+        "lastModified": 1794092913,
+        "narHash": "sha256-fve7Al2XFK8ITBCaQfi8N+5kmLVdtNKHX+K3eqQ2IZQ=",
         "owner": "cramt",
         "repo": "defenestrate",
-        "rev": "5c03a17cd4069ee5c3cc99a60767a92d4b0c50f6",
+        "rev": "f4bede784767beb004b311823448b93ef0c9d547",
         "type": "github"
       },
       "original": {
@@ -427,17 +427,17 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1794071752,
-        "narHash": "sha256-W9c5UymEOGYelJih/sALyu/Dr3ZnfZCBVsP0KpGz99o=",
+        "lastModified": 1794090488,
+        "narHash": "sha256-llDYmsjFODzkCs+XBLNVh3THk02t90li3JyX1Ng4zeA=",
         "owner": "cramt",
         "repo": "felix",
-        "rev": "6552abfa85f0bed8f8eac34cb4161dbfbab4a843",
+        "rev": "cdc51d5710ec1547e493be6679b4987b6a893579",
         "type": "github"
       },
       "original": {
         "owner": "cramt",
         "repo": "felix",
-        "rev": "6552abfa85f0bed8f8eac34cb4161dbfbab4a843",
+        "rev": "cdc51d5710ec1547e493be6679b4987b6a893579",
         "type": "github"
       }
     },

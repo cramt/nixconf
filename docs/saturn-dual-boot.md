@@ -101,32 +101,36 @@ If luna doesn't have it either, download the exact ISO `nix build` asks for
 from <https://www.microsoft.com/software-download/windows11> and add it with
 `nix-store --add-fixed sha256 <file>` in place of the copy.
 
-### 2. Install straight onto the 970
+### 2. Flash Windows onto the 970
 
-No USB stick: defenestrate's `build.install` runs setup in a QEMU VM that sees
-the 970 and nothing else, presented as NVMe like the real controller. QEMU
-exits at setup's first reboot, with Windows applied and the 970's own ESP
-written. Specialize and OOBE then run on saturn itself.
-
-Because the VM can't see the 980, setup can't put its boot files on Linux's
-ESP or install to the wrong disk, so it wipes "disk 0" without a picker. The
-runner refuses anything not addressed by-id, any partition, and any disk with
-a mounted filesystem or a member of a mounted btrfs, and asks you to type
-`ERASE` first.
+No USB stick and no installer on the real disk. defenestrate's `build.image`
+runs the whole unattended install (setup, specialize, OOBE, first logon) in
+an offline VM inside the nix sandbox (it needs the `kvm` system feature,
+which saturn has) against a 64G scratch disk, and outputs that disk as a
+compressed image. `build.install` flashes it, like `flash-venus` flashes an
+SD card:
 
 ```sh
 nix run .#windows.saturn.build.install
 ```
 
 The target is `installTarget` in `hosts/saturn/windows.nix`, the 970 by-id.
-It builds and checks as you and only asks for sudo to write the disk, like
-`flash-venus`. The build needs ~25G of scratch space and takes a few minutes.
-Afterwards the runner checks the 970's ESP holds Windows Boot Manager and adds a firmware
-entry for it, leaving the boot order alone.
+It builds and checks as you and only asks for sudo to write the disk. It
+refuses anything not addressed by-id, a partition, and any disk with a
+mounted filesystem or a member of a mounted btrfs, and asks you to type
+`ERASE`. Then it discards the 970, writes the image (~64G, about a minute),
+moves the backup GPT to the disk's end, grows C: over the rest in place
+(the partition GUID the boot entry uses stays the same) with `ntfsresize`,
+and adds a firmware entry for the 970's ESP without touching the boot order.
 
-Unplug the network cable, then `reboot-to-windows`. Online, OOBE's update
-check can fail and wait for a click; offline it runs through: specialize,
-OOBE, then one reboot on first logon to switch the shell.
+The image build takes ~10 minutes and ~55G of space: the 64G sparse scratch
+disk fills ~29G under `/nix/var/nix/b`, and the compressed image is ~23G in
+the store.
+
+Then `reboot-to-windows`. The install already finished in the sandbox, so
+the first boot just finds saturn's hardware (like after a motherboard swap),
+runs a chkdsk because `ntfsresize` asks for one, and comes up at the
+defenestrate shell. No setup screens, and the network cable can stay in.
 
 ### 3. Fallback: a USB stick
 

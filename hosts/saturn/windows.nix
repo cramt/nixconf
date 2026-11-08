@@ -1,4 +1,4 @@
-# saturn's Windows. Erases the 970 EVO and installs onto it, no boot media:
+# saturn's Windows. Flashes a sandbox-built image onto the 970 EVO, no boot media:
 #   nix run .#windows.saturn.build.install
 # (.#windows.saturn.build.iso is the same install as a USB stick ISO.)
 # Options are defenestrate's (github:cramt/defenestrate, nix/module.nix); the
@@ -12,6 +12,6 @@
   installTarget = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_1TB_S5H9NS1NB05355E";
   # disk stays at the default, setup's interactive picker, for the USB ISO.
   # Its DiskID numbering isn't stable across boots, so wiping one by number
-  # could hit the Linux SSD. build.install doesn't have that problem: its VM
-  # sees only installTarget.
+  # could hit the Linux SSD. build.install doesn't have that problem: the image
+  # is set up in a sandboxed VM whose only disk is a scratch file.
 }
