@@ -32,10 +32,20 @@
       }
 
       (lib.mkIf cfg.enable {
-        # What fleet.url points peers at.
-        myNixOS.tailnet-https.ports."443" = ''
-          reverse_proxy localhost:${toString config.services.t3code.port}
-        '';
+        # What fleet.url points peers at. The vhost itself only gates on the
+        # tailnet; trustTailnet adds the proxy, signing tailnet clients in
+        # with the shared secret so they skip pairing. Peers still link with
+        # their own tokens, which it passes through untouched.
+        myNixOS.tailnet-https.ports."443" = "";
+        services.t3code.trustTailnet = {
+          enable = true;
+          virtualHost = "https://${config.myNixOS.tailnet-https.name}:443";
+          # luna is the tailnet member running other people's code (service
+          # users, containers): anything there dialing a server's tailnet
+          # name would get a session as Alex. Its own agents link with tokens.
+          excludeRanges = map (a: if lib.hasInfix ":" a then "${a}/128" else "${a}/32")
+            (import ../../myLib/site.nix).luna_tailnet_addresses;
+        };
         services.t3code.linkedEnvironments.peers = lib.mapAttrs (name: _: {
           urls = [ (fleet.url name) ];
           pairingCodeFile = config.services.onepassword-secrets.secretPaths.t3codeSharedSecret;
