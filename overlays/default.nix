@@ -14,6 +14,10 @@ inputs: [
   # triggers on multi-output setups.
   inputs.noctalia-shell.overlays.default
 
+  # pkgs.vintagestoryPackages.<version>. Client (saturn) and server (luna) both
+  # use .latest so a `just update` moves them together.
+  inputs.vintagestory-nix.overlays.default
+
   (final: prev: let
     sources = import ../npins;
     npinspkgs = import sources.nixpkgs {
