@@ -89,15 +89,19 @@ inputs: [
     zed-vixen = final.mkZedExtension {src = final.npinsSources.vixen-zed;};
   })
 
-  # Only cherry-picks from cramt/my-nixpkgs for now: it also carries agentsview,
-  # cockatrice and others that packages/ still defines here, and the full overlay
-  # would silently swap those out. Widen it once packages/ drops its copies.
+  # Everything in cramt/my-nixpkgs. Its t3code is built from upstream
+  # nightlies with the dev-auth-token patch that `sharedSecret` relies on
+  # (modules/services/t3code.nix), and no provider wrapper, so t3code spawns
+  # the home-manager agents.
   #
-  # Its t3code is built from upstream nightlies with the dev-auth-token patch
-  # that `sharedSecret` relies on (modules/services/t3code.nix), and no provider
-  # wrapper, so t3code spawns the home-manager agents. luna is reached through
-  # caddy + authelia, not Ping's cloud relay.
-  (final: prev: {inherit (inputs.my-nixpkgs.overlays.default final prev) fluxer t3code t3code-desktop t3code-device-tools;})
+  # packages/ is for what isn't there. A name in both would mean two copies
+  # with one silently winning, so that fails eval instead.
+  (final: prev: let
+    mine = inputs.my-nixpkgs.overlays.default final prev;
+    both = builtins.filter (n: mine ? ${n}) (import ./local-packages.nix).names;
+  in
+    assert both == [] || throw "packages/ and my-nixpkgs both define ${builtins.concatStringsSep ", " both}: keep one (my-nixpkgs, unless it's nixconf-only)";
+      mine)
 
   # niri-stable (v25.08) links libdisplay-info-sys 0.2.2, which only binds a
   # system libdisplay-info of the same major.minor. nixpkgs dropped

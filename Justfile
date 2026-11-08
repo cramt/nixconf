@@ -225,32 +225,10 @@ update_gems:
 # Bump the from-source / prebuilt packages that live outside flake.lock and npins
 # (hardcoded version + hash in packages/*/default.nix). nix-update follows each
 # package's upstream latest release and rewrites version + hashes in place.
-# steamlink is intentionally absent (no upstream version feed — see its default.nix).
+# Packages from my-nixpkgs bump themselves there (its hourly update workflow)
+# and arrive here with the my-nixpkgs input.
 update_packages:
-    nix run nixpkgs#nix-update -- --flake agentsview
-    nix run nixpkgs#nix-update -- --flake agent-browser
-    nix run nixpkgs#nix-update -- --flake cpa-prometheus
-    nix run nixpkgs#nix-update -- --flake cli-proxy-api-panel
     nix run nixpkgs#nix-update -- --flake chrome-devtools-mcp
-    # Cockatrice cuts Development betas far more often than Release builds, and
-    # the releases/tags atom feeds nix-update reads only carry the 10 newest
-    # entries — since 2026-06-26-Release-3.0.2 there has been no Release tag in
-    # that window at all. Without the regex nix-update errors out on the beta it
-    # finds; with it there is simply nothing to match, which it also calls an
-    # error. Neither is a reason to fail the whole update run.
-    # Drop the `||` once upstream cuts a 3.1.0 Release and the feed holds one again.
-    nix run nixpkgs#nix-update -- --flake cockatrice \
-      --version-regex '^(\d{4}-\d{2}-\d{2}-Release-[0-9.]+)$' \
-      || echo ">> cockatrice: no Release tag in the atom feed window, leaving it pinned"
-    nix run nixpkgs#nix-update -- --flake rhystic-tracker
-    # rhystic-tracker's avatar extractor stack, pinned per-package off PyPI.
-    nix run nixpkgs#nix-update -- --flake unitypy
-    nix run nixpkgs#nix-update -- --flake texture2ddecoder
-    nix run nixpkgs#nix-update -- --flake etcpak
-    nix run nixpkgs#nix-update -- --flake astc-encoder-py
-    nix run nixpkgs#nix-update -- --flake tpk-ar
-    nix run nixpkgs#nix-update -- --flake fmod-toolkit
-    nix run nixpkgs#nix-update -- --flake pyfmodex
 
 # Merge the newest commit on `update` that CI built green into main and push.
 # update.yml keeps that branch bumped and caught up with main every 6h, and a

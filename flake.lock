@@ -1434,11 +1434,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794162542,
-        "narHash": "sha256-ADwuGkfW+poj5ErVBMBDbhNw7zNpJnBhCRJd4JGbu5w=",
+        "lastModified": 1794166198,
+        "narHash": "sha256-jbel2FjVXXcLSDVTvbEZmPw+DkS+cxFJdNv0JktoJ78=",
         "owner": "cramt",
         "repo": "my-nixpkgs",
-        "rev": "d593d8c8d5d2b01c09d397fbe20c9a0c5e12b7ee",
+        "rev": "879d52c982a0a06a29d6e20a250de1a5ffc01df5",
         "type": "github"
       },
       "original": {

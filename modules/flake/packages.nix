@@ -256,18 +256,9 @@
         ;
     }
     // localPackages saturnPkgs (p: lib.meta.availableOn saturnPkgs.stdenv.hostPlatform p)
-    # Same reason, one layer down: UnityPy and the codec packages it needs are
-    # hand-pinned PyPI version + hash, so each needs a flake attr for nix-update
-    # to read meta.position off. Nothing installs them directly — they exist so
-    # rhystic-tracker's wrapper can put a python holding them on the app's PATH.
-    # Imported rather than callPackage'd, because callPackage staples
-    # override/overrideDerivation onto the set it returns and those would then
-    # show up as flake packages of their own.
-    // import ../../packages/rhystic-tracker/python {
-      inherit (saturnPkgs) python3Packages;
-    })
+    )
     // lib.optionalAttrs (system == "aarch64-linux") (
-    # What x86 can't build (steamlink, a prebuilt arm64 binary), from eros,
+    # What x86 can't build (an arm64-only package), from eros,
     # the host that runs it.
     localPackages erosPkgs (p: !lib.meta.availableOn saturnPkgs.stdenv.hostPlatform p
       && lib.meta.availableOn erosPkgs.stdenv.hostPlatform p)
