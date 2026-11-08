@@ -137,6 +137,8 @@
       vintagestory = {
         enable = true;
         dataDir = "/pool/vintagestory";
+        admins = ["cramt"];
+        whitelist = ["Maladorra"];
       };
       foundryvtt = {
         enable = false;
