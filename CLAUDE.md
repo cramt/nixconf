@@ -26,7 +26,8 @@ just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
 
 # Rescue/reinstall an x86 host: flash the generic installer USB, boot the host off
-# it (it comes up as `installer`, root ssh with the fleet keys), then push the
+# it (it comes up as `installer`, root ssh with the fleet keys, joins the home wifi
+# from PSKs baked on at flash time, never the store), then push the
 # host's config from here. mode=mount (default) repairs in place, mode=disko wipes.
 nix run .#flash-installer
 just install ganymede [addr] [mode]

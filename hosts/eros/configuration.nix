@@ -188,10 +188,7 @@ in
     networking.wireless.interfaces = [ "wlan0" ];
     myNixOS.wifi = {
       enable = true;
-      networks.home = {
-        ssid = "The Gayze";
-        pskRef = "op://Homelab/li32dfrut7k2gsqwvp4srqitc4/wireless_password";
-      };
+      networks = import ../../myLib/wifi.nix;
     };
 
     # eros is a lean, cache-only rpi host, so it does NOT use the bundles.users
