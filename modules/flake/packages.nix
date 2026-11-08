@@ -96,8 +96,40 @@
         echo ">> done, eject and boot ${host}."
       '';
     };
+    # Generic rescue/install USB for the x86 hosts (the SD-card boards have
+    # their own images above). Deliberately host-agnostic: it's just sshd with
+    # the fleet keys, so `just install <host>` can push that host's closure
+    # from a working machine. Nothing host-specific, and no copy of this flake,
+    # lives on the stick, so it never goes stale between flashes.
+    installer = inputs.nixpkgs.lib.nixosSystem {
+      modules = [
+        "${inputs.nixpkgs}/nixos/modules/installer/cd-dvd/installation-cd-minimal.nix"
+        ({ pkgs, ... }: {
+          nixpkgs.hostPlatform = "x86_64-linux";
+          # The router's DNS picks this up from DHCP: `ssh root@installer`.
+          networking.hostName = "installer";
+          users.users.root.openssh.authorizedKeys.keys = (import ../../myLib/keys.nix).alex;
+          console.keyMap = "dk-latin1";
+          nix.settings.experimental-features = [ "nix-command" "flakes" ];
+          environment.systemPackages = [ pkgs.disko pkgs.git ];
+          # xz (the default) roughly triples build time for ~10% smaller ISO.
+          isoImage.squashfsCompression = "zstd -Xcompression-level 6";
+        })
+      ];
+    };
   in {
     packages = lib.optionalAttrs (system == "x86_64-linux") ({
+      installer-iso = pkgs.runCommand "installer-iso" {} ''
+        ln -s ${installer.config.system.build.isoImage}/iso/*.iso $out
+      '';
+
+      # The ISO is hybrid, so a plain dd onto a USB stick boots (UEFI + BIOS).
+      flash-installer = mkFlash {
+        host = "installer";
+        img = inputs.self.packages.${system}.installer-iso;
+        opnix = false;
+      };
+
       # The images are built for the board's own arch (cachix has them from the
       # ARM runner); only the wrapper is x86.
       flash-eros = mkFlash {

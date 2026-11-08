@@ -140,6 +140,51 @@ deploy *hosts:
     exec nix run --inputs-from . nixpkgs#deploy-rs -- --skip-checks --targets "${targets[@]}" -- \
       --fallback --max-jobs "$jobs" --cores {{cores}}
 
+# Put a host's config onto a machine booted from the installer USB
+# (`nix run .#flash-installer`), via nixos-anywhere. The closure is built (or
+# pulled from cachix) here and copied over; the stick itself only runs sshd.
+#
+# mode=mount (default) is the repair path: it mounts the host's existing disko
+# layout at /mnt and nixos-installs over it. That rewrites the bootloader and
+# the system profile and leaves /home and /var alone. Use it when a host won't boot.
+# mode=disko wipes and repartitions. The SSH host key is regenerated then, so a
+# build pool member needs its ssh_host_ed25519_key.pub re-keyscanned afterwards.
+#
+# `just install ganymede`, `just install ganymede 192.168.178.50 disko`
+install host addr="installer" mode="mount":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{mode}}" in mount|disko) ;; *) echo "mode must be mount or disko" >&2; exit 1 ;; esac
+    cfg=".#nixosConfigurations.{{host}}.config"
+
+    phases=disko,install
+    if [ "$(nix eval "$cfg.system.build" --apply 'b: b ? diskoScript')" != true ]; then
+      # No disko layout (mars): nothing to mount or format it with, so the
+      # partitions have to be mounted at /mnt on the stick by hand first.
+      [ "{{mode}}" = mount ] || { echo "{{host}} has no disko layout, can't wipe it declaratively" >&2; exit 1; }
+      ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "root@{{addr}}" mountpoint -q /mnt \
+        || { echo "{{host}} has no disko layout: mount its root at /mnt (and /boot under it) on the stick first" >&2; exit 1; }
+      phases=install
+    fi
+
+    extra=()
+    if [ "{{mode}}" = disko ]; then
+      read -r -p ">> WIPE every disk {{host}}'s disko layout names, on {{addr}}? type 'yes': " ans
+      [ "$ans" = yes ] || { echo aborted; exit 1; }
+      # A wipe takes /etc/opnix-token with it; bring this machine's along so
+      # secrets render on first boot, same as flash-eros does.
+      if [ "$(nix eval "$cfg.services.onepassword-secrets.enable")" = true ]; then
+        files=$(mktemp -d); trap 'rm -rf "$files"' EXIT
+        install -D -m0640 /etc/opnix-token "$files/etc/opnix-token"
+        extra=(--extra-files "$files")
+      fi
+    fi
+
+    nix run --inputs-from . nixpkgs#nixos-anywhere -- \
+      --flake ".#{{host}}" --target-host "root@{{addr}}" \
+      --phases "$phases" --disko-mode "{{mode}}" "${extra[@]}"
+    echo ">> done. reboot {{host}} off its own disk: ssh root@{{addr}} reboot"
+
 # Runs as cramt so it reads the server's ~/.t3 state, and by absolute path
 # because a non-interactive ssh shell has no user profile on PATH.
 #

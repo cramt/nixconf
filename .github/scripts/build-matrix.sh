@@ -29,7 +29,12 @@ filter='set: builtins.filter (n: let r = builtins.tryEval (set.${n}.meta.availab
 # wrapper are fixed; home-manager still builds its own native aarch64 pkgs
 # (see the comment on mercury-img-cross). saturn never sees any of this because
 # binfmt lets it execute aarch64 builds anyway. Un-skip once that's resolved.
-skip='["flash-eros", "flash-mercury", "mercury-img-cross"]'
+#
+# installer-iso / flash-installer: a ~1 GB single NAR that changes on every
+# nixpkgs bump (every 6h on `update`), and cachix GCs when cramt fills up. Its
+# contents are all cache.nixos.org paths anyway, so building it on demand is
+# just substitution plus a squashfs pass.
+skip='["flash-eros", "flash-mercury", "mercury-img-cross", "installer-iso", "flash-installer"]'
 
 include='[]'
 for system in "${!runners[@]}"; do

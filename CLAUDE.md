@@ -25,6 +25,12 @@ just hard_update      # Bump flake inputs, gems, npins, and packages in place (b
 just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
 
+# Rescue/reinstall an x86 host: flash the generic installer USB, boot the host off
+# it (it comes up as `installer`, root ssh with the fleet keys), then push the
+# host's config from here. mode=mount (default) repairs in place, mode=disko wipes.
+nix run .#flash-installer
+just install ganymede [addr] [mode]
+
 # Infrastructure (uses 1Password for secrets)
 just tf <args>        # Run OpenTofu on the Cloudflare infra (just tf plan); `just deploy` applies it
 
@@ -47,7 +53,7 @@ The flake-parts plumbing lives in `modules/flake/`:
 | `modules/flake/hosts.nix` | Discovers hosts by reading `hosts/`, declares the `nixosHosts` option (hostname → `{ config; nixpkgs; address; }`) and builds `flake.nixosConfigurations` via `myLib.mkSystem` |
 | `modules/flake/deploy.nix` | Derives `flake.deploy` (deploy-rs nodes) from `nixosHosts`; driven by `just deploy` |
 | `modules/flake/systems.nix` | The `systems` list for `perSystem` |
-| `modules/flake/packages.nix` | `perSystem` packages: every `packages/<name>` plus images and `flash-<host>` SD flashers (eros, mercury, venus) |
+| `modules/flake/packages.nix` | `perSystem` packages: every `packages/<name>` plus images, `flash-<host>` SD flashers (eros, mercury, venus) and the x86 `installer-iso` / `flash-installer` USB |
 | `modules/flake/hm-modules.nix` | Typed accumulator options (`hmModules.default/features/bundles`) wired into `flake.homeManagerModules` once, to avoid freeform merge conflicts |
 
 The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`, `mercury`, `venus`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
