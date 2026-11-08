@@ -28,6 +28,7 @@
 
   home.packages = [
     (import ../../scripts/keep_awake.nix { inherit pkgs; })
+    pkgs.vintagestory
   ];
 
   home.stateVersion = "26.05";
