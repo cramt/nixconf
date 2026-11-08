@@ -22,7 +22,7 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "Cockatrice";
     repo = "Cockatrice";
     tag = finalAttrs.version;
-    hash = "sha256-qrYq+jvhBbpTjT7KT5is7wnRVBJ8eaPYCUZLnPtP3l4=";
+    hash = "sha256-yyvdg1PFdNnSGqXW37AebjA6sH3XadCBQI6AvdFwCPQ=";
   };
 
   nativeBuildInputs = [
