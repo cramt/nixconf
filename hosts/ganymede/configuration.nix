@@ -183,7 +183,12 @@
     AllowHybridSleep = "no";
   };
 
-  networking.networkmanager.enable = true;
+  # Same declarative wifi as eros, PSK from opnix. A fresh install has no PSK
+  # until opnix's first fetch, which needs a network: plug in ethernet once.
+  myNixOS.wifi = {
+    enable = true;
+    networks = import ../../myLib/wifi.nix;
+  };
 
   services.xserver = {
     xkb = {
