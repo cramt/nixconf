@@ -2429,6 +2429,7 @@
         "quadlet-nix": "quadlet-nix",
         "stylix": "stylix",
         "terranix": "terranix_2",
+        "vintagestory-nix": "vintagestory-nix",
         "winapps": "winapps",
         "yazi": "yazi",
         "zen-browser": "zen-browser"
@@ -3142,6 +3143,26 @@
         "owner": "numtide",
         "repo": "flake-utils",
         "type": "github"
+      }
+    },
+    "vintagestory-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792146607,
+        "narHash": "sha256-3KEB/yZKGkqBU7BtzrTq7kMWzp16NHI0bItZZdDbAMI=",
+        "ref": "refs/heads/master",
+        "rev": "5353839b03bd8aaa18d0fc1e3e04c7f8dd5bf1f0",
+        "revCount": 164,
+        "type": "git",
+        "url": "https://codeberg.org/PierreBorine/vintagestory-nix"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://codeberg.org/PierreBorine/vintagestory-nix"
       }
     },
     "vpnconfinement": {

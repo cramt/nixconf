@@ -104,6 +104,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Every Vintage Story release as its own package (pkgs.vintagestoryPackages.*),
+    # plus the dedicated-server NixOS module nixpkgs never merged
+    # (https://github.com/NixOS/nixpkgs/pull/414845). Server and client must run
+    # the same version, so saturn and luna both take it from here.
+    vintagestory-nix = {
+      url = "git+https://codeberg.org/PierreBorine/vintagestory-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";

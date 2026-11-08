@@ -134,6 +134,10 @@
       # Speech-to-text on the 1660: Bazarr's fallback when no provider has
       # subtitles that match a dub.
       whisper.subtitles.enable = true;
+      vintagestory = {
+        enable = true;
+        dataDir = "/pool/vintagestory";
+      };
       foundryvtt = {
         enable = false;
         dataVolume = "/pool/configs/foundryvtt_a";
