@@ -222,14 +222,6 @@ update_flake:
 update_gems:
     (cd gems && bundle lock --update)
 
-# Bump the from-source / prebuilt packages that live outside flake.lock and npins
-# (hardcoded version + hash in packages/*/default.nix). nix-update follows each
-# package's upstream latest release and rewrites version + hashes in place.
-# Packages from my-nixpkgs bump themselves there (its hourly update workflow)
-# and arrive here with the my-nixpkgs input.
-update_packages:
-    nix run nixpkgs#nix-update -- --flake chrome-devtools-mcp
-
 # Merge the newest commit on `update` that CI built green into main and push.
 # update.yml keeps that branch bumped and caught up with main every 6h, and a
 # green commit there means every host toplevel is already in cachix — so this
@@ -291,7 +283,6 @@ hard_update:
     # npins shells out to skopeo for docker pins; CI's runner image happens to
     # ship it, a desktop doesn't.
     nix shell --inputs-from . nixpkgs#npins nixpkgs#skopeo --command npins update
-    just update_packages
 
 # Run OpenTofu against the Cloudflare infra (`just tf plan`); `just deploy` applies it
 tf *args:
