@@ -12,6 +12,7 @@ just deploy
 just deploy luna ganymede   # ...or narrow to named hosts
 just deploy infra           # ...or just the Cloudflare infra (a bare deploy applies it first)
 just jobs=8 cores=8 deploy  # ...or lift the default nproc/4 x 2 build cap
+just on=luna deploy         # ...or have luna do the building: ships the flake (dirty tree included) and runs the deploy there
 
 # Apply system config to the current host only, no network
 nh os switch
