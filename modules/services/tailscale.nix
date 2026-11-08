@@ -1,12 +1,10 @@
 # A node on the fleet tailnet, coordinated by myNixOS.services.headscale on luna.
 #
-# Joins with the shared reusable key from op://Homelab/Headscale/preauthKey,
-# except on the coordinator itself, which mints its own. Mint the shared one on
-# luna once with
-#   sudo headscale preauthkeys create --user <fleet id> --reusable --expiration 100y
-# (`sudo headscale users list` for the id). That item has to exist before any
-# other host enables this: opnix fails the host's whole render on a dead
-# reference.
+# On by default on every host. Joins with the shared reusable key in
+# op://Homelab/Headscale/preauthKey, except on the coordinator itself, which
+# mints its own. To re-mint the shared one, from a host with `op`:
+#   id=$(ssh root@luna headscale users list -o json | jq -r '.[] | select(.name=="fleet") | .id')
+#   ssh root@luna headscale preauthkeys create --reusable --expiration 87600h --user "$id"
 { ... }: {
   flake.nixosModules."services.tailscale" = {
     config,
@@ -17,7 +15,7 @@
     coordinator = config.myNixOS.services.headscale;
     site = import ../../myLib/site.nix;
   in {
-    options.myNixOS.services.tailscale.enable = lib.mkEnableOption "myNixOS.services.tailscale";
+    options.myNixOS.services.tailscale.enable = lib.mkEnableOption "myNixOS.services.tailscale" // {default = true;};
 
     config = lib.mkIf cfg.enable (lib.mkMerge [
       {
@@ -28,6 +26,13 @@
         };
         # Single-owner tailnet: a node is as trusted as the LAN.
         networking.firewall.trustedInterfaces = ["tailscale0"];
+        # A join that fails (headscale or DNS not up yet) would otherwise wait
+        # for the next deploy or reboot.
+        systemd.services.tailscaled-autoconnect.serviceConfig = {
+          Restart = "on-failure";
+          RestartSec = 30;
+        };
+        systemd.services.tailscaled-autoconnect.unitConfig.StartLimitIntervalSec = 0;
       }
       (lib.mkIf coordinator.enable {
         services.tailscale.authKeyFile = coordinator.localKeyFile;
