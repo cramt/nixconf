@@ -41,7 +41,6 @@
   };
 
   myNixOS = {
-    opnix-secrets.enable = true;
     # Agents act as the bot by default; cramt is there for anything that has to
     # be done as Alex (`gh auth switch`, or pinned in T3 Code's settings).
     gh-accounts = {
@@ -107,7 +106,7 @@
         dataDir = "/pool/prometheus";
         dataDirDepends = ["/pool"];
         # bcrypt from `caddy hash-password`; the plaintext lives in
-        # op://Homelab/Metrics/remoteWritePassword and reaches agents via opnix.
+        # op://Homelab/Metrics/remoteWritePassword and reaches agents via op-secrets.
         auth.hashedPassword = "$2a$14$np6mAmdVPkGBrPrFnV4rSeUw45WaHHvVngHupMyOSyClwwnL7444a";
       };
       # The insight driver is a user unit, so it can't declare this itself.
@@ -123,6 +122,8 @@
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
         dataDir = "/pool/minecraft-forge";
       };
+      # Tailnet coordinator at hs.<domain>; luna is also a node, like every host.
+      headscale.enable = true;
       caddy = {
         enable = true;
         cacheVolume = "/pool/configs/caddy-cache";

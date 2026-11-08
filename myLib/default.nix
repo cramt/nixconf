@@ -16,7 +16,6 @@ in {
         # The folder name *is* the hostname; mkDefault so a host can override.
         { networking.hostName = nixpkgs.lib.mkDefault name; }
         outputs.nixosModules.default
-        inputs.opnix.nixosModules.default
       ]
       ++ builtins.attrValues (builtins.removeAttrs outputs.nixosModules ["default"]);
   };

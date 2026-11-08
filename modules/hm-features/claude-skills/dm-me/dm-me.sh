@@ -5,7 +5,7 @@ set -euo pipefail
 msg="${1:?usage: dm-me <message>}"
 recipient="149996010314137600"   # Alex's Discord user ID
 
-# Load the opnix service-account token (materialized at /etc/opnix-token) so `op`
+# Load the 1Password service-account token (materialized at /etc/opnix-token) so `op`
 # runs non-interactively — same pattern as the repo's `just tf` recipe. This
 # avoids the 1Password desktop-app approval prompt on every call.
 if [ -z "${OP_SERVICE_ACCOUNT_TOKEN:-}" ] && [ -r /etc/opnix-token ]; then

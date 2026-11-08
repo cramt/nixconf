@@ -4,10 +4,12 @@
 # per-host one: a host's own config can't see the others' without making
 # every host evaluate every other host.
 #
-# Upstream sends link credentials only over https (or to loopback/tailnet),
-# so a LAN server is linked through luna's caddy: `t3-<host>.<domain>` there
-# proxies to `<host>:3773`, and `<port>.t3-<host>.<domain>` to that host's
-# preview gateway.
+# Upstream sends link credentials only over https (or plain http to loopback
+# or *.ts.net, which our headscale names aren't), so servers link to each
+# other at https://<host>.ts.cramt.dk: each one serves its own tailnet name
+# with a real cert (myNixOS.tailnet-https). Browsers off the tailnet still
+# come in through luna's caddy: `t3-<host>.<domain>` proxies to `<host>:3773`,
+# and `<port>.t3-<host>.<domain>` to that host's preview gateway.
 #
 # Lives in myLib/ rather than modules/ because import-tree would turn it into a
 # flake-parts module; it's a plain helper imported by relative path.
@@ -25,7 +27,8 @@ in rec {
     ganymede = "t3-ganymede";
     mars = "t3-mars";
   };
-  url = host: "https://${servers.${host}}.${site.domain}";
+  # Where peers link to each other: the tailnet, not the public vhosts.
+  url = host: "https://${host}.${site.tailnet_domain}";
 
   # One secret for the fleet: it's each server's pairing code, and what every
   # other server links to it with.

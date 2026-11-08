@@ -12,6 +12,7 @@
     ./kdeconnect.nix
     ./moonlight.nix
     ./steam.nix
+    ./turbo.nix
     inputs.emrakul.nixosModules.default
     inputs.disko.nixosModules.default
     (import ./disko.nix {device = "/dev/nvme0n1";})
@@ -65,7 +66,7 @@
       # and put back whenever they drift (emrakul's src/tv.rs).
       tv = {
         host = "192.168.178.36";
-        key_file = config.services.onepassword-secrets.secretPaths.tvClientKey;
+        key_file = config.myNixOS.secrets.tvClientKey.path;
         # Not a secret: it pins the TV's self-signed cert, so nobody else on
         # the LAN can pose as the TV and collect the key.
         cert_fingerprint = "11:C5:B1:C5:90:77:50:AB:B9:DA:2A:66:65:CC:CE:2B:B2:88:A5:83:F4:5A:33:39:E7:1F:87:BF:2F:80:85:52";
@@ -89,22 +90,12 @@
     };
   };
 
-  # opnix without myNixOS.opnix-secrets: that would also opt the TV box into the
-  # fleet metrics push and the nix GitHub token. Needs /etc/opnix-token on
-  # ganymede. emrakul reads the key on every connect, so no restart wiring.
-  services.onepassword-secrets = {
-    enable = true;
-    tokenFile = "/etc/opnix-token";
-    secrets.tvClientKey = {
-      reference = "op://Homelab/LG-TV/password";
-      owner = "cramt";
-      mode = "0400";
-    };
-    # The t3code agents' `claude` routes through luna's pool with this key.
-    # myNixOS.opnix-secrets would declare it, but see above for why it's off.
-    secrets.cliProxyApiKey = (import ../../myLib/claude-pool.nix).apiKeySecret;
+  # emrakul reads the key on every connect, so no restart wiring.
+  myNixOS.secrets.tvClientKey = {
+    reference = "op://Homelab/LG-TV/password";
+    owner = "cramt";
+    mode = "0400";
   };
-  users.users.cramt.extraGroups = ["onepassword-secrets"];
 
   # Plasma used to bring PipeWire along; with emrakul nothing else does.
   # It runs per user, socket-activated in the user manager that emrakul's PAM
@@ -183,7 +174,12 @@
     AllowHybridSleep = "no";
   };
 
-  networking.networkmanager.enable = true;
+  # Same declarative wifi as eros, PSK from 1Password. A fresh install has no PSK
+  # until op-secrets' first fetch, which needs a network: plug in ethernet once.
+  myNixOS.wifi = {
+    enable = true;
+    networks = import ../../myLib/wifi.nix;
+  };
 
   services.xserver = {
     xkb = {

@@ -99,8 +99,11 @@
     );
     subdomainOf = vhost: let
       m = builtins.match "([a-z]+://)?(.+)\\.${lib.escapeRegex cfg.domain}" vhost;
+      # Tailnet names (myNixOS.tailnet-https) live in MagicDNS only; a public
+      # A record would point them at luna's public IP.
+      tailnet = builtins.match "([a-z]+://)?[^/]+\\.${lib.escapeRegex (import ../../myLib/site.nix).tailnet_domain}(:[0-9]+)?" vhost != null;
     in
-      if m == null
+      if m == null || tailnet
       then null
       else builtins.elemAt m 1;
   in {

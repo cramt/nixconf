@@ -1,13 +1,13 @@
-# Declarative BlueZ bonds, re-seeded from opnix (1Password).
+# Declarative BlueZ bonds, re-seeded from 1Password.
 #
 # A Bluetooth pairing lives on the host at /var/lib/bluetooth/<adapter>/<device>/
 # (the `info` file holds the long-term keys), so a full disk/SD reflash wipes it
 # and you'd have to re-pair. This module stores each device's `info` file as a
-# 1Password secret and, on every boot, fetches it via opnix and installs it back
+# 1Password secret and, on every boot, fetches it via op-secrets and installs it back
 # into place, then nudges bluetooth to load it — so bonds survive reflashes.
 #
 # It is deliberately self-contained: enabling it pulls in ONLY the bond secrets
-# (not any other host's opnix secret bundle), so it's reusable on any host for
+# (not any other host's secrets), so it's reusable on any host for
 # any already-bonded device. Pair the device once by hand, stash its `info` file
 # in 1Password, then declare it here.
 { ... }: {
@@ -15,17 +15,11 @@
   let
     cfg = config.myNixOS.declarativeBluetooth;
     ucfirst = s: (lib.toUpper (builtins.substring 0 1 s)) + (builtins.substring 1 (-1) s);
-    # opnix requires camelCase secret keys, so derive one per device id.
+    # One secret per device id, prefixed so it can't collide with another module's.
     secretName = name: "bluetoothBond${ucfirst name}";
   in {
     options.myNixOS.declarativeBluetooth = {
-      enable = lib.mkEnableOption "declarative BlueZ bonds re-seeded from opnix";
-
-      tokenFile = lib.mkOption {
-        type = lib.types.path;
-        default = "/etc/opnix-token";
-        description = "1Password service-account token file used by opnix.";
-      };
+      enable = lib.mkEnableOption "declarative BlueZ bonds re-seeded from 1Password";
 
       devices = lib.mkOption {
         default = {};
@@ -52,7 +46,7 @@
             secretRef = lib.mkOption {
               type = lib.types.str;
               example = "op://Homelab/SteamControllerBond/info";
-              description = "opnix reference to the BlueZ `info` bond-file contents.";
+              description = "1Password reference to the BlueZ `info` bond-file contents.";
             };
           };
         });
@@ -65,28 +59,21 @@
         message = "myNixOS.declarativeBluetooth requires hardware.bluetooth.enable = true.";
       }];
 
-      # Pull ONLY the bond secrets, so enabling this doesn't drag in the rest of
-      # a host's opnix configuration. tokenFile is mkDefault so a host that also
-      # uses myNixOS.opnix-secrets keeps a single shared token definition.
-      services.onepassword-secrets = {
-        enable = true;
-        tokenFile = lib.mkDefault cfg.tokenFile;
-        secrets = lib.mapAttrs' (name: dev:
-          lib.nameValuePair (secretName name) {
-            reference = dev.secretRef;
-            mode = "0600";
-          })
-          cfg.devices;
-      };
+      myNixOS.secrets = lib.mapAttrs' (name: dev:
+        lib.nameValuePair (secretName name) {
+          reference = dev.secretRef;
+          mode = "0600";
+        })
+        cfg.devices;
 
-      # opnix fetches secrets after the network is up (so well after bluetooth
+      # op-secrets fetches after the network is up (so well after bluetooth
       # has already started); rather than block bluetooth on the network, seed
       # the bond once the secret lands and then restart bluetooth to load it.
       systemd.services = lib.mapAttrs' (name: dev:
         lib.nameValuePair "bluetooth-bond-${name}" {
-          description = "Seed BlueZ bond for ${name} from its opnix secret";
-          after = [ "opnix-secrets.service" ];
-          wants = [ "opnix-secrets.service" ];
+          description = "Seed BlueZ bond for ${name} from 1Password";
+          after = [ "op-secrets.service" ];
+          wants = [ "op-secrets.service" ];
           wantedBy = [ "multi-user.target" ];
           serviceConfig = {
             Type = "oneshot";
@@ -94,7 +81,7 @@
           };
           script = ''
             set -eu
-            src=${config.services.onepassword-secrets.secretPaths.${secretName name}}
+            src=${config.myNixOS.secrets.${secretName name}.path}
             dir=/var/lib/bluetooth/${dev.adapter}/${dev.address}
             install -d -m700 -o root -g root "$dir"
             install -m600 -o root -g root "$src" "$dir/info"

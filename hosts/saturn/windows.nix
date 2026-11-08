@@ -10,6 +10,12 @@
   inputLocale = "0406:00000406"; # Danish, like the Linux side
   timeZone = "Romance Standard Time"; # Europe/Copenhagen
   installTarget = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_1TB_S5H9NS1NB05355E";
+  # Baked into the image and installed on its first boot here. Relock with
+  #   nix run github:cramt/defenestrate#lock-apps -- --lock hosts/saturn/apps.lock.json <id>
+  # League last: its installer is the Riot Client, which then downloads the
+  # game, so it's the slow one.
+  apps = ["Mozilla.Firefox" "Discord.Discord" "RiotGames.LeagueOfLegends.EUW"];
+  appsLock = ./apps.lock.json;
   # disk stays at the default, setup's interactive picker, for the USB ISO.
   # Its DiskID numbering isn't stable across boots, so wiping one by number
   # could hit the Linux SSD. build.install doesn't have that problem: the image

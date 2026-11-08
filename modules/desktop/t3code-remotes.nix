@@ -28,12 +28,11 @@
     localServer = config.myNixOS.services.t3code;
     sharesHome = localServer.enable && localServer.user == cfg.user;
     appHome = "/home/${cfg.user}/${if sharesHome then ".t3-desktop" else ".t3"}";
-    # opnix only takes camelCase keys.
     secretName = name: "t3codeRemote${lib.toUpper (lib.substring 0 1 name)}${lib.substring 1 (-1) name}";
     catalogEntries = lib.mapAttrsToList (name: r: {
       inherit (r) environmentId label;
       url = lib.removeSuffix "/" r.url;
-      secretPath = config.services.onepassword-secrets.secretPaths.${secretName name};
+      secretPath = config.myNixOS.secrets.${secretName name}.path;
     }) cfg.servers
     # The server mints its environment id on first start, so it's read off
     # disk at sync time rather than declared.
@@ -41,7 +40,7 @@
       label = config.networking.hostName;
       url = "http://127.0.0.1:${toString config.port-selector.ports.t3code}";
       environmentIdFile = "/home/${localServer.user}/.t3/userdata/environment-id";
-      secretPath = config.services.onepassword-secrets.secretPaths.t3codeSharedSecret;
+      secretPath = config.myNixOS.secrets.t3codeSharedSecret.path;
     };
     entriesFile = (pkgs.formats.json {}).generate "t3code-remotes.json" catalogEntries;
     sync = pkgs.writeShellApplication {
@@ -184,7 +183,7 @@
         homes = [{ path = appHome; inherit (cfg) user; }];
       };
 
-      services.onepassword-secrets.secrets = lib.mapAttrs' (name: r:
+      myNixOS.secrets = lib.mapAttrs' (name: r:
         lib.nameValuePair (secretName name) {
           reference = r.sharedSecret;
           owner = cfg.user;

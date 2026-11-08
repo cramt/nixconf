@@ -110,7 +110,7 @@
         # The code is one-time: it buys config.json, which is the real credential.
         if [ ! -e "${configFile}" ]; then
           "${bin}" enroll --server "${cfg.server}" \
-            "$(cat ${config.services.onepassword-secrets.secretPaths.koblEnrollCode})"
+            "$(cat ${config.myNixOS.secrets.koblEnrollCode.path})"
         fi
       '';
     };
@@ -137,7 +137,7 @@
       # koblet is a generic glibc binary.
       programs.nix-ld.enable = true;
 
-      services.onepassword-secrets.secrets.koblEnrollCode = {
+      myNixOS.secrets.koblEnrollCode = {
         reference = cfg.enrollCode;
         owner = "koblet";
         group = "koblet";

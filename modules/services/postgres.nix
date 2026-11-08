@@ -41,7 +41,7 @@
       };
     };
     config = lib.mkIf cfg.enable {
-      services.onepassword-secrets.secrets.postgresPassword = {
+      myNixOS.secrets.postgresPassword = {
         reference = "op://Homelab/Postgres/password";
         services = ["postgresql"];
         owner = "postgres";
@@ -85,7 +85,7 @@
           fi
         '';
         postStart = lib.mkAfter ''
-          POSTGRES_PASSWORD=$(cat ${config.services.onepassword-secrets.secretPaths.postgresPassword})
+          POSTGRES_PASSWORD=$(cat ${config.myNixOS.secrets.postgresPassword.path})
           ${config.services.postgresql.package}/bin/psql -c "ALTER USER \"postgres\" WITH PASSWORD '$POSTGRES_PASSWORD';" -d postgres
           ${lib.strings.concatMapStrings (x:
             if x.passwordFile == null

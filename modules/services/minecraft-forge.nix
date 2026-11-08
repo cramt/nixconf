@@ -24,7 +24,7 @@
       };
     };
     config = lib.mkIf cfg.enable {
-      services.onepassword-secrets.secrets.curseForgeEnv.reference = "op://Homelab/CurseForge/envFile";
+      myNixOS.secrets.curseForgeEnv.reference = "op://Homelab/CurseForge/envFile";
       virtualisation.oci-containers.containers.minecraft-forge = {
         hostname = "minecraft-forge";
         imageFile = docker_source;
@@ -40,7 +40,7 @@
           EULA = "TRUE";
         };
         environmentFiles = [
-          config.services.onepassword-secrets.secretPaths.curseForgeEnv
+          config.myNixOS.secrets.curseForgeEnv.path
         ];
         autoStart = false;
       };

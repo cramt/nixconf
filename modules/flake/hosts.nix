@@ -9,11 +9,13 @@ let
   );
 
   knobsFor = name: hostsDir + "/${name}/host.nix";
+  site = import ../../myLib/site.nix;
 
   # Resolved here rather than by peeking at other hosts' nixosConfigurations,
-  # which would make every host evaluate every other host.
+  # which would make every host evaluate every other host. Peers dial each
+  # other over the tailnet, so a member off the home network still builds.
   buildPool = lib.mapAttrs
-    (_: host: host.builder // { inherit (host) address; })
+    (_: host: host.builder // { address = host.tailnetAddress; })
     (lib.filterAttrs (_: host: host.builder != null) config.nixosHosts);
 in
 {
@@ -34,6 +36,11 @@ in
           type = lib.types.str;
           default = name;
           description = "Where deploy-rs reaches this host. Bare hostnames resolve over the LAN's DNS; override if one can't.";
+        };
+        tailnetAddress = lib.mkOption {
+          type = lib.types.str;
+          default = "${name}.${site.tailnet_domain}";
+          description = "The host's MagicDNS name on the fleet tailnet (myNixOS.services.tailscale). Fleet-internal traffic dials this, so it works off the LAN too.";
         };
         wan = lib.mkOption {
           type = lib.types.nullOr (lib.types.submodule {

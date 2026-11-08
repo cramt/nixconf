@@ -175,7 +175,7 @@ in
         };
 
         # Fallback for when the Pi isn't on the cable. Not required for online:
-        # opnix waits for network-online and the PSK comes from opnix, so a
+        # op-secrets waits for network-online and the PSK comes from it, so a
         # required wlan0 would block on itself after a reflash.
         networks."20-wlan" = {
           matchConfig.Name = "wlan0";
@@ -188,10 +188,7 @@ in
     networking.wireless.interfaces = [ "wlan0" ];
     myNixOS.wifi = {
       enable = true;
-      networks.home = {
-        ssid = "The Gayze";
-        pskRef = "op://Homelab/li32dfrut7k2gsqwvp4srqitc4/wireless_password";
-      };
+      networks = import ../../myLib/wifi.nix;
     };
 
     # eros is a lean, cache-only rpi host, so it does NOT use the bundles.users

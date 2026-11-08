@@ -87,7 +87,7 @@
         };
       };
 
-      services.onepassword-secrets.secrets.yellivBotToken = {
+      myNixOS.secrets.yellivBotToken = {
         reference = "op://Homelab/OpenClaw-Discord/botToken";
         services = ["alert-dm"];
       };
@@ -104,7 +104,7 @@
         serviceConfig = {
           ExecStart = lib.getExe pkgs.alert-dm;
           DynamicUser = true;
-          LoadCredential = ["bot-token:${config.services.onepassword-secrets.secretPaths.yellivBotToken}"];
+          LoadCredential = ["bot-token:${config.myNixOS.secrets.yellivBotToken.path}"];
           Restart = "on-failure";
         };
       };

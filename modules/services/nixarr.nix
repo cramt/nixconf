@@ -12,7 +12,7 @@
       enable = lib.mkEnableOption "myNixOS.services.nixarr";
     };
     config = lib.mkIf cfg.enable {
-      services.onepassword-secrets.secrets = lib.mapAttrs (_: field: {
+      myNixOS.secrets = lib.mapAttrs (_: field: {
         reference = "op://Homelab/JellyfinUsers/${field}";
         mode = "0640";
         group = "jellarr";
@@ -102,7 +102,7 @@
             };
             user = {
               name = "cramt";
-              passwordFile = config.services.onepassword-secrets.secretPaths.jellyfinCramtPassword;
+              passwordFile = config.myNixOS.secrets.jellyfinCramtPassword.path;
             };
             apiKeyApp = "jellarr";
             apiKeyFile = "${config.services.jellarr.dataDir}/api-key";
@@ -111,14 +111,14 @@
           users = [
             {
               name = "cramt";
-              passwordFile = config.services.onepassword-secrets.secretPaths.jellyfinCramtPassword;
+              passwordFile = config.myNixOS.secrets.jellyfinCramtPassword.path;
               policy = {
                 isAdministrator = true;
               };
             }
             {
               name = "hannah";
-              passwordFile = config.services.onepassword-secrets.secretPaths.jellyfinHannahPassword;
+              passwordFile = config.myNixOS.secrets.jellyfinHannahPassword.path;
               policy = {
                 isAdministrator = true;
               };

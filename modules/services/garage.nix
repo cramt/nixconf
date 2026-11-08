@@ -16,8 +16,8 @@
     setupScript = pkgs.writeShellScript "garage-setup" ''
       set -euo pipefail
       set -a
-      [ -f ${lib.escapeShellArg config.services.onepassword-secrets.secretPaths.garageEnv} ] \
-        && . ${lib.escapeShellArg config.services.onepassword-secrets.secretPaths.garageEnv}
+      [ -f ${lib.escapeShellArg config.myNixOS.secrets.garageEnv.path} ] \
+        && . ${lib.escapeShellArg config.myNixOS.secrets.garageEnv.path}
       set +a
 
       garage="${garageBin}"
@@ -111,14 +111,14 @@
         };
       };
       port-selector.auto-assign = ["garage_s3" "garage_web" "garage_rpc" "garage_admin"];
-      services.onepassword-secrets.secrets.garageEnv = {
+      myNixOS.secrets.garageEnv = {
         reference = "op://Homelab/Garage/envFile";
         services = ["garage"];
       };
       services.garage = {
         enable = true;
         package = pkgs.garage;
-        environmentFile = config.services.onepassword-secrets.secretPaths.garageEnv;
+        environmentFile = config.myNixOS.secrets.garageEnv.path;
         settings = {
           replication_mode = "1";
           metadata_dir = "/pool/garage/meta";

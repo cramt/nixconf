@@ -1,24 +1,23 @@
 # `gh` logins for a headless user, from 1Password instead of `gh auth login`.
 #
 # With no keyring on a headless box gh keeps tokens in plaintext in
-# ~/.config/gh/hosts.yml, so that file is rendered from opnix rather than left
+# ~/.config/gh/hosts.yml, so that file is rendered from 1Password rather than left
 # as hand-made state that's lost with the disk. gh supports several accounts
 # per host there; `active` is the one plain `gh` uses, and the others are
 # reachable with `gh auth switch`, `gh auth token --user <login>`, or by
 # pinning them in T3 Code's Settings → Source Control.
 #
 # gh rewrites the file on `gh auth switch`, so it is a real file, not a store
-# symlink. The render reruns with opnix, so a switch lasts until the next
+# symlink. The render reruns with op-secrets, so a switch lasts until the next
 # deploy that touches this or the next boot, then `active` wins again.
 { ... }: {
   flake.nixosModules."features.gh-accounts" = { config, lib, pkgs, ... }:
   let
     cfg = config.myNixOS.gh-accounts;
-    # opnix only takes camelCase names, and logins can hold dashes.
     capitalize = s: lib.toUpper (lib.substring 0 1 s) + lib.substring 1 (-1) s;
     secretName = login:
       "ghToken" + lib.concatMapStrings capitalize (lib.filter (p: p != "") (lib.splitString "-" login));
-    tokenPath = login: config.services.onepassword-secrets.secretPaths.${secretName login};
+    tokenPath = login: config.myNixOS.secrets.${secretName login}.path;
     accounts = {${cfg.active.login} = cfg.active.tokenReference;} // cfg.others;
     hostsYml = "/home/${cfg.user}/.config/gh/hosts.yml";
     render = pkgs.writeShellApplication {
@@ -85,7 +84,7 @@
         }
       ];
 
-      services.onepassword-secrets.secrets = lib.mapAttrs' (login: reference:
+      myNixOS.secrets = lib.mapAttrs' (login: reference:
         lib.nameValuePair (secretName login) {
           inherit reference;
           mode = "0600";
@@ -95,11 +94,11 @@
       systemd.services.gh-accounts = {
         description = "Render ${cfg.user}'s gh logins from 1Password";
         wantedBy = ["multi-user.target"];
-        # partOf: when opnix restarts after a token is rotated in 1Password,
+        # partOf: when op-secrets restarts after a token is rotated in 1Password,
         # the file is rendered again from the fresh secrets.
-        after = ["opnix-secrets.service"];
-        requires = ["opnix-secrets.service"];
-        partOf = ["opnix-secrets.service"];
+        after = ["op-secrets.service"];
+        requires = ["op-secrets.service"];
+        partOf = ["op-secrets.service"];
         restartTriggers = [render];
         serviceConfig = {
           Type = "oneshot";

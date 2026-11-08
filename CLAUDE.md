@@ -12,6 +12,7 @@ just deploy
 just deploy luna ganymede   # ...or narrow to named hosts
 just deploy infra           # ...or just the Cloudflare infra (a bare deploy applies it first)
 just jobs=8 cores=8 deploy  # ...or lift the default nproc/4 x 2 build cap
+just on=luna deploy         # ...or have luna do the building: ships the flake (dirty tree included) and runs the deploy there
 
 # Apply system config to the current host only, no network
 nh os switch
@@ -26,7 +27,8 @@ just update_flake     # Update flake.lock only
 just update_gems      # Update Ruby gem lockfile
 
 # Rescue/reinstall an x86 host: flash the generic installer USB, boot the host off
-# it (it comes up as `installer`, root ssh with the fleet keys), then push the
+# it (it comes up as `installer`, root ssh with the fleet keys, joins the home wifi
+# from PSKs baked on at flash time, never the store), then push the
 # host's config from here. mode=mount (default) repairs in place, mode=disko wipes.
 nix run .#flash-installer
 just install ganymede [addr] [mode]
@@ -62,7 +64,7 @@ A host only needs `hosts/<name>/host.nix` when it deviates from that; it takes `
 
 ### myLib (`myLib/default.nix`)
 
-A thin helper exposing `mkSystem { config, nixpkgs ? inputs.nixpkgs }`, which calls `nixpkgs.lib.nixosSystem` and imports `outputs.nixosModules.default`, opnix, and every other `outputs.nixosModules.*` entry.
+A thin helper exposing `mkSystem { config, nixpkgs ? inputs.nixpkgs }`, which calls `nixpkgs.lib.nixosSystem` and imports `outputs.nixosModules.default` and every other `outputs.nixosModules.*` entry.
 
 ### Module System Pattern
 
@@ -106,14 +108,15 @@ what makes `just deploy` able to reach a host at all).
 ### Key Subsystems
 
 - **Theming**: `stylix` (dark theme, Iosevka Nerd Font). Configured in `modules/bundles/nixos-general.nix`. The `stylixAsset` option accepts an image or `.mp4` (first frame is extracted).
-- **Secrets**: `opnix` (1Password-based). A host opts in with `myNixOS.opnix-secrets.enable = true` (it has `/etc/opnix-token`); each module declares the `services.onepassword-secrets.secrets` it reads behind its own enable, so a host renders only what it runs. `modules/security/opnix-secrets.nix` holds just the plumbing plus the secrets home-manager reads.
+- **Secrets**: 1Password via the official `op` CLI. Every host carries the service-account token at `/etc/opnix-token` (the name predates the switch; the `flash-*` images bake it in), and `op-secrets.service` renders each `myNixOS.secrets.<name>` to its read-only `.path` under `/var/lib/op-secrets` (`modules/security/secrets.nix` + `op-secrets.sh`). Each module declares the secrets it reads behind its own enable, so a host renders only what it runs; `services = [...]` on a secret orders those system units after the render and try-restarts them when its value changes. A failed read keeps the last good value and the unit retries with backoff. `op` comes from my-nixpkgs' `_1password-cli`, which has the armv7l build nixpkgs lacks. (opnix was dropped because its SDK runs 1Password's core as interpreted WASM off x86_64/aarch64, and venus couldn't finish a sign-in.)
+- **Tailnet**: every host runs tailscale (`myNixOS.services.tailscale`, on by default) against luna's headscale at `hs.<domain>` (`myNixOS.services.headscale`). MagicDNS names are `<host>.ts.<domain>`; `tailscale0` is trusted like the LAN. Hosts join with the reusable key in `op://Homelab/Headscale/preauthKey`; luna mints its own locally.
 - **Port assignment**: `modules/base/portselector.nix` provides a `port-selector` NixOS option that deterministically assigns ports to services by hashing their names, with manual overrides via `set-ports`.
-- **T3 Code fleet**: `myLib/t3code-fleet.nix` lists every host running a T3 Code server (luna, saturn, ganymede, mars). Each one links to all the others (linked environments, via my-nixpkgs' `services.t3code.linkedEnvironments`), pairing with the one shared secret. Upstream only sends link credentials over https, so luna's caddy fronts the rest as `t3-<host>.<domain>`, and `<port>.t3-<host>.<domain>` reaches that host's localhost previews through its passkey-gated gateway on 38774 (`modules/services/t3code-fleet.nix`). A new server host goes in that list, or the build fails.
-- **Build pool**: hosts whose `host.nix` sets `builder = { maxJobs; ... }` offload builds to each other over `ssh-ng://nix-ssh@`, authenticating with their SSH host keys (`modules/networking/build-pool.nix`). A timer probes the peers every 15s and the daemon reads `/run/build-pool/machines`, so powered-off members cost nothing: Lix retries a dead builder on every derivation. Members today: saturn, luna, ganymede. To add one, commit `ssh-keyscan -t ed25519 <host>` as its `ssh_host_ed25519_key.pub` and give it a `builder`.
+- **T3 Code fleet**: `myLib/t3code-fleet.nix` lists every host running a T3 Code server (luna, saturn, ganymede, mars). Each one links to all the others (linked environments, via my-nixpkgs' `services.t3code.linkedEnvironments`), pairing with the one shared secret. Peers link over the tailnet at `https://<host>.ts.cramt.dk` (real certs via `myNixOS.tailnet-https`: lego + Cloudflare DNS-01, tailnet source IPs only). Browsers off the tailnet still go through luna's caddy as `t3-<host>.<domain>`, and `<port>.t3-<host>.<domain>` reaches that host's localhost previews through its passkey-gated gateway on 38774 (`modules/services/t3code-fleet.nix`). A new server host goes in that list, or the build fails.
+- **Build pool**: hosts whose `host.nix` sets `builder = { maxJobs; ... }` offload builds to each other over `ssh-ng://nix-ssh@<host>.ts.cramt.dk` (the tailnet, so it works off the LAN), authenticating with their SSH host keys (`modules/networking/build-pool.nix`). A timer probes the peers every 15s and the daemon reads `/run/build-pool/machines`, so powered-off members cost nothing: Lix retries a dead builder on every derivation. Members today: saturn, luna, ganymede. To add one, commit `ssh-keyscan -t ed25519 <host>` as its `ssh_host_ed25519_key.pub` and give it a `builder`.
 - **Felix**: Alex's Lix fork (`github:cramt/felix`, local checkout `~/code/felix`) is `nix.package` on every host, root daemon included. A Lix security release therefore means rebasing Felix and bumping the input before anything else. The flake input is pinned by rev, so `just update` never bumps it. Bump it by hand after `felix/bench.py` passes.
 - **Non-flake pins**: `npins/` for sources that don't have flake support.
 - **Gems**: `gems/` — Ruby gems used by scripts (locked with `bundle lock`).
-- **Packages**: `packages/` — every `packages/<name>/default.nix` is `pkgs.<name>` on every host and a flake package (CI prebuilds it), with no list to edit: `overlays/local-packages.nix` discovers them the way `hosts.nix` discovers hosts. A folder named after a nixpkgs attr shadows it. Consumers use `pkgs.<name>`, never `callPackage ../packages/...`. `packages/rhystic-tracker/python/` is a small local python package set (UnityPy + its codec deps, none in nixpkgs) wired onto that app's PATH; each member is a flake output so `nix-update` can bump it.
+- **Packages**: `packages/` — every `packages/<name>/default.nix` is `pkgs.<name>` on every host and a flake package (CI prebuilds it), with no list to edit: `overlays/local-packages.nix` discovers them the way `hosts.nix` discovers hosts. A folder named after a nixpkgs attr shadows it. Consumers use `pkgs.<name>`, never `callPackage ../packages/...`. Everything in `cramt/my-nixpkgs` (`~/code/my-nixpkgs`, its own hourly updater) is overlaid whole; `packages/` is only for what isn't there, and a name in both fails eval.
 - **Zed extensions**: `packages/mkZedExtension.nix` builds an extension into Zed's `installed/<id>` layout (wasm32-wasip2 via fenix, tree-sitter parsers via `pkgsCross.wasi32`) so `modules/hm-features/zed.nix` can symlink it in. This is the only declarative route for extensions that aren't in Zed's registry — registry ones just go in the `extensions` list. Grammars are fetched at exactly the repo + revision the extension's own `extension.toml` declares, so they are never pinned separately.
 - **Scripts**: `scripts/` — Nix-defined scripts (`zellij_smart_start`, `sway_gaming`, `keep_awake`, etc.).
 
@@ -153,5 +156,5 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 
 - Alex runs the deploy herself (wl-copy it when ready) — `just deploy` for the fleet, `nh os switch` for the local host alone. After she deploys, verify: ssh in, `systemctl --failed`, journalctl on the touched services.
 - deploy-rs activates with magic rollback: a host that loses its network mid-activation reverts itself. A deploy that "hung then rolled back" means the new config broke connectivity, not that deploy-rs failed.
-- Editing a 1Password secret in place requires restarting `opnix-secrets`, not just the consuming service.
-- Secrets go through opnix (`/etc/opnix-token`) — never interactive `op` prompts.
+- Editing a 1Password secret in place requires restarting `op-secrets`, not just the consuming service (it then try-restarts the secret's `services`).
+- Secrets go through `myNixOS.secrets` / `op-secrets` (token at `/etc/opnix-token`) — never interactive `op` prompts.

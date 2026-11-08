@@ -14,7 +14,7 @@
     pairing = lib.importJSON ./moonlight-pairing.json;
     hostName = config.networking.hostName;
     client = pairing.clients.${hostName};
-    keyPath = config.services.onepassword-secrets.secretPaths.moonlightClientKey;
+    keyPath = config.myNixOS.secrets.moonlightClientKey.path;
 
     seed = pkgs.writeShellApplication {
       name = "moonlight-pairing-seed";
@@ -63,9 +63,8 @@
         example = "op://Homelab/Moonlight-ganymede/moonlight-ganymede.pem";
         description = ''
           1Password file reference to this client's private key. Null leaves
-          Moonlight unpaired: opnix renders every secret or none, so a
-          reference to an item that doesn't exist yet would take the host's
-          other secrets down with it.
+          Moonlight unpaired: a reference to an item that doesn't exist yet
+          fails op-secrets.service on every retry until the item is created.
         '';
       };
     };
@@ -82,9 +81,8 @@
       }
 
       (lib.mkIf (cfg.clientKey != null) {
-        services.onepassword-secrets.secrets.moonlightClientKey = {
+        myNixOS.secrets.moonlightClientKey = {
           reference = cfg.clientKey;
-          kind = "file";
           owner = cfg.user;
           mode = "0400";
         };

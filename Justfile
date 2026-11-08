@@ -147,8 +147,9 @@ deploy *hosts:
 # mode=mount (default) is the repair path: it mounts the host's existing disko
 # layout at /mnt and nixos-installs over it. That rewrites the bootloader and
 # the system profile and leaves /home and /var alone. Use it when a host won't boot.
-# mode=disko wipes and repartitions. The SSH host key is regenerated then, so a
-# build pool member needs its ssh_host_ed25519_key.pub re-keyscanned afterwards.
+# mode=disko wipes and repartitions. The SSH host keys survive when the old disk
+# still mounts; otherwise a build pool member needs its ssh_host_ed25519_key.pub
+# re-keyscanned afterwards.
 #
 # `just install ganymede`, `just install ganymede 192.168.178.50 disko`
 install host addr="installer" mode="mount":
@@ -171,13 +172,27 @@ install host addr="installer" mode="mount":
     if [ "{{mode}}" = disko ]; then
       read -r -p ">> WIPE every disk {{host}}'s disko layout names, on {{addr}}? type 'yes': " ans
       [ "$ans" = yes ] || { echo aborted; exit 1; }
+      files=$(mktemp -d); trap 'rm -rf "$files"' EXIT
+      extra=(--extra-files "$files")
       # A wipe takes /etc/opnix-token with it; bring this machine's along so
       # secrets render on first boot, same as flash-eros does.
       if [ "$(nix eval "$cfg.services.onepassword-secrets.enable")" = true ]; then
-        files=$(mktemp -d); trap 'rm -rf "$files"' EXIT
         install -D -m0640 /etc/opnix-token "$files/etc/opnix-token"
-        extra=(--extra-files "$files")
       fi
+      # Carry the old SSH host keys over if the disk still mounts: they're the
+      # build pool's identity (ssh_host_ed25519_key.pub) and in every known_hosts.
+      ssho=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
+      mount=$(nix build --no-link --print-out-paths "$cfg.system.build.mountScript")
+      NIX_SSHOPTS="${ssho[*]}" nix copy --to "ssh://root@{{addr}}" "$mount"
+      if ssh "${ssho[@]}" "root@{{addr}}" "$mount >/dev/null 2>&1 && ls /mnt/etc/ssh/ssh_host_ed25519_key >/dev/null"; then
+        install -d -m0755 "$files/etc/ssh"
+        ssh "${ssho[@]}" "root@{{addr}}" 'cd /mnt/etc/ssh && tar -c ssh_host_*' \
+          | tar -C "$files/etc/ssh" -x
+        echo ">> keeping {{host}}'s SSH host keys: $(cut -d' ' -f2 "$files/etc/ssh/ssh_host_ed25519_key.pub")"
+      else
+        echo ">> no old SSH host keys found, {{host}} gets new ones (re-keyscan if it's a build pool member)" >&2
+      fi
+      ssh "${ssho[@]}" "root@{{addr}}" 'umount -R /mnt 2>/dev/null || true'
     fi
 
     nix run --inputs-from . nixpkgs#nixos-anywhere -- \
@@ -206,36 +221,6 @@ update_flake:
 
 update_gems:
     (cd gems && bundle lock --update)
-
-# Bump the from-source / prebuilt packages that live outside flake.lock and npins
-# (hardcoded version + hash in packages/*/default.nix). nix-update follows each
-# package's upstream latest release and rewrites version + hashes in place.
-# steamlink is intentionally absent (no upstream version feed — see its default.nix).
-update_packages:
-    nix run nixpkgs#nix-update -- --flake agentsview
-    nix run nixpkgs#nix-update -- --flake agent-browser
-    nix run nixpkgs#nix-update -- --flake cpa-prometheus
-    nix run nixpkgs#nix-update -- --flake cli-proxy-api-panel
-    nix run nixpkgs#nix-update -- --flake chrome-devtools-mcp
-    # Cockatrice cuts Development betas far more often than Release builds, and
-    # the releases/tags atom feeds nix-update reads only carry the 10 newest
-    # entries — since 2026-06-26-Release-3.0.2 there has been no Release tag in
-    # that window at all. Without the regex nix-update errors out on the beta it
-    # finds; with it there is simply nothing to match, which it also calls an
-    # error. Neither is a reason to fail the whole update run.
-    # Drop the `||` once upstream cuts a 3.1.0 Release and the feed holds one again.
-    nix run nixpkgs#nix-update -- --flake cockatrice \
-      --version-regex '^(\d{4}-\d{2}-\d{2}-Release-[0-9.]+)$' \
-      || echo ">> cockatrice: no Release tag in the atom feed window, leaving it pinned"
-    nix run nixpkgs#nix-update -- --flake rhystic-tracker
-    # rhystic-tracker's avatar extractor stack, pinned per-package off PyPI.
-    nix run nixpkgs#nix-update -- --flake unitypy
-    nix run nixpkgs#nix-update -- --flake texture2ddecoder
-    nix run nixpkgs#nix-update -- --flake etcpak
-    nix run nixpkgs#nix-update -- --flake astc-encoder-py
-    nix run nixpkgs#nix-update -- --flake tpk-ar
-    nix run nixpkgs#nix-update -- --flake fmod-toolkit
-    nix run nixpkgs#nix-update -- --flake pyfmodex
 
 # Merge the newest commit on `update` that CI built green into main and push.
 # update.yml keeps that branch bumped and caught up with main every 6h, and a
@@ -298,7 +283,6 @@ hard_update:
     # npins shells out to skopeo for docker pins; CI's runner image happens to
     # ship it, a desktop doesn't.
     nix shell --inputs-from . nixpkgs#npins nixpkgs#skopeo --command npins update
-    just update_packages
 
 # Run OpenTofu against the Cloudflare infra (`just tf plan`); `just deploy` applies it
 tf *args:

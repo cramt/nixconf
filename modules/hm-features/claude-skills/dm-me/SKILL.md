@@ -23,8 +23,8 @@ interactive 1Password prompt:
 
 1. `$YELLIV_BOT_TOKEN` env var — explicit override for hosts without 1Password.
 2. Otherwise `op read 'op://Homelab/OpenClaw-Discord/botToken'`, run **non-interactively**
-   by exporting `OP_SERVICE_ACCOUNT_TOKEN` from `/etc/opnix-token` (the opnix-materialized
-   service-account token — same mechanism as the repo's `just tf` recipe). This is why
+   by exporting `OP_SERVICE_ACCOUNT_TOKEN` from `/etc/opnix-token` (the 1Password
+   service-account token every host carries — same mechanism as the repo's `just tf` recipe). This is why
    there's no desktop-app approval prompt per call.
 
 If neither path yields a token it exits non-zero — surface that to the user.

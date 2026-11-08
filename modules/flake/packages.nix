@@ -18,13 +18,13 @@
     # non-removable ones outright, since the image is the size of a whole disk
     # and a typo'd /dev/sdX would otherwise eat a data drive.
     #
-    # opnix hosts get the local /etc/opnix-token baked into the image's rootfs
-    # (p2, the sd-image.nix layout every board here uses) through a loopback
-    # mount of a scratch copy, so opnix works on first boot with no manual step
-    # and the token never enters the nix store.
-    mkFlash = { host, img, opnix }: pkgs.writeShellApplication {
+    # `bake` customises a scratch copy of the image before it's written, for
+    # secrets that must never enter the nix store. It's { runtimeInputs; text; }:
+    # text runs with the writable copy at $work and must define bake_cleanup.
+    mkFlash = { host, img, bake ? null }: pkgs.writeShellApplication {
       name = "flash-${host}";
-      runtimeInputs = with pkgs; [ pv util-linux coreutils gawk ];
+      runtimeInputs = with pkgs; [ pv util-linux coreutils gawk ]
+        ++ lib.optionals (bake != null) bake.runtimeInputs;
       text = ''
         img=${img}
         dev="''${1:-}"
@@ -47,7 +47,7 @@
           echo "$dev is not removable, refusing" >&2
           exit 1
         fi
-      '' + lib.optionalString opnix ''
+      '' + lib.optionalString (bake != null) ''
 
         token="''${OPNIX_TOKEN:-/etc/opnix-token}"
         if [ ! -r "$token" ]; then
@@ -56,27 +56,11 @@
         fi
 
         work="$(mktemp --suffix=.img)"
-        mnt="$(mktemp -d)"
-        loop=""
-        cleanup() {
-          if mountpoint -q "$mnt"; then sudo umount "$mnt"; fi
-          if [ -n "$loop" ]; then sudo losetup -d "$loop" 2>/dev/null || true; fi
-          rm -rf "$work" "$mnt"
-        }
+        cleanup() { bake_cleanup; rm -f "$work"; }
         trap cleanup EXIT
-
-        echo ">> baking $token into a copy of the image (needs sudo)..."
         cp --sparse=always "$img" "$work"
         chmod u+w "$work"
-        loop="$(sudo losetup -Pf --show "$work")"
-        # losetup -P hands partition scanning to udev, so the node shows up late.
-        root="''${loop}p2"
-        for _ in 1 2 3 4 5 6 7 8 9 10; do [ -b "$root" ] && break; sleep 1; done
-        if [ ! -b "$root" ]; then echo "rootfs partition $root never appeared" >&2; exit 1; fi
-        sudo mount "$root" "$mnt"
-        sudo install -D -m0640 -o0 -g0 "$token" "$mnt/etc/opnix-token"
-        sudo umount "$mnt"
-        sudo losetup -d "$loop"; loop=""
+        ${bake.text}
         img="$work"
       '' + ''
 
@@ -96,6 +80,64 @@
         echo ">> done, eject and boot ${host}."
       '';
     };
+
+    # Every SD host runs op-secrets, so it gets the local /etc/opnix-token baked into the image's rootfs
+    # (p2, the sd-image.nix layout every board here uses) through a loopback
+    # mount, so op-secrets works on first boot with no manual step.
+    bakeOpnixToken = {
+      runtimeInputs = [ ];
+      text = ''
+        mnt="$(mktemp -d)"
+        loop=""
+        bake_cleanup() {
+          if mountpoint -q "$mnt"; then sudo umount "$mnt"; fi
+          if [ -n "$loop" ]; then sudo losetup -d "$loop" 2>/dev/null || true; fi
+          rm -rf "$mnt"
+        }
+
+        echo ">> baking $token into a copy of the image (needs sudo)..."
+        loop="$(sudo losetup -Pf --show "$work")"
+        # losetup -P hands partition scanning to udev, so the node shows up late.
+        root="''${loop}p2"
+        for _ in 1 2 3 4 5 6 7 8 9 10; do [ -b "$root" ] && break; sleep 1; done
+        if [ ! -b "$root" ]; then echo "rootfs partition $root never appeared" >&2; exit 1; fi
+        sudo mount "$root" "$mnt"
+        sudo install -D -m0640 -o0 -g0 "$token" "$mnt/etc/opnix-token"
+        sudo umount "$mnt"
+        sudo losetup -d "$loop"; loop=""
+      '';
+    };
+
+    # The installer ISO is read-only iso9660, so its wifi PSKs go on a small FAT
+    # partition appended after it (the hybrid MBR has two free slots), as ready
+    # NetworkManager keyfiles. `nmcli --offline` writes them so escaping is
+    # NM's problem, and mtools fills the partition in place: no sudo, no mount.
+    installerWifiLabel = "NIXWIFI";
+    bakeInstallerWifi = {
+      runtimeInputs = with pkgs; [ dosfstools mtools networkmanager saturnPkgs._1password-cli ];
+      text = ''
+        conns="$(mktemp -d)"
+        bake_cleanup() { rm -rf "$conns"; }
+        OP_SERVICE_ACCOUNT_TOKEN="$(cat "$token")"
+        export OP_SERVICE_ACCOUNT_TOKEN
+
+        echo ">> baking wifi PSKs from 1Password onto the stick..."
+      '' + lib.concatStrings (lib.mapAttrsToList (name: net: ''
+        nmcli --offline connection add type wifi con-name ${lib.escapeShellArg name} \
+          ssid ${lib.escapeShellArg net.ssid} wifi-sec.key-mgmt wpa-psk \
+          wifi-sec.psk "$(op read ${lib.escapeShellArg net.pskRef})" \
+          > "$conns/${name}.nmconnection"
+      '') (import ../../myLib/wifi.nix)) + ''
+
+        start=$(( ($(stat -c %s "$work") / 512 + 2047) / 2048 * 2048 ))
+        truncate -s $(( (start + 16384) * 512 )) "$work"
+        echo "start=$start, size=16384, type=c" \
+          | sfdisk --quiet --no-reread --no-tell-kernel --append "$work" 2>/dev/null
+        mkfs.fat -F 12 -n ${installerWifiLabel} --offset "$start" "$work" 8192 >/dev/null
+        mcopy -i "$work@@$(( start * 512 ))" "$conns"/*.nmconnection ::
+      '';
+    };
+
     # Generic rescue/install USB for the x86 hosts (the SD-card boards have
     # their own images above). Deliberately host-agnostic: it's just sshd with
     # the fleet keys, so `just install <host>` can push that host's closure
@@ -112,6 +154,31 @@
           console.keyMap = "dk-latin1";
           nix.settings.experimental-features = [ "nix-command" "flakes" ];
           environment.systemPackages = [ pkgs.disko pkgs.git ];
+
+          # Wifi baked onto the stick by flash-installer (bakeInstallerWifi).
+          # Not WantedBy the partition's device unit: the stick is the boot
+          # device, already plugged in the initrd, so stage 2 never sees it
+          # appear and the wants never fire. A stick dd'ed some other way has
+          # no such partition, which is a no-op rather than a failed unit.
+          systemd.services.installer-wifi = {
+            description = "Load the wifi connections baked onto the installer stick";
+            wantedBy = [ "multi-user.target" ];
+            after = [ "systemd-udev-trigger.service" "NetworkManager.service" ];
+            serviceConfig.Type = "oneshot";
+            path = [ pkgs.mtools pkgs.networkmanager ];
+            environment.MTOOLS_SKIP_CHECK = "1";
+            script = ''
+              part=/dev/disk/by-label/${installerWifiLabel}
+              for _ in $(seq 20); do [ -e "$part" ] && break; sleep 0.5; done
+              if [ ! -e "$part" ]; then echo "no $part, stick wasn't flashed with wifi"; exit 0; fi
+              dir=/etc/NetworkManager/system-connections
+              install -d -m700 "$dir"
+              mcopy -n -i "$part" '::*.nmconnection' "$dir/"
+              chmod 600 "$dir"/*.nmconnection
+              nmcli connection reload
+            '';
+          };
+
           # xz (the default) roughly triples build time for ~10% smaller ISO.
           isoImage.squashfsCompression = "zstd -Xcompression-level 6";
         })
@@ -127,7 +194,7 @@
       flash-installer = mkFlash {
         host = "installer";
         img = inputs.self.packages.${system}.installer-iso;
-        opnix = false;
+        bake = bakeInstallerWifi;
       };
 
       # The images are built for the board's own arch (cachix has them from the
@@ -135,12 +202,12 @@
       flash-eros = mkFlash {
         host = "eros";
         img = inputs.self.packages.aarch64-linux.eros-img;
-        opnix = true;
+        bake = bakeOpnixToken;
       };
       flash-mercury = mkFlash {
         host = "mercury";
         img = inputs.self.packages.aarch64-linux.mercury-img;
-        opnix = true;
+        bake = bakeOpnixToken;
       };
 
       # Same mercury host, cross-compiled from x86 instead of built natively — for
@@ -175,11 +242,10 @@
         cp ${inputs.self.nixosConfigurations.venus.config.system.build.sdImage}/sd-image/*.img $out
       '';
 
-      # venus has no opnix, so there's nothing to bake in.
       flash-venus = mkFlash {
         host = "venus";
         img = inputs.self.packages.${system}.venus-img;
-        opnix = false;
+        bake = bakeOpnixToken;
       };
 
       # Overlay patches and from-source GPU builds Hydra never caches, pulled
@@ -190,18 +256,9 @@
         ;
     }
     // localPackages saturnPkgs (p: lib.meta.availableOn saturnPkgs.stdenv.hostPlatform p)
-    # Same reason, one layer down: UnityPy and the codec packages it needs are
-    # hand-pinned PyPI version + hash, so each needs a flake attr for nix-update
-    # to read meta.position off. Nothing installs them directly — they exist so
-    # rhystic-tracker's wrapper can put a python holding them on the app's PATH.
-    # Imported rather than callPackage'd, because callPackage staples
-    # override/overrideDerivation onto the set it returns and those would then
-    # show up as flake packages of their own.
-    // import ../../packages/rhystic-tracker/python {
-      inherit (saturnPkgs) python3Packages;
-    })
+    )
     // lib.optionalAttrs (system == "aarch64-linux") (
-    # What x86 can't build (steamlink, a prebuilt arm64 binary), from eros,
+    # What x86 can't build (an arm64-only package), from eros,
     # the host that runs it.
     localPackages erosPkgs (p: !lib.meta.availableOn saturnPkgs.stdenv.hostPlatform p
       && lib.meta.availableOn erosPkgs.stdenv.hostPlatform p)

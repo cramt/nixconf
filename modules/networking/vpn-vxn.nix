@@ -8,7 +8,7 @@
   flake.nixosModules."networking.vpn-vxn" = { config, lib, ... }:
   let
     cfg = config.myNixOS.vpn.vxn;
-    secrets = config.services.onepassword-secrets.secretPaths;
+    secrets = config.myNixOS.secrets;
   in {
     options.myNixOS.vpn.vxn = {
       enable = lib.mkEnableOption "myNixOS.vpn.vxn";
@@ -20,7 +20,7 @@
     };
 
     config = lib.mkIf cfg.enable {
-      services.onepassword-secrets.secrets = {
+      myNixOS.secrets = {
         vxnPrivateKey.reference = "op://Homelab/VXN-WireGuard/privateKey";
         vxnPresharedKey.reference = "op://Homelab/VXN-WireGuard/presharedKey";
       };
@@ -31,12 +31,12 @@
       networking.wg-quick.interfaces.vxn = {
         address = [ "10.10.98.4/32" "2a05:6e02:1088:1c17::4/128" ];
         dns = [ "10.10.98.1" ];
-        privateKeyFile = secrets.vxnPrivateKey;
+        privateKeyFile = secrets.vxnPrivateKey.path;
         autostart = cfg.autostart;
         peers = [
           {
             publicKey = "A1HQljKzWdrUJk6SibrMLbGHsU0eWKhNhXZAGhrWKgE=";
-            presharedKeyFile = secrets.vxnPresharedKey;
+            presharedKeyFile = secrets.vxnPresharedKey.path;
             allowedIPs = [ "0.0.0.0/0" "::/0" ];
             endpoint = "wg.vxn.rs:51820";
             persistentKeepalive = 25;
