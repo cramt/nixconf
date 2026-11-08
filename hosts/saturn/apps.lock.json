@@ -1,0 +1,47 @@
+{
+  "wingetPkgsRev": "81526bc309bb44ad86cdda6f846be833873c84e6",
+  "apps": {
+    "Discord.Discord": {
+      "baked": {
+        "version": "1.0.9267",
+        "url": "https://stable.dl2.discordapp.net/distro/app/stable/win/x64/1.0.9267/DiscordSetup.exe",
+        "hash": "sha256-ihLLBjtFLnLcoEHjLM3AZ/ggCyk7icpU8Qg/E8fbhWY=",
+        "file": "Discord.Discord-1.0.9267.exe",
+        "installerType": "exe",
+        "scope": "user",
+        "args": "",
+        "successCodes": [
+          0
+        ]
+      }
+    },
+    "Mozilla.Firefox": {
+      "baked": {
+        "version": "159.0",
+        "url": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/159.0/win64/en-US/Firefox%20Setup%20159.0.exe",
+        "hash": "sha256-h3aIe3mSWrvdQH/N/iV9g4K1TiS+UqZGZCa5WoBNZ5A=",
+        "file": "Mozilla.Firefox-159.0.exe",
+        "installerType": "nullsoft",
+        "scope": "machine",
+        "args": "/S /PreventRebootRequired=true",
+        "successCodes": [
+          0
+        ]
+      }
+    },
+    "RiotGames.LeagueOfLegends.EUW": {
+      "baked": {
+        "version": "143.0.0.2321459",
+        "url": "https://lol.secure.dyn.riotcdn.net/channels/public/x/installer/current/live.euw.exe",
+        "hash": "sha256-hainQylo+krNRu6uNuZDc+qOlb4ytzwaY7Hukgtfz7U=",
+        "file": "RiotGames.LeagueOfLegends.EUW-143.0.0.2321459.exe",
+        "installerType": "exe",
+        "scope": "user",
+        "args": "--skip-to-install --disable-auto-launch",
+        "successCodes": [
+          0
+        ]
+      }
+    }
+  }
+}
