@@ -32,6 +32,10 @@
       }
 
       (lib.mkIf cfg.enable {
+        # What fleet.url points peers at.
+        myNixOS.tailnet-https.ports."443" = ''
+          reverse_proxy localhost:${toString config.services.t3code.port}
+        '';
         services.t3code.linkedEnvironments.peers = lib.mapAttrs (name: _: {
           urls = [ (fleet.url name) ];
           pairingCodeFile = config.services.onepassword-secrets.secretPaths.t3codeSharedSecret;
