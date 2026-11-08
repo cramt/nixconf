@@ -147,8 +147,9 @@ deploy *hosts:
 # mode=mount (default) is the repair path: it mounts the host's existing disko
 # layout at /mnt and nixos-installs over it. That rewrites the bootloader and
 # the system profile and leaves /home and /var alone. Use it when a host won't boot.
-# mode=disko wipes and repartitions. The SSH host key is regenerated then, so a
-# build pool member needs its ssh_host_ed25519_key.pub re-keyscanned afterwards.
+# mode=disko wipes and repartitions. The SSH host keys survive when the old disk
+# still mounts; otherwise a build pool member needs its ssh_host_ed25519_key.pub
+# re-keyscanned afterwards.
 #
 # `just install ganymede`, `just install ganymede 192.168.178.50 disko`
 install host addr="installer" mode="mount":
@@ -171,13 +172,27 @@ install host addr="installer" mode="mount":
     if [ "{{mode}}" = disko ]; then
       read -r -p ">> WIPE every disk {{host}}'s disko layout names, on {{addr}}? type 'yes': " ans
       [ "$ans" = yes ] || { echo aborted; exit 1; }
+      files=$(mktemp -d); trap 'rm -rf "$files"' EXIT
+      extra=(--extra-files "$files")
       # A wipe takes /etc/opnix-token with it; bring this machine's along so
       # secrets render on first boot, same as flash-eros does.
       if [ "$(nix eval "$cfg.services.onepassword-secrets.enable")" = true ]; then
-        files=$(mktemp -d); trap 'rm -rf "$files"' EXIT
         install -D -m0640 /etc/opnix-token "$files/etc/opnix-token"
-        extra=(--extra-files "$files")
       fi
+      # Carry the old SSH host keys over if the disk still mounts: they're the
+      # build pool's identity (ssh_host_ed25519_key.pub) and in every known_hosts.
+      ssho=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null)
+      mount=$(nix build --no-link --print-out-paths "$cfg.system.build.mountScript")
+      NIX_SSHOPTS="${ssho[*]}" nix copy --to "ssh://root@{{addr}}" "$mount"
+      if ssh "${ssho[@]}" "root@{{addr}}" "$mount >/dev/null 2>&1 && ls /mnt/etc/ssh/ssh_host_ed25519_key >/dev/null"; then
+        install -d -m0755 "$files/etc/ssh"
+        ssh "${ssho[@]}" "root@{{addr}}" 'cd /mnt/etc/ssh && tar -c ssh_host_*' \
+          | tar -C "$files/etc/ssh" -x
+        echo ">> keeping {{host}}'s SSH host keys: $(cut -d' ' -f2 "$files/etc/ssh/ssh_host_ed25519_key.pub")"
+      else
+        echo ">> no old SSH host keys found, {{host}} gets new ones (re-keyscan if it's a build pool member)" >&2
+      fi
+      ssh "${ssho[@]}" "root@{{addr}}" 'umount -R /mnt 2>/dev/null || true'
     fi
 
     nix run --inputs-from . nixpkgs#nixos-anywhere -- \
