@@ -81,7 +81,7 @@
       '';
     };
 
-    # opnix hosts get the local /etc/opnix-token baked into the image's rootfs
+    # Every SD host runs opnix, so it gets the local /etc/opnix-token baked into the image's rootfs
     # (p2, the sd-image.nix layout every board here uses) through a loopback
     # mount, so opnix works on first boot with no manual step.
     bakeOpnixToken = {
@@ -242,10 +242,10 @@
         cp ${inputs.self.nixosConfigurations.venus.config.system.build.sdImage}/sd-image/*.img $out
       '';
 
-      # venus has no opnix, so there's nothing to bake in.
       flash-venus = mkFlash {
         host = "venus";
         img = inputs.self.packages.${system}.venus-img;
+        bake = bakeOpnixToken;
       };
 
       # Overlay patches and from-source GPU builds Hydra never caches, pulled

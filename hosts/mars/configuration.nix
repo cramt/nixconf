@@ -34,7 +34,6 @@
   myNixOS = {
     gnupg.enable = true;
     onepassword.enable = true;
-    opnix-secrets.enable = true;
     t3code-remotes.enable = true;
     docker.enable = true;
     bluetooth.enable = true;
@@ -54,7 +53,6 @@
       # Like saturn: it takes ~/.t3, and the desktop app moves to ~/.t3-desktop
       # and reaches it as a saved connection (t3code-remotes).
       t3code.enable = true;
-      tailscale.enable = false;
       caddy = {
         enable = false;
         domain = "localhost";

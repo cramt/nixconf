@@ -6,8 +6,7 @@
 #        secretsJson - the JSON the proxy reads, e.g.:
 #                        {"email":"you@corp.com","password":"...","mfaSecret":"..."}
 #
-#   2. Set `myNixOS.services.m365-copilot-proxy.enable = true;` on the host
-#      (the host must also have `myNixOS.opnix-secrets.enable = true;`).
+#   2. Set `myNixOS.services.m365-copilot-proxy.enable = true;` on the host.
 { inputs, ... }: {
   flake.nixosModules."services.m365-copilot-proxy" = { config, lib, ... }:
   let

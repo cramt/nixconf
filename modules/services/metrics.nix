@@ -32,10 +32,7 @@
 
     textfileDir = "/run/node-exporter-textfiles";
 
-    # Pushing needs the shared credential, and that only exists where opnix
-    # does. Hosts without it still run exporters (curl-able on loopback) but
-    # stay out of the fleet view until they get an /etc/opnix-token.
-    runAgent = cfg.exporter.enable && !cfg.server.enable && config.myNixOS.opnix-secrets.enable;
+    runAgent = cfg.exporter.enable && !cfg.server.enable;
 
     # Apps that speak OpenTelemetry push to their own host's prometheus over
     # loopback, so they never hold the remote_write credential; agent mode

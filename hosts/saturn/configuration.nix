@@ -134,7 +134,6 @@
   myNixOS = {
     secureboot.enable = false;
     niri.enable = true;
-    opnix-secrets.enable = true;
     t3code-remotes.enable = true;
     # Tunnel is declared but stays down until `systemctl start wg-quick-vxn`.
     vpn.vxn.enable = true;
@@ -157,11 +156,6 @@
     bundles.users.enable = true;
     services = {
       sshd.enable = true;
-      # Off: the preauth-key join kept failing, and tailscaled without
-      # `authKeyFile` is a daemon that never registers with headscale at all
-      # (the module's baseURL is an auth-key parameter, not --login-server).
-      # Flip back to true to retry the join.
-      tailscale.enable = false;
       # T3 Code server as a user unit, same as luna, so saturn's agents are
       # reachable from a phone/laptop without the desktop app being open. No
       # on-disk SSH key: this host has a session with 1Password's agent.

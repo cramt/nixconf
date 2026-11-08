@@ -41,7 +41,6 @@
   };
 
   myNixOS = {
-    opnix-secrets.enable = true;
     # Agents act as the bot by default; cramt is there for anything that has to
     # be done as Alex (`gh auth switch`, or pinned in T3 Code's settings).
     gh-accounts = {
@@ -123,6 +122,9 @@
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
         dataDir = "/pool/minecraft-forge";
       };
+      # Tailnet coordinator at hs.<domain>, and a node on it like everyone else.
+      headscale.enable = true;
+      tailscale.enable = true;
       caddy = {
         enable = true;
         cacheVolume = "/pool/configs/caddy-cache";

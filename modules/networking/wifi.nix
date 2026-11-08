@@ -42,8 +42,6 @@
 
     config = lib.mkIf (cfg.enable && cfg.networks != { }) {
       services.onepassword-secrets = {
-        enable = true;
-        tokenFile = lib.mkDefault "/etc/opnix-token";
         secrets = lib.mapAttrs' (name: net:
           lib.nameValuePair (secretName name) {
             reference = net.pskRef;

@@ -89,22 +89,12 @@
     };
   };
 
-  # opnix without myNixOS.opnix-secrets: that would also opt the TV box into the
-  # fleet metrics push and the nix GitHub token. Needs /etc/opnix-token on
-  # ganymede. emrakul reads the key on every connect, so no restart wiring.
-  services.onepassword-secrets = {
-    enable = true;
-    tokenFile = "/etc/opnix-token";
-    secrets.tvClientKey = {
-      reference = "op://Homelab/LG-TV/password";
-      owner = "cramt";
-      mode = "0400";
-    };
-    # The t3code agents' `claude` routes through luna's pool with this key.
-    # myNixOS.opnix-secrets would declare it, but see above for why it's off.
-    secrets.cliProxyApiKey = (import ../../myLib/claude-pool.nix).apiKeySecret;
+  # emrakul reads the key on every connect, so no restart wiring.
+  services.onepassword-secrets.secrets.tvClientKey = {
+    reference = "op://Homelab/LG-TV/password";
+    owner = "cramt";
+    mode = "0400";
   };
-  users.users.cramt.extraGroups = ["onepassword-secrets"];
 
   # Plasma used to bring PipeWire along; with emrakul nothing else does.
   # It runs per user, socket-activated in the user manager that emrakul's PAM
