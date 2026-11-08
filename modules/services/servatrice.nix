@@ -46,13 +46,13 @@
   in {
     options.myNixOS.services.servatrice.enable = lib.mkEnableOption "myNixOS.services.servatrice";
     config = lib.mkIf config.myNixOS.services.servatrice.enable {
-      services.onepassword-secrets.secrets.cockatriceEnv.reference = "op://Homelab/Cockatrice/envFile";
+      myNixOS.secrets.cockatriceEnv.reference = "op://Homelab/Cockatrice/envFile";
       virtualisation.oci-containers.containers.servatrice = {
         hostname = "servatrice";
         imageStream = dockerImage;
         image = "servatrice:1";
         volumes = [ "${configTemplate}:/config/servatrice.ini.tpl" ];
-        environmentFiles = [ config.services.onepassword-secrets.secretPaths.cockatriceEnv ];
+        environmentFiles = [ config.myNixOS.secrets.cockatriceEnv.path ];
         ports = [ "4747:4747" "4748:4748" ];
         autoStart = true;
       };

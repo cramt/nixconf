@@ -15,7 +15,7 @@
   let
     cfg = config.myNixOS.tailnet-https;
     site = import ../../myLib/site.nix;
-    secrets = config.services.onepassword-secrets.secretPaths;
+    secrets = config.myNixOS.secrets;
   in {
     options.myNixOS.tailnet-https = {
       name = lib.mkOption {
@@ -37,7 +37,7 @@
     };
 
     config = lib.mkIf (cfg.ports != {}) {
-      services.onepassword-secrets.secrets = {
+      myNixOS.secrets = {
         cloudflareEmail = {
           reference = "op://Homelab/Infrastructure/email";
           services = ["acme-${cfg.name}"];
@@ -57,16 +57,16 @@
           # sees the TXT record lego is waiting for. Ask Cloudflare directly.
           dnsResolver = "1.1.1.1:53";
           credentialFiles = {
-            CLOUDFLARE_EMAIL_FILE = secrets.cloudflareEmail;
-            CLOUDFLARE_API_KEY_FILE = secrets.cloudflareApiKey;
+            CLOUDFLARE_EMAIL_FILE = secrets.cloudflareEmail.path;
+            CLOUDFLARE_API_KEY_FILE = secrets.cloudflareApiKey.path;
           };
           group = config.services.caddy.group;
           reloadServices = ["caddy.service"];
         };
       };
       systemd.services."acme-${cfg.name}" = {
-        after = ["opnix-secrets.service"];
-        wants = ["opnix-secrets.service"];
+        after = ["op-secrets.service"];
+        wants = ["op-secrets.service"];
       };
 
       services.caddy = {

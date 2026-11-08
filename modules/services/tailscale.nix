@@ -42,11 +42,11 @@
         };
       })
       (lib.mkIf (!coordinator.enable) {
-        services.onepassword-secrets.secrets.headscalePreauthKey = {
+        myNixOS.secrets.headscalePreauthKey = {
           reference = "op://Homelab/Headscale/preauthKey";
           services = ["tailscaled-autoconnect"];
         };
-        services.tailscale.authKeyFile = config.services.onepassword-secrets.secretPaths.headscalePreauthKey;
+        services.tailscale.authKeyFile = config.myNixOS.secrets.headscalePreauthKey.path;
       })
     ]);
   };

@@ -59,7 +59,7 @@
     # refresh token past its expiry, Claude Code refuses to start rather than
     # use the base URL, so that case keeps the auth token.
     # Falls back to Claude Code's own OAuth whenever the pool can't be reached
-    # (luna down, opnix not rendered yet): silently routing at that point
+    # (luna down, op-secrets not rendered yet): silently routing at that point
     # would break `claude` entirely rather than degrade.
     pool = import ../../myLib/claude-pool.nix;
     claudePoolPkg = lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
@@ -100,7 +100,7 @@
 
         if [ ! -r "$keyfile" ]; then
           echo "claude: cannot read $keyfile — using the direct OAuth login." >&2
-          echo "        needs myNixOS.opnix-secrets and the onepassword-secrets group (re-login after first deploy)." >&2
+          echo "        needs op-secrets.service and the onepassword-secrets group (re-login after first deploy)." >&2
         else
           echo "claude: ${pool.host} unreachable — using the direct OAuth login." >&2
         fi

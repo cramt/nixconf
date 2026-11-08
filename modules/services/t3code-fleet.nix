@@ -48,7 +48,7 @@
         };
         services.t3code.linkedEnvironments.peers = lib.mapAttrs (name: _: {
           urls = [ (fleet.url name) ];
-          pairingCodeFile = config.services.onepassword-secrets.secretPaths.t3codeSharedSecret;
+          pairingCodeFile = config.myNixOS.secrets.t3codeSharedSecret.path;
           # All of them are Alex's own machines, and agents already deploy luna.
           access = "full-access";
         }) others;

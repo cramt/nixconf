@@ -3,7 +3,7 @@
 # managed policy, Device panel tools, and declared projects and scheduled
 # tasks. Hosts set those directly. This file only adds what's ours:
 #  - the port through port-selector, and the caddy vhost
-#  - secrets from opnix: the shared pairing secret and the on-disk SSH key
+#  - secrets from op-secrets: the shared pairing secret and the on-disk SSH key
 #  - home-manager ssh/git config for headless hosts' agents
 #  - the CLIProxyAPI usage hub (fed by cli-proxy-api.nix) and OTLP metrics
 #
@@ -35,7 +35,7 @@
     cfg = config.myNixOS.services.t3code;
     port = config.port-selector.ports.t3code;
     inherit (config.myNixOS.services.metrics) otlpMetricsUrl;
-    # opnix/op emit the SSH key with no trailing newline, and OpenSSH then
+    # op emits the SSH key with no trailing newline, and OpenSSH then
     # refuses to load it ("error in libcrypto: unsupported"), so agents can't
     # auth or sign against GitHub. Re-emit the key with exactly one trailing
     # newline into a stable path that git/ssh point at.
@@ -45,11 +45,11 @@
       runtimeInputs = [pkgs.coreutils];
       text = ''
         install -d -m700 "/home/${cfg.user}/.ssh"
-        # `test -s` fails (so ExecStartPre fails and systemd retries) if opnix
+        # `test -s` fails (so ExecStartPre fails and systemd retries) if op-secrets
         # hasn't populated the secret yet, e.g. a boot race.
-        test -s "${config.services.onepassword-secrets.secretPaths.personalSshKey}"
+        test -s "${config.myNixOS.secrets.personalSshKey.path}"
         umask 077
-        printf '%s\n' "$(cat "${config.services.onepassword-secrets.secretPaths.personalSshKey}")" > "${sshKey}"
+        printf '%s\n' "$(cat "${config.myNixOS.secrets.personalSshKey.path}")" > "${sshKey}"
       '';
     };
   in {
@@ -114,7 +114,7 @@
         type = lib.types.bool;
         default = false;
         description = ''
-          Render the personal SSH key from opnix to disk for agents to auth and
+          Render the personal SSH key from 1Password to disk for agents to auth and
           sign with. Only for headless hosts: with a desktop session the
           1Password agent already covers this.
         '';
@@ -150,7 +150,7 @@
           inherit (cfg) user;
           inherit port;
           openFirewall = true;
-          sharedSecretFile = lib.mkIf (cfg.sharedSecret != null) config.services.onepassword-secrets.secretPaths.t3codeSharedSecret;
+          sharedSecretFile = lib.mkIf (cfg.sharedSecret != null) config.myNixOS.secrets.t3codeSharedSecret.path;
           preStart = lib.optional cfg.onDiskSshKey.enable (lib.getExe prepareSshKey);
           # Threads that were mid-turn when the server stopped (deploy, crash,
           # reboot) resume with a "continue where you left off" prompt.
@@ -190,12 +190,12 @@
           };
         };
 
-        # Owner, not a `services` restart: opnix restarts *system* units, and
-        # t3code is a user unit, so a `services = ["t3code"]` would make opnix
+        # Owner, not a `services` restart: op-secrets restarts *system* units, and
+        # t3code is a user unit, so a `services = ["t3code"]` would make op-secrets
         # emit a stub system unit with no ExecStart and break activation.
         # After rotating either secret, restart the user service by hand:
         #   systemctl --user -M cramt@ restart t3code
-        services.onepassword-secrets.secrets = {
+        myNixOS.secrets = {
           t3codeSharedSecret = lib.mkIf (cfg.sharedSecret != null) {
             reference = cfg.sharedSecret;
             owner = cfg.user;

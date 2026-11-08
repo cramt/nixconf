@@ -10,7 +10,7 @@
 # The Anthropic API itself (/v1) is the exception to the passkey: Claude Code
 # on the other hosts can't do a browser login, so those paths skip authelia
 # and are gated by the pool's API key instead, shared with the clients through
-# opnix (cliProxyApiKey).
+# op-secrets (cliProxyApiKey).
 {...}: {
   flake.nixosModules."services.cli-proxy-api" = {
     config,
@@ -64,12 +64,12 @@
         '';
       };
 
-      services.onepassword-secrets.secrets.cliProxyApiKey = (import ../../myLib/claude-pool.nix).apiKeySecret;
+      myNixOS.secrets.cliProxyApiKey = (import ../../myLib/claude-pool.nix).apiKeySecret;
 
       home-manager.users.${cfg.user}.myHomeManager.cli-proxy-api = {
         enable = true;
         managementKeyFile = keyFile;
-        apiKeyFile = config.services.onepassword-secrets.secretPaths.cliProxyApiKey;
+        apiKeyFile = config.myNixOS.secrets.cliProxyApiKey.path;
         panelAutoLogin = true;
         # M365 Copilot on the same host joins the pool as `m365/<model>`. The
         # prefix is load-bearing: it serves claude-* ids too, and unprefixed

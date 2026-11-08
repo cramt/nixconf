@@ -151,12 +151,6 @@ in {
     };
   };
 
-  # opnix's change detection is a path unit on the output dir that re-runs the
-  # whole fetch, so the first write kicks off a second `opnix secret` next to
-  # the first. On x86 that's seconds; here the SDK's WASM core runs interpreted
-  # (wazero has no armv7 compiler) and each run pins a core for 20+ minutes.
-  services.onepassword-secrets.systemdIntegration.changeDetection.enable = false;
-
   # 2 cores and 512 MB: this board substitutes, it never compiles.
   nix.settings.max-jobs = 1;
 

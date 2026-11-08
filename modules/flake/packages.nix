@@ -81,9 +81,9 @@
       '';
     };
 
-    # Every SD host runs opnix, so it gets the local /etc/opnix-token baked into the image's rootfs
+    # Every SD host runs op-secrets, so it gets the local /etc/opnix-token baked into the image's rootfs
     # (p2, the sd-image.nix layout every board here uses) through a loopback
-    # mount, so opnix works on first boot with no manual step.
+    # mount, so op-secrets works on first boot with no manual step.
     bakeOpnixToken = {
       runtimeInputs = [ ];
       text = ''

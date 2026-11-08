@@ -22,7 +22,7 @@
   }: let
     cfg = config.myNixOS.sunshine;
     pairing = lib.importJSON ./moonlight-pairing.json;
-    secretPaths = config.services.onepassword-secrets.secretPaths;
+    secrets = config.myNixOS.secrets;
     item = "op://Homelab/Sunshine-${config.networking.hostName}";
 
     # Sunshine's paired-client store (nvhttp.cpp load_state/save_state). Only
@@ -63,10 +63,10 @@
         # the environment, never an argv.
         salt=$(head -c 48 /dev/urandom | base64 -w 0 | tr -dc 'A-Za-z0-9')
         salt=''${salt:0:16}
-        password=$(< ${secretPaths.sunshinePassword})
+        password=$(< ${secrets.sunshinePassword.path})
         digest=$(printf '%s%s' "$password" "$salt" | sha256sum | cut -c 1-64)
         hash=$(fold -w 2 <<< "$digest" | tac | tr -d '\n' | tr 'a-f' 'A-F')
-        username=$(< ${secretPaths.sunshineUsername}) salt=$salt hash=$hash \
+        username=$(< ${secrets.sunshineUsername.path}) salt=$salt hash=$hash \
           jq -n '{username: env.username, salt: env.salt, password: env.hash}' \
           > "$dir/web_ui_login.json.tmp"
         chmod 600 "$dir/web_ui_login.json.tmp"
@@ -126,17 +126,10 @@
     };
 
     config = lib.mkIf cfg.enable {
-      assertions = [
-        {
-          assertion = config.services.onepassword-secrets.enable;
-          message = "myNixOS.sunshine needs opnix (myNixOS.opnix-secrets) for its key and web UI login";
-        }
-      ];
-
-      # The item is created by hand, see docs/moonlight-pairing.md. No `services` restart wiring: opnix restarts system units, and
+      # The item is created by hand, see docs/moonlight-pairing.md. No `services` restart wiring: op-secrets restarts system units, and
       # Sunshine is a user unit. After rotating, `systemctl --user restart
       # sunshine` as the user.
-      services.onepassword-secrets.secrets = let
+      myNixOS.secrets = let
         forUser = {
           owner = cfg.user;
           mode = "0400";
@@ -146,7 +139,6 @@
           forUser
           // {
             reference = "${item}/sunshine-key.pem";
-            kind = "file";
           };
         sunshineUsername = forUser // {reference = "${item}/username";};
         sunshinePassword = forUser // {reference = "${item}/password";};
@@ -165,7 +157,7 @@
           capture = "kms";
           # The identity Moonlight pinned when it was seeded with the pairing.
           cert = "${pkgs.writeText "sunshine-cert.pem" pairing.server.cert}";
-          pkey = secretPaths.sunshineServerKey;
+          pkey = secrets.sunshineServerKey.path;
           # Relative: under the config dir, where sunshine-seed writes them.
           file_state = "sunshine_state.json";
           credentials_file = "web_ui_login.json";

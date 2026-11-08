@@ -105,7 +105,7 @@ the distributed build pool; needs `ssh_host_ed25519_key.pub` next to it). See
 | Subsystem | Description |
 |-----------|-------------|
 | **Theming** | [stylix](https://github.com/nix-community/stylix) — dark theme with Iosevka Nerd Font. `stylixAsset` accepts an image or `.mp4` |
-| **Secrets** | [opnix](https://github.com/brizzbuzz/opnix) — 1Password-based secret injection |
+| **Secrets** | 1Password via the `op` CLI (`modules/security/secrets.nix`) |
 | **Port assignment** | `portselector.nix` — deterministically assigns ports by hashing service names |
 | **Fleet metrics** | Push-based Prometheus on `luna`; agents remote_write through Caddy (`modules/services/metrics.nix`). Services register loopback scrapes via `localJobs`: Caddy per-vhost requests, cli-proxy-api (`cpa-prometheus` plugin), exportarr, nvidia-gpu |
 | **Non-flake pins** | `npins/` — for sources without flake support |

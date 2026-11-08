@@ -106,7 +106,7 @@
         dataDir = "/pool/prometheus";
         dataDirDepends = ["/pool"];
         # bcrypt from `caddy hash-password`; the plaintext lives in
-        # op://Homelab/Metrics/remoteWritePassword and reaches agents via opnix.
+        # op://Homelab/Metrics/remoteWritePassword and reaches agents via op-secrets.
         auth.hashedPassword = "$2a$14$np6mAmdVPkGBrPrFnV4rSeUw45WaHHvVngHupMyOSyClwwnL7444a";
       };
       # The insight driver is a user unit, so it can't declare this itself.

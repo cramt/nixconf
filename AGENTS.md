@@ -56,7 +56,7 @@ A host only needs `hosts/<name>/host.nix` when it deviates from that; it takes `
 
 ### myLib (`myLib/default.nix`)
 
-A thin helper exposing `mkSystem { config, nixpkgs ? inputs.nixpkgs }`, which calls `nixpkgs.lib.nixosSystem` and imports `outputs.nixosModules.default`, opnix, and every other `outputs.nixosModules.*` entry.
+A thin helper exposing `mkSystem { config, nixpkgs ? inputs.nixpkgs }`, which calls `nixpkgs.lib.nixosSystem` and imports `outputs.nixosModules.default` and every other `outputs.nixosModules.*` entry.
 
 ### Module System Pattern
 
@@ -100,7 +100,7 @@ what makes `just deploy` able to reach a host at all).
 ### Key Subsystems
 
 - **Theming**: `stylix` (dark theme, Iosevka Nerd Font). Configured in `modules/bundles/nixos-general.nix`. The `stylixAsset` option accepts an image or `.mp4` (first frame is extracted).
-- **Secrets**: `opnix` (1Password-based). Every host runs it and carries the service-account token at `/etc/opnix-token` (the `flash-*` images bake it in); each module declares the `services.onepassword-secrets.secrets` it reads behind its own enable, so a host renders only what it runs. `modules/security/opnix-secrets.nix` holds just the plumbing plus the secrets home-manager reads.
+- **Secrets**: 1Password via the official `op` CLI. Every host carries the service-account token at `/etc/opnix-token` (the name predates the switch; the `flash-*` images bake it in), and `op-secrets.service` renders each `myNixOS.secrets.<name>` to its read-only `.path` under `/var/lib/op-secrets` (`modules/security/secrets.nix` + `op-secrets.sh`). Each module declares the secrets it reads behind its own enable, so a host renders only what it runs; `services = [...]` on a secret orders those system units after the render and try-restarts them when its value changes. A failed read keeps the last good value and the unit retries with backoff. `op` comes from my-nixpkgs' `_1password-cli`, which has the armv7l build nixpkgs lacks. (opnix was dropped because its SDK runs 1Password's core as interpreted WASM off x86_64/aarch64, and venus couldn't finish a sign-in.)
 - **Tailnet**: every host runs tailscale (`myNixOS.services.tailscale`, on by default) against luna's headscale at `hs.<domain>` (`myNixOS.services.headscale`). MagicDNS names are `<host>.ts.<domain>`; `tailscale0` is trusted like the LAN. Hosts join with the reusable key in `op://Homelab/Headscale/preauthKey`; luna mints its own locally.
 - **Port assignment**: `modules/base/portselector.nix` provides a `port-selector` NixOS option that deterministically assigns ports to services by hashing their names, with manual overrides via `set-ports`.
 - **T3 Code fleet**: `myLib/t3code-fleet.nix` lists every host running a T3 Code server (luna, saturn, ganymede, mars). Each one links to all the others (linked environments, via my-nixpkgs' `services.t3code.linkedEnvironments`), pairing with the one shared secret. Peers link over the tailnet at `https://<host>.ts.cramt.dk` (real certs via `myNixOS.tailnet-https`: lego + Cloudflare DNS-01, tailnet source IPs only). Browsers off the tailnet still go through luna's caddy as `t3-<host>.<domain>`, and `<port>.t3-<host>.<domain>` reaches that host's localhost previews through its passkey-gated gateway on 38774 (`modules/services/t3code-fleet.nix`). A new server host goes in that list, or the build fails.
@@ -145,5 +145,5 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 
 - Alex runs the deploy herself (wl-copy it when ready) — `just deploy` for the fleet, `nh os switch` for the local host alone. After she deploys, verify: ssh in, `systemctl --failed`, journalctl on the touched services.
 - deploy-rs activates with magic rollback: a host that loses its network mid-activation reverts itself. A deploy that "hung then rolled back" means the new config broke connectivity, not that deploy-rs failed.
-- Editing a 1Password secret in place requires restarting `opnix-secrets`, not just the consuming service.
-- Secrets go through opnix (`/etc/opnix-token`) — never interactive `op` prompts.
+- Editing a 1Password secret in place requires restarting `op-secrets`, not just the consuming service (it then try-restarts the secret's `services`).
+- Secrets go through `myNixOS.secrets` / `op-secrets` (token at `/etc/opnix-token`) — never interactive `op` prompts.

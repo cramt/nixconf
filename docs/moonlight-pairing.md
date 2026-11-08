@@ -7,7 +7,7 @@ side pins:
 | | saturn (Sunshine) | ganymede (Moonlight) |
 | --- | --- | --- |
 | Own cert | `cert` setting, from `moonlight-pairing.json` | `certificate` in Moonlight.conf, from `moonlight-pairing.json` |
-| Own key | `pkey` setting, opnix `op://Homelab/Sunshine-saturn/sunshine-key.pem` | `key` in Moonlight.conf, opnix `op://Homelab/Moonlight-ganymede/moonlight-ganymede.pem` |
+| Own key | `pkey` setting, op-secrets `op://Homelab/Sunshine-saturn/sunshine-key.pem` | `key` in Moonlight.conf, op-secrets `op://Homelab/Moonlight-ganymede/moonlight-ganymede.pem` |
 | The other side | `root.named_devices` in `sunshine_state.json` holds ganymede's cert | the `hosts` entry holds saturn's cert, uuid, address and MAC |
 
 `modules/gaming/moonlight-pairing.json` holds the certs and ids. None of it is
@@ -124,14 +124,14 @@ paired this way; pair them again by PIN afterwards.
 
    Keep the backslash. In an `op` assignment a dot separates section from
    field, so an unescaped `sunshine-key.pem[file]` is stored as file `pem` in
-   section `sunshine-key`, and opnix fails with `missing_reference`.
+   section `sunshine-key`, and op-secrets fails to read the reference.
 
    To rotate, replace the `.pem` files on the existing items in the 1Password
    app, or `op item delete` both items and create them again as above (which
    also rolls the web UI password).
 
 4. Commit, deploy both hosts, then on each run
-   `systemctl restart opnix-secrets`. On saturn, restart Sunshine as the user
+   `systemctl restart op-secrets`. On saturn, restart Sunshine as the user
    (`systemctl --user restart sunshine`). On ganymede, restart the session
    (`systemctl restart emrakul`).
 

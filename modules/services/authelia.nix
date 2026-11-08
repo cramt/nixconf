@@ -14,7 +14,7 @@
     cfg = config.myNixOS.services.authelia;
     caddyDomain = config.myNixOS.services.caddy.domain;
     port = config.port-selector.ports.authelia;
-    secretPaths = config.services.onepassword-secrets.secretPaths;
+    secrets = config.myNixOS.secrets;
     autheliaUrl = "https://${cfg.subdomain}.${caddyDomain}";
 
     # The argon2id digest is not a secret (same reasoning as the metrics bcrypt
@@ -59,7 +59,7 @@
 
     config = lib.mkIf cfg.enable {
       # Root-owned is fine: authelia reads them through systemd LoadCredential.
-      services.onepassword-secrets.secrets = lib.mapAttrs (_: field: {
+      myNixOS.secrets = lib.mapAttrs (_: field: {
         reference = "op://Homelab/Authelia/${field}";
         services = ["authelia-main"];
       }) {
@@ -78,12 +78,12 @@
 
       services.authelia.instances.main = {
         enable = true;
-        # Read by systemd's LoadCredential as root, so opnix's root-only
+        # Read by systemd's LoadCredential as root, so op-secrets' root-only
         # default mode is fine.
         secrets = {
-          jwtSecretFile = secretPaths.autheliaJwtSecret;
-          sessionSecretFile = secretPaths.autheliaSessionSecret;
-          storageEncryptionKeyFile = secretPaths.autheliaStorageEncryptionKey;
+          jwtSecretFile = secrets.autheliaJwtSecret.path;
+          sessionSecretFile = secrets.autheliaSessionSecret.path;
+          storageEncryptionKeyFile = secrets.autheliaStorageEncryptionKey.path;
         };
         settings = {
           server.address = "tcp://127.0.0.1:${toString port}/";

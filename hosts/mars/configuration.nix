@@ -25,10 +25,10 @@
 
   networking.firewall.allowedTCPPorts = [3600];
 
-  services.onepassword-secrets.secrets.zammadHttpToken = {
+  myNixOS.secrets.zammadHttpToken = {
     reference = "op://Homelab/Zammad/httpToken";
     mode = "0640";
-    group = "onepassword-secrets";
+    group = (import ../../myLib/secrets.nix).group;
   };
 
   myNixOS = {

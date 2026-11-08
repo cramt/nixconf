@@ -3,7 +3,7 @@
   flake.nixosModules."services.terraform_remote_backend" = { config, lib, ... }: {
     options.myNixOS.services.terraform_remote_backend.enable = lib.mkEnableOption "myNixOS.services.terraform_remote_backend";
     config = lib.mkIf config.myNixOS.services.terraform_remote_backend.enable {
-      services.onepassword-secrets.secrets.terraformRemotePassword = {
+      myNixOS.secrets.terraformRemotePassword = {
         reference = "op://Homelab/TerraformRemoteState/password";
         services = ["postgresql"];
         owner = "postgres";
@@ -14,7 +14,7 @@
         applicationUsers = [
           {
             name = "terraformremotestate";
-            passwordFile = config.services.onepassword-secrets.secretPaths.terraformRemotePassword;
+            passwordFile = config.myNixOS.secrets.terraformRemotePassword.path;
           }
         ];
       };

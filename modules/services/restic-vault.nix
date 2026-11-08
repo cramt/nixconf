@@ -24,7 +24,7 @@
     rcloneConfPath = "${stateDir}/rclone.conf";
 
     # Declarative rclone config. The secret pieces are env-var placeholders
-    # that envsubst expands at service start from the opnix-loaded
+    # that envsubst expands at service start from the op-secrets-rendered
     # EnvironmentFile, so the structure stays auditable in git while the
     # credentials stay in 1Password.
     rcloneConfTemplate = pkgs.writeText "restic-vault-rclone.conf.template" ''
@@ -76,8 +76,8 @@
 
       services.restic.backups.vault = {
         repository = "rclone:mega:${cfg.remotePath}";
-        passwordFile = config.services.onepassword-secrets.secretPaths.resticVaultPassword;
-        environmentFile = config.services.onepassword-secrets.secretPaths.resticVaultRcloneEnv;
+        passwordFile = config.myNixOS.secrets.resticVaultPassword.path;
+        environmentFile = config.myNixOS.secrets.resticVaultRcloneEnv.path;
         rcloneConfigFile = rcloneConfPath;
         paths = cfg.paths;
         initialize = true;
@@ -98,9 +98,9 @@
       systemd.services."restic-backups-vault".serviceConfig.ExecStartPre =
         lib.mkBefore ["+${renderRcloneConf}"];
 
-      # opnix secrets are co-located with the service so they're only fetched
+      # Secrets are co-located with the service so they're only fetched
       # on hosts where the backup is actually enabled.
-      services.onepassword-secrets.secrets = {
+      myNixOS.secrets = {
         resticVaultPassword = {
           reference = "op://Homelab/ResticVault/password";
           services = ["restic-backups-vault"];

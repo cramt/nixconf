@@ -15,7 +15,7 @@
       };
     };
     config = lib.mkIf cfg.enable {
-      services.onepassword-secrets.secrets.homelabControllerEnv = {
+      myNixOS.secrets.homelabControllerEnv = {
         reference = "op://Homelab/HomelabController/envFile";
         services = ["homelab_system_controller"];
       };
@@ -31,7 +31,7 @@
         description = "Runs homelab system controller host";
         wantedBy = ["network-online.target"];
         serviceConfig = {
-          EnvironmentFile = config.services.onepassword-secrets.secretPaths.homelabControllerEnv;
+          EnvironmentFile = config.myNixOS.secrets.homelabControllerEnv.path;
           Restart = "on-failure";
           RestartSec = "5s";
         };

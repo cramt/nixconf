@@ -74,16 +74,16 @@
         enable = true;
         inherit (cfg) host openFirewall;
         port = config.port-selector.ports.m365-copilot-proxy;
-        secretsFile = config.services.onepassword-secrets.secretPaths.m365CopilotProxySecrets;
+        secretsFile = config.myNixOS.secrets.m365CopilotProxySecrets.path;
         # Full untruncated debug logging to
         # /var/lib/m365-copilot-proxy/.config/opencode-m365/debug.log,
         # so failed requests can be reverse engineered from complete payloads.
         environment.M365_TRACE = "1";
       };
 
-      # opnix secret co-located with the service so it's only fetched on hosts
+      # Secret co-located with the service so it's only fetched on hosts
       # where the proxy is actually enabled.
-      services.onepassword-secrets.secrets.m365CopilotProxySecrets = {
+      myNixOS.secrets.m365CopilotProxySecrets = {
         reference = "op://Homelab/M365Copilot/secretsJson";
         services = [ "m365-copilot-proxy" ];
       };

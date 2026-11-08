@@ -7,7 +7,7 @@
     config = lib.mkIf config.myHomeManager.bundles.general.enable {
       programs.home-manager.enable = true;
       nix.extraOptions = ''
-        !include /var/lib/opnix/secrets/nixAccessTokensConf
+        !include ${(import ../../myLib/secrets.nix).dir}/nixAccessTokensConf
       '';
       myHomeManager = {
         yazi.enable = true;

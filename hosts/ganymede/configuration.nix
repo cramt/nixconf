@@ -66,7 +66,7 @@
       # and put back whenever they drift (emrakul's src/tv.rs).
       tv = {
         host = "192.168.178.36";
-        key_file = config.services.onepassword-secrets.secretPaths.tvClientKey;
+        key_file = config.myNixOS.secrets.tvClientKey.path;
         # Not a secret: it pins the TV's self-signed cert, so nobody else on
         # the LAN can pose as the TV and collect the key.
         cert_fingerprint = "11:C5:B1:C5:90:77:50:AB:B9:DA:2A:66:65:CC:CE:2B:B2:88:A5:83:F4:5A:33:39:E7:1F:87:BF:2F:80:85:52";
@@ -91,7 +91,7 @@
   };
 
   # emrakul reads the key on every connect, so no restart wiring.
-  services.onepassword-secrets.secrets.tvClientKey = {
+  myNixOS.secrets.tvClientKey = {
     reference = "op://Homelab/LG-TV/password";
     owner = "cramt";
     mode = "0400";
@@ -174,8 +174,8 @@
     AllowHybridSleep = "no";
   };
 
-  # Same declarative wifi as eros, PSK from opnix. A fresh install has no PSK
-  # until opnix's first fetch, which needs a network: plug in ethernet once.
+  # Same declarative wifi as eros, PSK from 1Password. A fresh install has no PSK
+  # until op-secrets' first fetch, which needs a network: plug in ethernet once.
   myNixOS.wifi = {
     enable = true;
     networks = import ../../myLib/wifi.nix;

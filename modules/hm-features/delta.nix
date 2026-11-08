@@ -10,9 +10,9 @@
 #
 # Auth goes in as an `x-api-key` header rather than through Delta's API-key
 # field, which only writes to the system keychain. That puts the proxy key in
-# settings.json in plaintext (0600). It is read at activation from the opnix
+# settings.json in plaintext (0600). It is read at activation from the op-secrets
 # file and never enters the store; on a fresh host the provider shows up from
-# the first activation after opnix has rendered it.
+# the first activation after op-secrets has rendered it.
 #
 # Delta appends /v1/messages to base_url itself, so the base URL has no /v1.
 {...}: {
@@ -73,7 +73,7 @@
         f="$HOME/.config/delta/settings.json"
         keyfile=${pool.apiKeyFile}
         if [ ! -r "$keyfile" ] || [ ! -s "$keyfile" ]; then
-          echo "delta-merge-settings: cannot read $keyfile (opnix not rendered yet?), skipping" >&2
+          echo "delta-merge-settings: cannot read $keyfile (op-secrets not rendered yet?), skipping" >&2
           exit 0
         fi
         install -d "$HOME/.config/delta"

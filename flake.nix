@@ -230,11 +230,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    opnix = {
-      url = "github:brizzbuzz/opnix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     import-tree.url = "github:vic/import-tree";
 
     niri-flake.url = "github:sodiboo/niri-flake";

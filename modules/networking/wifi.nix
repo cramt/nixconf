@@ -1,8 +1,8 @@
-# Declarative wifi (wpa_supplicant) with PSKs from opnix (1Password).
+# Declarative wifi (wpa_supplicant) with PSKs from 1Password.
 #
 # wpa_supplicant's `ext:` passwords read `name=value` lines from secretsFile,
-# while opnix renders a field's bare value, so a oneshot composes the one from
-# the others once opnix has run. opnix fetches over the network, so on a fresh
+# while op-secrets renders a field's bare value, so a oneshot composes the one from
+# the others once op-secrets has run. op-secrets fetches over the network, so on a fresh
 # flash the first fetch has to come over ethernet (or anything not this wifi);
 # after that the rendered secrets survive reboots.
 { ... }: {
@@ -10,7 +10,6 @@
   let
     cfg = config.myNixOS.wifi;
     ucfirst = s: (lib.toUpper (builtins.substring 0 1 s)) + (builtins.substring 1 (-1) s);
-    # opnix requires camelCase secret keys.
     secretName = name: "wifiPsk${ucfirst name}";
     secretsFile = "/run/wpa_supplicant-secrets/psks";
     supplicantUnits =
@@ -19,7 +18,7 @@
       else map (i: "wpa_supplicant-${i}.service") config.networking.wireless.interfaces;
   in {
     options.myNixOS.wifi = {
-      enable = lib.mkEnableOption "declarative wifi with PSKs from opnix";
+      enable = lib.mkEnableOption "declarative wifi with PSKs from 1Password";
 
       networks = lib.mkOption {
         default = { };
@@ -33,7 +32,7 @@
             pskRef = lib.mkOption {
               type = lib.types.str;
               example = "op://Homelab/li32dfrut7k2gsqwvp4srqitc4/wireless_password";
-              description = "opnix reference to the WPA passphrase.";
+              description = "1Password reference to the WPA passphrase.";
             };
           };
         });
@@ -41,14 +40,12 @@
     };
 
     config = lib.mkIf (cfg.enable && cfg.networks != { }) {
-      services.onepassword-secrets = {
-        secrets = lib.mapAttrs' (name: net:
-          lib.nameValuePair (secretName name) {
-            reference = net.pskRef;
-            mode = "0600";
-          })
-          cfg.networks;
-      };
+      myNixOS.secrets = lib.mapAttrs' (name: net:
+        lib.nameValuePair (secretName name) {
+          reference = net.pskRef;
+          mode = "0600";
+        })
+        cfg.networks;
 
       networking.wireless = {
         enable = true;
@@ -59,9 +56,9 @@
       };
 
       systemd.services.wifi-psks = {
-        description = "Compose wpa_supplicant's secretsFile from opnix";
-        after = [ "opnix-secrets.service" ];
-        wants = [ "opnix-secrets.service" ];
+        description = "Compose wpa_supplicant's secretsFile from 1Password";
+        after = [ "op-secrets.service" ];
+        wants = [ "op-secrets.service" ];
         wantedBy = [ "multi-user.target" ];
         serviceConfig = {
           Type = "oneshot";
@@ -72,12 +69,12 @@
           install -d -m700 -o wpa_supplicant -g wpa_supplicant ${dirOf secretsFile}
           tmp=$(mktemp ${dirOf secretsFile}/.psks.XXXXXX)
           ${lib.concatStrings (lib.mapAttrsToList (name: _: ''
-            printf 'psk_${name}=%s\n' "$(tr -d '\n' < ${config.services.onepassword-secrets.secretPaths.${secretName name}})" >> "$tmp"
+            printf 'psk_${name}=%s\n' "$(tr -d '\n' < ${config.myNixOS.secrets.${secretName name}.path})" >> "$tmp"
           '') cfg.networks)}
           chown wpa_supplicant:wpa_supplicant "$tmp"
           chmod 400 "$tmp"
           mv "$tmp" ${secretsFile}
-          # Don't make wpa_supplicant wait on opnix (which waits on the network);
+          # Don't make wpa_supplicant wait on op-secrets (which waits on the network);
           # bounce it once the PSKs exist instead.
           ${pkgs.systemd}/bin/systemctl try-restart ${lib.concatStringsSep " " supplicantUnits} || true
         '';
