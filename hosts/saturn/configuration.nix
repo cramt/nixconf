@@ -170,6 +170,13 @@
       # and reaches this server as a saved connection (t3code-remotes), which
       # is what the shared secret is for.
       t3code.enable = true;
+      # Upstream's unit is WantedBy=multi-user.target, so it's up from boot.
+      vintagestory = {
+        enable = true;
+        dataDir = "/srv/vintagestory";
+        admins = ["cramt"];
+        whitelist = ["Maladorra"];
+      };
       nixarr.enable = false;
       caddy = {
         enable = false;
