@@ -85,21 +85,18 @@ Danish keyboard, Copenhagen time, and defenestrate's debloat and shell.
 
 ### 1. Get the stock ISO into the store
 
-defenestrate builds from Microsoft's stock ISO, which can't be fetched
-automatically (download links expire after 24 hours). luna's store keeps a
-copy, so pull that and give it a GC root so the next garbage collection
-doesn't delete it:
+defenestrate builds from Microsoft's stock ISO. The build fetches it itself,
+with a headless Chromium clicking through Microsoft's download page (the
+links expire after a day, so there's nothing to pin but the hash), but it's
+9 GB. luna's store keeps a copy, so pulling that is faster, and a GC root
+keeps the next garbage collection from deleting it:
 
 ```sh
 cd /path/to/nixconf
-iso=$(nix eval --raw .#windows.saturn.source.outPath)
+iso=$(nix eval --raw .#windows.saturn.build.isoSource.outPath)
 nix copy --from ssh-ng://luna --no-check-sigs "$iso"
 nix-store --add-root ./windows-iso.gcroot -r "$iso"
 ```
-
-If luna doesn't have it either, download the exact ISO `nix build` asks for
-from <https://www.microsoft.com/software-download/windows11> and add it with
-`nix-store --add-fixed sha256 <file>` in place of the copy.
 
 ### 2. Flash Windows onto the 970
 
