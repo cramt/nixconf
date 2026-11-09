@@ -30,8 +30,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:1bf0a9afde1fc4a0ffb54075339ec9d28dc6c9cb382e27bba72ebaaa764a7db0",
-      "hash": "sha256-0fu/URo6Km/1B1FLIxfzwhRnr+/DT9ErCBqpu8D0a+0="
+      "image_digest": "sha256:70e3b52765b5078dda4498865e6a86263ca0a61f5ee7d8c1b31b97f61ab4f994",
+      "hash": "sha256-bev0F7GLEMOKqqgqRCnLBP9Vq7dg75GlrWsWO/0b8lk="
     },
     "nixpkgs": {
       "type": "Channel",
