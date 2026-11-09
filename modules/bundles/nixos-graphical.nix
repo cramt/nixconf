@@ -48,6 +48,7 @@
       };
       myNixOS = {
         keymapp.enable = true;
+        usb-sticks.enable = true;
         external-monitor-control.enable = true;
       };
       fonts = {
