@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "d730eea5bd740c5a48d8e6d33290e8e70fd3776e",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/d730eea5bd740c5a48d8e6d33290e8e70fd3776e.tar.gz",
-      "hash": "sha256-Trv/PjwUCs9i1wSGSgOG0ZFNt3Idm7wr/VoloepoldY="
+      "revision": "5403e8d18c03541050ef458c959d2ab9469dddab",
+      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/5403e8d18c03541050ef458c959d2ab9469dddab.tar.gz",
+      "hash": "sha256-7AHVnPcenP/RaKrxR5fcTWEIOO9mRzX0CX+U+7zCWEw="
     },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
@@ -30,8 +30,8 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:70e3b52765b5078dda4498865e6a86263ca0a61f5ee7d8c1b31b97f61ab4f994",
-      "hash": "sha256-bev0F7GLEMOKqqgqRCnLBP9Vq7dg75GlrWsWO/0b8lk="
+      "image_digest": "sha256:63627b5a90b302eed5e1a7aecb976c81a5b49013eb06a8f890446ce99c192a69",
+      "hash": "sha256-MVm13+nL+SrbDt9VEBw23DfkHogc/auHsuozvCaEUB0="
     },
     "nixpkgs": {
       "type": "Channel",
