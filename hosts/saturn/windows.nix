@@ -10,12 +10,14 @@
   inputLocale = "0406:00000406"; # Danish, like the Linux side
   timeZone = "Romance Standard Time"; # Europe/Copenhagen
   installTarget = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_1TB_S5H9NS1NB05355E";
-  # Baked into the image and installed on its first boot here. Relock with
-  #   nix run github:cramt/defenestrate -- lock --lock hosts/saturn/apps.lock.json <id>
-  # League last: its installer is the Riot Client, which then downloads the
-  # game, so it's the slow one.
-  apps = ["Mozilla.Firefox" "Discord.Discord" "RiotGames.LeagueOfLegends.EUW"];
-  appsLock = ./apps.lock.json;
+  # Linux apps run from the Linux install itself, through WSL: the logon task
+  # attaches the 980 (by its GPT disk GUID, `lsblk -dno PTUUID`) and mounts
+  # the pool; the mounts come from saturn's NixOS fileSystems, in
+  # modules/flake/windows.nix. Start Menu > "Linux terminal" is the shell.
+  wsl.linux = {
+    user = "cramt";
+    disks = ["fba1d9d1-1150-4352-9ef6-83f00f0f27e8"];
+  };
   # disk stays at the default, setup's interactive picker, for the USB ISO.
   # Its DiskID numbering isn't stable across boots, so wiping one by number
   # could hit the Linux SSD. build.install doesn't have that problem: the image
