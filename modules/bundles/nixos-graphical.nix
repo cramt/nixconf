@@ -43,11 +43,15 @@
       };
       boot.plymouth.enable = false;
       myNixOS.services.udisks.enable = true;
+      # COSMIC turns avahi on but not name lookup, so `ssh <box>.local` (the
+      # office fleet's deploy addresses) didn't resolve.
+      services.avahi.nssmdns4 = true;
       services = {
         pulseaudio.enable = false;
       };
       myNixOS = {
         keymapp.enable = true;
+        usb-sticks.enable = true;
         external-monitor-control.enable = true;
       };
       fonts = {

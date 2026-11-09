@@ -87,14 +87,25 @@ in {
           '';
         };
 
-        xdg.configFile."autostart/1password.desktop".text = ''
-          [Desktop Entry]
-          Name=1Password
-          Exec=1password --silent
-          Terminal=false
-          Type=Application
-          StartupNotify=false
-        '';
+        # A unit, not an XDG autostart entry: 1Password exits on its own when
+        # inotify sees its store dir change, and nix-optimise's hardlinking
+        # (which catches up right after boot) counts. A one-shot autostart then
+        # left the agent dead and every ssh, deploy probes included, keyless.
+        # The system profile path, so a switch that bumps 1Password restarts
+        # onto the new build instead of the stale one.
+        systemd.user.services.onepassword = {
+          Unit = {
+            Description = "1Password (desktop app and SSH agent)";
+            PartOf = ["graphical-session.target"];
+            After = ["graphical-session.target"];
+          };
+          Service = {
+            ExecStart = "/run/current-system/sw/bin/1password --silent";
+            Restart = "always";
+            RestartSec = 2;
+          };
+          Install.WantedBy = ["graphical-session.target"];
+        };
       })
     ]);
   };

@@ -33,6 +33,21 @@
           RestartSec = 30;
         };
         systemd.services.tailscaled-autoconnect.unitConfig.StartLimitIntervalSec = 0;
+        # tailscaled keeps the control server from its last login in its
+        # state, and extraUpFlags only reaches it when autoconnect sees
+        # NeedsLogin. A node last logged in to a dead server (mars still had
+        # hs.re-zip.com) sits in NoState retrying it, and autoconnect waits
+        # forever. Rejoin here when the saved server isn't ours. `debug prefs`
+        # is the only CLI that prints ControlURL.
+        systemd.services.tailscaled-autoconnect.preStart = ''
+          url="$(tailscale debug prefs | jq -r .ControlURL)"
+          if [ "$url" != "${site.headscale_url}" ]; then
+            echo "control server is $url, not ${site.headscale_url}: rejoining"
+            tailscale up --reset --force-reauth \
+              --auth-key "$(cat ${config.services.tailscale.authKeyFile})" \
+              --login-server=${site.headscale_url}
+          fi
+        '';
       }
       (lib.mkIf coordinator.enable {
         services.tailscale.authKeyFile = coordinator.localKeyFile;
