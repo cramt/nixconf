@@ -49,10 +49,13 @@
       name = "t3code-wait-for-secrets";
       runtimeInputs = [pkgs.coreutils];
       text = ''
+        # An array, not a literal word list: with one secret shellcheck
+        # flags the loop as SC2043.
+        secrets=(${lib.escapeShellArgs neededSecrets})
         # Under the user manager's default 90 s start timeout.
         for _ in $(seq 80); do
           ok=1
-          for f in ${lib.escapeShellArgs neededSecrets}; do
+          for f in "''${secrets[@]}"; do
             [ -s "$f" ] || ok=0
           done
           [ "$ok" = 1 ] && exit 0
