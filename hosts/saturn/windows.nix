@@ -10,6 +10,10 @@
   inputLocale = "0406:00000406"; # Danish, like the Linux side
   timeZone = "Romance Standard Time"; # Europe/Copenhagen
   installTarget = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_1TB_S5H9NS1NB05355E";
+  # winget IDs, installed by winget on the first real boot (whatever version
+  # it has then). League last: its installer is the Riot Client, which then
+  # downloads the game, so it's the slow one.
+  apps = ["Mozilla.Firefox" "Discord.Discord" "RiotGames.LeagueOfLegends.EUW"];
   # Linux apps run from the Linux install itself, through WSL: the logon task
   # attaches the 980 (by its GPT disk GUID, `lsblk -dno PTUUID`) and mounts
   # the pool; the mounts come from saturn's NixOS fileSystems, in
