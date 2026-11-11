@@ -15,6 +15,8 @@
     delta.enable = true;
     bundles.work.enable = true;
     bundles.gaming.enable = true;
+    # Work mailbox skill; mars is the host that renders the m365Account secret.
+    claude-code.outlook.enable = true;
 
     helium.enable = true;
     blueman.enable = true;
@@ -139,7 +141,7 @@
   };
 
   home.packages = [
-    (import ../../scripts/keep_awake.nix { inherit pkgs; })
+    (import ../../scripts/keep_awake.nix {inherit pkgs;})
   ];
 
   home.stateVersion = "26.05";
