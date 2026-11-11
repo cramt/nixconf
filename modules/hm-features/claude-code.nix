@@ -39,7 +39,6 @@
 
     cfg = config.myHomeManager.claude-code;
 
-
     # `claude` wrapper: point Claude Code at the cli-proxy-api pool on luna
     # (myLib/claude-pool.nix) so requests are spread over the pooled Claude
     # accounts instead of the single OAuth login in ~/.claude. The proxy
@@ -212,6 +211,9 @@
       mtg.enable =
         lib.mkEnableOption "MTG skills (general + Commander) + `scryfall` bulk-data CLI and `gauntlet`"
         // {default = true;};
+      # Off by default: it needs the m365Account secret, which only hosts that
+      # render it (mars) have.
+      outlook.enable = lib.mkEnableOption "Outlook web mail skill + `outlook-browser` CLI (work mailbox via agent-browser)";
       agents = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule {
           options = {
@@ -281,25 +283,26 @@
           run ${lib.getExe mergeSettings}
         '';
 
-        home.file = {
-          ".claude/CLAUDE.md".text = globalClaudeMd;
-          ".claude/skills/status".source = skills.status.path;
-          ".claude/skills/write-like-alex".source = skills.write-like-alex.path;
-          ".claude/skills/gm".source = skills.gm.path;
-        }
-        // lib.mapAttrs' (name: agent:
-          lib.nameValuePair ".claude/agents/${name}.md" {
-            text = ''
-              ---
-              name: ${builtins.toJSON name}
-              description: ${builtins.toJSON agent.description}
-              model: ${builtins.toJSON agent.model}
-              ---
+        home.file =
+          {
+            ".claude/CLAUDE.md".text = globalClaudeMd;
+            ".claude/skills/status".source = skills.status.path;
+            ".claude/skills/write-like-alex".source = skills.write-like-alex.path;
+            ".claude/skills/gm".source = skills.gm.path;
+          }
+          // lib.mapAttrs' (name: agent:
+            lib.nameValuePair ".claude/agents/${name}.md" {
+              text = ''
+                ---
+                name: ${builtins.toJSON name}
+                description: ${builtins.toJSON agent.description}
+                model: ${builtins.toJSON agent.model}
+                ---
 
-              ${agent.prompt}
-            '';
-          })
-        cfg.agents;
+                ${agent.prompt}
+              '';
+            })
+          cfg.agents;
 
         # M365 Copilot through the pool (cli-proxy-api on luna routes m365/ to
         # the M365 proxy). gpt-5.5-think-deeper because it's the proxy's best
@@ -328,6 +331,10 @@
         home.packages = [agentBrowserPkg];
         home.file.".claude/skills/agent-browser/SKILL.md".source = skillStub;
       }))
+      (lib.mkIf cfg.outlook.enable {
+        home.packages = [skills.outlook-browser];
+        home.file.".claude/skills/outlook/SKILL.md".source = skills.outlook.path;
+      })
       (lib.mkIf cfg.dm-me.enable {
         home.packages = [skills.dm-me-bin];
         home.file.".claude/skills/dm-me/SKILL.md".source = skills.dm-me.path;

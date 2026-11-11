@@ -128,5 +128,23 @@ in {
     text = builtins.readFile "${skillsRoot}/dm-me/dm-me.sh";
   };
 
+  outlook = {
+    name = "outlook";
+    path = "${skillsRoot}/outlook/SKILL.md";
+  };
+
+  # The account secret is rendered by the NixOS side (hosts/mars), which
+  # home-manager can't see, hence the shared path from myLib/secrets.nix.
+  outlook-browser = pkgs.writeShellApplication {
+    name = "outlook-browser";
+    runtimeInputs = with pkgs; [agent-browser nodejs jq oath-toolkit coreutils];
+    text =
+      ''
+        CREDS_FILE=${(import ./secrets.nix).dir}/m365Account
+        STUB=${skillsRoot + "/outlook/webauthn-stub.mjs"}
+      ''
+      + builtins.readFile "${skillsRoot}/outlook/outlook-browser.sh";
+  };
+
   inherit (pkgs) agent-browser;
 }

@@ -86,6 +86,11 @@
       myNixOS.secrets.m365CopilotProxySecrets = {
         reference = "op://Homelab/M365Copilot/secretsJson";
         services = [ "m365-copilot-proxy" ];
+        # Group-readable so cramt can read the account details off luna. The
+        # proxy itself is unaffected: it gets the file via LoadCredential,
+        # which systemd reads as root.
+        mode = "0640";
+        group = (import ../../myLib/secrets.nix).group;
       };
     };
   };

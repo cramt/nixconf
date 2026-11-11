@@ -31,6 +31,14 @@
     group = (import ../../myLib/secrets.nix).group;
   };
 
+  # The M365 work account (email, password, TOTP seed) for the outlook skill's
+  # `outlook-browser login`. Same 1Password item luna's Copilot proxy reads.
+  myNixOS.secrets.m365Account = {
+    reference = "op://Homelab/M365Copilot/secretsJson";
+    mode = "0640";
+    group = (import ../../myLib/secrets.nix).group;
+  };
+
   myNixOS = {
     gnupg.enable = true;
     onepassword.enable = true;
