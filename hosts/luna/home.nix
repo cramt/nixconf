@@ -34,12 +34,25 @@
     ];
   };
 
+  # Where chipsmith-vendor installs Quartus (II 13.0sp1, Prime, Prime Pro) on
+  # this machine: /pool has the room the home directory doesn't.
+  home.sessionVariables.CHIPSMITH_INSTALL_ROOT = "/pool/dev/altera_pro";
+
   # nix-xilinx's FHS wrappers read this to find the imperative Vivado install
   # (AMD's installer can't be packaged); tmpfiles creates /pool/Xilinx in configuration.nix.
   xdg.configFile."xilinx/nix.sh".text = ''
     INSTALL_DIR=/pool/Xilinx
     VERSION=2026.1
   '';
+
+  # The FPGA boards' Linux (mercury: DE25-Nano, venus: Zybo) authorize only the
+  # Personal key, which luna holds on disk (t3code's onDiskSshKey) instead of
+  # in a 1Password agent; without this, ssh offers the default keys and root
+  # is refused. chipsmith's `flash --ssh` goes through it too.
+  programs.ssh.settings."mercury mercury.ts.cramt.dk venus venus.ts.cramt.dk" = {
+    IdentityFile = "/home/cramt/.ssh/id_personal";
+    IdentitiesOnly = true;
+  };
 
   home.stateVersion = "26.05";
 }

@@ -40,42 +40,17 @@
     # auth or sign against GitHub. Re-emit the key with exactly one trailing
     # newline into a stable path that git/ssh point at.
     sshKey = "/home/${cfg.user}/.ssh/id_personal";
-    # t3code is a user unit, so it can't be ordered after the system
-    # op-secrets.service. On a deploy home-manager restarts it during
-    # activation, which can be before op-secrets has rendered (it did on the
-    # opnix -> op-secrets move: three failed starts in 0.3 s, start limit hit,
-    # deploy rolled back). Wait for the files instead of failing on the race.
-    waitForSecrets = pkgs.writeShellApplication {
-      name = "t3code-wait-for-secrets";
-      runtimeInputs = [pkgs.coreutils];
-      text = ''
-        # An array, not a literal word list: with one secret shellcheck
-        # flags the loop as SC2043.
-        secrets=(${lib.escapeShellArgs neededSecrets})
-        # Under the user manager's default 90 s start timeout.
-        for _ in $(seq 80); do
-          ok=1
-          for f in "''${secrets[@]}"; do
-            [ -s "$f" ] || ok=0
-          done
-          [ "$ok" = 1 ] && exit 0
-          sleep 1
-        done
-        echo "t3code: secrets still missing after 80 s: ${lib.concatStringsSep " " neededSecrets}" >&2
-        exit 1
-      '';
-    };
-    neededSecrets =
-      lib.optional cfg.onDiskSshKey.enable config.myNixOS.secrets.personalSshKey.path
-      ++ lib.optional (cfg.sharedSecret != null) config.myNixOS.secrets.t3codeSharedSecret.path;
+    # Gated on every secret t3code reads (myNixOS.secrets.userServices), and
+    # the units that only make sense with it up: declare would otherwise run
+    # against a server that isn't there and retry forever.
+    secretGated =
+      ["t3code" "t3code-declare"]
+      ++ lib.optional (config.services.t3code.linkedEnvironments.peers != {}) "t3code-link-peers";
     prepareSshKey = pkgs.writeShellApplication {
       name = "t3code-prepare-ssh-key";
       runtimeInputs = [pkgs.coreutils];
       text = ''
         install -d -m700 "/home/${cfg.user}/.ssh"
-        # `test -s` fails (so ExecStartPre fails and systemd retries) if op-secrets
-        # hasn't populated the secret yet, e.g. a boot race.
-        test -s "${config.myNixOS.secrets.personalSshKey.path}"
         umask 077
         printf '%s\n' "$(cat "${config.myNixOS.secrets.personalSshKey.path}")" > "${sshKey}"
       '';
@@ -179,9 +154,7 @@
           inherit port;
           openFirewall = true;
           sharedSecretFile = lib.mkIf (cfg.sharedSecret != null) config.myNixOS.secrets.t3codeSharedSecret.path;
-          preStart =
-            lib.optional (neededSecrets != []) (lib.getExe waitForSecrets)
-            ++ lib.optional cfg.onDiskSshKey.enable (lib.getExe prepareSshKey);
+          preStart = lib.optional cfg.onDiskSshKey.enable (lib.getExe prepareSshKey);
           # Threads that were mid-turn when the server stopped (deploy, crash,
           # reboot) resume with a "continue where you left off" prompt.
           settings = lib.mkMerge [
@@ -220,16 +193,15 @@
           };
         };
 
-        # Owner, not a `services` restart: op-secrets restarts *system* units, and
-        # t3code is a user unit, so a `services = ["t3code"]` would make op-secrets
-        # emit a stub system unit with no ExecStart and break activation.
-        # After rotating either secret, restart the user service by hand:
+        # userServices only gates the start; after rotating either secret,
+        # restart the user service by hand:
         #   systemctl --user -M cramt@ restart t3code
         myNixOS.secrets = {
           t3codeSharedSecret = lib.mkIf (cfg.sharedSecret != null) {
             reference = cfg.sharedSecret;
             owner = cfg.user;
             mode = "0400";
+            userServices = secretGated;
           };
           # The 1Password item is still named after paseo, which first needed
           # the key on disk; it holds the Personal key (the one in myLib/keys.nix).
@@ -237,6 +209,7 @@
             reference = "op://Homelab/Paseo/sshPrivateKey";
             owner = "cramt";
             mode = "0600";
+            userServices = secretGated;
           };
         };
 

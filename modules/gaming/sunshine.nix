@@ -127,12 +127,13 @@
 
     config = lib.mkIf cfg.enable {
       # The item is created by hand, see docs/moonlight-pairing.md. No `services` restart wiring: op-secrets restarts system units, and
-      # Sunshine is a user unit. After rotating, `systemctl --user restart
-      # sunshine` as the user.
+      # Sunshine is a user unit, so these gate its start rather than restart it.
+      # After rotating, `systemctl --user restart sunshine` as the user.
       myNixOS.secrets = let
         forUser = {
           owner = cfg.user;
           mode = "0400";
+          userServices = ["sunshine"];
         };
       in {
         sunshineServerKey =
