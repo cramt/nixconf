@@ -248,6 +248,10 @@
     nixos-fpga = {
       url = "github:A-H-Technology/nixos-fpga";
       inputs.nixpkgs.follows = "nixpkgs";
+      # It packs the DE25-Nano's phase 1 with chipsmith: one chipsmith (and
+      # agilex5-re) in the lock, the same one the dev bundle installs.
+      inputs.chipsmith.follows = "chipsmith";
+      inputs.agilex5-re.follows = "chipsmith/agilex5-re";
     };
 
     # Fleet deployment: builds each host's toplevel locally and activates it over
