@@ -78,6 +78,19 @@
 
   security.sudo.wheelNeedsPassword = false;
 
+  # Terasic's kernel config has neither xt_pkttype nor nf_tables, and NixOS's
+  # iptables firewall always uses `-m pkttype`, so firewall.service has failed on
+  # every boot and fails every deploy-rs activation (which then rolls back).
+  # It never ran here, so this changes nothing on the wire. Remove once
+  # https://github.com/A-H-Technology/nixos-fpga/issues/1 enables the module.
+  networking.firewall.enable = false;
+
+  # tailscaled's kernel TUN mode needs IP_MULTIPLE_TABLES and iptables, which
+  # Terasic's kernel lacks too (same issue). Userspace networking needs neither:
+  # the tailnet still reaches sshd, and gives the board a name that survives
+  # the router's stale DHCP leases. Remove with the firewall line above.
+  services.tailscale.interfaceName = "userspace-networking";
+
   # ./home.nix is written against myHomeManager.*, and those options only exist
   # if the repo's HM module set is imported — bundles.users does that per user,
   # and we opted out above, so replicate its import list here. Without this the
