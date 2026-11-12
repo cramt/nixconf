@@ -38,6 +38,17 @@
     };
 
     consumers = lib.unique (lib.concatMap (s: s.services) (lib.attrValues secrets));
+
+    # User units can't be ordered after op-secrets: a different manager. And
+    # waiting for the files inside the unit deadlocks a switch, because
+    # switch-to-configuration blocks on every user start job *before* it starts
+    # any system unit, so a secret new in that generation never gets rendered
+    # (saturn's opnix -> op-secrets deploy hung that way until deploy-rs gave
+    # up). So gate instead: a failed Condition ends the start job at once
+    # without counting as a failure, and a path unit starts the service when
+    # the files land, which also covers boot.
+    userConsumers = lib.zipAttrs (lib.concatMap (s: map (u: {${u} = s.path;}) s.userServices)
+      (lib.attrValues secrets));
   in {
     options.myNixOS.secrets = lib.mkOption {
       default = {};
@@ -80,7 +91,17 @@
             description = ''
               System units (without `.service`) that read this secret: they
               start after op-secrets and are restarted when its value changes.
-              User units can't be listed here.
+              User units go in `userServices`.
+            '';
+          };
+          userServices = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [];
+            description = ''
+              NixOS user units (`systemd.user.services`, without `.service`)
+              that read this secret, or that can't run without one that does.
+              They're skipped while it's missing and started once op-secrets
+              writes it. Not restarted when its value changes.
             '';
           };
         };
@@ -98,6 +119,9 @@
       environment.systemPackages = [pkgs._1password-cli];
 
       systemd.tmpfiles.rules = [
+        # Group-listable so user managers can inotify-watch it for the
+        # userServices path units; the files keep their own modes.
+        "d ${consts.dir} 0751 root ${consts.group} -"
         # Group-readable so cramt can run `op` with it (infra.nix, the dm-me skill).
         "z ${consts.tokenFile} 0640 root ${consts.group} -"
         # opnix's old render dir, unused since op-secrets. Drop this rule once
@@ -135,6 +159,30 @@
           after = ["op-secrets.service"];
           wants = ["op-secrets.service"];
         });
+
+      systemd.user.services =
+        lib.mapAttrs (_: paths: {unitConfig.ConditionFileNotEmpty = paths;}) userConsumers;
+
+      systemd.user.paths = lib.mapAttrs' (unit: paths: let
+        svc = config.systemd.user.services.${unit};
+      in
+        lib.nameValuePair "${unit}-secrets" {
+          description = "Start ${unit} once its 1Password secrets are rendered";
+          inherit (svc) wantedBy partOf;
+          # Keep e.g. ConditionUser=cramt, so other users' managers don't watch.
+          unitConfig = lib.filterAttrs (n: _: n == "ConditionUser") svc.unitConfig;
+          pathConfig = {
+            PathChanged = paths;
+            Unit = "${unit}.service";
+          };
+        })
+      userConsumers;
+
+      # Defining systemd.user.services.<typo> would quietly create a stub unit.
+      assertions = lib.mapAttrsToList (unit: _: {
+        assertion = config.systemd.user.services.${unit}.serviceConfig ? ExecStart;
+        message = "myNixOS.secrets: userServices names `${unit}`, which isn't a user service with an ExecStart.";
+      }) userConsumers;
 
       myNixOS.secrets =
         lib.optionalAttrs (anyHmUser (hmEnabled ["bundles" "general"])) {
