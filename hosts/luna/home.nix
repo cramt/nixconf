@@ -45,5 +45,14 @@
     VERSION=2026.1
   '';
 
+  # The FPGA boards' Linux (mercury: DE25-Nano, venus: Zybo) authorize only the
+  # Personal key, which luna holds on disk (t3code's onDiskSshKey) instead of
+  # in a 1Password agent; without this, ssh offers the default keys and root
+  # is refused. chipsmith's `flash --ssh` goes through it too.
+  programs.ssh.settings."mercury mercury.ts.cramt.dk venus venus.ts.cramt.dk" = {
+    IdentityFile = "/home/cramt/.ssh/id_personal";
+    IdentitiesOnly = true;
+  };
+
   home.stateVersion = "26.05";
 }
