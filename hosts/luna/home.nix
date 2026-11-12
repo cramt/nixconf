@@ -34,6 +34,11 @@
     ];
   };
 
+  # Where chipsmith-vendor installs Quartus (II 13.0sp1, Prime, Prime Pro) on
+  # this machine, and where chipsmith's DE25-Nano build finds Quartus Prime
+  # Pro's SDM firmware: /pool has the room the home directory doesn't.
+  home.sessionVariables.CHIPSMITH_INSTALL_ROOT = "/pool/dev/altera_pro";
+
   # nix-xilinx's FHS wrappers read this to find the imperative Vivado install
   # (AMD's installer can't be packaged); tmpfiles creates /pool/Xilinx in configuration.nix.
   xdg.configFile."xilinx/nix.sh".text = ''
