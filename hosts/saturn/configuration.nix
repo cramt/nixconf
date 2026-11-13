@@ -143,7 +143,10 @@
     bundles.general.enable = true;
     bundles.general.stylixAsset = ../../media/artemis2_1.jpg;
     bundles.graphical.enable = true;
-    steam.enable = true;
+    steam = {
+      enable = true;
+      frame.enable = true;
+    };
     # ganymede's Moonlight streams games from here. Only up while a graphical
     # session is; autologin and suspend-for-WoL are still undecided.
     # Its apps and stream display mode: ./sunshine.nix.
