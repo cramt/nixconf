@@ -53,6 +53,7 @@
     bundles.users.enable = true;
     steam = {
       enable = true;
+      frame.enable = true;
     };
 
     services = {
