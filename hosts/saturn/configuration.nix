@@ -30,6 +30,8 @@
   # load from its own ESP, so there's no menu entry for it. This points the
   # firmware's one-shot BootNext at Windows Boot Manager and reboots.
   environment.systemPackages = [
+    # Steam drives the Frame's wireless adapter through NetworkManager and iw.
+    pkgs.iw
     (pkgs.writeShellApplication {
       name = "reboot-to-windows";
       runtimeInputs = [pkgs.efibootmgr pkgs.gnused];
@@ -101,10 +103,17 @@
   # Decode + log machine-check exceptions into human-readable form (which DIMM,
   # which error) and track corrected-error counts. Diagnosing CPU/RAM MCEs.
   hardware.rasdaemon.enable = true;
+  # cfg80211 sets the regdomain: under the default world domain (00), 6 GHz is
+  # off, so the Steam Frame's wireless adapter (28de:2432, rtw89_8852cu, needs
+  # Linux >= 7.2) pairs but can't bring up its 6 GHz link to the headset. It
+  # has to be a modprobe option because cfg80211 is a module, and a kernel
+  # cmdline param would be applied too early.
   boot.extraModprobeConfig = ''
     options usbhid mousepoll=2
     options snd-intel-dspcfg dsp_driver=1
+    options cfg80211 ieee80211_regdom=DK
   '';
+  hardware.wirelessRegulatoryDatabase = true;
 
   boot.binfmt.emulatedSystems = ["aarch64-linux"];
 
