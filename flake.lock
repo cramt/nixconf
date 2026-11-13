@@ -1703,11 +1703,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794512937,
-        "narHash": "sha256-jqUzPqkurTOHwp2bVk105woWWgQTFiAHPL9nh82mocA=",
+        "lastModified": 1794556222,
+        "narHash": "sha256-akOs9Lsb8F6cyRDU81OwOhEFi4w2Sap1HtR0GEVgC9g=",
         "owner": "A-H-Technology",
         "repo": "nixos-fpga",
-        "rev": "1aa574b334585f62ebdf8b7eb17f6bffa19d0eb1",
+        "rev": "6b864d24304ff4f1bd857b015c46c1714ee9b683",
         "type": "github"
       },
       "original": {
