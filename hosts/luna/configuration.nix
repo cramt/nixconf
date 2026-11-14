@@ -295,6 +295,11 @@
 
   # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [8080]; # tmp
+
+  # luna's root is a 250G SSD that holds the store, docker and a 2G+ t3code
+  # sqlite; journald's default (10% of the fs) let it reach 3.9G while the
+  # disk sat at 98%.
+  services.journald.settings.Journal.SystemMaxUse = "1G";
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
