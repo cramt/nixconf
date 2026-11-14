@@ -176,7 +176,8 @@
       # broke mercury-img-cross on CI's x86 runners. The option is internal +
       # readOnly, so it can't be overridden from here. The branch is our pinned
       # upstream rev plus that four-line fix, nothing else.
-      # Back to github:nix-community/stylix once the fix is merged upstream.
+      # Back to github:nix-community/stylix once
+      # https://github.com/nix-community/stylix/pull/2482 is merged.
       url = "github:cramt/stylix/palette-generator-build-platform";
       inputs = {
         nixpkgs.follows = "nixpkgs";
