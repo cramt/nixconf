@@ -213,6 +213,18 @@
           };
         };
 
+        # A healthy run takes ~25s. On 2026-11-14 a deploy re-rendered the
+        # secrets while caddy was stopped; the path unit started link-peers and
+        # its `t3 environment list` hung with server-owner.sqlite held. t3code
+        # crash-looped on ServerAlreadyRunningError, and home-manager-cramt's
+        # user-unit reload waited on the oneshot, so switch-to-configuration
+        # never got to restart caddy/authelia/docker. A hung run must fail
+        # fast; the hourly timer retries. Drop once my-nixpkgs' t3code module
+        # sets its own TimeoutStartSec on t3code-link-peers.
+        systemd.user.services.t3code-link-peers = lib.mkIf (config.services.t3code.linkedEnvironments.peers != {}) {
+          serviceConfig.TimeoutStartSec = "3min";
+        };
+
         home-manager.users.${cfg.user} = {...}: {
           # No 1Password agent or op-ssh-sign on a headless host, so GitHub
           # auth and commit signing both go through the on-disk key, letting
