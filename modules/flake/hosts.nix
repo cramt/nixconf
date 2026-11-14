@@ -10,6 +10,7 @@ let
 
   knobsFor = name: hostsDir + "/${name}/host.nix";
   site = import ../../myLib/site.nix;
+  ciRunners = import ../../myLib/ci-runners.nix;
 
   # Resolved here rather than by peeking at other hosts' nixosConfigurations,
   # which would make every host evaluate every other host. Peers dial each
@@ -41,6 +42,11 @@ in
           type = lib.types.str;
           default = "${name}.${site.tailnet_domain}";
           description = "The host's MagicDNS name on the fleet tailnet (myNixOS.services.tailscale). Fleet-internal traffic dials this, so it works off the LAN too.";
+        };
+        ciRunner = lib.mkOption {
+          type = lib.types.nullOr (lib.types.enum (lib.attrValues ciRunners));
+          default = null;
+          description = "GitHub Actions runner CI builds this host's toplevel on (modules/flake/ci.nix). null = the runner for its build platform, from myLib/ci-runners.nix.";
         };
         wan = lib.mkOption {
           type = lib.types.nullOr (lib.types.submodule {

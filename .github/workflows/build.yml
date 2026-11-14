@@ -10,14 +10,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Enumerate flake packages -> a build matrix consumed via fromJSON below.
+  # The build plan is data in the flake (modules/flake/ci.nix): one matrix per
+  # stage, each leg already carrying its runner. Consumed via fromJSON below.
   matrix:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       statuses: write
     outputs:
-      matrix: ${{ steps.gen.outputs.matrix }}
+      packages: ${{ steps.gen.outputs.packages }}
       hosts: ${{ steps.gen.outputs.hosts }}
       after_hosts: ${{ steps.gen.outputs.after_hosts }}
     steps:
@@ -48,7 +49,9 @@ jobs:
             access-tokens = github.com=${{ github.token }}
 
       - id: gen
-        run: ./.github/scripts/build-matrix.sh
+        run: |
+          nix eval --json .#ci | jq -r 'to_entries[] | "\(.key)=\(.value | tojson)"' >>"$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
 
   # Prebuild every flake package on its own runner and push to cachix. These are
   # the cache-miss-by-construction derivations (ROCm/CUDA llama.cpp, overlay
@@ -58,7 +61,7 @@ jobs:
     needs: matrix
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.matrix.outputs.packages) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 350
     steps:
@@ -126,7 +129,7 @@ jobs:
     if: ${{ !cancelled() }}
     strategy:
       fail-fast: false
-      # One leg per host, from build-matrix.sh. mercury's leg matters most:
+      # One leg per host, from .#ci.hosts. mercury's leg matters most:
       # its kernel is Terasic's fork via nixos-fpga, which Hydra has never
       # seen, and nixos-fpga's CI only caches it against *its* nixpkgs lock —
       # this is what guarantees the exact closure lands in cachix.
@@ -144,7 +147,7 @@ jobs:
       - name: Build ${{ matrix.host }}
         run: nix build ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel" --print-build-logs
 
-  # Packages tagged meta.ciStage = "after-hosts": SD images and their flashers,
+  # Packages tagged meta.ci.stage = "after-hosts": SD images and their flashers,
   # which wrap a host's closure. Built after the hosts so they substitute that
   # closure from cachix instead of each compiling it again (venus-img and
   # flash-venus took ~2.5h each doing exactly that in the prebuild wave).

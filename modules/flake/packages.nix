@@ -4,13 +4,15 @@
     saturnPkgs = inputs.self.nixosConfigurations.saturn.pkgs;
     erosPkgs = inputs.self.nixosConfigurations.eros.pkgs;
 
-    # CI stage tags, read by .github/scripts/build-matrix.sh. Untagged packages
-    # are prebuilt before the hosts; afterHosts ones wrap a host's closure
-    # (SD images and their flashers), so building them before the hosts would
-    # compile that whole closure twice in parallel. noCi is never built by CI.
-    # meta isn't part of the derivation, so tagging never changes a store path.
-    afterHosts = lib.addMetaAttrs { ciStage = "after-hosts"; };
-    noCi = lib.addMetaAttrs { ciStage = "skip"; };
+    # How CI builds a package (modules/flake/ci.nix): meta.ci = { stage; runner; },
+    # both optional. Untagged packages are prebuilt before the hosts, on their
+    # system's runner. afterHosts ones wrap a host's closure (SD images and
+    # their flashers), so building them before the hosts would compile that
+    # whole closure twice in parallel. noCi is never built by CI. meta isn't
+    # part of the derivation, so tagging never changes a store path.
+    ci = attrs: lib.addMetaAttrs { ci = attrs; };
+    afterHosts = ci { stage = "after-hosts"; };
+    noCi = ci { stage = "skip"; };
 
     # Every packages/<name> (overlays/local-packages.nix), taken from a host's
     # overlaid package set rather than built here: the store paths are then
