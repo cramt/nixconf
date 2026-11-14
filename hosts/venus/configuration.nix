@@ -22,12 +22,14 @@
     libpcap = prev.libpcap.override {withRdma = false;};
 
     # git-lfs's preBuild runs `CC= GOOS= GOARCH= go generate` to build its
-    # man-page generator for the build machine, but the cross env's
-    # CGO_ENABLED=1 leaks in and, with CC cleared, cgo looks for a bare `gcc`
-    # that isn't on PATH. The generator needs no cgo. Not reported upstream as
-    # of 2026-11-14; drop once nixpkgs' git-lfs preBuild sets CGO_ENABLED=0.
+    # man-page generator for the build machine. The cross Go toolchain has
+    # GO_EXTLINK_ENABLED baked in, so even that build-platform binary gets
+    # linked externally with a bare `gcc` that isn't on PATH. The generator is
+    # pure Go: no cgo and internal linking. Drop once nixpkgs merges
+    # https://github.com/NixOS/nixpkgs/pull/583737 (go: remove GO_EXTLINK_ENABLED).
     git-lfs = prev.git-lfs.overrideAttrs (old: {
-      preBuild = builtins.replaceStrings ["CC= GOOS="] ["CC= CGO_ENABLED=0 GOOS="] old.preBuild;
+      preBuild =
+        builtins.replaceStrings ["CC= GOOS="] [''CC= CGO_ENABLED=0 GOFLAGS="$GOFLAGS -ldflags=-linkmode=internal" GOOS=''] old.preBuild;
     });
 
     # Drops yazi's image/video previewers (imagemagick, ffmpeg, chafa, resvg,
