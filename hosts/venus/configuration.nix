@@ -21,6 +21,15 @@
     # when cross-compiling.
     libpcap = prev.libpcap.override {withRdma = false;};
 
+    # git-lfs's preBuild runs `CC= GOOS= GOARCH= go generate` to build its
+    # man-page generator for the build machine, but the cross env's
+    # CGO_ENABLED=1 leaks in and, with CC cleared, cgo looks for a bare `gcc`
+    # that isn't on PATH. The generator needs no cgo. Not reported upstream as
+    # of 2026-11-14; drop once nixpkgs' git-lfs preBuild sets CGO_ENABLED=0.
+    git-lfs = prev.git-lfs.overrideAttrs (old: {
+      preBuild = builtins.replaceStrings ["CC= GOOS="] ["CC= CGO_ENABLED=0 GOOS="] old.preBuild;
+    });
+
     # Drops yazi's image/video previewers (imagemagick, ffmpeg, chafa, resvg,
     # poppler): there's no screen to preview on, and imagemagick alone drags
     # fftw and a cross gfortran in.

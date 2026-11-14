@@ -26,10 +26,11 @@
     loader.efi.canTouchEfiVariables = true;
     # 7.3 is the first kernel whose hid-steam drives the 2026 Steam Controller
     # (Vicki Pfau's series, merged for 7.3-rc1), and the couch compositor reads
-    # the controller through that driver rather than through Steam. legacy_580
-    # was build-checked against 7.3-rc4. Back to linux_zen once it reaches 7.3.
+    # the controller through that driver rather than through Steam. Never
+    # linux_testing: it follows the newest rc, and legacy_580 lags new DRM APIs
+    # (7.4-rc2 dropped drm_fb_helper.h and the crtc/plane reset hooks).
     # https://lore.kernel.org/linux-input/20260807013334.2109386-1-vi@endrift.com/
-    kernelPackages = pkgs.linuxKernel.packages.linux_testing;
+    kernelPackages = pkgs.linuxKernel.packages.linux_zen;
 
     # Kill the internal panel: the lid is always shut, and leaving it enabled
     # means the desktop spans a screen nobody can see and windows can open on

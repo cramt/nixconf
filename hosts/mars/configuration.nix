@@ -18,7 +18,12 @@
 
   #boot.kernelPackages = pkgs.linuxPackages_cachyos;
   boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
-  services.scx.enable = true;
+  # services.scx was removed upstream; its default scheduler was scx_rustland,
+  # so keep running that one.
+  services.scx-loader = {
+    enable = true;
+    config.default_sched = "scx_rustland";
+  };
   boot.extraModprobeConfig = ''
     options usbhid mousepoll=2
   '';

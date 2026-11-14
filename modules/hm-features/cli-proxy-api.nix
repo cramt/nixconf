@@ -57,8 +57,10 @@
     # with the real one. The restorability check (shared by restoreSession and
     # hasRestorableSession) is cut down to "has an apiBase", since neither the
     # isLoggedIn flag nor a stored key means anything when the proxy supplies
-    # the key. --replace-fail so a panel bump that reshuffles the minified
-    # bundle breaks the build instead of quietly bringing the prompt back.
+    # the key. The check is matched by its body, not its minified name, which
+    # moves between panel releases (dh in 1.27, hh in 1.28). --replace-fail so
+    # a panel bump that reshuffles the minified bundle breaks the build instead
+    # of quietly bringing the prompt back.
     managementPanel =
       if cfg.panelAutoLogin
       then
@@ -66,7 +68,7 @@
           mkdir -p $out
           substitute ${pkgs.cli-proxy-api-panel}/management.html $out/management.html \
             --replace-fail 'c=a||``,l=o;' 'c=a||`injected-by-proxy`,l=o;' \
-            --replace-fail 'dh=(e,t,n)=>e&&!!t&&!!n,' 'dh=(e,t,n)=>!!t,'
+            --replace-fail '=(e,t,n)=>e&&!!t&&!!n,' '=(e,t,n)=>!!t,'
         ''
       else pkgs.cli-proxy-api-panel;
 
