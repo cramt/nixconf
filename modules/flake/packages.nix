@@ -4,6 +4,14 @@
     saturnPkgs = inputs.self.nixosConfigurations.saturn.pkgs;
     erosPkgs = inputs.self.nixosConfigurations.eros.pkgs;
 
+    # CI stage tags, read by .github/scripts/build-matrix.sh. Untagged packages
+    # are prebuilt before the hosts; afterHosts ones wrap a host's closure
+    # (SD images and their flashers), so building them before the hosts would
+    # compile that whole closure twice in parallel. noCi is never built by CI.
+    # meta isn't part of the derivation, so tagging never changes a store path.
+    afterHosts = lib.addMetaAttrs { ciStage = "after-hosts"; };
+    noCi = lib.addMetaAttrs { ciStage = "skip"; };
+
     # Every packages/<name> (overlays/local-packages.nix), taken from a host's
     # overlaid package set rather than built here: the store paths are then
     # byte-identical to what that host builds, so CI's prebuild is exactly what
@@ -186,29 +194,36 @@
     };
   in {
     packages = lib.optionalAttrs (system == "x86_64-linux") ({
-      installer-iso = pkgs.runCommand "installer-iso" {} ''
+      # Not in CI: a ~1 GB single NAR that changes on every nixpkgs bump
+      # (every 6h on `update`), and cachix GCs when cramt fills up. Its contents
+      # are all cache.nixos.org paths anyway, so building it on demand is just
+      # substitution plus a squashfs pass.
+      installer-iso = noCi (pkgs.runCommand "installer-iso" {} ''
         ln -s ${installer.config.system.build.isoImage}/iso/*.iso $out
-      '';
+      '');
 
       # The ISO is hybrid, so a plain dd onto a USB stick boots (UEFI + BIOS).
-      flash-installer = mkFlash {
+      flash-installer = noCi (mkFlash {
         host = "installer";
         img = inputs.self.packages.${system}.installer-iso;
         bake = bakeInstallerWifi;
-      };
+      });
 
       # The images are built for the board's own arch (cachix has them from the
-      # ARM runner); only the wrapper is x86.
-      flash-eros = mkFlash {
+      # ARM runner); only the wrapper is x86. Not in CI: an x86 runner can only
+      # substitute the aarch64 image, which the ARM runner is building in the
+      # same stage, so these fail whenever the image changed. The wrapper builds
+      # in seconds locally once the image is cached.
+      flash-eros = noCi (mkFlash {
         host = "eros";
         img = inputs.self.packages.aarch64-linux.eros-img;
         bake = bakeOpnixToken;
-      };
-      flash-mercury = mkFlash {
+      });
+      flash-mercury = noCi (mkFlash {
         host = "mercury";
         img = inputs.self.packages.aarch64-linux.mercury-img;
         bake = bakeOpnixToken;
-      };
+      });
 
       # Same mercury host, cross-compiled from x86 instead of built natively — for
       # iterating on saturn without waiting on the ARM runner or emulating a
@@ -217,8 +232,8 @@
       # hits with `mercury-img`. Use it for local turnaround, trust the native one
       # for what actually gets flashed.
       #
-      # NOT currently buildable on a stock x86 machine, and skipped in
-      # build-matrix.sh for that reason — saturn only gets away with it because
+      # NOT currently buildable on a stock x86 machine, and kept out of CI
+      # (noCi) for that reason — saturn only gets away with it because
       # binfmt executes the aarch64 bits. One blocker is fixed: the stylix fork
       # pinned in flake.nix, whose paletteGenerator was indexed by hostPlatform
       # and so ran an aarch64 binary at IFD time.
@@ -232,21 +247,21 @@
         crossed = inputs.self.nixosConfigurations.mercury.extendModules {
           modules = [{ nixpkgs.buildPlatform = "x86_64-linux"; }];
         };
-      in pkgs.runCommand "mercury-img-cross" {} ''
+      in noCi (pkgs.runCommand "mercury-img-cross" {} ''
         cp ${crossed.config.system.build.sdImage}/sd-image/*.img $out
-      '';
+      '');
 
       # venus (Zybo) SD image. venus is cross-built by its own config, so this
       # x86 leg is the one that gets flashed, unlike mercury's.
-      venus-img = pkgs.runCommand "venus-img" {} ''
+      venus-img = afterHosts (pkgs.runCommand "venus-img" {} ''
         cp ${inputs.self.nixosConfigurations.venus.config.system.build.sdImage}/sd-image/*.img $out
-      '';
+      '');
 
-      flash-venus = mkFlash {
+      flash-venus = afterHosts (mkFlash {
         host = "venus";
         img = inputs.self.packages.${system}.venus-img;
         bake = bakeOpnixToken;
-      };
+      });
 
       # Overlay patches and from-source GPU builds Hydra never caches, pulled
       # from saturn's package set for the same reason as localPackages.
@@ -266,19 +281,19 @@
       # nixos-raspberrypi exposes the SD image at config.system.build.sdImage
       # (instead of the upstream installer's `images.sd-card` path). aarch64
       # only — eros is a Raspberry Pi, so building this on x86 would emulate.
-      eros-img = pkgs.runCommand "eros-img" {} ''
+      eros-img = afterHosts (pkgs.runCommand "eros-img" {} ''
         ${pkgs.zstd}/bin/unzstd -d \
           ${inputs.self.nixosConfigurations.eros.config.system.build.sdImage}/sd-image/* \
           -o $out
-      '';
+      '');
 
       # mercury (Terasic DE25-Nano) SD image, built natively on aarch64 — this is
       # the one CI builds on the ARM runner and pushes to cachix, per the repo's
       # build policy. sdImage.compressImage is off for this host (the flash is a
       # plain dd), so there is nothing to decompress.
-      mercury-img = pkgs.runCommand "mercury-img" {} ''
+      mercury-img = afterHosts (pkgs.runCommand "mercury-img" {} ''
         cp ${inputs.self.nixosConfigurations.mercury.config.system.build.sdImage}/sd-image/*.img $out
-      '';
+      '');
     });
   };
 }

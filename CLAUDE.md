@@ -147,6 +147,7 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 ## Build Policy
 
 - Small config changes build locally on saturn. Chunky/uncached/aarch64 builds go through GitHub Actions (ARM runner) + cachix.
+- CI (`build.yml`) runs three stages, each after the last: flake packages, then host toplevels, then packages tagged `meta.ciStage = "after-hosts"` (SD images and flashers, which wrap a host closure). `"skip"` keeps a package out of CI. The tags are `afterHosts`/`noCi` in `modules/flake/packages.nix`.
 - NEVER build or eval on eros (2GB RAM, hard-crashes) mercury (957 MB) or venus (512 MB). `just deploy` already builds everything locally and only copies closures out (`remoteBuild = false`), so this holds by construction.
 - If Alex is gaming: `--cores 1`, run in background.
 - Flakes only see git-tracked files — `git add` new files before `nix build`.

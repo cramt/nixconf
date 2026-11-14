@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
-# Emits two GitHub Actions matrices: `matrix` (one entry per flake package, per
-# Linux system) so each package is prebuilt on its own runner and pushed to
-# cachix, and `hosts` (one entry per nixosConfiguration) for the toplevel builds. The set of
-# things CI builds is exactly `nix flake show`'s packages — drop a folder into
-# packages/ (or add an output to modules/flake/packages.nix) and it joins.
+# Emits three GitHub Actions matrices, one per CI stage, each waiting on the one
+# before it:
+#   matrix       flake packages, prebuilt on their own runners into cachix
+#   hosts        one leg per nixosConfiguration toplevel
+#   after_hosts  packages that wrap a host's closure (SD images, flashers), so
+#                they substitute it instead of compiling it a second time
+# A package's stage is its meta.ciStage (set in modules/flake/packages.nix):
+# unset for `matrix`, "after-hosts", or "skip" to keep it out of CI. Anything
+# else fails here. The set of things CI builds is exactly `nix flake show`'s
+# packages: drop a folder into packages/ (or add an output to
+# modules/flake/packages.nix) and it joins.
 set -euo pipefail
 
 # system -> runner label
@@ -12,45 +18,41 @@ declare -A runners=(
   [aarch64-linux]=ubuntu-24.04-arm
 )
 
-# Only the packages actually buildable on this system: meta.available drops
-# unsupported platforms (e.g. arm-only steamlink on x86) and unfree licenses
-# (e.g. steamlink), which would otherwise fail the build job at eval time.
-filter='set: builtins.filter (n: let r = builtins.tryEval (set.${n}.meta.available or true); in r.success && r.value) (builtins.attrNames set)'
+# name -> stage, for the packages actually buildable on this system:
+# meta.available drops unsupported platforms (e.g. arm-only steamlink on x86)
+# and unfree licenses (e.g. steamlink), which would otherwise fail the build job
+# at eval time.
+stages='set: builtins.listToAttrs (builtins.concatMap (n:
+  let
+    p = set.${n};
+    avail = builtins.tryEval (p.meta.available or true);
+    stage = p.meta.ciStage or "prebuild";
+  in
+    if !(avail.success && avail.value) then [ ]
+    else if builtins.elem stage [ "prebuild" "after-hosts" "skip" ] then [ { name = n; value = stage; } ]
+    else throw "packages.${n}: unknown meta.ciStage \"${stage}\" (prebuild, after-hosts or skip)"
+) (builtins.attrNames set))'
 
-# Skipped: trivial wrappers around a cross-platform artifact. flash-eros and
-# flash-mercury (x86) only substitute their aarch64 image — they can't build
-# it, and the image's own leg races them in the same wave, so they fail
-# whenever the image drv changed (e.g. every update PR). The wrapper builds in
-# seconds locally once the image is cached, so prebuilding it adds nothing.
-#
-# mercury-img-cross: cross-compiling the whole mercury system from x86 doesn't
-# work yet, and it isn't what gets flashed (that's the natively-built
-# mercury-img on the ARM runner). stylix's palette generator and btop's
-# wrapper are fixed; home-manager still builds its own native aarch64 pkgs
-# (see the comment on mercury-img-cross). saturn never sees any of this because
-# binfmt lets it execute aarch64 builds anyway. Un-skip once that's resolved.
-#
-# installer-iso / flash-installer: a ~1 GB single NAR that changes on every
-# nixpkgs bump (every 6h on `update`), and cachix GCs when cramt fills up. Its
-# contents are all cache.nixos.org paths anyway, so building it on demand is
-# just substitution plus a squashfs pass.
-skip='["flash-eros", "flash-mercury", "mercury-img-cross", "installer-iso", "flash-installer"]'
-
-include='[]'
+prebuild='[]'
+after_hosts='[]'
 for system in "${!runners[@]}"; do
-  names=$(nix eval --json ".#packages.${system}" --apply "$filter")
-  include=$(jq -cn \
-    --argjson acc "$include" \
-    --argjson names "$names" \
-    --argjson skip "$skip" \
-    --arg system "$system" \
-    --arg runner "${runners[$system]}" \
-    '$acc + [ $names[] | select(. as $n | $skip | index($n) | not) | { package: ., system: $system, runner: $runner } ]')
+  named=$(nix eval --json ".#packages.${system}" --apply "$stages")
+  pick() {
+    jq -cn --argjson acc "$1" --argjson named "$named" --arg stage "$2" \
+      --arg system "$system" --arg runner "${runners[$system]}" \
+      '$acc + [ $named | to_entries[] | select(.value == $stage) | { package: .key, system: $system, runner: $runner } ]'
+  }
+  prebuild=$(pick "$prebuild" prebuild)
+  after_hosts=$(pick "$after_hosts" after-hosts)
 done
 
-echo "matrix={\"include\":${include}}" >>"$GITHUB_OUTPUT"
+echo "matrix={\"include\":${prebuild}}" >>"$GITHUB_OUTPUT"
 echo "Generated package matrix:"
-jq <<<"{\"include\":${include}}"
+jq <<<"{\"include\":${prebuild}}"
+
+echo "after_hosts={\"include\":${after_hosts}}" >>"$GITHUB_OUTPUT"
+echo "Generated after-hosts matrix:"
+jq <<<"{\"include\":${after_hosts}}"
 
 # One leg per nixosConfiguration, on a runner native to the platform that builds
 # it: its own system, or x86 for a cross-built host like venus (armv7l). hosts.nix

@@ -19,6 +19,7 @@ jobs:
     outputs:
       matrix: ${{ steps.gen.outputs.matrix }}
       hosts: ${{ steps.gen.outputs.hosts }}
+      after_hosts: ${{ steps.gen.outputs.after_hosts }}
     steps:
       - uses: actions/checkout@v4
 
@@ -61,9 +62,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 350
     steps:
-      - uses: actions/checkout@v4
+      - &checkout
+        uses: actions/checkout@v4
 
-      - uses: wimpysworld/nothing-but-nix@main
+      - &reclaim-disk
+        uses: wimpysworld/nothing-but-nix@main
         # Build scratch lives on the /nix pool (build-dir below), so nothing
         # needs to be held back on / — every GB there belongs in the pool.
         # Rampage because some ubuntu-latest runners come with a 72G root
@@ -74,7 +77,8 @@ jobs:
         with:
           hatchet-protocol: rampage
 
-      - uses: DeterminateSystems/nix-installer-action@main
+      - &install-nix
+        uses: DeterminateSystems/nix-installer-action@main
         with:
           # build-dir: put builds on the reclaimed /nix pool, as
           # nothing-but-nix expects; it creates /nix/build but leaves the
@@ -87,7 +91,8 @@ jobs:
             build-dir = /nix/build
             fallback = true
 
-      - uses: cachix/cachix-action@v17
+      - &cachix
+        uses: cachix/cachix-action@v17
         with:
           name: cramt
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -106,7 +111,8 @@ jobs:
       # "auto-disabling sandboxing". The runner image keeps this on by design
       # (https://github.com/actions/runner-images/issues/10443); drop the step
       # if the images ever ship with it off.
-      - name: Allow unprivileged user namespaces
+      - &userns
+        name: Allow unprivileged user namespaces
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Build ${{ matrix.package }} (${{ matrix.system }})
@@ -127,62 +133,45 @@ jobs:
       matrix: ${{ fromJSON(needs.matrix.outputs.hosts) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 350
+    # Same runner setup as prebuild; the comments live there.
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: wimpysworld/nothing-but-nix@main
-        # Build scratch lives on the /nix pool (build-dir below), so nothing
-        # needs to be held back on / — every GB there belongs in the pool.
-        # Rampage because some ubuntu-latest runners come with a 72G root
-        # that is already full and a 13G /mnt: under cleave plus the old 16G
-        # root reserve the pool topped out at 29G and filled mars on
-        # 2026-11-03, while 16G sat unused on /. The build jobs need nothing
-        # from the runner image beyond what rampage leaves.
-        with:
-          hatchet-protocol: rampage
-
-      - uses: DeterminateSystems/nix-installer-action@main
-        with:
-          # build-dir: put builds on the reclaimed /nix pool, as
-          # nothing-but-nix expects; it creates /nix/build but leaves the
-          # setting to us. fallback: a substituter that dies mid-download
-          # (cache.numtide.com's HTTP 416s on resume took out ganymede on
-          # 2026-11-03) builds that path instead of failing the whole leg.
-          extra-conf: |
-            accept-flake-config = true
-            access-tokens = github.com=${{ github.token }}
-            build-dir = /nix/build
-            fallback = true
-
-      - uses: cachix/cachix-action@v17
-        with:
-          name: cramt
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          # The daemon fails the job when an upload stalls past its hard 60s
-          # shutdown drain, even with every path already pushed (saturn,
-          # venus-img, flash-venus on 2026-11-04). Plain `cachix push` in the
-          # post step has no such cap. Go back to the daemon once a cachix
-          # release ships https://github.com/cachix/cachix/pull/749 (bounded
-          # stalled requests; unreleased after 1.13.0).
-          useDaemon: false
-
-      # Felix (nix.package on every host) is never in a public cache, so legs
-      # compile it, and its functional tests nest the Nix sandbox. Ubuntu
-      # 24.04 images strip capabilities from unprivileged user namespaces via
-      # AppArmor, so nested unshare fails and the tests' golden output gains
-      # "auto-disabling sandboxing". The runner image keeps this on by design
-      # (https://github.com/actions/runner-images/issues/10443); drop the step
-      # if the images ever ship with it off.
-      - name: Allow unprivileged user namespaces
-        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - *checkout
+      - *reclaim-disk
+      - *install-nix
+      - *cachix
+      - *userns
 
       - name: Build ${{ matrix.host }}
         run: nix build ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel" --print-build-logs
 
+  # Packages tagged meta.ciStage = "after-hosts": SD images and their flashers,
+  # which wrap a host's closure. Built after the hosts so they substitute that
+  # closure from cachix instead of each compiling it again (venus-img and
+  # flash-venus took ~2.5h each doing exactly that in the prebuild wave).
+  # Same ordering-only rule as build: a failed host leg doesn't block these.
+  after-hosts:
+    needs: [matrix, build]
+    if: ${{ !cancelled() && needs.matrix.outputs.after_hosts != '{"include":[]}' }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.after_hosts) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 350
+    steps:
+      - *checkout
+      - *reclaim-disk
+      - *install-nix
+      - *cachix
+      - *userns
+
+      - name: Build ${{ matrix.package }} (${{ matrix.system }})
+        run: nix build ".#packages.${{ matrix.system }}.${{ matrix.package }}" --print-build-logs
+
   # Final commit status for dispatched runs (see the pending step in matrix).
-  # Success requires prebuild AND build green, mirroring the run conclusion.
+  # Success requires every stage green, mirroring the run conclusion; a skipped
+  # after-hosts (nothing tagged) counts as green.
   report:
-    needs: [prebuild, build]
+    needs: [prebuild, build, after-hosts]
     if: ${{ always() && github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     permissions:
@@ -191,7 +180,7 @@ jobs:
       - name: Mark final commit status
         env:
           GH_TOKEN: ${{ github.token }}
-          STATE: ${{ (needs.prebuild.result == 'success' && needs.build.result == 'success') && 'success' || 'failure' }}
+          STATE: ${{ (needs.prebuild.result == 'success' && needs.build.result == 'success' && (needs.after-hosts.result == 'success' || needs.after-hosts.result == 'skipped')) && 'success' || 'failure' }}
         run: |
           gh api -X POST "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
             -f state="$STATE" -f context="Build & Cache" \
