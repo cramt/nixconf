@@ -22,6 +22,20 @@
     user = "cramt";
     disks = ["fba1d9d1-1150-4352-9ef6-83f00f0f27e8"];
   };
+  # Keyboard and pointer as COSMIC has them (modules/hm-features/cosmic.nix),
+  # in Windows' coarser steps. Acceleration is already off distro-wide.
+  registry.defaultUser = {
+    "Control Panel\\Keyboard" = {
+      # 0-3 are 250-1000 ms in 250 ms steps; COSMIC's repeat_delay is 600.
+      KeyboardDelay.sz = "1";
+      # 0-31 run roughly linearly from 2.5 to 30 Hz; repeat_rate is 25.
+      KeyboardSpeed.sz = "25";
+    };
+    # libinput's flat profile at speed 0.6042 is 1.6x. With acceleration off,
+    # Windows' pointer speed steps are 1.25/1.5/1.75x at 11/12/13 (10 is 1x),
+    # so 12 is the nearest.
+    "Control Panel\\Mouse".MouseSensitivity.sz = "12";
+  };
   # disk stays at the default, setup's interactive picker, for the USB ISO.
   # Its DiskID numbering isn't stable across boots, so wiping one by number
   # could hit the Linux SSD. build.install doesn't have that problem: the image

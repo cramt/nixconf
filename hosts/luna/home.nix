@@ -49,7 +49,9 @@
   # Personal key, which luna holds on disk (t3code's onDiskSshKey) instead of
   # in a 1Password agent; without this, ssh offers the default keys and root
   # is refused. chipsmith's `flash --ssh` goes through it too.
-  programs.ssh.settings."mercury mercury.ts.cramt.dk venus venus.ts.cramt.dk" = {
+  # The build-pool peers (ganymede, saturn) authorize the same key; agents on
+  # luna borrow them for VMs and builds that don't fit here.
+  programs.ssh.settings."mercury mercury.ts.cramt.dk venus venus.ts.cramt.dk ganymede ganymede.ts.cramt.dk saturn saturn.ts.cramt.dk" = {
     IdentityFile = "/home/cramt/.ssh/id_personal";
     IdentitiesOnly = true;
   };

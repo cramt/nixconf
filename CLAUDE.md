@@ -137,7 +137,7 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 ## Machine & Host Facts
 
 - `saturn` — Alex's desktop (COSMIC daily driver, niri secondary). Home machine; work happens on a separate laptop.
-- `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.47. `eros` — 2GB RPi4 TV kiosk. `mars` — secondary desktop.
+- `luna` — home server, 192.168.178.24. `ganymede` — 192.168.178.89. `eros` — 2GB RPi4 TV kiosk. `mars` — secondary desktop.
 - `mercury` — Terasic DE25-Nano (Agilex 5 SoC FPGA), headless, serial console only. Board support (kernel, boot chain, SD image) lives in our `A-H-Technology/nixos-fpga` flake (local checkout `~/code/nixos-fpga`); the host file only carries fleet bits. Kernel bumps come through that repo's `needs-hardware-test` PRs, never from nixconf. `nix run .#flash-mercury` writes its SD card with the opnix token baked in, like `flash-eros`.
 - `venus` — Digilent Zybo, the original (Zynq-7010, 32-bit armv7l, 512 MB), mercury's Xilinx counterpart; board support also in nixos-fpga. Cross-built from x86 by its own config (`nixpkgs.buildPlatform`), home-manager included, since Hydra caches nothing for armv7l; `nix build .#venus-img` is what gets flashed. Kernel and U-Boot are mainline and follow nixpkgs.
 - Fleet hostnames resolve over the router's DNS, so `just deploy` addresses hosts by name, not IP.
@@ -147,7 +147,7 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 ## Build Policy
 
 - Small config changes build locally on saturn. Chunky/uncached/aarch64 builds go through GitHub Actions (ARM runner) + cachix.
-- CI's build plan is data: `nix eval --json .#ci` (`modules/flake/ci.nix`) lists every leg `build.yml` runs, in three stages, each after the last: flake packages, then host toplevels, then `after_hosts` (SD images and flashers, which wrap a host closure). A package sets `meta.ci = { stage; runner; }` through the `ci`/`afterHosts`/`noCi` helpers in `modules/flake/packages.nix` (`stage = "skip"` keeps it out of CI); a host sets `ciRunner` in `host.nix`. Runners default from the build system via `myLib/ci-runners.nix`, which is also the only set of labels allowed.
+- CI's build plan is data: `nix eval --json .#ci` (`modules/flake/ci.nix`) lists every leg `build.yml` runs, in three stages, each after the last: flake packages, then host deploy profiles (toplevel plus deploy-rs's activate-rs, exactly what `just deploy` realises), then `after_hosts` (SD images and flashers, which wrap a host closure). A package sets `meta.ci = { stage; runner; }` through the `ci`/`afterHosts`/`noCi` helpers in `modules/flake/packages.nix` (`stage = "skip"` keeps it out of CI); a host sets `ciRunner` in `host.nix`. Runners default from the build system via `myLib/ci-runners.nix`, which is also the only set of labels allowed.
 - NEVER build or eval on eros (2GB RAM, hard-crashes) mercury (957 MB) or venus (512 MB). `just deploy` already builds everything locally and only copies closures out (`remoteBuild = false`), so this holds by construction.
 - If Alex is gaming: `--cores 1`, run in background.
 - Flakes only see git-tracked files — `git add` new files before `nix build`.

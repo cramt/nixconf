@@ -121,7 +121,10 @@ jobs:
       - name: Build ${{ matrix.package }} (${{ matrix.system }})
         run: nix build ".#packages.${{ matrix.system }}.${{ matrix.package }}" --print-build-logs
 
-  # Build each host toplevel. needs:prebuild only for ordering (warm cache);
+  # Build each host's deploy-rs activation profile: the toplevel plus the
+  # activate-rs wrapper `just deploy` actually realises. Building only the
+  # toplevel left venus's cross-compiled deploy-rs out of cachix (Hydra has no
+  # armv7l), so every deploy compiled it locally. needs:prebuild only for ordering (warm cache);
   # if:!cancelled() lets these run even if a prebuild leg failed, so a single
   # bad package never blocks the host builds — they just fall back to compiling.
   build:
@@ -145,7 +148,7 @@ jobs:
       - *userns
 
       - name: Build ${{ matrix.host }}
-        run: nix build ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel" --print-build-logs
+        run: nix build ".#deploy.nodes.${{ matrix.host }}.profiles.system.path" --print-build-logs
 
   # Packages tagged meta.ci.stage = "after-hosts": SD images and their flashers,
   # which wrap a host's closure. Built after the hosts so they substitute that

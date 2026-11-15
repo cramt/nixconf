@@ -27,6 +27,17 @@
       # never mentioned containers. Nothing in this repo uses quadlet today, so
       # off unless a host asks; mkDefault keeps that a one-liner.
       virtualisation.quadlet.enable = lib.mkDefault false;
+      # nixpkgs' resolvconf.conf try-restarts nscd on every resolv.conf write to
+      # flush glibc nscd's hosts cache. nsncd caches nothing, so all that does is
+      # bounce it: a switch that restarts tailscaled rewrites resolv.conf 5+ times
+      # in ~3s, trips nscd's StartLimitBurst, and leaves it failed, which fails
+      # the activation and makes deploy-rs roll back (saturn, 2026-11-15).
+      # resolvconf.conf is sourced as shell and extraConfig comes last, so this
+      # reassignment wins. Drop it once nixpkgs gates libc_restart on
+      # !enableNsncd; closest upstream report: https://github.com/NixOS/nixpkgs/issues/148306
+      networking.resolvconf.extraConfig = lib.mkIf config.services.nscd.enableNsncd ''
+        libc_restart=:
+      '';
       # systemd-hostnamed is activated two ways at once: varlink through
       # systemd-hostnamed.socket, and D-Bus through org.freedesktop.hostname1.
       # On a systemd bump switch-to-configuration stops both, and NetworkManager
@@ -50,16 +61,41 @@
         options = "--delete-older-than 14d";
       };
 
+      # A weekly timer can't help a single build that fills the disk between
+      # runs, so the daemon GCs mid-build once free space drops under min-free,
+      # instead of dying with ENOSPC part-way through a closure. Sized off the
+      # filesystem holding the store at boot, since one fixed pair can't fit
+      # both luna's 228G root and an SD card: the old 10G/50G kept a 98%-full
+      # luna permanently under min-free, and the daemon re-runs a full-store GC
+      # every 3% of shrinkage there. Each one deleted whatever deploy-rs had
+      # just copied over and not yet activated (2026-11-15 deploy, missing
+      # activate-rs).
+      systemd.services.nix-free-space = {
+        description = "Size the nix daemon's min-free/max-free off the store's filesystem";
+        wantedBy = [ "nix-daemon.service" ];
+        before = [ "nix-daemon.service" ];
+        path = [ pkgs.coreutils ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = ''
+          size=$(( $(stat -f -c '%b * %S' /nix/store) ))
+          mkdir -p /run/nix
+          {
+            echo "min-free = $(( size * 5 / 100 ))"
+            echo "max-free = $(( size * 15 / 100 ))"
+          } > /run/nix/free-space.conf
+        '';
+      };
+      nix.extraOptions = ''
+        !include /run/nix/free-space.conf
+      '';
+
       nix.daemonCPUSchedPolicy = "idle";
       nix.daemonIOSchedClass = "idle";
       nix.settings = {
         experimental-features = ["nix-command" "flakes"];
-        # A weekly timer can't help a single build that fills the disk between
-        # runs. These let the daemon collect garbage mid-build once free space
-        # drops under min-free, instead of dying with ENOSPC part-way through
-        # a closure.
-        min-free = 10 * 1024 * 1024 * 1024;
-        max-free = 50 * 1024 * 1024 * 1024;
         # Honor the substituters/trusted-public-keys declared in flake.nix's
         # nixConfig. Without this, nix prints "ignoring untrusted flake
         # configuration setting 'extra-substituters'" and drops the flake's
