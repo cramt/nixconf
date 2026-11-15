@@ -30,15 +30,15 @@
       "type": "Container",
       "image_name": "itzg/minecraft-server",
       "image_tag": "java8",
-      "image_digest": "sha256:f020685024d1573f79a65b28b0ff9b9ed3773de1ef4e4e30dbdd8652140afc02",
-      "hash": "sha256-MRPp7Pf21VBCb1opRVnyJXXCBKnCyTeFN7WfxILklEY="
+      "image_digest": "sha256:551ad0ff543d1c183c094e9a3cebded246991e40a90f1f0dc2c3c310efc91b44",
+      "hash": "sha256-YaCV5wv9FB9uuiusYwKITMUkB8s5AGcBCbP2APMW0Lw="
     },
     "nixpkgs": {
       "type": "Channel",
       "name": "nixpkgs-unstable",
       "artifact": "nixexprs.tar.xz",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1118975.2074cc672349/nixexprs.tar.xz",
-      "hash": "sha256-QG/HY0t5t3sfT2ozW/Ikis5Klqf0X4nfTuLvFaBpNno="
+      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1119636.e126e9e73c33/nixexprs.tar.xz",
+      "hash": "sha256-E5zhHNI4GPnhvJFu8cxkO5wt0NK23Hu66QQXrD4XX8Q="
     },
     "vixen-zed": {
       "type": "Git",
