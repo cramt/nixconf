@@ -27,6 +27,17 @@
       # never mentioned containers. Nothing in this repo uses quadlet today, so
       # off unless a host asks; mkDefault keeps that a one-liner.
       virtualisation.quadlet.enable = lib.mkDefault false;
+      # nixpkgs' resolvconf.conf try-restarts nscd on every resolv.conf write to
+      # flush glibc nscd's hosts cache. nsncd caches nothing, so all that does is
+      # bounce it: a switch that restarts tailscaled rewrites resolv.conf 5+ times
+      # in ~3s, trips nscd's StartLimitBurst, and leaves it failed, which fails
+      # the activation and makes deploy-rs roll back (saturn, 2026-11-15).
+      # resolvconf.conf is sourced as shell and extraConfig comes last, so this
+      # reassignment wins. Drop it once nixpkgs gates libc_restart on
+      # !enableNsncd; closest upstream report: https://github.com/NixOS/nixpkgs/issues/148306
+      networking.resolvconf.extraConfig = lib.mkIf config.services.nscd.enableNsncd ''
+        libc_restart=:
+      '';
       # systemd-hostnamed is activated two ways at once: varlink through
       # systemd-hostnamed.socket, and D-Bus through org.freedesktop.hostname1.
       # On a systemd bump switch-to-configuration stops both, and NetworkManager
