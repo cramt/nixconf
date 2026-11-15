@@ -82,8 +82,10 @@
         runtimeInputs = [ pkgs.nix pkgs.openssh ];
         text = ''
           # Locally built paths are unsigned; root over ssh already owns the box,
-          # which is the same reasoning deploy-rs copies with.
-          nix copy --no-check-sigs --to ssh-ng://root@${stateHost} ${runner}
+          # which is the same reasoning deploy-rs copies with. -s lets luna pull
+          # whatever cache.nixos.org has (the cloudflare provider is a 247M NAR,
+          # 38M compressed there) instead of us streaming it raw over ssh.
+          nix copy --no-check-sigs --substitute-on-destination --to ssh-ng://root@${stateHost} ${runner}
           # A tty only when we have one: apply needs it for its prompt, and
           # `state pull > file` would get CRLFs from one.
           tty=()
