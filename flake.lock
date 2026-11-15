@@ -453,17 +453,17 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1794090488,
-        "narHash": "sha256-llDYmsjFODzkCs+XBLNVh3THk02t90li3JyX1Ng4zeA=",
+        "lastModified": 1794770507,
+        "narHash": "sha256-3g8MmrTzwGXQ1taHVTHjnAuoTN49ECHabkN6ASuMgTY=",
         "owner": "cramt",
         "repo": "felix",
-        "rev": "cdc51d5710ec1547e493be6679b4987b6a893579",
+        "rev": "5cacbe8c456308436e0078c4f8b5749cd6c457a1",
         "type": "github"
       },
       "original": {
         "owner": "cramt",
         "repo": "felix",
-        "rev": "cdc51d5710ec1547e493be6679b4987b6a893579",
+        "rev": "5cacbe8c456308436e0078c4f8b5749cd6c457a1",
         "type": "github"
       }
     },
