@@ -53,7 +53,11 @@
       '';
     })
   ];
-  boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+  # Default (LTS) kernel, not zen: 7.3.4-zen oopsed in process_one_work
+  # (bh_worker -> tasklet_action, NULL+0x138) as xhci_pci registered the Comet
+  # Lake xHCI's USB3 bus, every boot (2026-11-16). That's core workqueue code,
+  # so _latest (vanilla 7.3.4) is no safer; zen bought nothing measurable here.
+  boot.kernelPackages = pkgs.linuxPackages;
 
   # Mounts the Windows SSD. Read-write works because defenestrate turns off Fast
   # Startup, which would otherwise leave NTFS marked in use.
