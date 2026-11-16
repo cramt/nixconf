@@ -20,7 +20,6 @@
           ''}
           export GPG_TTY=$(tty)
           bios_reboot() { systemctl reboot --firmware-setup }
-          windows_reboot() { systemctl reboot --boot-loader-entry=auto-windows }
           # zle widgets only exist when the line editor is actually active;
           # guarding avoids "can't change option: zle" noise on `zsh -i -c`
           # spawns (e.g. t3code capturing env / its embedded terminal).

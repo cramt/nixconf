@@ -27,32 +27,11 @@
   # see docs/saturn-mce-bios.md). No USB stick needed.
   boot.loader.systemd-boot.memtest86.enable = true;
   # Windows has the 970 EVO to itself, ESP included, and systemd-boot can only
-  # load from its own ESP, so there's no menu entry for it. This points the
-  # firmware's one-shot BootNext at Windows Boot Manager and reboots.
-  environment.systemPackages = [
-    (pkgs.writeShellApplication {
-      name = "reboot-to-windows";
-      runtimeInputs = [pkgs.efibootmgr pkgs.gnused];
-      text = ''
-        # Each reflash leaves the firmware a "Windows Boot Manager" entry for
-        # an ESP that no longer exists, so go by the ESP's partition UUID,
-        # not the label: the first entry whose ESP is actually present.
-        entry=
-        while read -r num uuid; do
-          if [ -e "/dev/disk/by-partuuid/$uuid" ]; then
-            entry=$num
-            break
-          fi
-        done < <(efibootmgr -v | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? Windows Boot Manager.*HD\([0-9]+,GPT,([0-9a-fA-F-]+),.*/\1 \2/p')
-        if [ -z "$entry" ]; then
-          echo "no Windows Boot Manager entry for an ESP on this machine" >&2
-          exit 1
-        fi
-        sudo efibootmgr --bootnext "$entry" > /dev/null
-        systemctl reboot
-      '';
-    })
-  ];
+  # load from its own ESP, so there's no menu entry for it. `dfnstrate reboot`
+  # points the firmware's one-shot BootNext at the Windows Boot Manager entry
+  # whose ESP exists; the rest of the CLI (flash, update, doctor) is what
+  # maintains that install.
+  environment.systemPackages = [inputs.defenestrate.packages.${pkgs.stdenv.hostPlatform.system}.dfnstrate];
   # Stock (vanilla mainline) kernel, not zen or another patch set: zen's patches
   # panicked every boot on 7.3.4-zen1 (a duplicated worker->task deref in
   # workqueue.c, https://github.com/zen-kernel/zen-kernel/issues/425) and took
