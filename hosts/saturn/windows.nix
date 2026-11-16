@@ -13,7 +13,8 @@
   # winget IDs, installed by winget on the first real boot (whatever version
   # it has then). League last: its installer is the Riot Client, which then
   # downloads the game, so it's the slow one.
-  apps = ["Mozilla.Firefox" "Discord.Discord" "RiotGames.LeagueOfLegends.EUW"];
+  # Git for Claude Code's Bash tool (it falls back to PowerShell without).
+  apps = ["Mozilla.Firefox" "Discord.Discord" "Git.Git" "Anthropic.ClaudeCode" "RiotGames.LeagueOfLegends.EUW"];
   # Linux apps run from the Linux install itself, through WSL: the logon task
   # attaches the 980 (by its GPT disk GUID, `lsblk -dno PTUUID`) and mounts
   # the pool; the mounts come from saturn's NixOS fileSystems, in
@@ -21,6 +22,19 @@
   wsl.linux = {
     user = "cramt";
     disks = ["fba1d9d1-1150-4352-9ef6-83f00f0f27e8"];
+    # Copied into %USERPROFILE% at every logon, so Claude Code on Windows
+    # goes through the same pool with the same instructions. Config from
+    # claude-code.windows (modules/hm-features/claude-code.nix); the key is
+    # op-secrets' render from Linux's last boot, so nothing secret is in the
+    # image.
+    files = let
+      claude = "/home/cramt/.local/share/defenestrate/claude";
+    in {
+      ".claude/settings.json" = "${claude}/settings.json";
+      ".claude/CLAUDE.md" = "${claude}/CLAUDE.md";
+      ".claude/pool-key.ps1" = "${claude}/pool-key.ps1";
+      ".claude/pool-key" = (import ../../myLib/claude-pool.nix).apiKeyFile;
+    };
   };
   # Keyboard and pointer as COSMIC has them (modules/hm-features/cosmic.nix),
   # in Windows' coarser steps. Acceleration is already off distro-wide.

@@ -114,7 +114,7 @@
     # home.file symlink: Claude Code writes to it itself (/model, /theme), so
     # these get deep-merged in on every activation and everything else in the
     # file is left alone.
-    declaredSettings = (pkgs.formats.json {}).generate "claude-declared-settings.json" {
+    declaredSettingsAttrs = {
       # Empty string hides the Co-Authored-By trailer / "Generated with"
       # footer entirely. The global instructions already forbid attribution,
       # but the harness injects its own default, so it has to die at the source.
@@ -132,6 +132,55 @@
       # slow one costs nothing until its tools are called.
       env.MCP_TIMEOUT = "120000";
     };
+    declaredSettings = (pkgs.formats.json {}).generate "claude-declared-settings.json" declaredSettingsAttrs;
+
+    # Claude Code on this machine's defenestrate Windows (`windows.enable`).
+    # Its logon task copies these from here into %USERPROFILE%\.claude
+    # (wsl.linux.files in hosts/<host>/windows.nix), next to the pool key
+    # it copies from op-secrets' render. Paths are relative to $HOME.
+    windowsDir = ".local/share/defenestrate/claude";
+    windowsSettings = lib.recursiveUpdate declaredSettingsAttrs {
+      # The wrapper's routing, minus its two fallbacks: an apiKeyHelper
+      # outranks a claude.ai login, so the pool always wins (no /voice), and
+      # with luna down this Claude fails rather than going direct. Both would
+      # need a wrapper on Windows; the helper is enough to get going.
+      # Absolute, with forward slashes and no $: Claude Code runs the helper
+      # through whatever shell it finds (cmd, PowerShell or Git Bash), which
+      # all take this the same way.
+      apiKeyHelper = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:/Users/${config.home.username}/.claude/pool-key.ps1";
+      env = {
+        ANTHROPIC_BASE_URL = pool.url;
+        ANTHROPIC_API_KEY = "";
+        # As the wrapper's no-login branch, which is what this always is.
+        ENABLE_CLAUDEAI_MCP_SERVERS = "0";
+        CLAUDE_CODE_PROMPT_CACHE_TTL = "1h";
+        # home.sessionVariables below, which Windows has no shell to read.
+        CLAUDE_CODE_RETRY_WATCHDOG = "1";
+        CLAUDE_CODE_FORK_SUBAGENT = "0";
+      };
+    };
+    # The NixOS-specific sections swapped for Windows ones; the rest is the
+    # same instructions.
+    windowsClaudeMd = let
+      rest = lib.last (lib.splitString "## Git and GitHub" globalClaudeMd);
+    in ''
+      # Global Claude Code Instructions
+
+      ## System Info
+
+      This is the Windows side of a dual-boot machine, built by defenestrate
+      (github.com/cramt/defenestrate): explorer.exe is replaced by its tiling
+      shell. The other side is NixOS. Both are declared in nixconf: Windows in
+      hosts/<host>/windows.nix (winget apps, registry, files copied from Linux at
+      logon), and this file and settings.json come from the Linux config, so
+      edits made here are overwritten at the next logon.
+
+      ## Installing packages
+
+      - winget. Anything that should stay goes into `apps` in the host's
+        windows.nix too, or the next reflash loses it
+
+      ## Git and GitHub${lib.replaceStrings ["wl-copy it" "`| wl-copy`" "- The gh cli is available and authed\n"] ["copy it with Set-Clipboard" "`| Set-Clipboard`" ""] rest}'';
     # User-scope MCP servers live in ~/.claude.json, which Claude Code rewrites
     # constantly (project state, counters), so same deal: these keys get merged
     # in, any server not named here is left alone. Store paths rather than
@@ -213,6 +262,7 @@
         // {default = true;};
       # Off by default: it needs the m365Account secret, which only hosts that
       # render it (mars) have.
+      windows.enable = lib.mkEnableOption "Claude Code config for this machine's defenestrate Windows, under ~/${windowsDir} for its logon task to copy over (hosts/<host>/windows.nix)";
       outlook.enable = lib.mkEnableOption "Outlook web mail skill + `outlook-browser` CLI (work mailbox via agent-browser)";
       agents = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule {
@@ -236,6 +286,17 @@
       };
     };
     config = lib.mkIf cfg.enable (lib.mkMerge [
+      (lib.mkIf cfg.windows.enable {
+        home.file = {
+          "${windowsDir}/settings.json".source = (pkgs.formats.json {}).generate "claude-windows-settings.json" windowsSettings;
+          "${windowsDir}/CLAUDE.md".text = windowsClaudeMd;
+          # Trimmed: whether op leaves a newline on the render isn't
+          # something to depend on in a header value.
+          "${windowsDir}/pool-key.ps1".text = ''
+            (Get-Content -Raw -LiteralPath "$env:USERPROFILE\.claude\pool-key").Trim()
+          '';
+        };
+      })
       {
         # Not for me, for the agent: it reaches for `python3 - <<'EOF'` to edit
         # files no matter what CLAUDE.md says. Without it, 147 of those calls

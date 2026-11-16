@@ -19,6 +19,8 @@
     bundles.gaming.enable = true;
     helium.enable = true;
     agentsview.enable = true;
+    # Copied into saturn's Windows at each logon (windows.nix, wsl.linux.files).
+    claude-code.windows.enable = true;
     agentsview.service.enable = true;
     # Diagnostic for the intermittent WAN loss seen 2026-07-30 (affected multiple
     # devices, cleared on its own, every local component measured clean afterwards).
