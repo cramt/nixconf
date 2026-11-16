@@ -124,7 +124,7 @@ The image build takes ~10 minutes and ~55G of space: the 64G sparse scratch
 disk fills ~29G under `/nix/var/nix/b`, and the compressed image is ~23G in
 the store.
 
-Then `reboot-to-windows`. The install already finished in the sandbox, so
+Then `dfnstrate reboot`. The install already finished in the sandbox, so
 the first boot just finds saturn's hardware (like after a motherboard swap),
 runs a chkdsk because `ntfsresize` asks for one, and comes up at the
 defenestrate shell. No setup screens, and the network cable can stay in.
@@ -143,8 +143,9 @@ ESP and run `bcdboot C:\Windows /s S: /f UEFI` from Windows, then delete
 ### 4. Booting Windows
 
 systemd-boot only loads from its own ESP, so Windows has no entry in its menu.
-Run `reboot-to-windows`: it sets the firmware's one-shot BootNext to Windows
-Boot Manager and reboots. The firmware boot menu also works.
+Run `dfnstrate reboot`: it sets the firmware's one-shot BootNext to the
+Windows Boot Manager entry whose ESP is present and reboots (`--no-reboot` to
+only set it). The firmware boot menu also works.
 
 Windows keeps the hardware clock in UTC like Linux, and Fast Startup is off, so
 the 970's NTFS mounts read-write from Linux.

@@ -24,6 +24,9 @@ in {
   # defenestrate layers its distro defaults (configs/default.toml) itself.
   flake.windows.saturn = inputs.defenestrate.lib.x86_64-linux.mkDistro [
     ../../hosts/saturn/windows.nix
+    ../../hosts/saturn/windows-pins.toml
     {wsl.linux.mounts = linuxMounts;}
+    # Light or dark like the Linux side, from its one stylix declaration.
+    {cosmic.mode.is_dark = self.nixosConfigurations.saturn.config.stylix.polarity != "light";}
   ];
 }

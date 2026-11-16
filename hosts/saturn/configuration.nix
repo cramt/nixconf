@@ -27,33 +27,18 @@
   # see docs/saturn-mce-bios.md). No USB stick needed.
   boot.loader.systemd-boot.memtest86.enable = true;
   # Windows has the 970 EVO to itself, ESP included, and systemd-boot can only
-  # load from its own ESP, so there's no menu entry for it. This points the
-  # firmware's one-shot BootNext at Windows Boot Manager and reboots.
-  environment.systemPackages = [
-    (pkgs.writeShellApplication {
-      name = "reboot-to-windows";
-      runtimeInputs = [pkgs.efibootmgr pkgs.gnused];
-      text = ''
-        # Each reflash leaves the firmware a "Windows Boot Manager" entry for
-        # an ESP that no longer exists, so go by the ESP's partition UUID,
-        # not the label: the first entry whose ESP is actually present.
-        entry=
-        while read -r num uuid; do
-          if [ -e "/dev/disk/by-partuuid/$uuid" ]; then
-            entry=$num
-            break
-          fi
-        done < <(efibootmgr -v | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? Windows Boot Manager.*HD\([0-9]+,GPT,([0-9a-fA-F-]+),.*/\1 \2/p')
-        if [ -z "$entry" ]; then
-          echo "no Windows Boot Manager entry for an ESP on this machine" >&2
-          exit 1
-        fi
-        sudo efibootmgr --bootnext "$entry" > /dev/null
-        systemctl reboot
-      '';
-    })
-  ];
-  boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+  # load from its own ESP, so there's no menu entry for it. `dfnstrate reboot`
+  # points the firmware's one-shot BootNext at the Windows Boot Manager entry
+  # whose ESP exists; the rest of the CLI (flash, update, doctor) is what
+  # maintains that install.
+  environment.systemPackages = [inputs.defenestrate.packages.${pkgs.stdenv.hostPlatform.system}.dfnstrate];
+  # Stock (vanilla mainline) kernel, not zen or another patch set: zen's patches
+  # panicked every boot on 7.3.4-zen1 (a duplicated worker->task deref in
+  # workqueue.c, https://github.com/zen-kernel/zen-kernel/issues/425) and took
+  # down every zen host at once. Vanilla is what upstream and Hydra test, and
+  # zen bought nothing we ever measured. _latest rather than the LTS default so
+  # the fleet stays on one kernel line (ganymede needs >= 7.3 for its hid driver).
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Mounts the Windows SSD. Read-write works because defenestrate turns off Fast
   # Startup, which would otherwise leave NTFS marked in use.
@@ -221,6 +206,14 @@
 
   services.displayManager.gdm.enable = true;
   services.desktopManager.cosmic.enable = true;
+  # The cosmic module turns on switcheroo-control, and COSMIC then launches every
+  # app with the "default GPU" env it reports (DRI_PRIME=pci-0000_03_00_0) even on
+  # this single-GPU box. Under DRI_PRIME Zen's WebRender gets an llvmpipe context
+  # for the window, rejects it (wr_window_new: SoftwareRasterizer) and runs SW-WR:
+  # laggy URL bar, every frame CPU-rasterized. Nothing here to switch between.
+  # Same single-GPU DRI_PRIME misfire: https://github.com/PrismLauncher/PrismLauncher/pull/5760
+  # Drop if saturn ever gets a second GPU.
+  services.switcherooControl.enable = false;
 
   # Configure keymap in X11
   services.xserver = {

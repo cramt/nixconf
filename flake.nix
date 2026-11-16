@@ -288,6 +288,16 @@
       url = "github:cramt/emrakul";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Nixup: a rooted Android phone configured from a configuration.nix (apps,
+    # Android settings, NixOS-style services), with generations. Drives phones/
+    # (modules/flake/phones.nix). Follows our nixpkgs: the phone fetches its Nix
+    # packages from cache.nixos.org and never builds, so it must be a nixpkgs
+    # Hydra has built, which unstable is.
+    nixup = {
+      url = "github:by-architect/Nixup";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs:

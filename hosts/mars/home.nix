@@ -11,6 +11,8 @@
     niri.enable = true;
     bundles.general.enable = true;
     bundles.graphical.enable = true;
+    # The Philips 49M2C8900 is shared between mars and saturn.
+    monitor-kvm.enable = true;
     bundles.development.enable = true;
     delta.enable = true;
     bundles.work.enable = true;

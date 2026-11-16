@@ -100,6 +100,16 @@ cache, as `eros` does), `address` (if DNS can't find the host) and `builder` (jo
 the distributed build pool; needs `ssh_host_ed25519_key.pub` next to it). See
 `hosts/eros/host.nix`.
 
+### Phones
+
+Rooted Android phones are managed by [Nixup](https://github.com/by-architect/Nixup), not
+NixOS, so they live in `phones/<name>/configuration.nix` instead of `hosts/`.
+`modules/flake/phones.nix` discovers them into `nixupConfigurations.<name>`, each with
+every `nixupModules.*` entry (`modules/phone/`: tailscale on headscale, ssh with
+`myLib/keys.nix`, and 1Password secrets rendered on the phone by the same
+`op-secrets.sh` as hosts). `just phone <name>` applies one over adb or ssh; they aren't
+part of `just deploy`.
+
 ### Key Subsystems
 
 | Subsystem | Description |

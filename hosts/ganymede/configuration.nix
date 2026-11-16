@@ -30,7 +30,13 @@
     # linux_testing: it follows the newest rc, and legacy_580 lags new DRM APIs
     # (7.4-rc2 dropped drm_fb_helper.h and the crtc/plane reset hooks).
     # https://lore.kernel.org/linux-input/20260807013334.2109386-1-vi@endrift.com/
-    kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+    # Stock (vanilla mainline) kernel, not zen or another patch set: zen's patches
+    # panicked every boot on 7.3.4-zen1 (a duplicated worker->task deref in
+    # workqueue.c, https://github.com/zen-kernel/zen-kernel/issues/425) and took
+    # down every zen host at once. Vanilla is what upstream and Hydra test, and
+    # zen bought nothing we ever measured. _latest rather than the LTS default so
+    # the fleet stays on one kernel line (ganymede needs >= 7.3 for its hid driver).
+    kernelPackages = pkgs.linuxPackages_latest;
 
     # Kill the internal panel: the lid is always shut, and leaving it enabled
     # means the desktop spans a screen nobody can see and windows can open on

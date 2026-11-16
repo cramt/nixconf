@@ -33,7 +33,13 @@
     depends = ["/pool"];
   };
 
-  boot.kernelPackages = pkgs.linuxKernel.packages.linux_zen;
+  # Stock (vanilla mainline) kernel, not zen or another patch set: zen's patches
+  # panicked every boot on 7.3.4-zen1 (a duplicated worker->task deref in
+  # workqueue.c, https://github.com/zen-kernel/zen-kernel/issues/425) and took
+  # down every zen host at once. Vanilla is what upstream and Hydra test, and
+  # zen bought nothing we ever measured. _latest rather than the LTS default so
+  # the fleet stays on one kernel line (ganymede needs >= 7.3 for its hid driver).
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   programs.hyprland = {
     enable = false;
