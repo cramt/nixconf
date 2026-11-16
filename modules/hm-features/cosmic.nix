@@ -91,7 +91,8 @@
           # not noctalia's session panel — COSMIC owns the session here.
           { action = ron "enum" { value = [ (ron "enum" "LockScreen") ]; variant = "System"; }; key = "Super+Escape"; }
           (noctaliaMsg "Super+F1" "session lock")
-        ];
+        ] ++ lib.optional config.myHomeManager.monitor-kvm.enable
+          (spawn "Super+F12" config.myHomeManager.monitor-kvm.toggle);
         appearance = {
           theme.dark.gaps = ron "tuple" [ 0 1 ];
           # The active-window highlight ("active hint") is drawn in the theme

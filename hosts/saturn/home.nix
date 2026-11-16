@@ -14,6 +14,8 @@
     delta.enable = true;
     btop.hardware-accel = "rocm";
     bundles.graphical.enable = true;
+    # The Philips 49M2C8900 is shared between mars and saturn.
+    monitor-kvm.enable = true;
     bundles.gaming.enable = true;
     helium.enable = true;
     agentsview.enable = true;

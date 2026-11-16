@@ -215,7 +215,9 @@
 
         hotkey-overlay.skip-at-startup = true;
 
-        binds = mainBinds // workspaceBinds;
+        binds = mainBinds // workspaceBinds // lib.optionalAttrs cfg.monitor-kvm.enable {
+          "Mod+F12".action.spawn = cfg.monitor-kvm.toggle;
+        };
       };
     };
   };
