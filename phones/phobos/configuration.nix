@@ -27,6 +27,35 @@
       prerelease = true;
       apkFilter = "^t3code-android-.*\\.apk$";
     }
+
+    # YouTube and Reddit with Morphe's patches, rebuilt by j-hc's CI every few
+    # days. The non-root APKs, not the Magisk modules: Nixup can't install a
+    # module, and Reddit only ships as an APK. Both are signed with j-hc's key,
+    # pinned here, so a swapped build is refused.
+    {
+      # Installs beside stock YouTube under its own name; it logs in through
+      # MicroG-RE below instead of Play Services.
+      id = "app.morphe.android.youtube";
+      url = "https://github.com/j-hc/revanced-magisk-module";
+      apkFilter = "^youtube-morphe-v.*\\.apk$";
+      signer = "637c226c67aec0cdbc6f49cd476d5247f999122606286273e16233a913a088b4";
+    }
+    {
+      # Keeps Reddit's own package name, so stock Reddit has to be uninstalled
+      # first: Android won't update it with a differently signed APK.
+      id = "com.reddit.frontpage";
+      url = "https://github.com/j-hc/revanced-magisk-module";
+      apkFilter = "^reddit-morphe-.*\\.apk$";
+      signer = "637c226c67aec0cdbc6f49cd476d5247f999122606286273e16233a913a088b4";
+    }
+    {
+      # Morphe's microG build. The patched YouTube looks for it as
+      # app.revanced.android.gms, the name ReVanced's GmsCore also uses.
+      id = "app.revanced.android.gms";
+      url = "https://github.com/MorpheApp/MicroG-RE";
+      apkFilter = "^microg-.*-noicon";
+      signer = "0b6c9515afb195fac59601696ba0a7907a0b217ccf720b43148427ccf64343e7";
+    }
   ];
 
   environment.systemPackages = with pkgs; [
