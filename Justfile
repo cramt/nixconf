@@ -200,6 +200,18 @@ install host addr="installer" mode="mount":
       --phases "$phases" --disko-mode "{{mode}}" "${extra[@]}"
     echo ">> done. reboot {{host}} off its own disk: ssh root@{{addr}} reboot"
 
+# Phones aren't in `just deploy`: they're off the LAN or asleep most of the
+# time, and nixup-rebuild talks adb (it lists the phones it sees and asks) or
+# ssh, not deploy-rs. Evaluation happens here; the phone fetches its store paths
+# from cache.nixos.org itself.
+#
+# e.g. `just phone phobos dry-activate`, or over the tailnet instead of adb:
+# `just phone phobos switch --target-host root@phobos.ts.cramt.dk`
+#
+# Apply phones/<name> with Nixup
+phone name action="switch" *args:
+    nix run .#nixup-rebuild -- {{action}} --flake .#{{name}} {{args}}
+
 # Runs as cramt so it reads the server's ~/.t3 state, and by absolute path
 # because a non-interactive ssh shell has no user profile on PATH.
 #

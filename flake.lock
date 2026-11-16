@@ -2107,6 +2107,26 @@
         "url": "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst"
       }
     },
+    "nixup": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794666380,
+        "narHash": "sha256-b13cmWPwF3B+oK0kCNJZTONOE+OB8ObxAqxR51Dngjg=",
+        "owner": "by-architect",
+        "repo": "Nixup",
+        "rev": "1eea0245443d9da2bcacb29e5fc88e1beb16b819",
+        "type": "github"
+      },
+      "original": {
+        "owner": "by-architect",
+        "repo": "Nixup",
+        "type": "github"
+      }
+    },
     "noctalia-shell": {
       "inputs": {
         "nixpkgs": [
@@ -2397,6 +2417,7 @@
           "nixpkgs"
         ],
         "nixpkgs-stable": "nixpkgs-stable_2",
+        "nixup": "nixup",
         "noctalia-shell": "noctalia-shell",
         "nur": "nur",
         "nvf": "nvf",
