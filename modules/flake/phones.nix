@@ -26,6 +26,18 @@ in
   # `nix run --inputs-from . nixup` would re-lock Nixup's own nixpkgs instead.
   config.perSystem = { system, ... }: {
     apps = lib.filterAttrs (name: _: name != "default") (inputs.nixup.apps.${system} or { });
+
+    # Nixup's toplevel is profile data, not a derivation, so nothing builds it
+    # as a whole. Writing it to the store does: the store paths in the JSON are
+    # its references, so its closure is exactly what the phone fetches, and
+    # CI's build of `phone-<name>` puts all of it in cachix.
+    packages = lib.mapAttrs' (name: phone:
+      let pkgs = phone._module.args.pkgs;
+      in lib.nameValuePair "phone-${name}"
+        (pkgs.writeText "nixup-${name}-profile.json"
+          (builtins.toJSON phone.config.system.build.toplevel)))
+      (lib.filterAttrs (_: phone: phone._module.args.pkgs.stdenv.hostPlatform.system == system)
+        config.flake.nixupConfigurations);
   };
 
   config.flake = {
