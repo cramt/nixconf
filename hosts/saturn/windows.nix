@@ -3,7 +3,21 @@
 # (.#windows.saturn.build.iso is the same install as a USB stick ISO.)
 # Keys are defenestrate's config (github:cramt/defenestrate, cli/src/config.rs);
 # the distro-wide debloat comes from its configs/default.toml.
-{...}: {
+{...}: let
+  # The same monitor and mode the Linux side has. defenestrate matches the
+  # monitor by its EDID model name and serial, the last two words of the name
+  # Linux compositors give it ("<make> <model> <serial>").
+  displays = map (m: let
+    words = builtins.filter builtins.isString (builtins.split " " m.name);
+    n = builtins.length words;
+  in {
+    model = builtins.elemAt words (n - 2);
+    serial = builtins.elemAt words (n - 1);
+    inherit (m.res) width height;
+    refresh = m.refresh_rate;
+  }) (import ./monitors.nix);
+in {
+  inherit displays;
   user.name = "cramt";
   # Not "saturn": the Linux side already answers to that on the LAN.
   computerName = "saturn-windows";
@@ -36,6 +50,7 @@
       ".claude/CLAUDE.md" = "${claude}/CLAUDE.md";
       ".claude/pool-key.ps1" = "${claude}/pool-key.ps1";
       ".claude/pool-key" = (import ../../myLib/claude-pool.nix).apiKeyFile;
+      ".config/git/config" = "${claude}/gitconfig";
     };
   };
   # Keyboard and pointer as COSMIC has them (modules/hm-features/cosmic.nix),

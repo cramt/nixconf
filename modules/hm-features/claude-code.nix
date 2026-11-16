@@ -295,6 +295,16 @@
           "${windowsDir}/pool-key.ps1".text = ''
             (Get-Content -Raw -LiteralPath "$env:USERPROFILE\.claude\pool-key").Trim()
           '';
+          # Git for Windows (there for Claude Code's Bash tool) refuses repos on
+          # the WSL share as "dubious ownership": their owner is a Linux uid it
+          # can't map. %(prefix)/// is how it spells a UNC path; the share is
+          # defenestrate's WSL distro with the Linux install mounted at /linux.
+          # Lands as %USERPROFILE%\.config\git\config, git's XDG global, so
+          # ~/.gitconfig stays free for what git writes there itself.
+          "${windowsDir}/gitconfig".text = ''
+            [safe]
+            	directory = %(prefix)///wsl$/defenestrate/linux${config.home.homeDirectory}/*
+          '';
         };
       })
       {
