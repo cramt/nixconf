@@ -6,15 +6,17 @@ let
   keys = import ../../myLib/keys.nix;
 in
 {
-  nixupModules.fleet = { lib, ... }: {
+  nixupModules.fleet = { config, lib, ... }: {
     # Userspace tailscaled next to the Android app, so the app can keep its own
-    # VPN slot. No authKeyFile: Nixup only reads secrets from a file next to the
-    # config or one already on the phone, and a flake puts the former in the
-    # world-readable store. The first build prints a registration link instead;
-    # approve it on luna with `headscale nodes register`.
+    # VPN slot. Joins with the same reusable key as the hosts.
     services.tailscale = {
       enable = lib.mkDefault true;
       extraUpFlags = [ "--login-server=${site.headscale_url}" ];
+      authKeyFile = config.myNixup.secrets.headscalePreauthKey.path;
+    };
+    myNixup.secrets.headscalePreauthKey = {
+      reference = "op://Homelab/Headscale/preauthKey";
+      services = [ "tailscaled-up" ];
     };
 
     # Sessions are root on a Nixup phone. nixup-rebuild --target-host uses this

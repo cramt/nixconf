@@ -10,11 +10,12 @@
 {
   time.timeZone = "Europe/Copenhagen";
 
-  # Apps by repo. F-Droid's names (pkgs.fdroid.<name>) come from the index the
-  # phone downloads, so they only evaluate under nixup-rebuild, not plain
-  # `nix eval`. Play Store apps are package-name strings and need
-  # android.playstore.tokenFile (nix run --inputs-from . nixup#nixup-play-login).
-  # android.packages.fdroid = with pkgs.fdroid; [ ];
+  # Apps by repo, as package-name strings. Not pkgs.fdroid.<name>: those come
+  # from the index the phone downloads, so they'd only evaluate under
+  # nixup-rebuild. A typo here fails on the phone's build instead, before it
+  # changes anything. Play Store apps need android.playstore.tokenFile
+  # (nix run .#nixup-play-login).
+  # android.packages.fdroid = [ "org.fdroid.fdroid" ];
   # android.packages.playstore = [ ];
 
   environment.systemPackages = with pkgs; [
