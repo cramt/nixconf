@@ -53,11 +53,12 @@
       '';
     })
   ];
-  # Default (LTS) kernel, not zen: 7.3.4-zen oopsed in process_one_work
-  # (bh_worker -> tasklet_action, NULL+0x138) as xhci_pci registered the Comet
-  # Lake xHCI's USB3 bus, every boot (2026-11-16). That's core workqueue code,
-  # so _latest (vanilla 7.3.4) is no safer; zen bought nothing measurable here.
-  boot.kernelPackages = pkgs.linuxPackages;
+  # Vanilla, not zen, until zen ships its 7.3 fix: 7.3.4-zen1 duplicated a
+  # `worker->current_at = worker->task->...` line in workqueue.c, and BH workers
+  # have no task, so the first tasklet (xhci_pci's) oopses at boot, every boot.
+  # https://github.com/zen-kernel/zen-kernel/issues/425 (fixed in zen d0c3b48).
+  # Go back to linuxKernel.packages.linux_zen once nixpkgs' zen is past 7.3.4-zen1.
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Mounts the Windows SSD. Read-write works because defenestrate turns off Fast
   # Startup, which would otherwise leave NTFS marked in use.
