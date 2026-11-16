@@ -18,6 +18,17 @@
   # android.packages.fdroid = [ "org.fdroid.fdroid" ];
   # android.packages.playstore = [ ];
 
+  # Straight from GitHub releases, newest one each build.
+  android.packages.obtainium = [
+    {
+      # The Android client only ships in the nightly pre-releases so far.
+      id = "com.t3tools.t3code";
+      url = "https://github.com/pingdotgg/t3code";
+      prerelease = true;
+      apkFilter = "^t3code-android-.*\\.apk$";
+    }
+  ];
+
   environment.systemPackages = with pkgs; [
     git
     htop
