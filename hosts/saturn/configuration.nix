@@ -53,11 +53,12 @@
       '';
     })
   ];
-  # Vanilla, not zen, until zen ships its 7.3 fix: 7.3.4-zen1 duplicated a
-  # `worker->current_at = worker->task->...` line in workqueue.c, and BH workers
-  # have no task, so the first tasklet (xhci_pci's) oopses at boot, every boot.
-  # https://github.com/zen-kernel/zen-kernel/issues/425 (fixed in zen d0c3b48).
-  # Go back to linuxKernel.packages.linux_zen once nixpkgs' zen is past 7.3.4-zen1.
+  # Stock (vanilla mainline) kernel, not zen or another patch set: zen's patches
+  # panicked every boot on 7.3.4-zen1 (a duplicated worker->task deref in
+  # workqueue.c, https://github.com/zen-kernel/zen-kernel/issues/425) and took
+  # down every zen host at once. Vanilla is what upstream and Hydra test, and
+  # zen bought nothing we ever measured. _latest rather than the LTS default so
+  # the fleet stays on one kernel line (ganymede needs >= 7.3 for its hid driver).
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Mounts the Windows SSD. Read-write works because defenestrate turns off Fast
