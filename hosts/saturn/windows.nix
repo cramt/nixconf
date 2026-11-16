@@ -15,8 +15,10 @@
   # downloads the game, so it's the slow one.
   # Git for Claude Code's Bash tool (it falls back to PowerShell without).
   apps = ["Mozilla.Firefox" "Discord.Discord" "Git.Git" "Anthropic.ClaudeCode" "RiotGames.LeagueOfLegends.EUW"];
-  # Linux apps run from the Linux install itself, through WSL: the logon task
-  # attaches the 980 (by its GPT disk GUID, `lsblk -dno PTUUID`) and mounts
+  # Downloads pinned by hash (the GPU driver) live in windows-pins.toml,
+  # which `dfnstrate pins` rewrites; see modules/flake/windows.nix.
+  # The Linux install, reached through WSL (terminal programs only; its GUI
+  # apps don't show under defenestrate's shell): the logon task attaches the 980 (by its GPT disk GUID, `lsblk -dno PTUUID`) and mounts
   # the pool; the mounts come from saturn's NixOS fileSystems, in
   # modules/flake/windows.nix. Start Menu > "Linux terminal" is the shell.
   wsl.linux = {

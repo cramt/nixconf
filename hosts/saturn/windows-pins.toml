@@ -1,0 +1,13 @@
+# saturn's Windows downloads that move with upstream. TOML rather than Nix so
+# `dfnstrate pins hosts/saturn/windows-pins.toml` can rewrite url and hash in
+# place (`--check` only says what's behind). Layered in by
+# modules/flake/windows.nix.
+
+# The RX 7000 card. Windows Update offered no driver at first boot and left it
+# on the Basic Display Adapter, so AMD's driver from the Update Catalog is
+# baked into the image and installed at specialize; Windows Update keeps it
+# updated after that.
+[[drivers]]
+track = { catalog = "VEN_1002&DEV_747E" }
+url = "https://catalog.s.download.windowsupdate.com/d/msdownload/update/driver/drvs/2025/12/685e0c6c-01eb-465c-b64a-3b0422280433_dd87edd852abb9957fc9b897a50154b5632bc642.cab"
+hash = "sha256-kqC05JH1S2WA86xjzl2gt2XsjFsWYGTn5UjTF9561KM="
