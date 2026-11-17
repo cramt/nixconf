@@ -134,7 +134,12 @@
           op-secrets = {
             description = "Render 1Password secrets";
             wantedBy = ["multi-user.target"];
-            after = ["network-online.target" "nss-lookup.target"];
+            # network-online.target stays active through a switch, so it can't
+            # hold op-secrets back when the switch restarts NetworkManager: mars
+            # (wifi) dropped its link, op-secrets ran into the gap and failed the
+            # deploy. Ordering on wait-online directly makes the start job wait
+            # for the restarted NM; it's a no-op on hosts without NM.
+            after = ["network-online.target" "nss-lookup.target" "NetworkManager-wait-online.service"];
             wants = ["network-online.target" "nss-lookup.target"];
             # Retry quickly at first (boot races the network), backing off to
             # every 15 min, forever: a host that came up offline picks its
