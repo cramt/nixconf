@@ -24,7 +24,27 @@ line, command output, or what Alex saw). On a failure, quote the relevant log
 lines. Paraphrasing loses the detail the fix needs. Put anything that looked
 off but isn't on the list under "Also seen".
 
-## Round two fixes (defenestrate 0e12cc5), first time on this machine
+## New on this reflash
+
+This install is a fresh reflash. The last boot's report
+(`~/.local/share/defenestrate/reports/2026-11-17-21-58-logs/README.md` on
+the Linux side) found three failures, now fixed. Check them first.
+
+21. **The update is baked in.** `C:\Windows\Setup\defenestrate\updates.log`
+    ends in `all installed`, and Windows is build 26300.9974: `UBR` under
+    `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion` is 9974 (the ISO
+    was 9457). Quote both.
+22. **Automatic updates are off.** `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU`
+    has `NoAutoUpdate` = 1, and nothing is staged:
+    `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired`
+    doesn't exist.
+23. **The logon task didn't die on the mount.** This logon's part of
+    `wsl.log`: `mounting` with no `Resource busy` after it, the
+    `restarting the defenestrate distro so it runs as the Linux user` line,
+    then `copied ...` lines. You opening on your own (not started by Alex)
+    is half the proof.
+
+## Round two fixes (defenestrate 0e12cc5)
 
 1. **`\\wsl$` reaches the install from Windows.** `dir \\wsl$\defenestrate\linux\home\cramt`
    lists the Linux home. Before this fix, the elevated logon task's mounts
@@ -39,7 +59,9 @@ off but isn't on the list under "Also seen".
 4. **A restarted distro remounts.** `wsl.exe -t defenestrate`, then
    `dir \\wsl$\defenestrate\linux\home`: the install is back without a
    logon (that's `dfn boot` from wsl.conf).
-5. **Discord installed through the unelevated retry.** `apps.log` shows
+5. **Discord installed through the unelevated retry, once.** winget now
+   runs with `--no-upgrade`: no upgrade attempts, and no Discord error
+   dialogs every minute. `apps.log` shows
    `Discord.Discord` failing elevated, then succeeding unelevated, and
    `winget\Discord.Discord.unelevated.*` exists. Discord starts. The
    scheduled task `defenestrate-apps` is gone (`schtasks /query /tn defenestrate-apps`
@@ -100,8 +122,3 @@ Once the report is written and Alex has read it, run
 `schtasks /run /tn defenestrate-reboot-to-linux`. That's the launcher's
 "Reboot to Linux" task, and the machine should come up in Linux (test 20:
 the Linux side checks it came back).
-
-## Known: needs a reflash, so don't report it as a bug
-
-`dfnstrate update` couldn't bring `software.reg` (registry imported only at
-setup) to this install. Whatever changed in it isn't here yet.
