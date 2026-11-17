@@ -23,8 +23,11 @@
 
   # While home.nix sets a defenestrate test plan, the shell opens Claude Code
   # on it at logon. It waits for the logon task to copy the plan and the pool
-  # key over from Linux, which can land after the shell starts. The prompt
-  # stays free of quotes: it rides inside PowerShell's -Command string.
+  # key over from Linux, and on a fresh install for the apps task's winget to
+  # install Claude Code, both of which land after the shell starts. The
+  # console's PATH predates that install, so it's reread from the registry
+  # while waiting. The prompt stays free of quotes: it rides inside
+  # PowerShell's -Command string.
   testPlan = self.nixosConfigurations.saturn.config.home-manager.users.cramt.myHomeManager.claude-code.windows.testPlan;
   testPrompt = lib.concatStringsSep " " [
     "Alex just booted into this Windows to test defenestrate and is watching this console."
@@ -33,8 +36,9 @@
   ];
   claudeAutostart = lib.concatStrings [
     "powershell.exe -NoExit -NoProfile -ExecutionPolicy Bypass -Command \""
-    "Write-Host 'Waiting for the logon task to copy Claude config from Linux (log: %LOCALAPPDATA%/defenestrate/wsl.log)'; "
-    "while (-not ((Test-Path ~/.claude/pool-key) -and (Test-Path ~/.claude/defenestrate-tests.md))) { Start-Sleep 2 }; "
+    "Write-Host 'Waiting for the logon task to copy Claude config from Linux (wsl.log) and for winget to install Claude Code (apps.log), both in %LOCALAPPDATA%/defenestrate'; "
+    "while (-not ((Test-Path ~/.claude/pool-key) -and (Test-Path ~/.claude/defenestrate-tests.md) -and (Get-Command claude -ErrorAction SilentlyContinue))) { "
+    "Start-Sleep 5; $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User') }; "
     "claude --dangerously-skip-permissions '${testPrompt}'\""
   ];
 in {
