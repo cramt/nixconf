@@ -175,7 +175,15 @@
       logon), and this file and settings.json come from the Linux config, so
       edits made here are overwritten at the next logon.
 
-      ## Installing packages
+      ${lib.optionalString (cfg.windows.testPlan != null) ''
+        ## Testing defenestrate
+
+        `~/.claude/defenestrate-tests.md` is the checklist for verifying the
+        latest defenestrate build on this machine. When Alex asks you to test,
+        verify or check defenestrate (or "the boot"), work through it and write
+        the report where it says.
+
+      ''}## Installing packages
 
       - winget. Anything that should stay goes into `apps` in the host's
         windows.nix too, or the next reflash loses it
@@ -263,6 +271,11 @@
       # Off by default: it needs the m365Account secret, which only hosts that
       # render it (mars) have.
       windows.enable = lib.mkEnableOption "Claude Code config for this machine's defenestrate Windows, under ~/${windowsDir} for its logon task to copy over (hosts/<host>/windows.nix)";
+      windows.testPlan = lib.mkOption {
+        type = lib.types.nullOr lib.types.path;
+        default = null;
+        description = "A checklist for Claude on Windows to verify a defenestrate build with, copied over as ~/.claude/defenestrate-tests.md and named in its CLAUDE.md.";
+      };
       outlook.enable = lib.mkEnableOption "Outlook web mail skill + `outlook-browser` CLI (work mailbox via agent-browser)";
       agents = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule {
@@ -292,6 +305,7 @@
           "${windowsDir}/CLAUDE.md".text = windowsClaudeMd;
           # Trimmed: whether op leaves a newline on the render isn't
           # something to depend on in a header value.
+          "${windowsDir}/defenestrate-tests.md" = lib.mkIf (cfg.windows.testPlan != null) {source = cfg.windows.testPlan;};
           "${windowsDir}/pool-key.ps1".text = ''
             (Get-Content -Raw -LiteralPath "$env:USERPROFILE\.claude\pool-key").Trim()
           '';

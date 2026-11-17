@@ -20,6 +20,23 @@
       inherit (fileSystems.${target}) fsType;
       options = lib.filter (o: !lib.hasPrefix "x-" o) fileSystems.${target}.options;
     }) ["/" "/nix" "/home"];
+
+  # While home.nix sets a defenestrate test plan, the shell opens Claude Code
+  # on it at logon. It waits for the logon task to copy the plan and the pool
+  # key over from Linux, which can land after the shell starts. The prompt
+  # stays free of quotes: it rides inside PowerShell's -Command string.
+  testPlan = self.nixosConfigurations.saturn.config.home-manager.users.cramt.myHomeManager.claude-code.windows.testPlan;
+  testPrompt = lib.concatStringsSep " " [
+    "Alex just booted into this Windows to test defenestrate and is watching this console."
+    "Work through ~/.claude/defenestrate-tests.md, asking her here for anything only a person at the screen can check."
+    "When the report is written, tell her where it is, give her a minute to read it, then reboot to Linux with: schtasks /run /tn defenestrate-reboot-to-linux"
+  ];
+  claudeAutostart = lib.concatStrings [
+    "powershell.exe -NoExit -NoProfile -ExecutionPolicy Bypass -Command \""
+    "Write-Host 'Waiting for the logon task to copy Claude config from Linux (log: %LOCALAPPDATA%/defenestrate/wsl.log)'; "
+    "while (-not ((Test-Path ~/.claude/pool-key) -and (Test-Path ~/.claude/defenestrate-tests.md))) { Start-Sleep 2 }; "
+    "claude --dangerously-skip-permissions '${testPrompt}'\""
+  ];
 in {
   # defenestrate layers its distro defaults (configs/default.toml) itself.
   flake.windows.saturn = inputs.defenestrate.lib.x86_64-linux.mkDistro [
@@ -28,5 +45,6 @@ in {
     {wsl.linux.mounts = linuxMounts;}
     # Light or dark like the Linux side, from its one stylix declaration.
     {cosmic.mode.is_dark = self.nixosConfigurations.saturn.config.stylix.polarity != "light";}
+    {autostart = lib.optional (testPlan != null) claudeAutostart;}
   ];
 }

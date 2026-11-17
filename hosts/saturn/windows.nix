@@ -49,6 +49,8 @@ in {
       ".claude/settings.json" = "${claude}/settings.json";
       ".claude/CLAUDE.md" = "${claude}/CLAUDE.md";
       ".claude/pool-key.ps1" = "${claude}/pool-key.ps1";
+      # Only there while home.nix sets claude-code.windows.testPlan.
+      ".claude/defenestrate-tests.md" = "${claude}/defenestrate-tests.md";
       ".claude/pool-key" = (import ../../myLib/claude-pool.nix).apiKeyFile;
       ".config/git/config" = "${claude}/gitconfig";
     };
