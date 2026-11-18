@@ -1,17 +1,15 @@
-# A second tailnet next to the fleet one (myNixOS.services.tailscale), for a
-# host that also has to reach someone else's (work's) machines.
+# The work tailnet as a second profile of the fleet tailscaled (Tailscale's
+# fast user switching): one tailnet at a time, `tailscale switch work` /
+# `tailscale switch personal`, no sudo. Boot always comes up on personal.
 #
-# The fleet tailscaled owns tailscale0, the 100.64.0.0/10 route, routing table
-# 52 and the system DNS. A second kernel-mode daemon would fight it for all of
-# that, so this one runs in userspace: no interface, no routes, no DNS. Traffic
-# goes out through its proxies instead, which also resolve that tailnet's
-# MagicDNS names:
-#   ssh:     ProxyCommand tailscale-work nc %h %p
-#   other:   SOCKS5 on localhost:<socksPort>, HTTP proxy on localhost:<httpProxyPort>
+# Two at once would mean a second daemon, and two kernel-mode ones collide
+# (both own routing table 52, the 100.64.0.0/10 DROP in ts-input, and
+# 100.100.100.100); the ways around that (userspace + SOCKS, a netns per
+# tailnet) cost a proxy or a wrapper on every tool. Upstream tracks real
+# multi-tailnet support in tailscale/tailscale#183.
 #
-# Shields up by default: a userspace node hands incoming connections to
-# localhost, which would put everything bound there in reach of a tailnet
-# whose ACLs we don't control.
+# While work is active this host is off the fleet tailnet: no T3 Code links,
+# no build pool, no deploys over the tailnet.
 { ... }: {
   flake.nixosModules."services.work-tailnet" = {
     config,
@@ -20,122 +18,101 @@
     ...
   }: let
     cfg = config.myNixOS.services.work-tailnet;
-    tailscale = config.services.tailscale.package;
-    socket = "/run/tailscale-work/tailscaled.sock";
-    cli = pkgs.writeShellScriptBin "tailscale-work" ''
-      exec ${lib.getExe tailscale} --socket=${socket} "$@"
+    site = import ../../myLib/site.nix;
+    waitForDaemon = ''
+      for _ in $(seq 30); do
+        tailscale status --json >/dev/null 2>&1 && break
+        sleep 1
+      done
     '';
+    hasProfile = ''has() { tailscale switch --list --json | jq -e --arg n "$1" 'any(.[]; .nickname == $n)' >/dev/null; }'';
   in {
     options.myNixOS.services.work-tailnet = {
-      enable = lib.mkEnableOption "a second, userspace tailscaled for the work tailnet";
+      enable = lib.mkEnableOption "the work tailnet as a switchable profile of the fleet tailscaled";
       authKeyReference = lib.mkOption {
         type = lib.types.strMatching "op://.+";
-        description = "1Password reference to the auth key work hands out (an auth key or an OAuth client secret).";
+        description = "1Password reference to work's auth key (reusable, or the profile can't be recreated).";
       };
       loginServer = lib.mkOption {
         type = lib.types.str;
         default = "https://controlplane.tailscale.com";
         description = "Work's control server; set it if they run headscale.";
       };
-      extraUpFlags = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-        example = ["--advertise-tags=tag:alex"];
-        description = "Extra `tailscale up` flags, e.g. the tags an OAuth client secret requires.";
-      };
-      acceptIncoming = lib.mkOption {
-        type = lib.types.bool;
-        default = false;
-        description = "Drop shields-up. Anything listening on localhost becomes reachable from the work tailnet.";
-      };
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 41642;
-        description = "WireGuard UDP port; the fleet tailscaled has 41641.";
-      };
-      socksPort = lib.mkOption {
-        type = lib.types.port;
-        default = 1055;
-      };
-      httpProxyPort = lib.mkOption {
-        type = lib.types.port;
-        default = 1056;
-      };
     };
 
     config = lib.mkIf cfg.enable {
+      assertions = [
+        {
+          assertion = config.myNixOS.services.tailscale.enable;
+          message = "myNixOS.services.work-tailnet is a profile of the fleet tailscaled; enable myNixOS.services.tailscale.";
+        }
+      ];
+
       myNixOS.secrets.workTailnetAuthKey = {
         reference = cfg.authKeyReference;
-        services = ["tailscaled-work-up"];
+        services = ["tailscale-work-profile"];
       };
 
-      environment.systemPackages = [cli];
-      # Direct connections instead of DERP relays; nothing else listens here.
-      networking.firewall.allowedUDPPorts = [cfg.port];
-
-      systemd.services.tailscaled-work = {
-        description = "Tailscale node agent for the work tailnet (userspace)";
+      # Makes sure both profiles exist and carry their names, then leaves
+      # whichever one was active alone, so a deploy never kicks you off work.
+      systemd.services.tailscale-work-profile = {
+        description = "Add the work tailnet as a tailscale profile";
+        after = ["tailscaled-autoconnect.service"];
+        wants = ["tailscaled-autoconnect.service"];
         wantedBy = ["multi-user.target"];
-        after = ["network-online.target"];
-        wants = ["network-online.target"];
-        serviceConfig = {
-          ExecStart = lib.escapeShellArgs [
-            "${tailscale}/bin/tailscaled"
-            "--tun=userspace-networking"
-            "--statedir=/var/lib/tailscale-work"
-            "--socket=${socket}"
-            "--port=${toString cfg.port}"
-            "--socks5-server=localhost:${toString cfg.socksPort}"
-            "--outbound-http-proxy-listen=localhost:${toString cfg.httpProxyPort}"
-          ];
-          StateDirectory = "tailscale-work";
-          StateDirectoryMode = "0700";
-          RuntimeDirectory = "tailscale-work";
-          Restart = "on-failure";
-        };
-      };
-
-      # Like the fleet's tailscaled-autoconnect, but a node that's already in
-      # gets `set` on every start, so a changed flag lands on the next switch
-      # without a re-login.
-      systemd.services.tailscaled-work-up = {
-        description = "Join the work tailnet";
-        after = ["tailscaled-work.service"];
-        requires = ["tailscaled-work.service"];
-        wantedBy = ["multi-user.target"];
-        path = [cli pkgs.jq];
+        path = [config.services.tailscale.package pkgs.jq];
         serviceConfig = {
           Type = "oneshot";
-          # Active after it exits, so switch-to-configuration restarts it
-          # when its flags change.
           RemainAfterExit = true;
           Restart = "on-failure";
           RestartSec = 30;
         };
         unitConfig.StartLimitIntervalSec = 0;
-        script = let
-          # What `set` also takes; login server and tags only change on a
-          # fresh `up`.
-          setFlags = [
-            "--hostname=${config.networking.hostName}"
-            "--shields-up=${lib.boolToString (!cfg.acceptIncoming)}"
-            # So `tailscale-work nc` works as cramt, for ssh's ProxyCommand.
-            "--operator=cramt"
-          ];
-          upFlags = ["--login-server=${cfg.loginServer}"] ++ setFlags ++ cfg.extraUpFlags;
-        in ''
-          for _ in $(seq 30); do
-            tailscale-work status --json >/dev/null 2>&1 && break
-            sleep 1
-          done
-          key="$(cat ${config.myNixOS.secrets.workTailnetAuthKey.path})"
-          # An OAuth client secret only mints a key with these appended.
-          case $key in tskey-client-*) key="$key?ephemeral=false&preauthorized=true" ;; esac
-          if [ "$(tailscale-work status --json | jq -r .BackendState)" = Running ]; then
-            tailscale-work set ${lib.escapeShellArgs setFlags}
-          else
-            tailscale-work up --reset --auth-key "$key" ${lib.escapeShellArgs upFlags}
+        script = ''
+          ${waitForDaemon}
+          ${hasProfile}
+          if ! has personal; then
+            # Only the fleet profile may be named personal; on a fresh host
+            # autoconnect has just logged it in, so it's the active one.
+            suffix=$(tailscale status --json | jq -r .MagicDNSSuffix)
+            if [ "$suffix" != "${site.tailnet_domain}" ]; then
+              echo "active profile is on $suffix, not the fleet tailnet; not naming it personal" >&2
+              exit 1
+            fi
+            tailscale set --nickname=personal --operator=cramt
           fi
+          if ! has work; then
+            # login adds a profile and switches to it; back to personal after.
+            # Shields up: tailscale0 is a trusted interface here, which is
+            # only safe on the fleet tailnet.
+            tailscale login --auth-key "$(cat ${config.myNixOS.secrets.workTailnetAuthKey.path})" \
+              --login-server=${cfg.loginServer} --nickname=work --operator=cramt \
+              --shields-up --hostname=${config.networking.hostName}
+            tailscale switch personal
+          fi
+        '';
+      };
+
+      # tailscaled resumes whichever profile was last active; boot always
+      # starts on the fleet one. Before autoconnect, so a profile needing
+      # login is never fed the fleet key while work is selected.
+      systemd.services.tailscale-boot-personal = {
+        description = "Start on the personal tailscale profile";
+        after = ["tailscaled.service"];
+        requires = ["tailscaled.service"];
+        before = ["tailscaled-autoconnect.service"];
+        wantedBy = ["multi-user.target"];
+        # Boot only: a deploy restarting this would switch away from work.
+        restartIfChanged = false;
+        path = [config.services.tailscale.package pkgs.jq];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = ''
+          ${waitForDaemon}
+          ${hasProfile}
+          if has personal; then tailscale switch personal; fi
         '';
       };
     };
