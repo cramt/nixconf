@@ -1,5 +1,5 @@
 # What makes a phone part of the fleet, as nixos-default.nix does for hosts:
-# on the tailnet through luna's headscale, and ssh-able with the fleet keys.
+# on the fleet tailnet (tag:fleet, like the hosts), and ssh-able with the fleet keys.
 { ... }:
 let
   site = import ../../myLib/site.nix;
@@ -11,11 +11,15 @@ in
     # VPN slot. Joins with the same reusable key as the hosts.
     services.tailscale = {
       enable = lib.mkDefault true;
-      extraUpFlags = [ "--login-server=${site.headscale_url}" ];
-      authKeyFile = config.myNixup.secrets.headscalePreauthKey.path;
+      extraUpFlags = [ "--advertise-tags=tag:fleet" ];
+      authKeyFile = config.myNixup.secrets.tailscaleNodeKey.path;
+      authKeyParameters = {
+        ephemeral = false;
+        preauthorized = true;
+      };
     };
-    myNixup.secrets.headscalePreauthKey = {
-      reference = "op://Homelab/Headscale/preauthKey";
+    myNixup.secrets.tailscaleNodeKey = {
+      reference = "op://Homelab/Tailscale/nodeAuthKey";
       services = [ "tailscaled-up" ];
     };
 

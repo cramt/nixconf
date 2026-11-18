@@ -1,11 +1,9 @@
-# HTTPS on the host's own tailnet name, <host>.ts.cramt.dk, for services only
-# fleet members should reach.
+# HTTPS on the host's own tailnet name, <host>.<tailnet>.ts.net, for services
+# only fleet members should reach.
 #
-# headscale can't issue certs the way Tailscale's control server does, so
-# `tailscale cert` / `tailscale serve` HTTPS don't work here. Instead lego gets
-# a real Let's Encrypt cert through a Cloudflare DNS-01 challenge (the name
-# only resolves inside the tailnet, so HTTP-01 can't reach it), and caddy
-# serves it.
+# The cert is Tailscale's: caddy asks the local tailscaled for it (HTTPS is
+# switched on for the tailnet in infra/tailscale.nix), so there's no ACME
+# client or DNS credential on the host.
 #
 # Every vhost here answers tailnet source addresses only. That isn't
 # redundant with the firewall: on luna 443 is public, and anyone can send
@@ -15,7 +13,6 @@
   let
     cfg = config.myNixOS.tailnet-https;
     site = import ../../myLib/site.nix;
-    secrets = config.myNixOS.secrets;
   in {
     options.myNixOS.tailnet-https = {
       name = lib.mkOption {
@@ -30,60 +27,41 @@
         example = { "443" = "reverse_proxy localhost:3773"; };
         description = ''
           Caddy directives per HTTPS port on `name`. Setting any enables the
-          cert and the vhosts. Requests from outside the tailnet get a 403
-          before these run.
+          vhosts. Requests from outside the tailnet get a 403 before these run.
         '';
       };
     };
 
     config = lib.mkIf (cfg.ports != {}) {
-      myNixOS.secrets = {
-        cloudflareEmail = {
-          reference = "op://Homelab/Infrastructure/email";
-          services = ["acme-${cfg.name}"];
-        };
-        cloudflareApiKey = {
-          reference = "op://Homelab/Cloudflare/apiKey";
-          services = ["acme-${cfg.name}"];
-        };
-      };
+      assertions = [
+        {
+          assertion = config.myNixOS.services.tailscale.enable;
+          message = "myNixOS.tailnet-https gets its cert from tailscaled; enable myNixOS.services.tailscale.";
+        }
+      ];
 
-      security.acme = {
-        acceptTerms = true;
-        defaults.email = site.email;
-        certs.${cfg.name} = {
-          dnsProvider = "cloudflare";
-          # The system resolver is MagicDNS, which owns ts.cramt.dk and never
-          # sees the TXT record lego is waiting for. Ask Cloudflare directly.
-          dnsResolver = "1.1.1.1:53";
-          credentialFiles = {
-            CLOUDFLARE_EMAIL_FILE = secrets.cloudflareEmail.path;
-            CLOUDFLARE_API_KEY_FILE = secrets.cloudflareApiKey.path;
-          };
-          group = config.services.caddy.group;
-          reloadServices = ["caddy.service"];
-        };
-      };
-      systemd.services."acme-${cfg.name}" = {
-        after = ["op-secrets.service"];
-        wants = ["op-secrets.service"];
-      };
+      services.tailscale.permitCertUid = config.services.caddy.user;
 
       services.caddy = {
         enable = true;
         virtualHosts = lib.mapAttrs' (port: directives:
           lib.nameValuePair "https://${cfg.name}:${port}" {
-            # Not a hand-written `tls` line: this also orders caddy after the
-            # cert unit, which puts a self-signed placeholder down first, so
-            # the very first reload doesn't fail on a missing file.
-            useACMEHost = cfg.name;
+            # Explicit rather than caddy's implicit *.ts.net handling, so a
+            # global issuer added to caddy later can't take these over.
             extraConfig = ''
+              tls {
+                get_certificate tailscale
+              }
               @offTailnet not remote_ip 100.64.0.0/10 fd7a:115c:a1e0::/48
               respond @offTailnet 403
               ${directives}
             '';
           })
           cfg.ports;
+      };
+      systemd.services.caddy = {
+        after = ["tailscaled.service"];
+        wants = ["tailscaled.service"];
       };
     };
   };

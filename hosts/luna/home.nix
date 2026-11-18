@@ -51,7 +51,10 @@
   # is refused. chipsmith's `flash --ssh` goes through it too.
   # The build-pool peers (ganymede, saturn) authorize the same key; agents on
   # luna borrow them for VMs and builds that don't fit here.
-  programs.ssh.settings."mercury mercury.ts.cramt.dk venus venus.ts.cramt.dk ganymede ganymede.ts.cramt.dk saturn saturn.ts.cramt.dk" = {
+  programs.ssh.settings.${
+    lib.concatMapStringsSep " " (h: "${h} ${h}.${(import ../../myLib/site.nix).tailnet_domain}")
+      ["mercury" "venus" "ganymede" "saturn"]
+  } = {
     IdentityFile = "/home/cramt/.ssh/id_personal";
     IdentitiesOnly = true;
   };

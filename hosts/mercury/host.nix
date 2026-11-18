@@ -5,5 +5,5 @@
   # The router's DNS keeps every old DHCP lease for "mercury" and hands them
   # out first, so the bare name times out on dead addresses. The tailnet name
   # always points at the live board.
-  address = "mercury.ts.cramt.dk";
+  address = "mercury.${(import ../../myLib/site.nix).tailnet_domain}";
 }

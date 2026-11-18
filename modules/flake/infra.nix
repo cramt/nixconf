@@ -1,4 +1,4 @@
-# `nix run .#infra -- <tofu args>`: the Cloudflare infra in infra/, rendered by
+# `nix run .#infra -- <tofu args>`: the Cloudflare and Tailscale infra in infra/, rendered by
 # terranix and run through opentofu. The state is a plain file on luna, so tofu
 # only ever runs there: from any machine, this copies the runner's closure to
 # luna and executes it over ssh. `just deploy` runs `apply` with it before
@@ -24,7 +24,7 @@
 
       # The provider is the one lib.tf.provider generated the options from, so
       # the types and the binary can't drift apart.
-      tofu = pkgs.opentofu.withPlugins (p: [ p.cloudflare_cloudflare ]);
+      tofu = pkgs.opentofu.withPlugins (p: [ p.cloudflare_cloudflare p.tailscale_tailscale ]);
 
       runner = pkgs.writeShellApplication {
         name = "infra-on-luna";
@@ -50,12 +50,16 @@
           infrastructure=$(fields Infrastructure)
           cloudflare=$(fields Cloudflare)
           atproto=$(fields AtprotoDomain)
+          tailscale=$(fields Tailscale)
           field() { jq -er --arg k "$2" '.[$k]' <<<"$1"; }
 
           export CLOUDFLARE_EMAIL CLOUDFLARE_API_KEY \
+            TAILSCALE_OAUTH_CLIENT_ID TAILSCALE_OAUTH_CLIENT_SECRET \
             TF_VAR_domain TF_VAR_ip TF_VAR_atproto TF_VAR_atproto_hannah TF_VAR_email_forwarding
           CLOUDFLARE_EMAIL=$(field "$infrastructure" email)
           CLOUDFLARE_API_KEY=$(field "$cloudflare" apiKey)
+          TAILSCALE_OAUTH_CLIENT_ID=$(field "$tailscale" oauthClientId)
+          TAILSCALE_OAUTH_CLIENT_SECRET=$(field "$tailscale" oauthClientSecret)
           TF_VAR_domain=$(field "$infrastructure" domain)
           TF_VAR_ip=$(field "$infrastructure" ip)
           TF_VAR_atproto=$(field "$atproto" value)

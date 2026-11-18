@@ -4,10 +4,10 @@
 # per-host one: a host's own config can't see the others' without making
 # every host evaluate every other host.
 #
-# Upstream sends link credentials only over https (or plain http to loopback
-# or *.ts.net, which our headscale names aren't), so servers link to each
-# other at https://<host>.ts.cramt.dk: each one serves its own tailnet name
-# with a real cert (myNixOS.tailnet-https). Browsers off the tailnet still
+# Servers link to each other at https://<host>.<tailnet>.ts.net: each one
+# serves its own tailnet name with Tailscale's cert (myNixOS.tailnet-https).
+# Upstream would also accept plain http to *.ts.net, but trustTailnet's vhost
+# is the same caddy site, so https costs nothing extra. Browsers off the tailnet still
 # come in through luna's caddy: `t3-<host>.<domain>` proxies to `<host>:3773`,
 # and `<port>.t3-<host>.<domain>` to that host's preview gateway.
 #

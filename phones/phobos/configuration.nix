@@ -1,5 +1,5 @@
 # Alex's phone, managed by Nixup (modules/flake/phones.nix). The fleet bits
-# (tailscale on headscale, ssh) come from nixupModules; this file is only what's
+# (tailscale on the fleet tailnet, ssh) come from nixupModules; this file is only what's
 # specific to the phone. Anything left unset stays as set by hand on the phone.
 #
 # Once it's rooted, `nix run --inputs-from . nixup#nixup-config -- create` writes
