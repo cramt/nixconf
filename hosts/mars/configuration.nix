@@ -72,6 +72,11 @@
       # Like saturn: it takes ~/.t3, and the desktop app moves to ~/.t3-desktop
       # and reaches it as a saved connection (t3code-remotes).
       t3code.enable = true;
+      # Work's tailnet beside the fleet one; mars is the only host on it.
+      work-tailnet = {
+        enable = true;
+        authKeyReference = "op://Homelab/WorkTailnet/authKey";
+      };
       caddy = {
         enable = false;
         domain = "localhost";
