@@ -25,8 +25,11 @@ in
   resource.tailscale_dns_preferences.fleet.magic_dns = true;
 
   resource.tailscale_tailnet_settings.fleet = {
-    # Certs for <host>.tailaf2719.ts.net (myNixOS.tailnet-https).
-    https_enabled = true;
+    # https_enabled (certs for myNixOS.tailnet-https) is on, but not from
+    # here: only a user may flip it, since it consents to publishing every
+    # machine name in the CT logs, and an OAuth client gets a 400. It was set
+    # once with op://Homelab/Tailscale/apiKey. Left out rather than `true` so
+    # a refresh can't turn into an update that fails the same way.
     devices_approval_on = false;
     # Nodes are NixOS: tailscale updates come with nixpkgs, never by itself.
     devices_auto_updates_on = false;
