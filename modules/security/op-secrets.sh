@@ -2,8 +2,8 @@
 # `op read`, a few at a time: each read is its own ~1.5 s service-account
 # sign-in, almost all of it network round trips.
 #
-# A secret is only replaced once its new value is fully written, so a failed
-# read keeps the last good one on disk, and the run still exits nonzero so
+# A secret is only replaced once its new value is fully written, so a read
+# that still fails after a few tries keeps the last good one on disk, and the run still exits nonzero so
 # systemd retries. Services listed against a secret whose value changed get a
 # try-restart; on a first render they haven't started yet (they're ordered
 # after this unit), so there's nothing to restart.
@@ -30,12 +30,21 @@ render() {
   rm -f "$new"
   # --out-file writes the bare value: no trailing newline on a field, and a
   # file attachment byte for byte. Consumers rely on both.
-  if ! timeout 120 op read --out-file "$new" "$reference" >/dev/null; then
+  # A few tries before giving up: an activation that restarts tailscaled
+  # alongside this unit leaves resolv.conf pointing at MagicDNS while nothing
+  # answers there, and a run failing on that rolls the whole deploy back.
+  local attempt=1
+  until timeout 120 op read --out-file "$new" "$reference" >/dev/null; do
     rm -f "$new"
-    echo "op-secrets: $name: reading $reference failed, keeping the old value" >&2
-    echo failed >"$status/$name"
-    return
-  fi
+    if [ $attempt -ge 3 ]; then
+      echo "op-secrets: $name: reading $reference failed, keeping the old value" >&2
+      echo failed >"$status/$name"
+      return
+    fi
+    echo "op-secrets: $name: reading $reference failed, retrying" >&2
+    sleep $((attempt * 5))
+    attempt=$((attempt + 1))
+  done
   chown "$owner:$group" "$new"
   chmod "$mode" "$new"
   if [ ! -e "$path" ]; then

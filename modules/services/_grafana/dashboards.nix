@@ -913,6 +913,39 @@ in {
           }
         ];
       })
+      (timeseries {
+        title = "Tokens by model";
+        description = "Every token type summed, cache reads included, so this is mostly context being re-read.";
+        unit = "suffix: tok/s";
+        w = 24;
+        fieldConfig.defaults.custom = {
+          stacking.mode = "normal";
+          fillOpacity = 30;
+        };
+        queries = [
+          {
+            expr = ''sum by (model) (rate(cliproxy_tokens_total{type="total"}[$__rate_interval]))'';
+            legend = "{{model}}";
+          }
+        ];
+      })
+      # Not stacked: `reasoning` is a slice of `output`, and cache reads run
+      # ~250x output, so a log axis is what keeps output visible next to them.
+      (timeseries {
+        title = "Tokens by type";
+        unit = "suffix: tok/s";
+        w = 24;
+        fieldConfig.defaults.custom.scaleDistribution = {
+          type = "log";
+          log = 10;
+        };
+        queries = [
+          {
+            expr = ''sum by (type) (rate(cliproxy_tokens_total{type=~"input|output|reasoning|cache_creation|cache_read"}[$__rate_interval]))'';
+            legend = "{{type}}";
+          }
+        ];
+      })
       (bars {
         title = "Tokens in range";
         w = 12;

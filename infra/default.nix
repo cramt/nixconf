@@ -1,4 +1,4 @@
-# Terranix entrypoint for the Cloudflare infra, applied by `just deploy`
+# Terranix entrypoint for the Cloudflare and Tailscale infra, applied by `just deploy`
 # (wired up in modules/flake/infra.nix).
 #
 # Secrets never enter the store: the wrapper reads them from 1Password and
@@ -6,9 +6,11 @@
 { lib, ... }: {
   imports = [
     (lib.tf.provider "cloudflare_cloudflare")
+    (lib.tf.provider "tailscale_tailscale")
     ./dns.nix
     ./email.nix
     ./workers.nix
+    ./tailscale.nix
   ];
 
   # A plain file on luna. The wrapper only ever runs tofu there, so nothing

@@ -128,8 +128,6 @@
         url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
         dataDir = "/pool/minecraft-forge";
       };
-      # Tailnet coordinator at hs.<domain>; luna is also a node, like every host.
-      headscale.enable = true;
       caddy = {
         enable = true;
         cacheVolume = "/pool/configs/caddy-cache";

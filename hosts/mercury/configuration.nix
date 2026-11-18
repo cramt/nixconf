@@ -1,6 +1,6 @@
 # mercury — Terasic DE25-Nano, an Agilex 5 SoC FPGA dev board (HPS side only).
 #
-# Everything the board itself needs — Terasic's kernel, the U-Boot -> extlinux
+# Everything the board itself needs — the kernel, the U-Boot -> extlinux
 # boot chain, the SD image layout — lives in A-H-Technology/nixos-fpga, which is
 # where to look for why any of it is the way it is. This file is only what makes
 # the board a fleet member: users, home-manager, and opting out of fleet
@@ -17,6 +17,11 @@
   ];
 
   nixpkgs.hostPlatform = "aarch64-linux";
+
+  # Mainline (7.4-rc) with the board's DT patched in, instead of Terasic's
+  # 6.12 fork. nixos-fpga's terasic/de25-nano/kernel/mainline.nix says what
+  # it carries and when each patch goes away; "terasic" is the way back.
+  hardware.terasic.de25-nano.kernelSource = "mainline";
 
   image.baseName = "mercury";
 
