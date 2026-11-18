@@ -42,6 +42,10 @@
       systemd.services.tailscaled-autoconnect.serviceConfig = {
         Restart = "on-failure";
         RestartSec = 30;
+        # switch-to-configuration only restarts a changed unit that's active;
+        # an exited oneshot is skipped, so the rejoin check below never ran on
+        # venus when the control server moved.
+        RemainAfterExit = true;
       };
       systemd.services.tailscaled-autoconnect.unitConfig.StartLimitIntervalSec = 0;
       # tailscaled keeps the control server from its last login in its state,
