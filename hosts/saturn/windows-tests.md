@@ -78,6 +78,11 @@ passed last time; quote `UBR` once more anyway.
     `autostart (Startup): ...` line, a `started "...": pid N` line after
     each Run key entry, and an `exited within 10 s, code ...` line for any
     that quit at once (SecurityHealthSystray didn't run last time). Quote them.
+28. **Focused dialogs aren't under tiles.** Last time the focused MSI
+    installer drew under the tile to its left. The shell now raises a
+    focused unplaced window over any tile covering it and logs
+    `focused window ... was under tile(s) ...; raising it`. Quote any such
+    lines, and say whether a focused floating window ever sat under a tile.
 27. **Hung windows' ghosts float.** If any app hangs (Discord did at its
     first start), `shell.log` has its `Ghost` window as
     `floating: a hung window's ghost`, not `tiled`. Not checked if nothing hung.
