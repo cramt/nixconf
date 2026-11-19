@@ -40,8 +40,9 @@ the Linux side) found three failures, now fixed. Check them first.
     doesn't exist.
 23. **The logon task didn't die on the mount.** This logon's part of
     `wsl.log`: `mounting` with no `Resource busy` after it, the
-    `restarting the defenestrate distro so it runs as the Linux user` line,
-    then `copied ...` lines. You opening on your own (not started by Alex)
+    `restarting the defenestrate distro so \\wsl$ runs as the Linux user`
+    line (fresh imports only; on 2026-11-19 it never came, because the old
+    check asked `id -u`), then `copied ...` lines. You opening on your own (not started by Alex)
     is half the proof.
 
 ## Round two fixes (defenestrate 0e12cc5)
@@ -50,8 +51,11 @@ the Linux side) found three failures, now fixed. Check them first.
    lists the Linux home. Before this fix, the elevated logon task's mounts
    didn't show to non-elevated programs.
 2. **Files written over `\\wsl$` belong to cramt, not root.** After writing the
-   report: `wsl.exe -d defenestrate -- stat -c '%U %u' /linux/home/cramt/.local/share/defenestrate/reports/<file>`
-   shows `cramt` with the same uid as `stat -c %u /linux/home/cramt`.
+   report: `wsl.exe -d defenestrate -- ls -ln /linux/home/cramt/.local/share/defenestrate/reports/<file>`
+   shows the same uid (1000) as `ls -lnd /linux/home/cramt` (the distro's
+   busybox has no `stat`). On a fresh reflash, test a file written before
+   anything restarted the distro by hand: the 2026-11-19 boot only passed
+   after test 4's `wsl -t`.
 3. **WSL stays up.** `%USERPROFILE%\.wslconfig` has `instanceIdleTimeout=-1`
    under `[general]`. Close every WSL program, wait 2+ minutes,
    `wsl.exe -l -v`: `defenestrate` is still Running and
