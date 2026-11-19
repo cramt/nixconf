@@ -29,6 +29,28 @@ in {
   # downloads the game, so it's the slow one.
   # Git for Claude Code's Bash tool (it falls back to PowerShell without).
   apps = ["Mozilla.Firefox" "Discord.Discord" "Git.Git" "Anthropic.ClaudeCode" "RiotGames.LeagueOfLegends.EUW"];
+  # Firefox for links and pages, not Edge (Discord's first start opened in
+  # Edge on 2026-11-19). The ProgIds' suffix is Firefox's hash of its
+  # install path, C:\Program Files\Mozilla Firefox, where winget's
+  # machine-wide install puts it. Applied from the sign-in after Firefox is
+  # in, since its ProgIds don't exist before. Microsoft documents the
+  # policy behind this as domain-joined only; the next boot's report says
+  # whether it holds here (hosts/saturn/windows-tests.md, 24).
+  defaultApps = let
+    url = {
+      progId = "FirefoxURL-308046B0AF4A39CB";
+      name = "Firefox";
+    };
+    html = {
+      progId = "FirefoxHTML-308046B0AF4A39CB";
+      name = "Firefox";
+    };
+  in {
+    http = url;
+    https = url;
+    ".htm" = html;
+    ".html" = html;
+  };
   # Downloads pinned by hash (the GPU driver) live in windows-pins.toml,
   # which `dfnstrate pins` rewrites; see modules/flake/windows.nix.
   # The Linux install, reached through WSL (terminal programs only; its GUI

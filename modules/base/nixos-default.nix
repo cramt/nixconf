@@ -27,6 +27,16 @@
       # never mentioned containers. Nothing in this repo uses quadlet today, so
       # off unless a host asks; mkDefault keeps that a one-liner.
       virtualisation.quadlet.enable = lib.mkDefault false;
+      # The cosmic module turns on switcheroo-control (mkDefault), and COSMIC then
+      # launches every app with the "default GPU" env it reports
+      # (DRI_PRIME=pci-...) even on single-GPU boxes. Under DRI_PRIME Zen's
+      # WebRender gets an llvmpipe context, rejects it (wr_window_new:
+      # SoftwareRasterizer) and runs software WebRender: laggy, every frame
+      # CPU-rasterized. Hit on saturn and mars. No host has two GPUs it switches
+      # between from a COSMIC session, so off fleet-wide; a hybrid host that
+      # wants it sets it back (plain assignment beats this mkOverride 900).
+      # Same single-GPU DRI_PRIME misfire: https://github.com/PrismLauncher/PrismLauncher/pull/5760
+      services.switcherooControl.enable = lib.mkOverride 900 false;
       # nixpkgs' resolvconf.conf try-restarts nscd on every resolv.conf write to
       # flush glibc nscd's hosts cache. nsncd caches nothing, so all that does is
       # bounce it: a switch that restarts tailscaled rewrites resolv.conf 5+ times

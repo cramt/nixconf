@@ -206,14 +206,6 @@
 
   services.displayManager.gdm.enable = true;
   services.desktopManager.cosmic.enable = true;
-  # The cosmic module turns on switcheroo-control, and COSMIC then launches every
-  # app with the "default GPU" env it reports (DRI_PRIME=pci-0000_03_00_0) even on
-  # this single-GPU box. Under DRI_PRIME Zen's WebRender gets an llvmpipe context
-  # for the window, rejects it (wr_window_new: SoftwareRasterizer) and runs SW-WR:
-  # laggy URL bar, every frame CPU-rasterized. Nothing here to switch between.
-  # Same single-GPU DRI_PRIME misfire: https://github.com/PrismLauncher/PrismLauncher/pull/5760
-  # Drop if saturn ever gets a second GPU.
-  services.switcherooControl.enable = false;
 
   # Configure keymap in X11
   services.xserver = {

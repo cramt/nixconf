@@ -27,22 +27,65 @@ off but isn't on the list under "Also seen".
 ## New on this reflash
 
 This install is a fresh reflash. The last boot's report
-(`~/.local/share/defenestrate/reports/2026-11-17-21-58-logs/README.md` on
-the Linux side) found three failures, now fixed. Check them first.
+(`~/.local/share/defenestrate/reports/2026-11-19-16-46.md` on the Linux
+side) found these, now fixed. Check them first. Test 21 (update baked in)
+passed last time; quote `UBR` once more anyway.
 
-21. **The update is baked in.** `C:\Windows\Setup\defenestrate\updates.log`
-    ends in `all installed`, and Windows is build 26300.9974: `UBR` under
-    `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion` is 9974 (the ISO
-    was 9457). Quote both.
-22. **Automatic updates are off.** `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU`
-    has `NoAutoUpdate` = 1, and nothing is staged:
-    `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired`
-    doesn't exist.
-23. **The logon task didn't die on the mount.** This logon's part of
-    `wsl.log`: `mounting` with no `Resource busy` after it, the
-    `restarting the defenestrate distro so it runs as the Linux user` line,
-    then `copied ...` lines. You opening on your own (not started by Alex)
-    is half the proof.
+22. **No updates and no drivers from Windows Update.** Last time
+    `NoAutoUpdate` held, but PnP's driver retrieval installed a dozen
+    vendor packages, MSI's Driver Utility Installer appeared on the
+    desktop, and `RebootRequired` was set. Now:
+    - `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate` has
+      `ExcludeWUDriversInQualityUpdate` = 1,
+      `HKLM\SOFTWARE\Policies\Microsoft\Windows\Device Metadata` has
+      `PreventDeviceMetadataFromNetwork` = 1 (both put back after the
+      display-driver pass lifted them), and
+      `HKLM\SOFTWARE\Policies\Microsoft\Windows\DriverSearching` has
+      `SearchOrderConfig` = 0.
+    - The update history (`(New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher().QueryHistory(0, 50)`)
+      has no `Device Driver Retrieval Client` entries for this install.
+    - No MSI Driver Utility Installer, and
+      `...\WindowsUpdate\Auto Update\RebootRequired` doesn't exist.
+    - `apps.log`'s `windows-update:display-drivers` line still finishes
+      (`installed`, or "no display driver"), not an error.
+23. **`\\wsl$` writes as cramt from the start.** `wsl.log` has
+    `restarting the defenestrate distro so \\wsl$ runs as the Linux user`
+    after `mounting` (a fresh import always gets it). Then test 2 with a
+    file you write *before* touching the distro yourself (no `wsl -t`).
+    Last time only files written after test 4's restart were cramt's.
+24. **Firefox is the default browser.** New, through the default
+    associations policy, which Microsoft documents as domain-joined only.
+    This is the open question.
+    - `HKLM\SOFTWARE\Policies\Microsoft\Windows\System` has
+      `DefaultAssociationsConfiguration` pointing at
+      `C:\Program Files\defenestrate\default-apps.xml`, which exists.
+    - It only applies from the sign-in after Firefox is installed, so on
+      this first logon Edge may still be the default. Quote
+      `HKCU\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice`
+      `ProgId` now. Then, instead of the last step, write the report with
+      a final line `PENDING: 24 after sign-in`, and ask Alex to sign out
+      and back in (Super+Shift+Escape). The next sign-in opens a new you
+      on this same checklist: if today's report ends in that line, only
+      quote the `ProgId` again, append it (`FirefoxURL-308046B0AF4A39CB`
+      is a pass), drop the PENDING line, then do the last step.
+    - If a link opened anywhere this session, say which browser it opened in.
+25. **Launches are logged.** `shell.log` has a `launched "...": pid N` (or
+    `no new process`) line for each thing Alex opens from the launcher in
+    test 8. Last time Alex said Firefox and the Linux terminal opened, but
+    no log could confirm it.
+26. **Autostart says what happened.** `shell.log` has a
+    `autostart (common Startup): N entries in ...` and
+    `autostart (Startup): ...` line, a `started "...": pid N` line after
+    each Run key entry, and an `exited within 10 s, code ...` line for any
+    that quit at once (SecurityHealthSystray didn't run last time). Quote them.
+28. **Focused dialogs aren't under tiles.** Last time the focused MSI
+    installer drew under the tile to its left. The shell now raises a
+    focused unplaced window over any tile covering it and logs
+    `focused window ... was under tile(s) ...; raising it`. Quote any such
+    lines, and say whether a focused floating window ever sat under a tile.
+27. **Hung windows' ghosts float.** If any app hangs (Discord did at its
+    first start), `shell.log` has its `Ghost` window as
+    `floating: a hung window's ghost`, not `tiled`. Not checked if nothing hung.
 
 ## Round two fixes (defenestrate 0e12cc5)
 
@@ -50,8 +93,11 @@ the Linux side) found three failures, now fixed. Check them first.
    lists the Linux home. Before this fix, the elevated logon task's mounts
    didn't show to non-elevated programs.
 2. **Files written over `\\wsl$` belong to cramt, not root.** After writing the
-   report: `wsl.exe -d defenestrate -- stat -c '%U %u' /linux/home/cramt/.local/share/defenestrate/reports/<file>`
-   shows `cramt` with the same uid as `stat -c %u /linux/home/cramt`.
+   report: `wsl.exe -d defenestrate -- ls -ln /linux/home/cramt/.local/share/defenestrate/reports/<file>`
+   shows the same uid (1000) as `ls -lnd /linux/home/cramt` (the distro's
+   busybox has no `stat`). On a fresh reflash, test a file written before
+   anything restarted the distro by hand: the 2026-11-19 boot only passed
+   after test 4's `wsl -t`.
 3. **WSL stays up.** `%USERPROFILE%\.wslconfig` has `instanceIdleTimeout=-1`
    under `[general]`. Close every WSL program, wait 2+ minutes,
    `wsl.exe -l -v`: `defenestrate` is still Running and
