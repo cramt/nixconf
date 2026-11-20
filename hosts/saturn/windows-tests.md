@@ -1,11 +1,16 @@
 # defenestrate: what to verify on this boot
 
 You're Claude Code on saturn's Windows side, under defenestrate's shell (no
-explorer). Alex booted in here to check the latest defenestrate fixes on real
-hardware. Work through the list, check what you can yourself (logs, registry,
-tasks, `wsl.exe`), and ask Alex for anything only a person at the screen can
-see. Don't fix anything on this side: the fixes go into defenestrate
-(github.com/cramt/defenestrate) from Linux. Your job is an accurate report.
+explorer), started at logon as the testing half of a Claude Code session on
+the Linux side, which rebooted the machine into here to check the latest
+defenestrate fixes on real hardware. Nobody may be at the screen. Work
+through the list and check what you can yourself: logs, registry, tasks,
+`wsl.exe`, and the UI itself (PowerShell with UI Automation to find and
+click controls, SendInput for keys and mouse, screenshots to look). Never
+wait for an answer; what only a person could judge (how smooth something
+looks) is **not checked**, unless Alex happens to answer. Don't fix anything
+on this side: the fixes go into defenestrate (github.com/cramt/defenestrate)
+from Linux. Your job is an accurate report.
 
 Logs: `%LOCALAPPDATA%\defenestrate\` (`shell.log`, `apps.log` plus a `winget\`
 folder of per-ID logs, `wsl.log`, `reboot.log`) and
@@ -17,21 +22,29 @@ Write it to `\\wsl$\defenestrate\linux\home\cramt\.local\share\defenestrate\repo
 as `<yyyy-mm-dd>-<hh-mm>.md` (create the folder if it's missing). That's the
 Linux install's disk, so the Linux side reads it after the reboot. Writing
 there is test 1. If it fails, say so in chat, save the report to
-`%USERPROFILE%\defenestrate-report.md`, and tell Alex where it is.
+`%USERPROFILE%\defenestrate-report.md`, and say where it is in the
+handoff (Last step can't work either then; don't reboot, leave it for Alex).
 
 Per item: **pass**, **fail**, or **not checked**, plus the evidence (a log
 line, command output, or what Alex saw). On a failure, quote the relevant log
-lines. Paraphrasing loses the detail the fix needs. Put anything that looked
+lines. Paraphrasing loses the detail the fix needs. Screenshots you took go
+next to the report, in a `<report name>-media` folder. Put anything that looked
 off but isn't on the list under "Also seen".
 
 ## New this boot
 
-No reflash this time: Alex patched the shell onto the existing install with
-`dfnstrate update` from Linux. The last report
+No reflash this time: the Linux session patched the shell onto the existing
+install with `dfnstrate update`. The last report
 (`~/.local/share/defenestrate/reports/2026-11-20-16-06.md` on the Linux
 side) passed everything below this section except 15 and 24; don't redo
-those, only note anything that broke since. Check these two:
+those, only note anything that broke since. Check these:
 
+29. **You started on your own, with no setup questions.** No theme picker,
+    no "do you trust this folder", no bypass-permissions warning: nobody
+    answered them. `~/.claude.json` has `hasCompletedOnboarding: true` and
+    a project entry for your home with `hasTrustDialogAccepted: true`. Quote
+    them, and which spelling of the home path Claude Code itself keyed its
+    entry by (`C:/Users/cramt` or `C:\Users\cramt`).
 24. **Firefox as default browser, by asking.** The policy route did
     nothing (not domain-joined), so the shell now opens Settings at
     Firefox's default-apps page once per logon while http/https/.htm/.html
@@ -40,20 +53,26 @@ those, only note anything that broke since. Check these two:
       ms-settings:defaultapps?registeredAppMachine=Firefox-...` and a
       `launched` line for it. Quote both. If it says `waiting for an app`
       or nothing at all, quote what it says instead.
-    - Ask Alex whether Settings opened on Firefox's page, and to click
-      "Set default" there. Then quote
+    - Find the Settings window, screenshot it, and say whether it's on
+      Firefox's page or the generic Default apps page (then the query
+      string may be wrong for this build). Click its "Set default" button
+      yourself with UI Automation. Then quote
       `HKCU\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice`
-      `ProgId` (`FirefoxURL-308046B0AF4A39CB` is a pass), and the same
-      for `http` and for `.html` under
+      `ProgId` (`FirefoxURL-308046B0AF4A39CB` is a pass), and the same for
+      `http` and for `.html` under
       `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.html\UserChoice`.
-    - If the deep link opened the generic Default apps page instead, say
-      so: the query string may be wrong for this build.
 15. **Resizing a tile with Super+right-drag.** The shell now sends each
-    window one move at a time instead of one per mouse move. Ask Alex to
-    resize the edge between this console and another tile, fast and slow,
-    then: does the console still keep moving after the mouse stops, and is
-    it still stuttery? Ask whether other windows (Firefox, Discord) feel
-    different from before.
+    window one move at a time instead of one per mouse move; before, a
+    console kept moving for a while after the drag ended. Open a second
+    tile next to this console (Firefox), then with SendInput hold the
+    Windows key, press the right button near the shared edge, move the
+    pointer 400 px in 2 px steps 1 ms apart (a fast 1000 Hz mouse), and
+    release. Sample both windows' `GetWindowRect` every 10 ms from the
+    first move until 2 s after the release. Report: whether the shell took
+    the injected drag at all (the edge moved), how long after the release
+    each window last changed (over ~100 ms is the old bug), and its final
+    rect. Do it slowly too (20 ms steps). Smoothness to the eye is not
+    checked unless Alex says.
 
 ## Round two fixes (defenestrate 0e12cc5)
 
@@ -132,7 +151,13 @@ the config's line: it opened this console.
 
 ## Last step
 
-Once the report is written and Alex has read it, run
-`schtasks /run /tn defenestrate-reboot-to-linux`. That's the launcher's
-"Reboot to Linux" task, and the machine should come up in Linux (test 20:
-the Linux side checks it came back).
+Once the report is written, hand back to Linux:
+
+1. Rename `\\wsl$\defenestrate\linux\home\cramt\.local\state\next-boot\claude-resume.pending`
+   to `claude-resume` (same folder). That's the Linux session asking to be
+   resumed at the next login; renaming it is what wakes it. If it isn't
+   there, nobody is waiting: skip this and say so in the report.
+2. Run `schtasks /run /tn defenestrate-reboot-to-linux`, the launcher's
+   "Reboot to Linux" task. The machine should come up in Linux (test 20:
+   the Linux side checks it came back), and the resumed session reads your
+   report.

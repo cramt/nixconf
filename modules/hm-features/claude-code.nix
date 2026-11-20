@@ -159,6 +159,46 @@
         CLAUDE_CODE_FORK_SUBAGENT = "0";
       };
     };
+    # Run by the defenestrate shell's autostart at each Windows logon while
+    # a test plan is set (modules/flake/windows.nix): Claude Code as a
+    # testing subagent of the Linux session that rebooted into Windows. It
+    # waits for the logon task's copies (pool key, plan, this state) and, on
+    # a fresh install, for winget to put claude on PATH, which lands after
+    # the console started, so PATH is reread from the registry.
+    windowsStartTests = ''
+      $claude = Join-Path $env:USERPROFILE '.claude'
+      Write-Host 'Waiting for the logon task to copy Claude config from Linux (wsl.log) and for winget to install Claude Code (apps.log), both in %LOCALAPPDATA%\defenestrate'
+      while (-not ((Test-Path "$claude\pool-key") -and (Test-Path "$claude\defenestrate-tests.md") -and (Test-Path "$claude\claude-state.json") -and (Get-Command claude -ErrorAction SilentlyContinue))) {
+          Start-Sleep 5
+          $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+      }
+
+      # Nested objects merge, everything else is replaced.
+      function Merge($into, $from) {
+          foreach ($p in $from.PSObject.Properties) {
+              $have = $into.PSObject.Properties[$p.Name]
+              if ($have -and $have.Value -is [pscustomobject] -and $p.Value -is [pscustomobject]) {
+                  Merge $have.Value $p.Value
+              } else {
+                  $into | Add-Member -NotePropertyName $p.Name -NotePropertyValue $p.Value -Force
+              }
+          }
+      }
+      $json = Join-Path $env:USERPROFILE '.claude.json'
+      $state = [pscustomobject]@{}
+      if (Test-Path $json) {
+          try { $state = Get-Content -Raw -LiteralPath $json | ConvertFrom-Json } catch { Write-Host "~/.claude.json isn't JSON, leaving it: $_" }
+      }
+      Merge $state (Get-Content -Raw -LiteralPath "$claude\claude-state.json" | ConvertFrom-Json)
+      # No BOM: Windows PowerShell's UTF8 adds one.
+      [IO.File]::WriteAllText($json, ($state | ConvertTo-Json -Depth 100), (New-Object Text.UTF8Encoding $false))
+
+      $prompt = @'
+      You're the testing half of a Linux Claude Code session that rebooted saturn into this Windows to test defenestrate. Nobody may be at the screen: never wait for an answer. Work through ~/.claude/defenestrate-tests.md, checking what you can yourself, including driving the UI (PowerShell with UI Automation, SendInput, screenshots), and mark what only a person could judge as not checked. Then follow its Last step, which hands back to Linux.
+      '@
+      Set-Location $env:USERPROFILE
+      claude --dangerously-skip-permissions $prompt.Trim()
+    '';
     # The NixOS-specific sections swapped for Windows ones; the rest is the
     # same instructions.
     windowsClaudeMd = let
@@ -271,6 +311,7 @@
       # Off by default: it needs the m365Account secret, which only hosts that
       # render it (mars) have.
       windows.enable = lib.mkEnableOption "Claude Code config for this machine's defenestrate Windows, under ~/${windowsDir} for its logon task to copy over (hosts/<host>/windows.nix)";
+      handoff.enable = lib.mkEnableOption "resuming a Claude Code session at the next graphical login: `claude-handoff <prompt>` leaves ~/.local/state/next-boot/claude-resume.pending, and whatever finishes the job (Windows Claude, over \\\\wsl$) renames it to claude-resume, which a user service picks up after the reboot";
       windows.testPlan = lib.mkOption {
         type = lib.types.nullOr lib.types.path;
         default = null;
@@ -299,6 +340,57 @@
       };
     };
     config = lib.mkIf cfg.enable (lib.mkMerge [
+      (lib.mkIf cfg.handoff.enable (let
+        next = "${config.xdg.stateHome}/next-boot";
+        # From inside a session: CLAUDE_CODE_SESSION_ID names it and $PWD is
+        # its project, which --resume needs to find it again.
+        handoff = pkgs.writeShellApplication {
+          name = "claude-handoff";
+          runtimeInputs = [pkgs.jq pkgs.coreutils];
+          text = ''
+            skip=false
+            if [ "''${1:-}" = --skip-permissions ]; then skip=true; shift; fi
+            [ $# -eq 1 ] || { echo "usage: claude-handoff [--skip-permissions] <prompt to resume with>" >&2; exit 2; }
+            : "''${CLAUDE_CODE_SESSION_ID:?run it from inside a Claude Code session}"
+            mkdir -p ${next}
+            jq -n --arg session "$CLAUDE_CODE_SESSION_ID" --arg cwd "$PWD" --arg prompt "$1" --argjson skip "$skip" \
+              '{session: $session, cwd: $cwd, prompt: $prompt, skipPermissions: $skip}' > ${next}/claude-resume.pending
+            echo "${next}/claude-resume.pending: renamed to claude-resume, the next login resumes this session"
+          '';
+        };
+        resume = pkgs.writeShellApplication {
+          name = "claude-resume";
+          runtimeInputs = [pkgs.jq pkgs.coreutils];
+          text = ''
+            f=${next}/claude-resume
+            session=$(jq -r .session "$f")
+            cwd=$(jq -r .cwd "$f")
+            prompt=$(jq -r .prompt "$f")
+            flags=()
+            if [ "$(jq -r .skipPermissions "$f")" = true ]; then flags=(--dangerously-skip-permissions); fi
+            # Gone before anything can fail, so a broken handoff doesn't
+            # come back at every login.
+            rm "$f"
+            # A login shell for the session's environment (PATH,
+            # home.sessionVariables), as a terminal would give it.
+            exec ${lib.getExe config.programs.ghostty.package} --working-directory="$cwd" \
+              -e "$SHELL" -lc 'exec claude "$@"' claude --resume "$session" "''${flags[@]}" "$prompt"
+          '';
+        };
+      in {
+        home.packages = [handoff];
+        systemd.user.services.claude-resume = {
+          Unit = {
+            Description = "Resume the Claude Code session handed off before the reboot";
+            ConditionPathExists = "%S/next-boot/claude-resume";
+            After = ["graphical-session.target"];
+            PartOf = ["graphical-session.target"];
+          };
+          # The terminal is the service: it lasts as long as that window.
+          Service.ExecStart = lib.getExe resume;
+          Install.WantedBy = ["graphical-session.target"];
+        };
+      }))
       (lib.mkIf cfg.windows.enable {
         home.file = {
           "${windowsDir}/settings.json".source = (pkgs.formats.json {}).generate "claude-windows-settings.json" windowsSettings;
@@ -306,6 +398,23 @@
           # Trimmed: whether op leaves a newline on the render isn't
           # something to depend on in a header value.
           "${windowsDir}/defenestrate-tests.md" = lib.mkIf (cfg.windows.testPlan != null) {source = cfg.windows.testPlan;};
+          # What Claude Code's first run asks a person for (theme, trusting
+          # the home folder, the bypass-permissions warning), answered up
+          # front so the test run needs nobody at the keyboard. Merged into
+          # ~/.claude.json by start-tests.ps1, never copied over it: Claude
+          # Code keeps its own state in there.
+          "${windowsDir}/claude-state.json".source = (pkgs.formats.json {}).generate "claude-windows-state.json" {
+            hasCompletedOnboarding = true;
+            theme = declaredSettingsAttrs.theme or "dark";
+            bypassPermissionsModeAccepted = true;
+            # Both spellings: which one Claude Code keys Windows paths by
+            # isn't documented, and the other is a harmless extra entry.
+            projects = lib.genAttrs ["C:/Users/${config.home.username}" "C:\\Users\\${config.home.username}"] (_: {
+              hasTrustDialogAccepted = true;
+              hasCompletedProjectOnboarding = true;
+            });
+          };
+          "${windowsDir}/start-tests.ps1" = lib.mkIf (cfg.windows.testPlan != null) {text = windowsStartTests;};
           "${windowsDir}/pool-key.ps1".text = ''
             (Get-Content -Raw -LiteralPath "$env:USERPROFILE\.claude\pool-key").Trim()
           '';

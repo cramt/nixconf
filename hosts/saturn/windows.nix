@@ -63,6 +63,9 @@ in {
       ".claude/pool-key.ps1" = "${claude}/pool-key.ps1";
       # Only there while home.nix sets claude-code.windows.testPlan.
       ".claude/defenestrate-tests.md" = "${claude}/defenestrate-tests.md";
+      ".claude/start-tests.ps1" = "${claude}/start-tests.ps1";
+      # Merged into ~/.claude.json by start-tests.ps1, not copied over it.
+      ".claude/claude-state.json" = "${claude}/claude-state.json";
       ".claude/pool-key" = (import ../../myLib/claude-pool.nix).apiKeyFile;
       ".config/git/config" = "${claude}/gitconfig";
     };
