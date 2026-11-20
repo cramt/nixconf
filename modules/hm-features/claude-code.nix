@@ -428,9 +428,15 @@
             # Gone before anything can fail, so a broken handoff doesn't
             # come back at every boot.
             rm "$f"
-            # The pool key is op-secrets' render, which a user unit can't be
-            # ordered after; at boot it lands within seconds.
-            for _ in $(seq 120); do [ -s ${pool.apiKeyFile} ] && break; sleep 1; done
+            # The pool: op-secrets' key, which a user unit can't be ordered
+            # after, and the network, which at boot (linger) isn't up yet.
+            # Without both the claude wrapper falls back to the direct OAuth
+            # login, long expired here since everything goes through the
+            # pool; the first resume died on that (2026-11-20).
+            for _ in $(seq 120); do
+              [ -s ${pool.apiKeyFile} ] && timeout 2 bash -c '</dev/tcp/${pool.host}/443' 2>/dev/null && break
+              sleep 1
+            done
             # A login shell for the session's environment (PATH,
             # home.sessionVariables), as a terminal would give it. The pane
             # stays after claude exits, so a failed resume can be read.
