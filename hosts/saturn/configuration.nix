@@ -225,9 +225,6 @@ in {
   services.xserver.enable = true;
 
   services.displayManager.gdm.enable = true;
-  # Straight into the desktop on the boot after a Claude Code handoff, so
-  # the resumed session's terminal shows with nobody at the keyboard.
-  myNixOS.handoffAutologin.user = "cramt";
   services.desktopManager.cosmic.enable = true;
 
   # Configure keymap in X11

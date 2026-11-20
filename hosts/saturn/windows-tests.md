@@ -52,9 +52,6 @@ that broke. This boot tests the loop:
     quote both. Quote `skipDangerousModePermissionPrompt` from
     `~/.claude/settings.json` and the `C:/Users/cramt` entry in
     `~/.claude.json`.
-30. **The handoff.** Nothing to do here: the Last step's script writes
-    `handoff.txt` next to the report, and the Linux side checks it came
-    back on its own.
 31. **Default apps are off.** The shell no longer tries to open Settings
     (it can't start without explorer, last report): `shell.log` has no
     `default apps:` line this logon, and no `SystemSettings` process is
@@ -140,7 +137,5 @@ the config's line: it opened this console.
 Once the report is finished, run
 `powershell -NoProfile -ExecutionPolicy Bypass -File ~/.claude/hand-back.ps1 -Report <the report's full path>`
 and nothing else. It copies the report, its media folder, the Windows-side
-logs and the Claude transcripts to the Linux side, renames the Linux
-session's `claude-resume.pending` inside WSL (that's what resumes it at the
-next boot), and reboots to Linux once the rename is checked. If it prints
-that the rename didn't happen, it doesn't reboot: leave things as they are.
+logs and the Claude transcripts to the Linux side, then reboots to Linux.
+Alex logs in there and picks the Linux session back up himself.

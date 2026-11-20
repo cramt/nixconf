@@ -364,7 +364,6 @@
       # Off by default: it needs the m365Account secret, which only hosts that
       # render it (mars) have.
       windows.enable = lib.mkEnableOption "Claude Code config for this machine's defenestrate Windows, under ~/${windowsDir} for its logon task to copy over (hosts/<host>/windows.nix)";
-      handoff.enable = lib.mkEnableOption "resuming a Claude Code session at the next graphical login: `claude-handoff <prompt>` leaves ~/.local/state/next-boot/claude-resume.pending, and whatever finishes the job (Windows Claude, over \\\\wsl$) renames it to claude-resume, which a user service picks up after the reboot";
       windows.testPlan = lib.mkOption {
         type = lib.types.nullOr lib.types.path;
         default = null;
@@ -393,85 +392,6 @@
       };
     };
     config = lib.mkIf cfg.enable (lib.mkMerge [
-      (lib.mkIf cfg.handoff.enable (let
-        next = "${config.xdg.stateHome}/next-boot";
-        # From inside a session: CLAUDE_CODE_SESSION_ID names it and $PWD is
-        # its project, which --resume needs to find it again.
-        handoff = pkgs.writeShellApplication {
-          name = "claude-handoff";
-          runtimeInputs = [pkgs.jq pkgs.coreutils];
-          text = ''
-            skip=false
-            if [ "''${1:-}" = --skip-permissions ]; then skip=true; shift; fi
-            [ $# -eq 1 ] || { echo "usage: claude-handoff [--skip-permissions] <prompt to resume with>" >&2; exit 2; }
-            : "''${CLAUDE_CODE_SESSION_ID:?run it from inside a Claude Code session}"
-            mkdir -p ${next}
-            jq -n --arg session "$CLAUDE_CODE_SESSION_ID" --arg cwd "$PWD" --arg prompt "$1" --argjson skip "$skip" \
-              '{session: $session, cwd: $cwd, prompt: $prompt, skipPermissions: $skip}' > ${next}/claude-resume.pending
-            echo "${next}/claude-resume.pending: renamed to claude-resume, the next boot resumes this session"
-          '';
-        };
-        # Linger runs the user manager from boot, so this needs nobody to
-        # log in: the session carries on (into another Windows round, even)
-        # in a detached tmux, its own server (-L), which a login attaches to.
-        tmux = "${lib.getExe pkgs.tmux} -L claude";
-        resume = pkgs.writeShellApplication {
-          name = "claude-resume";
-          runtimeInputs = [pkgs.jq pkgs.coreutils];
-          text = ''
-            f=${next}/claude-resume
-            session=$(jq -r .session "$f")
-            cwd=$(jq -r .cwd "$f")
-            prompt=$(jq -r .prompt "$f")
-            flags=()
-            if [ "$(jq -r .skipPermissions "$f")" = true ]; then flags=(--dangerously-skip-permissions); fi
-            # Gone before anything can fail, so a broken handoff doesn't
-            # come back at every boot.
-            rm "$f"
-            # The pool: op-secrets' key, which a user unit can't be ordered
-            # after, and the network, which at boot (linger) isn't up yet.
-            # Without both the claude wrapper falls back to the direct OAuth
-            # login, long expired here since everything goes through the
-            # pool; the first resume died on that (2026-11-20).
-            for _ in $(seq 120); do
-              [ -s ${pool.apiKeyFile} ] && timeout 2 bash -c '</dev/tcp/${pool.host}/443' 2>/dev/null && break
-              sleep 1
-            done
-            # A login shell for the session's environment (PATH,
-            # home.sessionVariables), as a terminal would give it. The pane
-            # stays after claude exits, so a failed resume can be read.
-            ${tmux} new-session -d -s resume -c "$cwd" -- \
-              "$SHELL" -lc 'claude "$@"; echo "claude exited ($?)"; read -r' claude --resume "$session" "''${flags[@]}" "$prompt"
-          '';
-        };
-      in {
-        home.packages = [handoff];
-        systemd.user.services.claude-resume = {
-          Unit = {
-            Description = "Resume the Claude Code session handed off before the reboot";
-            ConditionPathExists = "%S/next-boot/claude-resume";
-          };
-          Service = {
-            # tmux forks its server, which is the session's lifetime.
-            Type = "forking";
-            ExecStart = lib.getExe resume;
-          };
-          Install.WantedBy = ["default.target"];
-        };
-        # The resumed session's window, at the next graphical login.
-        systemd.user.services.claude-resume-attach = {
-          Unit = {
-            Description = "Show the resumed Claude Code session";
-            After = ["graphical-session.target" "claude-resume.service"];
-            PartOf = ["graphical-session.target"];
-          };
-          Service = {
-            ExecCondition = "${tmux} has-session -t resume";
-            ExecStart = "${lib.getExe config.programs.ghostty.package} -e ${tmux} attach -t resume";
-          };
-          Install.WantedBy = ["graphical-session.target"];
-        };
-      }))
       (lib.mkIf cfg.windows.enable {
         home.file = {
           "${windowsDir}/settings.json".source = (pkgs.formats.json {}).generate "claude-windows-settings.json" windowsSettings;
