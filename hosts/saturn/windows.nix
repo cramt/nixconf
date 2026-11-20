@@ -32,24 +32,14 @@ in {
   # Firefox for links and pages, not Edge (Discord's first start opened in
   # Edge on 2026-11-19). The ProgIds' suffix is Firefox's hash of its
   # install path, C:\Program Files\Mozilla Firefox, where winget's
-  # machine-wide install puts it. Applied from the sign-in after Firefox is
-  # in, since its ProgIds don't exist before. Microsoft documents the
-  # policy behind this as domain-joined only; the next boot's report says
-  # whether it holds here (hosts/saturn/windows-tests.md, 24).
-  defaultApps = let
-    url = {
-      progId = "FirefoxURL-308046B0AF4A39CB";
-      name = "Firefox";
-    };
-    html = {
-      progId = "FirefoxHTML-308046B0AF4A39CB";
-      name = "Firefox";
-    };
-  in {
-    http = url;
-    https = url;
-    ".htm" = html;
-    ".html" = html;
+  # machine-wide install puts it. Windows won't let a program set this, so
+  # defenestrate's shell opens Firefox's page in Settings at logon until
+  # "Set default" has been clicked.
+  defaultApps = {
+    http = "FirefoxURL-308046B0AF4A39CB";
+    https = "FirefoxURL-308046B0AF4A39CB";
+    ".htm" = "FirefoxHTML-308046B0AF4A39CB";
+    ".html" = "FirefoxHTML-308046B0AF4A39CB";
   };
   # Downloads pinned by hash (the GPU driver) live in windows-pins.toml,
   # which `dfnstrate pins` rewrites; see modules/flake/windows.nix.
