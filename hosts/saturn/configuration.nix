@@ -23,14 +23,8 @@ in {
 
   security.polkit.enable = true;
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  # memtest86+ entry in the boot menu (run it to chase the Bank-0 memory MCEs;
-  # see docs/saturn-mce-bios.md). No USB stick needed.
-  boot.loader.systemd-boot.memtest86.enable = true;
-  # Windows has the 970 EVO to itself, ESP included, and systemd-boot can only
-  # load from its own ESP, so there's no menu entry for it. `dfnstrate reboot`
-  # points the firmware's one-shot BootNext at the Windows Boot Manager entry
+  # Windows has the 970 EVO to itself, ESP included, so the boot menu has no
+  # entry for it. `dfnstrate reboot` points the firmware's one-shot BootNext at the Windows Boot Manager entry
   # whose ESP exists; the rest of the CLI (flash, update, doctor) is what
   # maintains that install.
   environment.systemPackages = [dfnstrate];
@@ -137,7 +131,12 @@ in {
   networking.firewall.enable = true;
 
   myNixOS = {
-    secureboot.enable = false;
+    secureboot = {
+      enable = true;
+      # memtest86+ in the boot menu (run it to chase the Bank-0 memory MCEs;
+      # see docs/saturn-mce-bios.md). No USB stick needed.
+      memtest86 = true;
+    };
     niri.enable = true;
     t3code-remotes.enable = true;
     # Tunnel is declared but stays down until `systemctl start wg-quick-vxn`.

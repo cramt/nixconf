@@ -226,11 +226,6 @@
 
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
 
-    lanzaboote = {
-      url = "github:nix-community/lanzaboote/v1.0.0";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     import-tree.url = "github:vic/import-tree";
 
     niri-flake.url = "github:sodiboo/niri-flake";
