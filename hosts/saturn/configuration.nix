@@ -4,7 +4,9 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  dfnstrate = inputs.defenestrate.packages.${pkgs.stdenv.hostPlatform.system}.dfnstrate;
+in {
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
@@ -21,17 +23,29 @@
 
   security.polkit.enable = true;
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  # memtest86+ entry in the boot menu (run it to chase the Bank-0 memory MCEs;
-  # see docs/saturn-mce-bios.md). No USB stick needed.
-  boot.loader.systemd-boot.memtest86.enable = true;
-  # Windows has the 970 EVO to itself, ESP included, and systemd-boot can only
-  # load from its own ESP, so there's no menu entry for it. `dfnstrate reboot`
-  # points the firmware's one-shot BootNext at the Windows Boot Manager entry
+  # Windows has the 970 EVO to itself, ESP included, so the boot menu has no
+  # entry for it. `dfnstrate reboot` points the firmware's one-shot BootNext at the Windows Boot Manager entry
   # whose ESP exists; the rest of the CLI (flash, update, doctor) is what
   # maintains that install.
-  environment.systemPackages = [inputs.defenestrate.packages.${pkgs.stdenv.hostPlatform.system}.dfnstrate];
+  environment.systemPackages = [dfnstrate];
+  # flash, update and reboot re-exec themselves under sudo (raw disk, BLKPG,
+  # efivars: no group grants those), so `.#windows.saturn.build.install` and
+  # `dfnstrate reboot` would ask for a password. They re-exec the unwrapped
+  # binary (current_exe, behind makeWrapper), so that's the path sudo sees.
+  # The flash still makes you type ERASE. build.install uses this same
+  # dfnstrate, so after a defenestrate bump it's passwordless again once saturn
+  # is switched.
+  security.sudo.extraRules = [
+    {
+      users = ["cramt"];
+      commands = [
+        {
+          command = "${dfnstrate.unwrapped}/bin/dfnstrate";
+          options = ["NOPASSWD"];
+        }
+      ];
+    }
+  ];
   # Stock (vanilla mainline) kernel, not zen or another patch set: zen's patches
   # panicked every boot on 7.3.4-zen1 (a duplicated worker->task deref in
   # workqueue.c, https://github.com/zen-kernel/zen-kernel/issues/425) and took
@@ -117,7 +131,12 @@
   networking.firewall.enable = true;
 
   myNixOS = {
-    secureboot.enable = false;
+    secureboot = {
+      enable = true;
+      # memtest86+ in the boot menu (run it to chase the Bank-0 memory MCEs;
+      # see docs/saturn-mce-bios.md). No USB stick needed.
+      memtest86 = true;
+    };
     niri.enable = true;
     t3code-remotes.enable = true;
     # Tunnel is declared but stays down until `systemctl start wg-quick-vxn`.

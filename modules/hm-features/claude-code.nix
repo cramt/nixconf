@@ -148,6 +148,11 @@
       # through whatever shell it finds (cmd, PowerShell or Git Bash), which
       # all take this the same way.
       apiKeyHelper = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:/Users/${config.home.username}/.claude/pool-key.ps1";
+      # The bypass-permissions warning: it's run with
+      # --dangerously-skip-permissions at logon with nobody to click
+      # through it (Linux's settings.json only has it because Claude wrote
+      # it there itself; 2026-11-20).
+      skipDangerousModePermissionPrompt = true;
       env = {
         ANTHROPIC_BASE_URL = pool.url;
         ANTHROPIC_API_KEY = "";
@@ -159,6 +164,94 @@
         CLAUDE_CODE_FORK_SUBAGENT = "0";
       };
     };
+    # Run by the defenestrate shell's autostart at each Windows logon while
+    # a test plan is set (modules/flake/windows.nix): Claude Code as a
+    # testing subagent of the Linux session that rebooted into Windows. It
+    # waits for the logon task's copies (pool key, plan, this state) and, on
+    # a fresh install, for winget to put claude on PATH, which lands after
+    # the console started, so PATH is reread from the registry.
+    windowsStartTests = ''
+      $claude = Join-Path $env:USERPROFILE '.claude'
+      Write-Host 'Waiting for the logon task to copy Claude config from Linux (wsl.log) and for winget to install Claude Code (apps.log), both in %LOCALAPPDATA%\defenestrate'
+      # This logon's copies, not the last boot's: the logon task writes
+      # linux-files.txt after copying, and an older plan left from the boot
+      # before once got tested instead of the new one (2026-11-20).
+      $boot = (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
+      $copied = Join-Path $env:LOCALAPPDATA 'defenestrate\linux-files.txt'
+      while (-not ((Test-Path $copied) -and (Get-Item $copied).LastWriteTime -gt $boot -and (Test-Path "$claude\pool-key") -and (Test-Path "$claude\defenestrate-tests.md") -and (Test-Path "$claude\claude-state.json") -and (Get-Command claude -ErrorAction SilentlyContinue))) {
+          Start-Sleep 5
+          $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+      }
+
+      # Nested objects merge, everything else is replaced.
+      function Merge($into, $from) {
+          foreach ($p in $from.PSObject.Properties) {
+              $have = $into.PSObject.Properties[$p.Name]
+              if ($have -and $have.Value -is [pscustomobject] -and $p.Value -is [pscustomobject]) {
+                  Merge $have.Value $p.Value
+              } else {
+                  $into | Add-Member -NotePropertyName $p.Name -NotePropertyValue $p.Value -Force
+              }
+          }
+      }
+      $json = Join-Path $env:USERPROFILE '.claude.json'
+      $state = [pscustomobject]@{}
+      if (Test-Path $json) {
+          try { $state = Get-Content -Raw -LiteralPath $json | ConvertFrom-Json } catch { Write-Host "~/.claude.json isn't JSON, leaving it: $_" }
+      }
+      Merge $state (Get-Content -Raw -LiteralPath "$claude\claude-state.json" | ConvertFrom-Json)
+      # No BOM: Windows PowerShell's UTF8 adds one.
+      [IO.File]::WriteAllText($json, ($state | ConvertTo-Json -Depth 100), (New-Object Text.UTF8Encoding $false))
+
+      $prompt = @'
+      You're the testing half of a Linux Claude Code session that rebooted saturn into this Windows to test defenestrate. Nobody may be at the screen: never wait for an answer. Work through ~/.claude/defenestrate-tests.md, checking what you can yourself, including driving the UI (PowerShell with UI Automation, SendInput, screenshots), and mark what only a person could judge as not checked. Then follow its Last step, which hands back to Linux.
+      '@
+      Set-Location $env:USERPROFILE
+      claude --dangerously-skip-permissions $prompt.Trim()
+    '';
+    # The test run's last step, a script rather than Claude's judgement:
+    # twice the handoff was "done" with the file never renamed. Over \\wsl$
+    # only creating new files has been reliable (renames silently don't
+    # happen, appends are unproven), so the report is kept on NTFS and
+    # copied over as a new file, with the Windows-side logs and every
+    # Claude transcript here, which explain a run that ended early. The
+    # rename happens inside WSL, and the reboot only once it's checked.
+    windowsHandBack = ''
+      param([Parameter(Mandatory = $true)][string]$Report)
+      $ErrorActionPreference = 'Continue'
+      $wsl = Join-Path $env:ProgramFiles 'WSL\wsl.exe'
+      $linuxHome = '${config.home.homeDirectory}'
+      $share = "\\wsl$\defenestrate\linux$($linuxHome -replace '/', '\')"
+      $name = [IO.Path]::GetFileNameWithoutExtension($Report)
+      $reports = "$share\.local\share\defenestrate\reports"
+      $media = "$reports\$name-media"
+      New-Item -ItemType Directory -Force -Path "$media\logs", "$media\transcripts" | Out-Null
+      Copy-Item -LiteralPath $Report -Destination "$reports\$name.md" -Force
+      $localMedia = Join-Path (Split-Path -Parent $Report) "$name-media"
+      if (Test-Path -LiteralPath $localMedia) { Copy-Item -Path "$localMedia\*" -Destination $media -Recurse -Force }
+      Copy-Item -Path "$env:LOCALAPPDATA\defenestrate\*.log", "$env:ProgramData\defenestrate\*.log" -Destination "$media\logs" -Force -ErrorAction SilentlyContinue
+      Get-ChildItem "$env:USERPROFILE\.claude\projects" -Recurse -Filter *.jsonl -ErrorAction SilentlyContinue | Copy-Item -Destination "$media\transcripts" -Force
+
+      $next = "$linuxHome/.local/state/next-boot"
+      $out = @("pending before:") + (& $wsl -d defenestrate --cd / --exec /bin/busybox ls -ln "/linux$next" 2>&1)
+      $pending = Test-Path "$share\.local\state\next-boot\claude-resume.pending"
+      if ($pending) {
+          $out += & $wsl -d defenestrate --cd / --exec /bin/busybox mv "/linux$next/claude-resume.pending" "/linux$next/claude-resume" 2>&1
+          $out += @("after:") + (& $wsl -d defenestrate --cd / --exec /bin/busybox ls -ln "/linux$next" 2>&1)
+      } else {
+          $out += 'no claude-resume.pending: nobody is waiting'
+      }
+      & $wsl -d defenestrate --cd / --exec /bin/busybox test -e "/linux$next/claude-resume"
+      $handedOver = $LASTEXITCODE -eq 0
+      $out += "handed over: $handedOver"
+      $out | ForEach-Object { "$_" } | Set-Content -LiteralPath "$media\handoff.txt"
+      $out | ForEach-Object { Write-Host $_ }
+      if ($pending -and -not $handedOver) {
+          Write-Host 'The handoff file was not renamed; not rebooting, so someone can look.'
+          exit 1
+      }
+      schtasks.exe /run /tn defenestrate-reboot-to-linux
+    '';
     # The NixOS-specific sections swapped for Windows ones; the rest is the
     # same instructions.
     windowsClaudeMd = let
@@ -306,6 +399,24 @@
           # Trimmed: whether op leaves a newline on the render isn't
           # something to depend on in a header value.
           "${windowsDir}/defenestrate-tests.md" = lib.mkIf (cfg.windows.testPlan != null) {source = cfg.windows.testPlan;};
+          # What Claude Code's first run asks a person for (theme, trusting
+          # the home folder, the bypass-permissions warning), answered up
+          # front so the test run needs nobody at the keyboard. Merged into
+          # ~/.claude.json by start-tests.ps1, never copied over it: Claude
+          # Code keeps its own state in there.
+          "${windowsDir}/claude-state.json".source = (pkgs.formats.json {}).generate "claude-windows-state.json" {
+            hasCompletedOnboarding = true;
+            theme = declaredSettingsAttrs.theme or "dark";
+            bypassPermissionsModeAccepted = true;
+            # Forward slashes: how Claude Code keys Windows paths (seen
+            # 2026-11-20).
+            projects."C:/Users/${config.home.username}" = {
+              hasTrustDialogAccepted = true;
+              hasCompletedProjectOnboarding = true;
+            };
+          };
+          "${windowsDir}/start-tests.ps1" = lib.mkIf (cfg.windows.testPlan != null) {text = windowsStartTests;};
+          "${windowsDir}/hand-back.ps1" = lib.mkIf (cfg.windows.testPlan != null) {text = windowsHandBack;};
           "${windowsDir}/pool-key.ps1".text = ''
             (Get-Content -Raw -LiteralPath "$env:USERPROFILE\.claude\pool-key").Trim()
           '';

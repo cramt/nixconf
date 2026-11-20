@@ -1,11 +1,16 @@
 # defenestrate: what to verify on this boot
 
 You're Claude Code on saturn's Windows side, under defenestrate's shell (no
-explorer). Alex booted in here to check the latest defenestrate fixes on real
-hardware. Work through the list, check what you can yourself (logs, registry,
-tasks, `wsl.exe`), and ask Alex for anything only a person at the screen can
-see. Don't fix anything on this side: the fixes go into defenestrate
-(github.com/cramt/defenestrate) from Linux. Your job is an accurate report.
+explorer), started at logon as the testing half of a Claude Code session on
+the Linux side, which rebooted the machine into here to check the latest
+defenestrate fixes on real hardware. Nobody may be at the screen. Work
+through the list and check what you can yourself: logs, registry, tasks,
+`wsl.exe`, and the UI itself (PowerShell with UI Automation to find and
+click controls, SendInput for keys and mouse, screenshots to look). Never
+wait for an answer; what only a person could judge (how smooth something
+looks) is **not checked**, unless Alex happens to answer. Don't fix anything
+on this side: the fixes go into defenestrate (github.com/cramt/defenestrate)
+from Linux. Your job is an accurate report.
 
 Logs: `%LOCALAPPDATA%\defenestrate\` (`shell.log`, `apps.log` plus a `winget\`
 folder of per-ID logs, `wsl.log`, `reboot.log`) and
@@ -13,79 +18,44 @@ folder of per-ID logs, `wsl.log`, `reboot.log`) and
 
 ## Report
 
-Write it to `\\wsl$\defenestrate\linux\home\cramt\.local\share\defenestrate\reports\`
-as `<yyyy-mm-dd>-<hh-mm>.md` (create the folder if it's missing). That's the
-Linux install's disk, so the Linux side reads it after the reboot. Writing
-there is test 1. If it fails, say so in chat, save the report to
-`%USERPROFILE%\defenestrate-report.md`, and tell Alex where it is.
+Keep it on this disk, at `%USERPROFILE%\defenestrate-report\<yyyy-mm-dd>-<hh-mm>.md`:
+over `\\wsl$` only creating new files has been reliable (renames silently
+don't happen, and the last report stopped after its first item). The Last
+step's script copies it to the Linux side, with the logs and your
+transcript. Screenshots go in a `<report name>-media` folder next to it,
+which the script copies too.
+
+Create the report file before checking anything, and add each item as you
+finish it: a run cut short still leaves what it found.
 
 Per item: **pass**, **fail**, or **not checked**, plus the evidence (a log
 line, command output, or what Alex saw). On a failure, quote the relevant log
 lines. Paraphrasing loses the detail the fix needs. Put anything that looked
 off but isn't on the list under "Also seen".
 
-## New on this reflash
+## New this boot
 
-This install is a fresh reflash. The last boot's report
-(`~/.local/share/defenestrate/reports/2026-11-19-16-46.md` on the Linux
-side) found these, now fixed. Check them first. Test 21 (update baked in)
-passed last time; quote `UBR` once more anyway.
+No reflash; `dfnstrate update` patched the WSL payload and the reboot task.
+Why the last three boots never handed back: "Reboot to Linux" killed WSL's
+VM with the Linux install still mounted, and btrfs writes back every 30 s,
+so whatever was written to Linux in the last half minute (the report's
+last items, the handoff rename) was lost, though it looked done from here.
+The reboot task now unmounts it first (`dfn release`). Nothing for you to
+check about that: the Linux side reads `reboot.log` afterwards with
+`dfnstrate logs`. The rootfs changed, so this logon re-imported the
+distro (`wsl.log`). Don't redo the older items below; only note anything
+that broke. This boot tests the loop:
 
-22. **No updates and no drivers from Windows Update.** Last time
-    `NoAutoUpdate` held, but PnP's driver retrieval installed a dozen
-    vendor packages, MSI's Driver Utility Installer appeared on the
-    desktop, and `RebootRequired` was set. Now:
-    - `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate` has
-      `ExcludeWUDriversInQualityUpdate` = 1,
-      `HKLM\SOFTWARE\Policies\Microsoft\Windows\Device Metadata` has
-      `PreventDeviceMetadataFromNetwork` = 1 (both put back after the
-      display-driver pass lifted them), and
-      `HKLM\SOFTWARE\Policies\Microsoft\Windows\DriverSearching` has
-      `SearchOrderConfig` = 0.
-    - The update history (`(New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher().QueryHistory(0, 50)`)
-      has no `Device Driver Retrieval Client` entries for this install.
-    - No MSI Driver Utility Installer, and
-      `...\WindowsUpdate\Auto Update\RebootRequired` doesn't exist.
-    - `apps.log`'s `windows-update:display-drivers` line still finishes
-      (`installed`, or "no display driver"), not an error.
-23. **`\\wsl$` writes as cramt from the start.** `wsl.log` has
-    `restarting the defenestrate distro so \\wsl$ runs as the Linux user`
-    after `mounting` (a fresh import always gets it). Then test 2 with a
-    file you write *before* touching the distro yourself (no `wsl -t`).
-    Last time only files written after test 4's restart were cramt's.
-24. **Firefox is the default browser.** New, through the default
-    associations policy, which Microsoft documents as domain-joined only.
-    This is the open question.
-    - `HKLM\SOFTWARE\Policies\Microsoft\Windows\System` has
-      `DefaultAssociationsConfiguration` pointing at
-      `C:\Program Files\defenestrate\default-apps.xml`, which exists.
-    - It only applies from the sign-in after Firefox is installed, so on
-      this first logon Edge may still be the default. Quote
-      `HKCU\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice`
-      `ProgId` now. Then, instead of the last step, write the report with
-      a final line `PENDING: 24 after sign-in`, and ask Alex to sign out
-      and back in (Super+Shift+Escape). The next sign-in opens a new you
-      on this same checklist: if today's report ends in that line, only
-      quote the `ProgId` again, append it (`FirefoxURL-308046B0AF4A39CB`
-      is a pass), drop the PENDING line, then do the last step.
-    - If a link opened anywhere this session, say which browser it opened in.
-25. **Launches are logged.** `shell.log` has a `launched "...": pid N` (or
-    `no new process`) line for each thing Alex opens from the launcher in
-    test 8. Last time Alex said Firefox and the Linux terminal opened, but
-    no log could confirm it.
-26. **Autostart says what happened.** `shell.log` has a
-    `autostart (common Startup): N entries in ...` and
-    `autostart (Startup): ...` line, a `started "...": pid N` line after
-    each Run key entry, and an `exited within 10 s, code ...` line for any
-    that quit at once (SecurityHealthSystray didn't run last time). Quote them.
-28. **Focused dialogs aren't under tiles.** Last time the focused MSI
-    installer drew under the tile to its left. The shell now raises a
-    focused unplaced window over any tile covering it and logs
-    `focused window ... was under tile(s) ...; raising it`. Quote any such
-    lines, and say whether a focused floating window ever sat under a tile.
-27. **Hung windows' ghosts float.** If any app hangs (Discord did at its
-    first start), `shell.log` has its `Ghost` window as
-    `floating: a hung window's ghost`, not `tiled`. Not checked if nothing hung.
+29. **You started on your own, with no setup questions,** and on this
+    logon's copy of the plan: `%LOCALAPPDATA%\defenestrate\linux-files.txt`'s
+    time is after this boot (`(Get-CimInstance Win32_OperatingSystem).LastBootUpTime`);
+    quote both. Quote `skipDangerousModePermissionPrompt` from
+    `~/.claude/settings.json` and the `C:/Users/cramt` entry in
+    `~/.claude.json`.
+31. **Default apps are off.** The shell no longer tries to open Settings
+    (it can't start without explorer, last report): `shell.log` has no
+    `default apps:` line this logon, and no `SystemSettings` process is
+    hanging around (`Get-Process SystemSettings`). Quote both.
 
 ## Round two fixes (defenestrate 0e12cc5)
 
@@ -164,7 +134,8 @@ the config's line: it opened this console.
 
 ## Last step
 
-Once the report is written and Alex has read it, run
-`schtasks /run /tn defenestrate-reboot-to-linux`. That's the launcher's
-"Reboot to Linux" task, and the machine should come up in Linux (test 20:
-the Linux side checks it came back).
+Once the report is finished, run
+`powershell -NoProfile -ExecutionPolicy Bypass -File ~/.claude/hand-back.ps1 -Report <the report's full path>`
+and nothing else. It copies the report, its media folder, the Windows-side
+logs and the Claude transcripts to the Linux side, then reboots to Linux.
+Alex logs in there and picks the Linux session back up himself.
