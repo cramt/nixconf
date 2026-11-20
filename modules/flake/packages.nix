@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, myLib, ... }:
 {
   perSystem = { pkgs, lib, system, ... }: let
     saturnPkgs = inputs.self.nixosConfigurations.saturn.pkgs;
@@ -122,8 +122,12 @@
     # partition appended after it (the hybrid MBR has two free slots), as ready
     # NetworkManager keyfiles. `nmcli --offline` writes them so escaping is
     # NM's problem, and mtools fills the partition in place: no sudo, no mount.
+    #
+    # rosinante also gets the opnix token in there (copied to /etc/opnix-token
+    # at boot), since it runs op-secrets like any fleet host.
     installerWifiLabel = "NIXWIFI";
-    bakeInstallerWifi = {
+    bakeInstallerWifi = bakeStick { label = installerWifiLabel; withToken = false; };
+    bakeStick = { label, withToken }: {
       runtimeInputs = with pkgs; [ dosfstools mtools networkmanager saturnPkgs._1password-cli ];
       text = ''
         conns="$(mktemp -d)"
@@ -143,8 +147,10 @@
         truncate -s $(( (start + 16384) * 512 )) "$work"
         echo "start=$start, size=16384, type=c" \
           | sfdisk --quiet --no-reread --no-tell-kernel --append "$work" 2>/dev/null
-        mkfs.fat -F 12 -n ${installerWifiLabel} --offset "$start" "$work" 8192 >/dev/null
+        mkfs.fat -F 12 -n ${label} --offset "$start" "$work" 8192 >/dev/null
         mcopy -i "$work@@$(( start * 512 ))" "$conns"/*.nmconnection ::
+      '' + lib.optionalString withToken ''
+        mcopy -i "$work@@$(( start * 512 ))" "$token" ::opnix-token
       '';
     };
 
@@ -194,6 +200,11 @@
         })
       ];
     };
+
+    rosinante = myLib.mkSystem {
+      name = "rosinante";
+      config = ../../images/rosinante/configuration.nix;
+    };
   in {
     packages = lib.optionalAttrs (system == "x86_64-linux") ({
       # Not in CI: a ~1 GB single NAR that changes on every nixpkgs bump
@@ -209,6 +220,18 @@
         host = "installer";
         img = inputs.self.packages.${system}.installer-iso;
         bake = bakeInstallerWifi;
+      });
+
+      # The rescue stick (images/rosinante). Not in CI for the same reason as
+      # installer-iso, and it carries a nixconf snapshot, so it changes on
+      # every commit besides.
+      rosinante-iso = noCi (pkgs.runCommand "rosinante-iso" {} ''
+        ln -s ${rosinante.config.system.build.isoImage}/iso/*.iso $out
+      '');
+      flash-rosinante = noCi (mkFlash {
+        host = "rosinante";
+        img = inputs.self.packages.${system}.rosinante-iso;
+        bake = bakeStick { label = "ROSINANTE"; withToken = true; };
       });
 
       # The images are built for the board's own arch (cachix has them from the

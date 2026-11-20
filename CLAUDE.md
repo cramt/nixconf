@@ -33,6 +33,13 @@ just update_gems      # Update Ruby gem lockfile
 nix run .#flash-installer
 just install ganymede [addr] [mode]
 
+# Rescue stick with a brain: rosinante (images/rosinante) is a full fleet-module
+# live ISO. cramt autologins with `claude` (pool), the general shell, ~/nixconf
+# cloned (or the baked snapshot offline), tailscale as rosinante, op-secrets
+# from the token flash-rosinante bakes on next to the wifi. Root ssh works too,
+# so `just install <host> rosinante` targets it like the installer.
+nix run .#flash-rosinante
+
 # Infrastructure (uses 1Password for secrets)
 just tf <args>        # Run OpenTofu on the Cloudflare infra (just tf plan); `just deploy` applies it
 
@@ -55,7 +62,7 @@ The flake-parts plumbing lives in `modules/flake/`:
 | `modules/flake/hosts.nix` | Discovers hosts by reading `hosts/`, declares the `nixosHosts` option (hostname → `{ config; nixpkgs; address; }`) and builds `flake.nixosConfigurations` via `myLib.mkSystem` |
 | `modules/flake/deploy.nix` | Derives `flake.deploy` (deploy-rs nodes) from `nixosHosts`; driven by `just deploy` |
 | `modules/flake/systems.nix` | The `systems` list for `perSystem` |
-| `modules/flake/packages.nix` | `perSystem` packages: every `packages/<name>` plus images, `flash-<host>` SD flashers (eros, mercury, venus) and the x86 `installer-iso` / `flash-installer` USB |
+| `modules/flake/packages.nix` | `perSystem` packages: every `packages/<name>` plus images, `flash-<host>` SD flashers (eros, mercury, venus) , the x86 `installer-iso` / `flash-installer` USB and the `rosinante-iso` / `flash-rosinante` rescue USB (`images/rosinante`) |
 | `modules/flake/hm-modules.nix` | Typed accumulator options (`hmModules.default/features/bundles`) wired into `flake.homeManagerModules` once, to avoid freeform merge conflicts |
 
 The flake defines NixOS systems for hosts: `saturn`, `mars`, `luna`, `eros`, `ganymede`, `mercury`, `venus`. There is no host list — `modules/flake/hosts.nix` reads `hosts/`, so **every directory under `hosts/` is a NixOS host and a `just deploy` target**. To add one, create the folder. Everything else is derived from its name: the entrypoint (`configuration.nix`), `networking.hostName`, the user's `home.nix`, and the deploy address.
