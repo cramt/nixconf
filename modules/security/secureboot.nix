@@ -1,12 +1,21 @@
 # Secure Boot on for Windows' sake (its anti-cheat wants it), with Linux
 # still booting: NixOS's own Limine support signs Limine with keys sbctl
-# generates and enrolls on the first install, Microsoft's alongside (Windows'
-# boot manager, GPU option ROMs) plus the firmware's built-in ones. Limine
-# loads the kernel itself, so nothing else needs signing. The firmware has to
-# be in setup mode for that first install; then turn Secure Boot on in it.
+# generates on the first install. Limine loads the kernel itself, so nothing
+# else needs signing.
+#
+# Enrolling them is a one-time manual step, as root, with the firmware in
+# setup mode and (AMI/MSI) its Secure Boot Mode set to Custom, which is what
+# lets the OS write the key variables at all:
+#   chattr -i /sys/firmware/efi/efivars/{PK,KEK,db}-*
+#   sbctl enroll-keys --microsoft
+# Microsoft's keys go alongside ours: Windows' boot manager and the GPU's
+# option ROM are signed with them. Not autoEnrollKeys: the installer neither
+# clears efivarfs' immutable flag nor tries again once the keys exist, so on
+# saturn it generated them and enrolled nothing (2026-11-20). Then turn
+# Secure Boot on in the firmware.
 #
 # The keys live in /var/lib/sbctl only: losing them means resetting the
-# firmware to setup mode and installing again, which enrolls new ones.
+# firmware to setup mode, installing again for new ones and enrolling those.
 {...}: {
   flake.nixosModules."features.secureboot" = {
     config,
@@ -28,8 +37,6 @@
         secureBoot = {
           enable = true;
           autoGenerateKeys = true;
-          # Defaults: --microsoft --firmware-builtin.
-          autoEnrollKeys.enable = true;
         };
         additionalFiles = lib.mkIf cfg.memtest86 {
           "efi/memtest86/memtest.efi" = pkgs.memtest86plus.efi;
