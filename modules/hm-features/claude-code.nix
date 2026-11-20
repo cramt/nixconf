@@ -148,6 +148,11 @@
       # through whatever shell it finds (cmd, PowerShell or Git Bash), which
       # all take this the same way.
       apiKeyHelper = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:/Users/${config.home.username}/.claude/pool-key.ps1";
+      # The bypass-permissions warning: it's run with
+      # --dangerously-skip-permissions at logon with nobody to click
+      # through it (Linux's settings.json only has it because Claude wrote
+      # it there itself; 2026-11-20).
+      skipDangerousModePermissionPrompt = true;
       env = {
         ANTHROPIC_BASE_URL = pool.url;
         ANTHROPIC_API_KEY = "";
@@ -358,6 +363,10 @@
             echo "${next}/claude-resume.pending: renamed to claude-resume, the next login resumes this session"
           '';
         };
+        # Linger runs the user manager from boot, so this needs nobody to
+        # log in: the session carries on (into another Windows round, even)
+        # in a detached tmux, its own server (-L), which a login attaches to.
+        tmux = "${lib.getExe pkgs.tmux} -L claude";
         resume = pkgs.writeShellApplication {
           name = "claude-resume";
           runtimeInputs = [pkgs.jq pkgs.coreutils];
@@ -369,12 +378,16 @@
             flags=()
             if [ "$(jq -r .skipPermissions "$f")" = true ]; then flags=(--dangerously-skip-permissions); fi
             # Gone before anything can fail, so a broken handoff doesn't
-            # come back at every login.
+            # come back at every boot.
             rm "$f"
+            # The pool key is op-secrets' render, which a user unit can't be
+            # ordered after; at boot it lands within seconds.
+            for _ in $(seq 120); do [ -s ${pool.apiKeyFile} ] && break; sleep 1; done
             # A login shell for the session's environment (PATH,
-            # home.sessionVariables), as a terminal would give it.
-            exec ${lib.getExe config.programs.ghostty.package} --working-directory="$cwd" \
-              -e "$SHELL" -lc 'exec claude "$@"' claude --resume "$session" "''${flags[@]}" "$prompt"
+            # home.sessionVariables), as a terminal would give it. The pane
+            # stays after claude exits, so a failed resume can be read.
+            ${tmux} new-session -d -s resume -c "$cwd" -- \
+              "$SHELL" -lc 'claude "$@"; echo "claude exited ($?)"; read -r' claude --resume "$session" "''${flags[@]}" "$prompt"
           '';
         };
       in {
@@ -383,11 +396,25 @@
           Unit = {
             Description = "Resume the Claude Code session handed off before the reboot";
             ConditionPathExists = "%S/next-boot/claude-resume";
-            After = ["graphical-session.target"];
+          };
+          Service = {
+            # tmux forks its server, which is the session's lifetime.
+            Type = "forking";
+            ExecStart = lib.getExe resume;
+          };
+          Install.WantedBy = ["default.target"];
+        };
+        # The resumed session's window, at the next graphical login.
+        systemd.user.services.claude-resume-attach = {
+          Unit = {
+            Description = "Show the resumed Claude Code session";
+            After = ["graphical-session.target" "claude-resume.service"];
             PartOf = ["graphical-session.target"];
           };
-          # The terminal is the service: it lasts as long as that window.
-          Service.ExecStart = lib.getExe resume;
+          Service = {
+            ExecCondition = "${tmux} has-session -t resume";
+            ExecStart = "${lib.getExe config.programs.ghostty.package} -e ${tmux} attach -t resume";
+          };
           Install.WantedBy = ["graphical-session.target"];
         };
       }))

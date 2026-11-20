@@ -25,6 +25,10 @@ there is test 1. If it fails, say so in chat, save the report to
 `%USERPROFILE%\defenestrate-report.md`, and say where it is in the
 handoff (Last step can't work either then; don't reboot, leave it for Alex).
 
+Create the report file before checking anything, and append each item as
+you finish it: a run cut short (2026-11-20's was, before its report) still
+leaves what it found.
+
 Per item: **pass**, **fail**, or **not checked**, plus the evidence (a log
 line, command output, or what Alex saw). On a failure, quote the relevant log
 lines. Paraphrasing loses the detail the fix needs. Screenshots you took go
@@ -33,46 +37,25 @@ off but isn't on the list under "Also seen".
 
 ## New this boot
 
-No reflash this time: the Linux session patched the shell onto the existing
-install with `dfnstrate update`. The last report
-(`~/.local/share/defenestrate/reports/2026-11-20-16-06.md` on the Linux
-side) passed everything below this section except 15 and 24; don't redo
-those, only note anything that broke since. Check these:
+No reflash, and nothing in defenestrate changed since the last boot
+(`~/.local/share/defenestrate/reports/2026-11-20-16-59-media/` on the
+Linux side has its screenshots and drag timings; it found 15 fixed and 24
+impossible: Settings, like every UWP app, won't start without explorer).
+This boot tests the unattended loop itself. Don't redo the older items
+below; only note anything that broke.
 
-29. **You started on your own, with no setup questions.** No theme picker,
-    no "do you trust this folder", no bypass-permissions warning: nobody
-    answered them. `~/.claude.json` has `hasCompletedOnboarding: true` and
-    a project entry for your home with `hasTrustDialogAccepted: true`. Quote
-    them, and which spelling of the home path Claude Code itself keyed its
-    entry by (`C:/Users/cramt` or `C:\Users\cramt`).
-24. **Firefox as default browser, by asking.** The policy route did
-    nothing (not domain-joined), so the shell now opens Settings at
-    Firefox's default-apps page once per logon while http/https/.htm/.html
-    aren't Firefox's.
-    - `shell.log` has `default apps: not set yet, opening
-      ms-settings:defaultapps?registeredAppMachine=Firefox-...` and a
-      `launched` line for it. Quote both. If it says `waiting for an app`
-      or nothing at all, quote what it says instead.
-    - Find the Settings window, screenshot it, and say whether it's on
-      Firefox's page or the generic Default apps page (then the query
-      string may be wrong for this build). Click its "Set default" button
-      yourself with UI Automation. Then quote
-      `HKCU\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice`
-      `ProgId` (`FirefoxURL-308046B0AF4A39CB` is a pass), and the same for
-      `http` and for `.html` under
-      `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.html\UserChoice`.
-15. **Resizing a tile with Super+right-drag.** The shell now sends each
-    window one move at a time instead of one per mouse move; before, a
-    console kept moving for a while after the drag ended. Open a second
-    tile next to this console (Firefox), then with SendInput hold the
-    Windows key, press the right button near the shared edge, move the
-    pointer 400 px in 2 px steps 1 ms apart (a fast 1000 Hz mouse), and
-    release. Sample both windows' `GetWindowRect` every 10 ms from the
-    first move until 2 s after the release. Report: whether the shell took
-    the injected drag at all (the edge moved), how long after the release
-    each window last changed (over ~100 ms is the old bug), and its final
-    rect. Do it slowly too (20 ms steps). Smoothness to the eye is not
-    checked unless Alex says.
+29. **You started on your own, with no setup questions.** Last time the
+    theme and trust questions were gone but the bypass-permissions warning
+    still needed Alex. Now `~/.claude/settings.json` has
+    `skipDangerousModePermissionPrompt: true`. Quote it, and say whether
+    anything at all asked for input before your first turn (you can tell:
+    you started working without anyone answering). If Alex had to click
+    something, he'll say so; put it in the report.
+30. **The handoff.** Before the Last step, quote what's in
+    `\\wsl$\defenestrate\linux\home\cramt\.local\state\next-boot\`
+    (a `claude-resume.pending` should be there). The Last step renames it;
+    list the folder again afterwards and quote that too, then reboot. The
+    Linux side checks that its session came back on its own.
 
 ## Round two fixes (defenestrate 0e12cc5)
 
