@@ -24,11 +24,14 @@
   # While home.nix sets a defenestrate test plan, the shell opens Claude Code
   # on it at logon, through start-tests.ps1 (claude-code.windows in
   # modules/hm-features/claude-code.nix), which the logon task copies over
-  # after the shell has started; so the line waits for it.
+  # after the shell has started; so the line waits for this logon's copies
+  # (linux-files.txt, written after them, newer than the boot), not the
+  # last boot's, which once ran a stale script on a stale plan.
   testPlan = self.nixosConfigurations.saturn.config.home-manager.users.cramt.myHomeManager.claude-code.windows.testPlan;
   claudeAutostart = lib.concatStrings [
     "powershell.exe -NoExit -NoProfile -ExecutionPolicy Bypass -Command \""
-    "while (-not (Test-Path ~/.claude/start-tests.ps1)) { Start-Sleep 5 }; & ~/.claude/start-tests.ps1\""
+    "$f = Join-Path $env:LOCALAPPDATA 'defenestrate/linux-files.txt'; $boot = (Get-CimInstance Win32_OperatingSystem).LastBootUpTime; "
+    "while (-not ((Test-Path $f) -and (Get-Item $f).LastWriteTime -gt $boot)) { Start-Sleep 5 }; & ~/.claude/start-tests.ps1\""
   ];
 in {
   # defenestrate layers its distro defaults (configs/default.toml) itself.

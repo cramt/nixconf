@@ -37,25 +37,25 @@ off but isn't on the list under "Also seen".
 
 ## New this boot
 
-No reflash, and nothing in defenestrate changed since the last boot
-(`~/.local/share/defenestrate/reports/2026-11-20-16-59-media/` on the
-Linux side has its screenshots and drag timings; it found 15 fixed and 24
-impossible: Settings, like every UWP app, won't start without explorer).
-This boot tests the unattended loop itself. Don't redo the older items
-below; only note anything that broke.
+No reflash. Last boot (`~/.local/share/defenestrate/reports/2026-11-20-17-14.md`
+on the Linux side) ran a stale copy of this checklist, started before the
+logon task had copied the new one; you now wait for this logon's copy. It
+also found renames over `\\wsl$` don't happen (Last step). Don't redo the
+older items below; only note anything that broke. This boot tests the
+unattended loop itself:
 
-29. **You started on your own, with no setup questions.** Last time the
-    theme and trust questions were gone but the bypass-permissions warning
-    still needed Alex. Now `~/.claude/settings.json` has
-    `skipDangerousModePermissionPrompt: true`. Quote it, and say whether
-    anything at all asked for input before your first turn (you can tell:
-    you started working without anyone answering). If Alex had to click
-    something, he'll say so; put it in the report.
-30. **The handoff.** Before the Last step, quote what's in
-    `\\wsl$\defenestrate\linux\home\cramt\.local\state\next-boot\`
-    (a `claude-resume.pending` should be there). The Last step renames it;
-    list the folder again afterwards and quote that too, then reboot. The
-    Linux side checks that its session came back on its own.
+29. **You started on your own, with no setup questions,** and on this
+    logon's copy of the plan: `%LOCALAPPDATA%\defenestrate\linux-files.txt`'s
+    time is after this boot (`(Get-CimInstance Win32_OperatingSystem).LastBootUpTime`);
+    quote both. Quote `skipDangerousModePermissionPrompt` from
+    `~/.claude/settings.json` and the `C:/Users/cramt` entry in
+    `~/.claude.json`.
+30. **The handoff.** The Last step's listing, in the report. The Linux side
+    checks that its session came back on its own.
+31. **Default apps are off.** The shell no longer tries to open Settings
+    (it can't start without explorer, last report): `shell.log` has no
+    `default apps:` line this logon, and no `SystemSettings` process is
+    hanging around (`Get-Process SystemSettings`). Quote both.
 
 ## Round two fixes (defenestrate 0e12cc5)
 
@@ -136,10 +136,16 @@ the config's line: it opened this console.
 
 Once the report is written, hand back to Linux:
 
-1. Rename `\\wsl$\defenestrate\linux\home\cramt\.local\state\next-boot\claude-resume.pending`
-   to `claude-resume` (same folder). That's the Linux session asking to be
-   resumed at the next login; renaming it is what wakes it. If it isn't
-   there, nobody is waiting: skip this and say so in the report.
+1. Inside WSL, not over `\\wsl$`: renames over `\\wsl$` don't happen
+   (2026-11-20: Claude's own write-to-temp-then-rename left its `.tmp` next
+   to the report, and the handoff file was never renamed though it looked
+   done). Run
+   `wsl.exe -d defenestrate --cd / --exec /bin/busybox mv /linux/home/cramt/.local/state/next-boot/claude-resume.pending /linux/home/cramt/.local/state/next-boot/claude-resume`
+   then `wsl.exe -d defenestrate --cd / --exec /bin/busybox ls -ln /linux/home/cramt/.local/state/next-boot/`
+   and append that listing to the report: `claude-resume` there, owned by
+   1000, and no `.pending`. That's the Linux session asking to be resumed;
+   it comes back at the next boot. If there was no `.pending`, nobody is
+   waiting: say so and skip to 2.
 2. Run `schtasks /run /tn defenestrate-reboot-to-linux`, the launcher's
    "Reboot to Linux" task. The machine should come up in Linux (test 20:
    the Linux side checks it came back), and the resumed session reads your

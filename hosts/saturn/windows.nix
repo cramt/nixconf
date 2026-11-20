@@ -29,18 +29,12 @@ in {
   # downloads the game, so it's the slow one.
   # Git for Claude Code's Bash tool (it falls back to PowerShell without).
   apps = ["Mozilla.Firefox" "Discord.Discord" "Git.Git" "Anthropic.ClaudeCode" "RiotGames.LeagueOfLegends.EUW"];
-  # Firefox for links and pages, not Edge (Discord's first start opened in
-  # Edge on 2026-11-19). The ProgIds' suffix is Firefox's hash of its
-  # install path, C:\Program Files\Mozilla Firefox, where winget's
-  # machine-wide install puts it. Windows won't let a program set this, so
-  # defenestrate's shell opens Firefox's page in Settings at logon until
-  # "Set default" has been clicked.
-  defaultApps = {
-    http = "FirefoxURL-308046B0AF4A39CB";
-    https = "FirefoxURL-308046B0AF4A39CB";
-    ".htm" = "FirefoxHTML-308046B0AF4A39CB";
-    ".html" = "FirefoxHTML-308046B0AF4A39CB";
-  };
+  # No defaultApps: Firefox stays out of reach as the default browser. The
+  # shell's way (open Settings at Firefox's page) can't work, because
+  # Settings, like every UWP app, won't start without explorer as the shell
+  # (0x80040900 after 45 s, 2026-11-20); Microsoft's way around that is
+  # Shell Launcher v2, Enterprise/Education only. Open: live with Edge,
+  # disable UCPD.sys and let Firefox set itself, or another edition.
   # Downloads pinned by hash (the GPU driver) live in windows-pins.toml,
   # which `dfnstrate pins` rewrites; see modules/flake/windows.nix.
   # The Linux install, reached through WSL (terminal programs only; its GUI

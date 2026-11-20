@@ -173,7 +173,12 @@
     windowsStartTests = ''
       $claude = Join-Path $env:USERPROFILE '.claude'
       Write-Host 'Waiting for the logon task to copy Claude config from Linux (wsl.log) and for winget to install Claude Code (apps.log), both in %LOCALAPPDATA%\defenestrate'
-      while (-not ((Test-Path "$claude\pool-key") -and (Test-Path "$claude\defenestrate-tests.md") -and (Test-Path "$claude\claude-state.json") -and (Get-Command claude -ErrorAction SilentlyContinue))) {
+      # This logon's copies, not the last boot's: the logon task writes
+      # linux-files.txt after copying, and an older plan left from the boot
+      # before once got tested instead of the new one (2026-11-20).
+      $boot = (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
+      $copied = Join-Path $env:LOCALAPPDATA 'defenestrate\linux-files.txt'
+      while (-not ((Test-Path $copied) -and (Get-Item $copied).LastWriteTime -gt $boot -and (Test-Path "$claude\pool-key") -and (Test-Path "$claude\defenestrate-tests.md") -and (Test-Path "$claude\claude-state.json") -and (Get-Command claude -ErrorAction SilentlyContinue))) {
           Start-Sleep 5
           $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
       }
@@ -360,7 +365,7 @@
             mkdir -p ${next}
             jq -n --arg session "$CLAUDE_CODE_SESSION_ID" --arg cwd "$PWD" --arg prompt "$1" --argjson skip "$skip" \
               '{session: $session, cwd: $cwd, prompt: $prompt, skipPermissions: $skip}' > ${next}/claude-resume.pending
-            echo "${next}/claude-resume.pending: renamed to claude-resume, the next login resumes this session"
+            echo "${next}/claude-resume.pending: renamed to claude-resume, the next boot resumes this session"
           '';
         };
         # Linger runs the user manager from boot, so this needs nobody to
@@ -434,12 +439,12 @@
             hasCompletedOnboarding = true;
             theme = declaredSettingsAttrs.theme or "dark";
             bypassPermissionsModeAccepted = true;
-            # Both spellings: which one Claude Code keys Windows paths by
-            # isn't documented, and the other is a harmless extra entry.
-            projects = lib.genAttrs ["C:/Users/${config.home.username}" "C:\\Users\\${config.home.username}"] (_: {
+            # Forward slashes: how Claude Code keys Windows paths (seen
+            # 2026-11-20).
+            projects."C:/Users/${config.home.username}" = {
               hasTrustDialogAccepted = true;
               hasCompletedProjectOnboarding = true;
-            });
+            };
           };
           "${windowsDir}/start-tests.ps1" = lib.mkIf (cfg.windows.testPlan != null) {text = windowsStartTests;};
           "${windowsDir}/pool-key.ps1".text = ''
