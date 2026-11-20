@@ -209,6 +209,49 @@
       Set-Location $env:USERPROFILE
       claude --dangerously-skip-permissions $prompt.Trim()
     '';
+    # The test run's last step, a script rather than Claude's judgement:
+    # twice the handoff was "done" with the file never renamed. Over \\wsl$
+    # only creating new files has been reliable (renames silently don't
+    # happen, appends are unproven), so the report is kept on NTFS and
+    # copied over as a new file, with the Windows-side logs and every
+    # Claude transcript here, which explain a run that ended early. The
+    # rename happens inside WSL, and the reboot only once it's checked.
+    windowsHandBack = ''
+      param([Parameter(Mandatory = $true)][string]$Report)
+      $ErrorActionPreference = 'Continue'
+      $wsl = Join-Path $env:ProgramFiles 'WSL\wsl.exe'
+      $linuxHome = '${config.home.homeDirectory}'
+      $share = "\\wsl$\defenestrate\linux$($linuxHome -replace '/', '\')"
+      $name = [IO.Path]::GetFileNameWithoutExtension($Report)
+      $reports = "$share\.local\share\defenestrate\reports"
+      $media = "$reports\$name-media"
+      New-Item -ItemType Directory -Force -Path "$media\logs", "$media\transcripts" | Out-Null
+      Copy-Item -LiteralPath $Report -Destination "$reports\$name.md" -Force
+      $localMedia = Join-Path (Split-Path -Parent $Report) "$name-media"
+      if (Test-Path -LiteralPath $localMedia) { Copy-Item -Path "$localMedia\*" -Destination $media -Recurse -Force }
+      Copy-Item -Path "$env:LOCALAPPDATA\defenestrate\*.log", "$env:ProgramData\defenestrate\*.log" -Destination "$media\logs" -Force -ErrorAction SilentlyContinue
+      Get-ChildItem "$env:USERPROFILE\.claude\projects" -Recurse -Filter *.jsonl -ErrorAction SilentlyContinue | Copy-Item -Destination "$media\transcripts" -Force
+
+      $next = "$linuxHome/.local/state/next-boot"
+      $out = @("pending before:") + (& $wsl -d defenestrate --cd / --exec /bin/busybox ls -ln "/linux$next" 2>&1)
+      $pending = Test-Path "$share\.local\state\next-boot\claude-resume.pending"
+      if ($pending) {
+          $out += & $wsl -d defenestrate --cd / --exec /bin/busybox mv "/linux$next/claude-resume.pending" "/linux$next/claude-resume" 2>&1
+          $out += @("after:") + (& $wsl -d defenestrate --cd / --exec /bin/busybox ls -ln "/linux$next" 2>&1)
+      } else {
+          $out += 'no claude-resume.pending: nobody is waiting'
+      }
+      & $wsl -d defenestrate --cd / --exec /bin/busybox test -e "/linux$next/claude-resume"
+      $handedOver = $LASTEXITCODE -eq 0
+      $out += "handed over: $handedOver"
+      $out | ForEach-Object { "$_" } | Set-Content -LiteralPath "$media\handoff.txt"
+      $out | ForEach-Object { Write-Host $_ }
+      if ($pending -and -not $handedOver) {
+          Write-Host 'The handoff file was not renamed; not rebooting, so someone can look.'
+          exit 1
+      }
+      schtasks.exe /run /tn defenestrate-reboot-to-linux
+    '';
     # The NixOS-specific sections swapped for Windows ones; the rest is the
     # same instructions.
     windowsClaudeMd = let
@@ -447,6 +490,7 @@
             };
           };
           "${windowsDir}/start-tests.ps1" = lib.mkIf (cfg.windows.testPlan != null) {text = windowsStartTests;};
+          "${windowsDir}/hand-back.ps1" = lib.mkIf (cfg.windows.testPlan != null) {text = windowsHandBack;};
           "${windowsDir}/pool-key.ps1".text = ''
             (Get-Content -Raw -LiteralPath "$env:USERPROFILE\.claude\pool-key").Trim()
           '';

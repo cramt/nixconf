@@ -18,31 +18,29 @@ folder of per-ID logs, `wsl.log`, `reboot.log`) and
 
 ## Report
 
-Write it to `\\wsl$\defenestrate\linux\home\cramt\.local\share\defenestrate\reports\`
-as `<yyyy-mm-dd>-<hh-mm>.md` (create the folder if it's missing). That's the
-Linux install's disk, so the Linux side reads it after the reboot. Writing
-there is test 1. If it fails, say so in chat, save the report to
-`%USERPROFILE%\defenestrate-report.md`, and say where it is in the
-handoff (Last step can't work either then; don't reboot, leave it for Alex).
+Keep it on this disk, at `%USERPROFILE%\defenestrate-report\<yyyy-mm-dd>-<hh-mm>.md`:
+over `\\wsl$` only creating new files has been reliable (renames silently
+don't happen, and the last report stopped after its first item). The Last
+step's script copies it to the Linux side, with the logs and your
+transcript. Screenshots go in a `<report name>-media` folder next to it,
+which the script copies too.
 
-Create the report file before checking anything, and append each item as
-you finish it: a run cut short (2026-11-20's was, before its report) still
-leaves what it found.
+Create the report file before checking anything, and add each item as you
+finish it: a run cut short still leaves what it found.
 
 Per item: **pass**, **fail**, or **not checked**, plus the evidence (a log
 line, command output, or what Alex saw). On a failure, quote the relevant log
-lines. Paraphrasing loses the detail the fix needs. Screenshots you took go
-next to the report, in a `<report name>-media` folder. Put anything that looked
+lines. Paraphrasing loses the detail the fix needs. Put anything that looked
 off but isn't on the list under "Also seen".
 
 ## New this boot
 
-No reflash. Last boot (`~/.local/share/defenestrate/reports/2026-11-20-17-14.md`
-on the Linux side) ran a stale copy of this checklist, started before the
-logon task had copied the new one; you now wait for this logon's copy. It
-also found renames over `\\wsl$` don't happen (Last step). Don't redo the
-older items below; only note anything that broke. This boot tests the
-unattended loop itself:
+No reflash. The last two boots never handed back: one ran a stale copy of
+this plan, the other's report (`2026-11-20-17-26.md` on the Linux side)
+stops after item 1 and the machine was back in Linux within minutes, cause
+unknown. Its transcript is still on this machine; the Last step's script
+copies it over, so don't go digging for it. Don't redo the older items
+below; only note anything that broke. This boot tests the loop itself:
 
 29. **You started on your own, with no setup questions,** and on this
     logon's copy of the plan: `%LOCALAPPDATA%\defenestrate\linux-files.txt`'s
@@ -50,8 +48,9 @@ unattended loop itself:
     quote both. Quote `skipDangerousModePermissionPrompt` from
     `~/.claude/settings.json` and the `C:/Users/cramt` entry in
     `~/.claude.json`.
-30. **The handoff.** The Last step's listing, in the report. The Linux side
-    checks that its session came back on its own.
+30. **The handoff.** Nothing to do here: the Last step's script writes
+    `handoff.txt` next to the report, and the Linux side checks it came
+    back on its own.
 31. **Default apps are off.** The shell no longer tries to open Settings
     (it can't start without explorer, last report): `shell.log` has no
     `default apps:` line this logon, and no `SystemSettings` process is
@@ -134,19 +133,10 @@ the config's line: it opened this console.
 
 ## Last step
 
-Once the report is written, hand back to Linux:
-
-1. Inside WSL, not over `\\wsl$`: renames over `\\wsl$` don't happen
-   (2026-11-20: Claude's own write-to-temp-then-rename left its `.tmp` next
-   to the report, and the handoff file was never renamed though it looked
-   done). Run
-   `wsl.exe -d defenestrate --cd / --exec /bin/busybox mv /linux/home/cramt/.local/state/next-boot/claude-resume.pending /linux/home/cramt/.local/state/next-boot/claude-resume`
-   then `wsl.exe -d defenestrate --cd / --exec /bin/busybox ls -ln /linux/home/cramt/.local/state/next-boot/`
-   and append that listing to the report: `claude-resume` there, owned by
-   1000, and no `.pending`. That's the Linux session asking to be resumed;
-   it comes back at the next boot. If there was no `.pending`, nobody is
-   waiting: say so and skip to 2.
-2. Run `schtasks /run /tn defenestrate-reboot-to-linux`, the launcher's
-   "Reboot to Linux" task. The machine should come up in Linux (test 20:
-   the Linux side checks it came back), and the resumed session reads your
-   report.
+Once the report is finished, run
+`powershell -NoProfile -ExecutionPolicy Bypass -File ~/.claude/hand-back.ps1 -Report <the report's full path>`
+and nothing else. It copies the report, its media folder, the Windows-side
+logs and the Claude transcripts to the Linux side, renames the Linux
+session's `claude-resume.pending` inside WSL (that's what resumes it at the
+next boot), and reboots to Linux once the rename is checked. If it prints
+that the rename didn't happen, it doesn't reboot: leave things as they are.
