@@ -35,12 +35,16 @@ off but isn't on the list under "Also seen".
 
 ## New this boot
 
-No reflash. The last two boots never handed back: one ran a stale copy of
-this plan, the other's report (`2026-11-20-17-26.md` on the Linux side)
-stops after item 1 and the machine was back in Linux within minutes, cause
-unknown. Its transcript is still on this machine; the Last step's script
-copies it over, so don't go digging for it. Don't redo the older items
-below; only note anything that broke. This boot tests the loop itself:
+No reflash; `dfnstrate update` patched the WSL payload and the reboot task.
+Why the last three boots never handed back: "Reboot to Linux" killed WSL's
+VM with the Linux install still mounted, and btrfs writes back every 30 s,
+so whatever was written to Linux in the last half minute (the report's
+last items, the handoff rename) was lost, though it looked done from here.
+The reboot task now unmounts it first (`dfn release`). Nothing for you to
+check about that: the Linux side reads `reboot.log` afterwards with
+`dfnstrate logs`. The rootfs changed, so this logon re-imported the
+distro (`wsl.log`). Don't redo the older items below; only note anything
+that broke. This boot tests the loop:
 
 29. **You started on your own, with no setup questions,** and on this
     logon's copy of the plan: `%LOCALAPPDATA%\defenestrate\linux-files.txt`'s
