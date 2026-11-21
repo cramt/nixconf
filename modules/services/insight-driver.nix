@@ -1,11 +1,13 @@
 # progress-engine's insight batches, run unattended on whatever Claude pool
 # quota would otherwise go to waste.
 #
-# A batch is a T3 Code webhook task: one thread that follows progress-engine's
-# insight-batch skill in the runner's own clone, so every run shows up in T3 Code
-# with its transcript. The skill calls the driver's subcommands for everything
-# a script can decide (baseline, gates, push or park, triage); see
-# crates/vivisurgeons-insight/driver/README.md.
+# A batch is a T3 Code webhook task: one thread in the runner's own clone that
+# follows progress-engine's insight-batch or chancellor-batch skill (`products`,
+# offered in turn), so every run shows up in T3 Code with its transcript. The
+# insight skill calls its driver's subcommands for everything a script can
+# decide (crates/vivisurgeons-insight/driver/README.md); the chancellor skill
+# gates on the replay milestone. Both share the clone, so one live thread
+# holds back both.
 #
 # T3 Code can't decide *when* to run, so a timer here offers a batch every
 # 30 minutes and only calls the webhook when the pool is under pace. "Under
@@ -42,7 +44,7 @@
     ...
   }: let
     cfg = config.myNixOS.services.insight-driver;
-    task = config.services.t3code.scheduledTasks.insight;
+    tasks = config.services.t3code.scheduledTasks;
     prometheus = "http://127.0.0.1:${toString config.port-selector.ports.prometheus}";
     t3 = lib.getExe' config.services.t3code.package "t3";
     dir = lib.escapeShellArg cfg.stateDir;
@@ -128,10 +130,17 @@
           [ "$go" = 1 ] || exit 0
         }
 
+        # The products this tick may offer. Insight's driver can stop for a
+        # human; that holds back Insight only.
+        candidates=(${lib.escapeShellArgs cfg.products})
         if [ -s ${state} ]; then
           stopped=$(jq -r '.stopped.reason // empty' ${state})
-          [ -z "$stopped" ] || decide "skip: stopped for a human ($stopped); see escalations.md, then resume"
+          if [ -n "$stopped" ]; then
+            echo "insight is stopped for a human ($stopped); see escalations.md, then resume"
+            mapfile -t candidates < <(printf '%s\n' "''${candidates[@]}" | grep -vx insight || true)
+          fi
         fi
+        [ "''${#candidates[@]}" -gt 0 ] || decide "skip: no product to offer"
 
         # The thread exists from the webhook's request on, so this also covers
         # a batch that hasn't reached `start` yet. A claim in state.json left by
@@ -161,7 +170,25 @@
             printf "%s: 7-day pool surplus %.2f (want %.2f), best 5-hour %.2f (want %.2f)\n",
               ok ? "go" : "skip", slack, minSlack, five, minFive
           }')"
-        curl -fsS --max-time 30 -X POST "$(cat ${lib.escapeShellArg task.webhookUrlFile})"
+        # Round robin over the products in order, from the one after the last
+        # offered, so each gets every len(products)-th batch.
+        last=$(cat ${dir}/gate-last-product 2>/dev/null || true)
+        next=""
+        for i in "''${!candidates[@]}"; do
+          if [ "''${candidates[$i]}" = "$last" ]; then
+            next=''${candidates[$(( (i + 1) % ''${#candidates[@]} ))]}
+          fi
+        done
+        next=''${next:-''${candidates[0]}}
+        case "$next" in
+          insight) url=$(cat ${lib.escapeShellArg tasks.insight.webhookUrlFile}) ;;
+          chancellor)
+            mkdir -p ${lib.escapeShellArg cfg.chancellorStateDir}/batches
+            url=$(cat ${lib.escapeShellArg tasks.chancellor.webhookUrlFile}) ;;
+        esac
+        echo "offering a $next batch"
+        echo "$next" > ${dir}/gate-last-product
+        curl -fsS --max-time 30 -X POST "$url"
         echo
       '';
     };
@@ -187,6 +214,20 @@
         default = "/pool/dev/progress-engine-insight-state";
         description = "The driver's --state-dir. On /pool because every batch keeps ~50MB of snapshots and transcripts.";
       };
+      products = lib.mkOption {
+        type = lib.types.nonEmptyListOf (lib.types.enum ["insight" "chancellor"]);
+        default = ["insight" "chancellor"];
+        description = ''
+          What the runner works on, offered in turn one batch at a time:
+          Insight's grammar (the insight-batch skill) and Chancellor's replay
+          milestone (the chancellor-batch skill). One product runs it alone.
+        '';
+      };
+      chancellorStateDir = lib.mkOption {
+        type = lib.types.str;
+        default = "/pool/dev/progress-engine-chancellor-state";
+        description = "The chancellor batches' state dir: batches/<n>/ baselines and the handoff.";
+      };
       minSlack = lib.mkOption {
         type = lib.types.float;
         default = 0.1;
@@ -210,6 +251,16 @@
           prompt = ''
             Run one insight batch with the insight-batch skill, state dir
             ${cfg.stateDir}.
+          '';
+        };
+        scheduledTasks.chancellor = {
+          title = "chancellor batch";
+          project = cfg.checkout;
+          schedule.webhook = {};
+          model.model = "claude-opus-5-5";
+          prompt = ''
+            Run one chancellor batch with the chancellor-batch skill, state dir
+            ${cfg.chancellorStateDir}.
           '';
         };
       };
