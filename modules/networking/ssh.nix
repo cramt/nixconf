@@ -106,6 +106,49 @@ in {
           };
           Install.WantedBy = ["graphical-session.target"];
         };
+
+        # On poweroff/reboot the session scope (the compositor) stops before
+        # user@.service, so onepassword.service's stop always comes too late:
+        # 1Password loses its Wayland socket first, exits 1 without its own
+        # shutdown path, and the next start pops "1Password quit unexpectedly".
+        # No unit ordering can get ahead of the scope, so hold a logind delay
+        # lock and SIGTERM it (a clean exit 0) on PrepareForShutdown instead.
+        systemd.user.services.onepassword-quit-before-shutdown = let
+          watch = pkgs.writeShellApplication {
+            name = "onepassword-quit-before-shutdown";
+            runtimeInputs = [pkgs.bash pkgs.glib.bin pkgs.systemd pkgs.gnugrep];
+            text = ''
+              # A coproc, not a pipeline: a pipeline would also wait on gdbus,
+              # which only notices grep is gone on its next signal.
+              wait_for() {
+                coproc MON { exec gdbus monitor --system --dest org.freedesktop.login1 --object-path /org/freedesktop/login1; }
+                local pid=$MON_PID
+                grep -q -m1 -F "PrepareForShutdown ($1" <&"''${MON[0]}"
+                kill "$pid" 2>/dev/null || true
+              }
+              export -f wait_for
+              while true; do
+                systemd-inhibit --what=shutdown --mode=delay --who=1Password \
+                  --why="Quit 1Password before the compositor goes" \
+                  bash -c 'wait_for true && systemctl --user stop onepassword.service'
+                # Lock released, shutdown proceeds. Only a cancelled one gets here.
+                wait_for false
+                systemctl --user start onepassword.service
+              done
+            '';
+          };
+        in {
+          Unit = {
+            Description = "Stop 1Password cleanly before shutdown tears down the session";
+            PartOf = ["graphical-session.target"];
+            After = ["graphical-session.target"];
+          };
+          Service = {
+            ExecStart = lib.getExe watch;
+            Restart = "on-failure";
+          };
+          Install.WantedBy = ["graphical-session.target"];
+        };
       })
     ]);
   };
