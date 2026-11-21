@@ -69,6 +69,8 @@
     bundles.users.enable = true;
 
     services = {
+      # progress-engine's insight batches on spare Claude quota, as a T3 Code task.
+      insight-driver.enable = true;
       # T3 Code server: offload coding-agent work to luna from the mars/saturn
       # desktop app. Runs as cramt so agents get git/ssh + the agent CLIs
       # (dev bundle). At t3.<domain> the passkey is the only login; LAN
@@ -115,8 +117,7 @@
         # op://Homelab/Metrics/remoteWritePassword and reaches agents via op-secrets.
         auth.hashedPassword = "$2a$14$np6mAmdVPkGBrPrFnV4rSeUw45WaHHvVngHupMyOSyClwwnL7444a";
       };
-      # The insight driver is a user unit, so it can't declare this itself.
-      metrics.textfiles.insight-driver = "${config.home-manager.users.cramt.myHomeManager.insight-driver.stateDir}/metrics.prom";
+      metrics.textfiles.insight-driver = "${config.myNixOS.services.insight-driver.stateDir}/metrics.prom";
       # Dashboards over the above at grafana.<domain>, behind the passkey.
       grafana.enable = true;
       # Prometheus alerts as Discord DMs from yelliv.

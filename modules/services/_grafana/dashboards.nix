@@ -987,7 +987,7 @@ in {
     ];
   };
 
-  # progress-engine's insight driver (modules/hm-features/insight-driver.nix):
+  # progress-engine's insight batches (modules/services/insight-driver.nix):
   # what the quota gate saw, when batches ran, and what they bought. Built to
   # tune the gate's minSlack/minFiveHour against what a batch really burns.
   insight = let
