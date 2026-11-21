@@ -1,16 +1,16 @@
 # progress-engine's insight batches, run unattended on whatever Claude pool
 # quota would otherwise go to waste.
 #
-# A batch is a T3 Code webhook task: one thread in the runner's own clone that
-# follows progress-engine's insight-batch or chancellor-batch skill (`products`,
-# offered in turn), so every run shows up in T3 Code with its transcript. The
-# insight skill calls its driver's subcommands for everything a script can
-# decide (crates/vivisurgeons-insight/driver/README.md); the chancellor skill
-# gates on the replay milestone. Both share the clone, so one live thread
-# holds back both.
+# A batch is a T3 Code webhook task: one thread that follows progress-engine's
+# insight-batch or chancellor-batch skill (`products`), each product in its own
+# clone and T3 project so the two run side by side, and every run shows up in
+# T3 Code with its transcript. The insight skill calls its driver's
+# subcommands for everything a script can decide
+# (crates/vivisurgeons-insight/driver/README.md); the chancellor skill gates
+# on the replay milestone.
 #
-# T3 Code can't decide *when* to run, so a timer here offers a batch every
-# 30 minutes and only calls the webhook when the pool is under pace. "Under
+# T3 Code can't decide *when* to run, so a timer here checks every 5 minutes
+# and starts at most one batch a check, only when the pool is under pace. "Under
 # pace" is per window, not in total: an account's 7-day surplus is what's left
 # minus the share of the window still to run, so idle nights bank surplus and
 # the batches spend only that, never what a busy week of hand-driven work
@@ -19,15 +19,16 @@
 # 7-day window and ~0.4 of a 5-hour one, which is what the defaults leave room
 # for.
 #
-# The gate also skips while T3 Code lists a live thread in the clone's
+# A product is skipped while T3 Code lists a live thread in its clone's
 # project (a batch runs for hours; the webhook would happily start a second
-# writer in the same checkout) or while the driver is stopped for a human. A
+# writer in the same checkout), and Insight while its driver is stopped for a
+# human. A
 # batch is alive exactly as long as its thread, so there is no timeout: a slow
 # batch is never taken for dead, and a dead one is found on the next tick. For
 # a stop, read escalations.md in the state dir, then clear it with the
 # driver's `resume` subcommand.
 #
-# insight-driver-clone clones the runner's checkout when it is missing, before
+# insight-driver-clone clones each runner checkout that is missing, before
 # t3code-declare registers it as a project. Batches push to main when their
 # gates pass; there is no branch to merge.
 #
@@ -102,12 +103,22 @@
       '';
     };
 
+    # Each product's clone and the webhook that starts one of its batches.
+    checkouts = {
+      insight = cfg.checkout;
+      chancellor = cfg.chancellorCheckout;
+    };
+    webhooks = {
+      insight = tasks.insight.webhookUrlFile;
+      chancellor = tasks.chancellor.webhookUrlFile;
+    };
+
     clone = pkgs.writeShellApplication {
       name = "insight-driver-clone";
       runtimeInputs = [pkgs.git pkgs.openssh];
-      text = ''
-        git clone -q ${lib.escapeShellArg cfg.remote} ${lib.escapeShellArg cfg.checkout}
-      '';
+      text = lib.concatMapStrings (c: ''
+        [ -e ${lib.escapeShellArg c}/.git ] || git clone -q ${lib.escapeShellArg cfg.remote} ${lib.escapeShellArg c}
+      '') (lib.attrValues checkouts);
     };
 
     gate = pkgs.writeShellApplication {
@@ -130,29 +141,38 @@
           [ "$go" = 1 ] || exit 0
         }
 
-        # The products this tick may offer. Insight's driver can stop for a
-        # human; that holds back Insight only.
-        candidates=(${lib.escapeShellArgs cfg.products})
-        if [ -s ${state} ]; then
-          stopped=$(jq -r '.stopped.reason // empty' ${state})
-          if [ -n "$stopped" ]; then
-            echo "insight is stopped for a human ($stopped); see escalations.md, then resume"
-            mapfile -t candidates < <(printf '%s\n' "''${candidates[@]}" | grep -vx insight || true)
+        # A product may start a batch when nothing holds it back: Insight's
+        # driver stopped for a human, or a live thread in its own clone (a
+        # batch runs for hours; its webhook would happily start a second
+        # writer there). The thread exists from the webhook's request on, so
+        # this also covers a batch that hasn't reached its first step. Same
+        # liveness rule as the driver's (src/t3.ts): top-level threads only.
+        candidates=()
+        busy=()
+        for product in ${lib.escapeShellArgs cfg.products}; do
+          if [ "$product" = insight ] && [ -s ${state} ]; then
+            stopped=$(jq -r '.stopped.reason // empty' ${state})
+            if [ -n "$stopped" ]; then
+              busy+=("insight stopped for a human ($stopped); see escalations.md, then resume")
+              continue
+            fi
           fi
+          case "$product" in
+            ${lib.concatStrings (lib.mapAttrsToList (n: c: ''
+            ${n}) checkout=${lib.escapeShellArg c} ;;
+            '') checkouts)}
+          esac
+          threads=$(${t3} thread list --base-dir ${lib.escapeShellArg config.services.t3code.dataDir} \
+            --project "$checkout" --json) \
+            || decide "skip: could not list T3 Code threads"
+          live=$(jq -r '[.[] | select(.parentThreadId == null)
+            | select((.status | IN("preparing", "queued", "starting", "running", "waiting"))
+                     or (.pendingBackgroundTasks | length) > 0) | .title] | join(", ")' <<<"$threads")
+          if [ -n "$live" ]; then busy+=("$product live ($live)"); else candidates+=("$product"); fi
+        done
+        if [ "''${#candidates[@]}" -eq 0 ]; then
+          decide "skip: nothing free: $(IFS=';'; echo "''${busy[*]}")"
         fi
-        [ "''${#candidates[@]}" -gt 0 ] || decide "skip: no product to offer"
-
-        # The thread exists from the webhook's request on, so this also covers
-        # a batch that hasn't reached `start` yet. A claim in state.json left by
-        # a dead thread doesn't block: the next batch's `start` recovers it.
-        # Same rule as the driver's (src/t3.ts): top-level threads only.
-        threads=$(${t3} thread list --base-dir ${lib.escapeShellArg config.services.t3code.dataDir} \
-          --project ${lib.escapeShellArg cfg.checkout} --json) \
-          || decide "skip: could not list T3 Code threads"
-        live=$(jq -r '[.[] | select(.parentThreadId == null)
-          | select((.status | IN("preparing", "queued", "starting", "running", "waiting"))
-                   or (.pendingBackgroundTasks | length) > 0) | .title] | join(", ")' <<<"$threads")
-        [ -z "$live" ] || decide "skip: a batch thread is live ($live)"
 
         q() {
           curl -fsS --max-time 10 "${prometheus}/api/v1/query" --data-urlencode "query=$1" \
@@ -170,8 +190,9 @@
             printf "%s: 7-day pool surplus %.2f (want %.2f), best 5-hour %.2f (want %.2f)\n",
               ok ? "go" : "skip", slack, minSlack, five, minFive
           }')"
-        # Round robin over the products in order, from the one after the last
-        # offered, so each gets every len(products)-th batch.
+        # One new batch a tick, so the next start reads quota that counts this
+        # one. Round robin over the free products, from the one after the last
+        # offered, so a product that frees up often can't starve the other.
         last=$(cat ${dir}/gate-last-product 2>/dev/null || true)
         next=""
         for i in "''${!candidates[@]}"; do
@@ -181,11 +202,11 @@
         done
         next=''${next:-''${candidates[0]}}
         case "$next" in
-          insight) url=$(cat ${lib.escapeShellArg tasks.insight.webhookUrlFile}) ;;
-          chancellor)
-            mkdir -p ${lib.escapeShellArg cfg.chancellorStateDir}/batches
-            url=$(cat ${lib.escapeShellArg tasks.chancellor.webhookUrlFile}) ;;
+          ${lib.concatStrings (lib.mapAttrsToList (n: w: ''
+          ${n}) url=$(cat ${lib.escapeShellArg w}) ;;
+          '') webhooks)}
         esac
+        mkdir -p ${lib.escapeShellArg cfg.chancellorStateDir}/batches
         echo "offering a $next batch"
         echo "$next" > ${dir}/gate-last-product
         curl -fsS --max-time 30 -X POST "$url"
@@ -204,8 +225,8 @@
         type = lib.types.str;
         default = "/pool/dev/progress-engine-insight";
         description = ''
-          The runner's own clone, on main, and the T3 Code project the batches
-          run in. A clone, not a worktree of the human's checkout: a worktree
+          The runner's clone for Insight batches, on main, and its T3 Code
+          project. A clone, not a worktree of the human's checkout: a worktree
           can't have main checked out twice.
         '';
       };
@@ -218,10 +239,16 @@
         type = lib.types.nonEmptyListOf (lib.types.enum ["insight" "chancellor"]);
         default = ["insight" "chancellor"];
         description = ''
-          What the runner works on, offered in turn one batch at a time:
+          What the runner works on, each in its own clone at the same time:
           Insight's grammar (the insight-batch skill) and Chancellor's replay
-          milestone (the chancellor-batch skill). One product runs it alone.
+          milestone (the chancellor-batch skill). The gate starts at most one
+          batch a tick, taking the free products in turn.
         '';
+      };
+      chancellorCheckout = lib.mkOption {
+        type = lib.types.str;
+        default = "/pool/dev/progress-engine-chancellor";
+        description = "The runner's clone for Chancellor batches, on main, and its T3 Code project, so a Chancellor batch runs beside an Insight one.";
       };
       chancellorStateDir = lib.mkOption {
         type = lib.types.str;
@@ -243,6 +270,7 @@
     config = lib.mkIf cfg.enable {
       services.t3code = {
         projects.progress-engine-insight.workspaceRoot = cfg.checkout;
+        projects.progress-engine-chancellor.workspaceRoot = cfg.chancellorCheckout;
         scheduledTasks.insight = {
           title = "insight batch";
           project = cfg.checkout;
@@ -255,7 +283,7 @@
         };
         scheduledTasks.chancellor = {
           title = "chancellor batch";
-          project = cfg.checkout;
+          project = cfg.chancellorCheckout;
           schedule.webhook = {};
           model.model = "claude-opus-5-5";
           prompt = ''
@@ -266,13 +294,10 @@
       };
 
       systemd.user.services.insight-driver-clone = {
-        description = "Clone the insight runner's checkout if it is missing";
+        description = "Clone each runner checkout that is missing";
         before = ["t3code-declare.service"];
         wantedBy = ["t3code-declare.service"];
-        unitConfig = {
-          ConditionUser = config.services.t3code.user;
-          ConditionPathExists = "!${cfg.checkout}/.git";
-        };
+        unitConfig.ConditionUser = config.services.t3code.user;
         serviceConfig = {
           Type = "oneshot";
           ExecStart = lib.getExe clone;
@@ -294,8 +319,10 @@
         wantedBy = ["timers.target"];
         unitConfig.ConditionUser = config.services.t3code.user;
         timerConfig = {
-          OnCalendar = "*:07/30";
-          RandomizedDelaySec = "2m";
+          # A skip costs a few seconds; a batch that ends waits at most this
+          # long for the next. 30 minutes left ~15 idle minutes per batch.
+          OnCalendar = "*:0/5";
+          RandomizedDelaySec = "30s";
         };
       };
     };
