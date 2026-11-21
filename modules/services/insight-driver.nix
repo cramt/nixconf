@@ -17,14 +17,17 @@
 # 7-day window and ~0.4 of a 5-hour one, which is what the defaults leave room
 # for.
 #
-# The gate also skips while state.json says a batch is in flight (a thread
-# runs for hours; the webhook would happily start a second) or that the driver
-# stopped for a human. For the latter, read escalations.md in the state dir,
-# then clear it with the driver's `resume` subcommand.
+# The gate also skips while T3 Code lists a live thread in the worktree's
+# project (a batch runs for hours; the webhook would happily start a second
+# writer in the same checkout) or while the driver is stopped for a human. A
+# batch is alive exactly as long as its thread, so there is no timeout: a slow
+# batch is never taken for dead, and a dead one is found on the next tick. For
+# a stop, read escalations.md in the state dir, then clear it with the
+# driver's `resume` subcommand.
 #
-# The worktree (`insight` branch) is made once by hand:
-#   git -C /pool/dev/progress-engine worktree add -B insight /pool/dev/progress-engine-insight origin/insight
-# Merge `insight` into main (merge or fast-forward, never squash) to take its work.
+# insight-driver-worktree makes the worktree (`insight` branch) when it is
+# missing, before t3code-declare registers it as a project. Merge `insight`
+# into main (merge or fast-forward, never squash) to take its work.
 #
 # Every gate check also rebuilds <stateDir>/metrics.prom (insight_driver_*)
 # from its own verdict and the driver's files, for the Insight driver
@@ -41,6 +44,7 @@
     cfg = config.myNixOS.services.insight-driver;
     task = config.services.t3code.scheduledTasks.insight;
     prometheus = "http://127.0.0.1:${toString config.port-selector.ports.prometheus}";
+    t3 = lib.getExe' config.services.t3code.package "t3";
     dir = lib.escapeShellArg cfg.stateDir;
     state = lib.escapeShellArg "${cfg.stateDir}/state.json";
 
@@ -96,6 +100,23 @@
       '';
     };
 
+    worktree = pkgs.writeShellApplication {
+      name = "insight-driver-worktree";
+      runtimeInputs = [pkgs.git pkgs.openssh];
+      text = ''
+        repo=${lib.escapeShellArg cfg.repo}
+        git -C "$repo" fetch -q origin
+        if ! git -C "$repo" rev-parse -q --verify refs/remotes/origin/insight >/dev/null; then
+          git -C "$repo" push -q origin origin/main:refs/heads/insight
+          git -C "$repo" fetch -q origin insight
+        fi
+        # A worktree deleted without `git worktree remove` still holds the branch.
+        git -C "$repo" worktree prune
+        git -C "$repo" worktree add -B insight ${lib.escapeShellArg cfg.worktree} origin/insight
+        git -C ${lib.escapeShellArg cfg.worktree} branch -q --set-upstream-to origin/insight
+      '';
+    };
+
     gate = pkgs.writeShellApplication {
       name = "insight-driver-gate";
       runtimeInputs = [pkgs.curl pkgs.jq pkgs.gawk pkgs.coreutils renderMetrics];
@@ -119,13 +140,19 @@
         if [ -s ${state} ]; then
           stopped=$(jq -r '.stopped.reason // empty' ${state})
           [ -z "$stopped" ] || decide "skip: stopped for a human ($stopped); see escalations.md, then resume"
-          # A thread that died without clearing its claim would block forever,
-          # so a claim older than any batch can run lapses.
-          started=$(jq -r '.inFlight.startedAt // empty' ${state})
-          if [ -n "$started" ] && [ $(( $(date +%s) - $(date -d "$started" +%s) )) -lt ${toString (cfg.staleHours * 3600)} ]; then
-            decide "skip: batch in flight since $started"
-          fi
         fi
+
+        # The thread exists from the webhook's request on, so this also covers
+        # a batch that hasn't reached `start` yet. A claim in state.json left by
+        # a dead thread doesn't block: the next batch's `start` recovers it.
+        # Same rule as the driver's (src/t3.ts): top-level threads only.
+        threads=$(${t3} thread list --base-dir ${lib.escapeShellArg config.services.t3code.dataDir} \
+          --project ${lib.escapeShellArg cfg.worktree} --json) \
+          || decide "skip: could not list T3 Code threads"
+        live=$(jq -r '[.[] | select(.parentThreadId == null)
+          | select((.status | IN("preparing", "queued", "starting", "running", "waiting"))
+                   or (.pendingBackgroundTasks | length) > 0) | .title] | join(", ")' <<<"$threads")
+        [ -z "$live" ] || decide "skip: a batch thread is live ($live)"
 
         q() {
           curl -fsS --max-time 10 "${prometheus}/api/v1/query" --data-urlencode "query=$1" \
@@ -150,6 +177,11 @@
   in {
     options.myNixOS.services.insight-driver = {
       enable = lib.mkEnableOption "myNixOS.services.insight-driver";
+      repo = lib.mkOption {
+        type = lib.types.str;
+        default = "/pool/dev/progress-engine";
+        description = "The human's progress-engine checkout; the worktree hangs off it.";
+      };
       worktree = lib.mkOption {
         type = lib.types.str;
         default = "/pool/dev/progress-engine-insight";
@@ -170,11 +202,6 @@
         default = 0.5;
         description = "5-hour share some usable account must have left, so a batch doesn't stall mid-writer.";
       };
-      staleHours = lib.mkOption {
-        type = lib.types.ints.positive;
-        default = 6;
-        description = "After this long, an in-flight claim in state.json counts as a dead thread's.";
-      };
     };
 
     config = lib.mkIf cfg.enable {
@@ -192,8 +219,24 @@
         };
       };
 
+      systemd.user.services.insight-driver-worktree = {
+        description = "Make the insight driver's worktree if it is missing";
+        before = ["t3code-declare.service"];
+        wantedBy = ["t3code-declare.service"];
+        unitConfig = {
+          ConditionUser = config.services.t3code.user;
+          ConditionPathExists = "!${cfg.worktree}/.git";
+        };
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = lib.getExe worktree;
+        };
+      };
+
       systemd.user.services.insight-driver-gate = {
         description = "Offer an insight batch to T3 Code if the Claude pool is under pace";
+        wants = ["insight-driver-worktree.service"];
+        after = ["insight-driver-worktree.service"];
         unitConfig.ConditionUser = config.services.t3code.user;
         serviceConfig = {
           Type = "oneshot";
