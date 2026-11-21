@@ -24,6 +24,14 @@ in {
   inputLocale = "0406:00000406"; # Danish, like the Linux side
   timeZone = "Romance Standard Time"; # Europe/Copenhagen
   installTarget = "/dev/disk/by-id/nvme-Samsung_SSD_970_EVO_1TB_S5H9NS1NB05355E";
+  # Linux boots Limine off the removable path (modules/security/secureboot.nix:
+  # MSI drops OS-made entries when Secure Boot settings change), whose only
+  # firmware entry is the one MSI makes itself, "UEFI OS". defenestrate's
+  # auto pick skips the removable path on purpose (a USB stick boots it too),
+  # so it's named here; "Reboot to Linux" found nothing without it
+  # (2026-11-20). If the firmware ever adds a second "UEFI OS" (Windows'
+  # disk's fallback), linux-first refuses to choose and says so in its log.
+  linuxBootEntry.description = "UEFI OS";
   # winget IDs, installed by winget on the first real boot (whatever version
   # it has then). League last: its installer is the Riot Client, which then
   # downloads the game, so it's the slow one.
