@@ -2,7 +2,7 @@
 # quota would otherwise go to waste.
 #
 # A batch is a T3 Code webhook task: one thread that follows progress-engine's
-# insight-batch skill in the driver worktree, so every run shows up in T3 Code
+# insight-batch skill in the runner's own clone, so every run shows up in T3 Code
 # with its transcript. The skill calls the driver's subcommands for everything
 # a script can decide (baseline, gates, push or park, triage); see
 # crates/vivisurgeons-insight/driver/README.md.
@@ -17,7 +17,7 @@
 # 7-day window and ~0.4 of a 5-hour one, which is what the defaults leave room
 # for.
 #
-# The gate also skips while T3 Code lists a live thread in the worktree's
+# The gate also skips while T3 Code lists a live thread in the clone's
 # project (a batch runs for hours; the webhook would happily start a second
 # writer in the same checkout) or while the driver is stopped for a human. A
 # batch is alive exactly as long as its thread, so there is no timeout: a slow
@@ -25,9 +25,9 @@
 # a stop, read escalations.md in the state dir, then clear it with the
 # driver's `resume` subcommand.
 #
-# insight-driver-worktree makes the worktree (`insight` branch) when it is
-# missing, before t3code-declare registers it as a project. Merge `insight`
-# into main (merge or fast-forward, never squash) to take its work.
+# insight-driver-clone clones the runner's checkout when it is missing, before
+# t3code-declare registers it as a project. Batches push to main when their
+# gates pass; there is no branch to merge.
 #
 # Every gate check also rebuilds <stateDir>/metrics.prom (insight_driver_*)
 # from its own verdict and the driver's files, for the Insight driver
@@ -100,20 +100,11 @@
       '';
     };
 
-    worktree = pkgs.writeShellApplication {
-      name = "insight-driver-worktree";
+    clone = pkgs.writeShellApplication {
+      name = "insight-driver-clone";
       runtimeInputs = [pkgs.git pkgs.openssh];
       text = ''
-        repo=${lib.escapeShellArg cfg.repo}
-        git -C "$repo" fetch -q origin
-        if ! git -C "$repo" rev-parse -q --verify refs/remotes/origin/insight >/dev/null; then
-          git -C "$repo" push -q origin origin/main:refs/heads/insight
-          git -C "$repo" fetch -q origin insight
-        fi
-        # A worktree deleted without `git worktree remove` still holds the branch.
-        git -C "$repo" worktree prune
-        git -C "$repo" worktree add -B insight ${lib.escapeShellArg cfg.worktree} origin/insight
-        git -C ${lib.escapeShellArg cfg.worktree} branch -q --set-upstream-to origin/insight
+        git clone -q ${lib.escapeShellArg cfg.remote} ${lib.escapeShellArg cfg.checkout}
       '';
     };
 
@@ -147,7 +138,7 @@
         # a dead thread doesn't block: the next batch's `start` recovers it.
         # Same rule as the driver's (src/t3.ts): top-level threads only.
         threads=$(${t3} thread list --base-dir ${lib.escapeShellArg config.services.t3code.dataDir} \
-          --project ${lib.escapeShellArg cfg.worktree} --json) \
+          --project ${lib.escapeShellArg cfg.checkout} --json) \
           || decide "skip: could not list T3 Code threads"
         live=$(jq -r '[.[] | select(.parentThreadId == null)
           | select((.status | IN("preparing", "queued", "starting", "running", "waiting"))
@@ -177,15 +168,19 @@
   in {
     options.myNixOS.services.insight-driver = {
       enable = lib.mkEnableOption "myNixOS.services.insight-driver";
-      repo = lib.mkOption {
+      remote = lib.mkOption {
         type = lib.types.str;
-        default = "/pool/dev/progress-engine";
-        description = "The human's progress-engine checkout; the worktree hangs off it.";
+        default = "git@github.com:cramt/progress-engine.git";
+        description = "Where the runner clones progress-engine from and pushes its batches to (main).";
       };
-      worktree = lib.mkOption {
+      checkout = lib.mkOption {
         type = lib.types.str;
         default = "/pool/dev/progress-engine-insight";
-        description = "The driver's checkout of the `insight` branch, and the T3 Code project the batches run in.";
+        description = ''
+          The runner's own clone, on main, and the T3 Code project the batches
+          run in. A clone, not a worktree of the human's checkout: a worktree
+          can't have main checked out twice.
+        '';
       };
       stateDir = lib.mkOption {
         type = lib.types.str;
@@ -206,10 +201,10 @@
 
     config = lib.mkIf cfg.enable {
       services.t3code = {
-        projects.progress-engine-insight.workspaceRoot = cfg.worktree;
+        projects.progress-engine-insight.workspaceRoot = cfg.checkout;
         scheduledTasks.insight = {
           title = "insight batch";
-          project = cfg.worktree;
+          project = cfg.checkout;
           schedule.webhook = {};
           model.model = "claude-opus-5-5";
           prompt = ''
@@ -219,24 +214,24 @@
         };
       };
 
-      systemd.user.services.insight-driver-worktree = {
-        description = "Make the insight driver's worktree if it is missing";
+      systemd.user.services.insight-driver-clone = {
+        description = "Clone the insight runner's checkout if it is missing";
         before = ["t3code-declare.service"];
         wantedBy = ["t3code-declare.service"];
         unitConfig = {
           ConditionUser = config.services.t3code.user;
-          ConditionPathExists = "!${cfg.worktree}/.git";
+          ConditionPathExists = "!${cfg.checkout}/.git";
         };
         serviceConfig = {
           Type = "oneshot";
-          ExecStart = lib.getExe worktree;
+          ExecStart = lib.getExe clone;
         };
       };
 
       systemd.user.services.insight-driver-gate = {
         description = "Offer an insight batch to T3 Code if the Claude pool is under pace";
-        wants = ["insight-driver-worktree.service"];
-        after = ["insight-driver-worktree.service"];
+        wants = ["insight-driver-clone.service"];
+        after = ["insight-driver-clone.service"];
         unitConfig.ConditionUser = config.services.t3code.user;
         serviceConfig = {
           Type = "oneshot";
