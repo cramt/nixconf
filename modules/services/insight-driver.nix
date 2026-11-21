@@ -77,13 +77,11 @@
           gauge("gate_min_five_hour"; "The 5-hour share the gate wants."; $gate.minFiveHour),
           gauge("running"; "1 while a batch is in flight, as of the last gate check."; if $driver.inFlight then 1 else 0 end),
           gauge("stopped"; "1 while the driver waits for a human."; if $driver.stopped then 1 else 0 end),
-          gauge("lifetime_cost_usd"; "Token usage the batches have spent, in dollars."; $driver.lifetimeCostUsd),
           gauge("consecutive_failures"; "Failed or empty batches in a row; 2 stops the driver."; $driver.consecutiveFailures),
           metric("batches_total"; "counter"; "Batches recorded, by outcome.";
             [$batches | group_by(.outcome)[] | ["{outcome=\"\(.[0].outcome)\"}", length]]),
           if $last == null then empty else
             gauge("last_batch"; "Number of the latest recorded batch."; $last.batch),
-            gauge("last_batch_cost_usd"; "Cost of the latest batch."; $last.costUsd),
             gauge("last_batch_duration_seconds"; "Wall clock of the latest batch.";
               ($last.endedAt | ts) - ($last.startedAt | ts)),
             gauge("last_batch_commits"; "Commits in the latest batch."; $last.commits),
