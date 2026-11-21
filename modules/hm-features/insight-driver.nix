@@ -35,15 +35,14 @@
       runtimeInputs = [pkgs.jq pkgs.coreutils];
       text = ''
         json() { if [ -s "$1" ]; then cat "$1"; else echo null; fi; }
-        batches='[]'
-        if [ -s ${state}/metrics.jsonl ]; then
-          batches=$(jq -sc '[.[] | select(.batch)]' ${state}/metrics.jsonl)
-        fi
+        # metrics.jsonl grows every batch; as an argument it outgrew the
+        # kernel's 128KiB per-argument cap (E2BIG), so jq reads it itself.
         jq -nr \
           --argjson gate "$(json ${state}/gate.json)" \
           --argjson run "$(json ${state}/run.json)" \
           --argjson driver "$(json ${state}/state.json)" \
-          --argjson batches "$batches" '
+          --slurpfile lines <(cat ${state}/metrics.jsonl 2>/dev/null || true) '
+          ($lines | map(select(.batch))) as $batches |
           def ts: sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601;
           def metric($name; $type; $help; $samples):
             if ($samples | length) == 0 then empty else
@@ -115,7 +114,8 @@
           --argjson minSurplus ${toString cfg.minSlack} --argjson minFive ${toString cfg.minFiveHour} \
           '{at: $at, go: $go, surplus: ($surplus | tonumber? // null), fiveHour: ($five | tonumber? // null),
             minSurplus: $minSurplus, minFiveHour: $minFive}' > ${state}/gate.json
-        insight-driver-metrics
+        # Metrics are for tuning; failing to render them must not cost a batch.
+        insight-driver-metrics || echo "insight-driver-metrics failed" >&2
         [ "$go" = 1 ] || exit 1
       '';
     };
@@ -141,7 +141,7 @@
             fi ;;
         esac
         mv "$run.tmp" "$run"
-        insight-driver-metrics
+        insight-driver-metrics || echo "insight-driver-metrics failed" >&2
       '';
     };
 
