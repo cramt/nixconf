@@ -987,7 +987,7 @@ in {
     ];
   };
 
-  # progress-engine's insight driver (modules/hm-features/insight-driver.nix):
+  # progress-engine's insight batches (modules/services/insight-driver.nix):
   # what the quota gate saw, when batches ran, and what they bought. Built to
   # tune the gate's minSlack/minFiveHour against what a batch really burns.
   insight = let
@@ -1064,11 +1064,20 @@ in {
         ];
       })
       (latest {
-        title = "Spent";
+        title = "Stopped";
+        description = "Waiting for a human: read escalations.md, then run the driver's resume.";
         w = 4;
-        unit = "currencyUSD";
-        queries = [{expr = "insight_driver_lifetime_cost_usd";}];
+        queries = [{expr = "insight_driver_stopped";}];
         options.textMode = "value";
+        fieldConfig.defaults.mappings = [
+          {
+            type = "value";
+            options = {
+              "0" = {text = "no"; color = "green";};
+              "1" = {text = "yes"; color = "red";};
+            };
+          }
+        ];
       })
       (latest {
         title = "Failures in a row";
@@ -1176,20 +1185,11 @@ in {
       })
       (timeseries {
         title = "Milestone progress";
+        w = 24;
         queries = [
           {
             expr = "insight_driver_milestone_abilities";
             legend = "{{milestone}}";
-          }
-        ];
-      })
-      (timeseries {
-        title = "Spend";
-        unit = "currencyUSD";
-        queries = [
-          {
-            expr = "insight_driver_lifetime_cost_usd";
-            legend = "lifetime";
           }
         ];
       })
@@ -1200,10 +1200,6 @@ in {
           {
             expr = "insight_driver_last_batch";
             legend = "batch";
-          }
-          {
-            expr = "insight_driver_last_batch_cost_usd";
-            legend = "cost $";
           }
           {
             expr = "insight_driver_last_batch_duration_seconds / 3600";

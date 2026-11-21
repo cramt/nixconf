@@ -24,9 +24,12 @@
       # unit a later deploy added stayed dead because switch-to-configuration
       # only starts units whose target is active. A finite timeout turns the hang
       # into a failure that Restart=on-failure recovers from. Slowest healthy
-      # start measured is ~3min (servatrice's image load), so 15min is headroom.
+      # start measured is ~3min (servatrice's image load). It also has to fit a
+      # deploy: a switch that restarts docker.socket hangs the load the same way,
+      # and at 15min the hang alone used up deploy-rs's 900s confirm window and
+      # rolled luna back (2026-11-21). At 5min a hang plus a healthy retry is ~8min.
       systemd.services = lib.mapAttrs' (_: c:
-        lib.nameValuePair c.serviceName {serviceConfig.TimeoutStartSec = lib.mkForce "15min";})
+        lib.nameValuePair c.serviceName {serviceConfig.TimeoutStartSec = lib.mkForce "5min";})
       config.virtualisation.oci-containers.containers;
       networking.firewall = {
         allowedTCPPorts = lib.optionals (cfg.httpPort != null) [cfg.httpPort];

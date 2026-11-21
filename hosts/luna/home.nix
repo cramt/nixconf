@@ -10,7 +10,6 @@
   myHomeManager = {
     bundles.general.enable = true;
     bundles.development.enable = true;
-    insight-driver.enable = true;
     hyprland = {
       enable = false;
       exec = "firefox --kiosk https://example.com";
