@@ -65,9 +65,21 @@
           ];
         description = "Model ids this account can be served, for clients that need them declared.";
       };
+      pi.user = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "cramt";
+        description = ''
+          Give this user pi wired to the proxy: every model in `models` under
+          pi's `m365` provider, a `generate_image` tool that draws through
+          /v1/images/generations, and T3 Code's Pi provider switched on, so a
+          T3 thread (or a delegated child) can run on M365 and make images.
+          Claude Code can't carry that tool: it has no hook for a custom one.
+        '';
+      };
     };
 
-    config = lib.mkIf cfg.enable {
+    config = lib.mkIf cfg.enable (lib.mkMerge [ {
       port-selector.auto-assign = [ "m365-copilot-proxy" ];
 
       services.m365-copilot-proxy = {
@@ -92,6 +104,40 @@
         mode = "0640";
         group = (import ../../myLib/secrets.nix).group;
       };
-    };
+    }
+
+    (lib.mkIf (cfg.pi.user != null) (let
+      base = "http://127.0.0.1:${toString config.services.m365-copilot-proxy.port}/v1";
+    in {
+      home-manager.users.${cfg.pi.user} = { pkgs, ... }: {
+        home.packages = [ pkgs.pi-coding-agent ];
+
+        # Read-only on purpose: pi only reads models.json, and the list has to
+        # track `models` (the proxy's own catalogue) rather than drift.
+        home.file.".pi/agent/models.json".text = builtins.toJSON {
+          providers.m365 = {
+            baseUrl = base;
+            api = "openai-completions";
+            # The proxy is unauthenticated on localhost; pi just wants a value.
+            apiKey = "not-needed";
+            compat = {
+              supportsDeveloperRole = false;
+              supportsReasoningEffort = false;
+              supportsUsageInStreaming = false;
+            };
+            # image input: the proxy uploads them to M365 the way the web
+            # client does, which is also how generate_image's result is seen.
+            models = map (id: { inherit id; name = "${id} (M365)"; input = [ "text" "image" ]; }) cfg.models;
+          };
+        };
+
+        home.file.".pi/agent/extensions/m365-image.ts".source = pkgs.replaceVars ./m365-pi-image.ts {
+          endpoint = "${base}/images/generations";
+        };
+      };
+
+      services.t3code.providers.pi = lib.mkIf config.services.t3code.enable true;
+    }))
+    ]);
   };
 }

@@ -1313,11 +1313,11 @@
         "pnpm2nix": "pnpm2nix"
       },
       "locked": {
-        "lastModified": 1795303987,
-        "narHash": "sha256-uvGsDILKllUP7kOKI1hNKj7LJrQ/VdbCBGLjaRQbob4=",
+        "lastModified": 1795305964,
+        "narHash": "sha256-lmSgWyGoBUTFWd4SBfV/dWXdNjd0Pw8mPZJane3lFWA=",
         "owner": "cramt",
         "repo": "m365-copilot-proxy",
-        "rev": "c4b2ef43f28f9a4972f8029112a491468a4fea7c",
+        "rev": "4cd7d7692ba3ed7eaa5ad139c812073c2e38a65d",
         "type": "github"
       },
       "original": {
@@ -1364,11 +1364,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795267343,
-        "narHash": "sha256-TGOjtPLjGFL6Jynhtd29t7eIjErj5DRbkk2hGs6fKxQ=",
+        "lastModified": 1795306950,
+        "narHash": "sha256-7xNIfciVP0emq1LSsBSyQjAP4tsq0hIP0EDWjCzdYMQ=",
         "owner": "cramt",
         "repo": "my-nixpkgs",
-        "rev": "6e4895e2edbe7640e1e9a35e99ffc6ee508a17db",
+        "rev": "cb581432a71885458cb07fe63df0ed79e17112b4",
         "type": "github"
       },
       "original": {
