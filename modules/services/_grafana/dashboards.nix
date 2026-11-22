@@ -113,6 +113,11 @@
       };
     });
 
+  # An account's 7-day surplus over even pace, and the account reset-first
+  # routing spends next. Kept in step with insight-driver's gate.
+  surplus = ''cliproxy_quota_remaining_ratio{window="seven_day"} - (cliproxy_quota_reset_timestamp_seconds{window="seven_day"} - time()) / 604800'';
+  spentNext = ''bottomk(1, cliproxy_quota_reset_timestamp_seconds{window="seven_day"} and on(email) (cliproxy_quota_remaining_ratio{window="seven_day"} > 0.05))'';
+
   # A threshold drawn as a dashed line next to the value it gates.
   threshold = name: {
     matcher = {
@@ -864,29 +869,59 @@ in {
         timeFrom = "48h";
         format = "HH:mm";
       })
-      # The gate's 7-day surplus only looks at the current window; this asks the
-      # same question of whatever range is on screen. 1 - remaining climbs like
-      # a counter and drops to 0 at each window reset, so increase() over it is
-      # what the pool burned in the trailing range, across resets. The exporter
-      # sometimes reads 0 for a fresh window (half an hour on 2026-10-19), which
-      # increase() would take as a whole week burned; max_over_time drops
-      # glitches shorter than an hour, at the cost of showing real burn late.
+      # The same surplus the insight gate decides on, per account: what's left
+      # minus the share of the window still to run. A trailing "used vs allowed
+      # over the range" pool line read negative while an account sat on quota
+      # it was about to lose, which is when the batches rightly start.
+      # "spent next" is the account cli-proxy-api's reset-first routing sends
+      # new sessions to (soonest 7-day reset with any left), the gate's own
+      # query.
       (timeseries {
         title = "Pace";
-        description = "Usage the trailing dashboard range allows at even pace (range / 1 week per account), minus what the pool actually used, in account-weeks. Above 0 is banked, below is burning faster than the week allows.";
+        description = "Per account: 7-day share left minus the share of the window still to run, in account-weeks. Above 0 is banked, below is burning faster than the week allows. \"spent next\" is the account new sessions go to; insight batches start when it's above the gate's threshold.";
         w = 24;
         fieldConfig.defaults.decimals = 2;
         queries = [
           {
-            expr = ''sum($__range_s / 604800 - increase((1 - max_over_time(cliproxy_quota_remaining_ratio{window="seven_day"}[1h]))[$__range:5m]))'';
-            legend = "pool";
+            expr = surplus;
+            legend = "{{email}}";
+          }
+          {
+            expr = "sum(${surplus} and on(email) ${spentNext})";
+            legend = "spent next";
           }
           {
             expr = "vector(0)";
             legend = "even pace";
           }
+          {
+            expr = "insight_driver_gate_min_surplus";
+            legend = "batch threshold";
+          }
         ];
-        fieldConfig.overrides = [(threshold "even pace")];
+        fieldConfig.overrides = [
+          (threshold "even pace")
+          (threshold "batch threshold")
+          {
+            matcher = {
+              id = "byName";
+              options = "spent next";
+            };
+            properties = [
+              {
+                id = "custom.lineWidth";
+                value = 3;
+              }
+              {
+                id = "custom.lineStyle";
+                value = {
+                  fill = "dot";
+                  dash = [2 6];
+                };
+              }
+            ];
+          }
+        ];
       })
       (timeseries {
         title = "Quota remaining";
@@ -1031,7 +1066,7 @@ in {
       })
       (latest {
         title = "Gate surplus";
-        description = "Pool 7-day surplus over even pace at the last check; a batch needs the threshold.";
+        description = "7-day surplus over even pace of the account spent next, minus the threshold, at the last check; a batch needs it above 0.";
         w = 4;
         queries = [{expr = "insight_driver_gate_surplus - insight_driver_gate_min_surplus";}];
         options.textMode = "value";
@@ -1105,7 +1140,7 @@ in {
       })
       (timeseries {
         title = "7-day surplus vs threshold";
-        description = "What's left minus the share of the window still to run, summed over the pool, at each gate check.";
+        description = "What's left minus the share of the window still to run, for the account the proxy spends next, at each gate check.";
         queries = [
           {
             expr = "insight_driver_gate_surplus";
