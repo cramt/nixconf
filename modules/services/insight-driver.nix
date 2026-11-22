@@ -14,8 +14,12 @@
 # pace" is per window, not in total: an account's 7-day surplus is what's left
 # minus the share of the window still to run, so idle nights bank surplus and
 # the batches spend only that, never what a busy week of hand-driven work
-# needs. The surplus is summed over the pool because an exhausted account's
-# demand spills onto the others. One batch measured 2026-10-13 cost ~0.06 of a
+# needs. The surplus is the account the proxy spends next: cli-proxy-api's
+# reset-first unit sends new sessions to the account whose 7-day window
+# resets soonest, so that account's surplus is what a batch would use, and
+# usage it leaves at its reset is lost. Summed over the pool it went down as
+# the expiring account was spent and stopped the batches exactly when quota
+# was going to waste. One batch measured 2026-10-13 cost ~0.06 of a
 # 7-day window and ~0.4 of a 5-hour one, which is what the defaults leave room
 # for.
 #
@@ -78,7 +82,7 @@
           ($batches | last) as $last |
           gauge("gate_timestamp_seconds"; "When the gate last decided."; $gate.at),
           gauge("gate_go"; "1 if the last gate check started a batch."; $gate.go),
-          gauge("gate_surplus"; "Pool 7-day surplus over even pace at the last check, in account-weeks."; $gate.surplus),
+          gauge("gate_surplus"; "7-day surplus over even pace of the account spent next, at the last check, in account-weeks."; $gate.surplus),
           gauge("gate_five_hour"; "Best usable 5-hour share left at the last check."; $gate.fiveHour),
           gauge("gate_min_surplus"; "The surplus the gate wants."; $gate.minSurplus),
           gauge("gate_min_five_hour"; "The 5-hour share the gate wants."; $gate.minFiveHour),
@@ -179,15 +183,17 @@
             | jq -r '.data.result[0].value[1] // empty'
         }
         age=$(q 'time() - min(cliproxy_quota_last_success_timestamp_seconds)') || age=""
-        slack=$(q 'sum(cliproxy_quota_remaining_ratio{window="seven_day"} - (cliproxy_quota_reset_timestamp_seconds{window="seven_day"} - time()) / 604800)') || slack=""
+        # The account reset-first routes to: soonest 7-day reset with any left.
+        next='bottomk(1, cliproxy_quota_reset_timestamp_seconds{window="seven_day"} and on(email) (cliproxy_quota_remaining_ratio{window="seven_day"} > 0.05))'
+        slack=$(q "sum((cliproxy_quota_remaining_ratio{window=\"seven_day\"} - (cliproxy_quota_reset_timestamp_seconds{window=\"seven_day\"} - time()) / 604800) and on(email) $next)") || slack=""
         # A fresh 5-hour window has no reset time yet, so it reads 1 with no surplus to compute.
-        five=$(q 'max(cliproxy_quota_remaining_ratio{window="five_hour"} and on(email) (cliproxy_quota_remaining_ratio{window="seven_day"} > 0.05))') || five=""
+        five=$(q "max(cliproxy_quota_remaining_ratio{window=\"five_hour\"} and on(email) $next)") || five=""
         decide "$(awk -v age="$age" -v slack="$slack" -v five="''${five:-0}" \
           -v minSlack=${toString cfg.minSlack} -v minFive=${toString cfg.minFiveHour} 'BEGIN {
             if (age == "" || slack == "") { print "skip: no quota metrics in prometheus"; exit }
             if (age > 1800) { printf "skip: quota metrics are %ds old\n", age; exit }
             ok = slack >= minSlack && five >= minFive
-            printf "%s: 7-day pool surplus %.2f (want %.2f), best 5-hour %.2f (want %.2f)\n",
+            printf "%s: next account 7-day surplus %.2f (want %.2f), best 5-hour %.2f (want %.2f)\n",
               ok ? "go" : "skip", slack, minSlack, five, minFive
           }')"
         # One new batch a tick, so the next start reads quota that counts this
@@ -258,7 +264,7 @@
       minSlack = lib.mkOption {
         type = lib.types.float;
         default = 0.1;
-        description = "Pool-wide 7-day surplus over even pace, in account-weeks, needed to start a batch.";
+        description = "7-day surplus over even pace of the account the proxy spends next (soonest reset), in account-weeks, needed to start a batch.";
       };
       minFiveHour = lib.mkOption {
         type = lib.types.float;

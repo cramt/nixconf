@@ -164,6 +164,61 @@
           OnUnitActiveSec = "1m";
         };
       };
+      # fill-first drains accounts in a fixed order, so an account whose 7-day
+      # window resets tomorrow could sit at 65% while the one it drained ran
+      # past even pace and had to idle for days. Spend whatever expires first:
+      # the account with the soonest 7-day reset, if it has anything left,
+      # gets the top priority tier, which fill-first always tries first. When
+      # it hits a cap, CPA cools it down and falls through to the next tier.
+      # No quota metrics means everyone goes back to 0, plain fill-first.
+      systemd.services.cli-proxy-api-reset-first = lib.mkIf config.services.prometheus.enable {
+        description = "Give the Claude account whose 7-day window resets soonest the top routing priority";
+        after = ["cli-proxy-api-management-key.service"];
+        path = [pkgs.curl pkgs.jq];
+        serviceConfig = {
+          Type = "oneshot";
+          User = cfg.user;
+        };
+        script = let
+          prometheus = "http://127.0.0.1:${toString config.port-selector.ports.prometheus}";
+          mgmt = "http://127.0.0.1:${toString hmCfg.myHomeManager.cli-proxy-api.port}/v0/management";
+        in ''
+          set -euo pipefail
+          key=$(cat ${keyFile})
+          q() {
+            curl -fsS --max-time 10 ${prometheus}/api/v1/query --data-urlencode "query=$1" |
+              jq -c '[.data.result[] | {key: .metric.email, value: (.value[1] | tonumber)}] | from_entries'
+          }
+          fresh=$(curl -fsS --max-time 10 ${prometheus}/api/v1/query \
+            --data-urlencode 'query=time() - min(cliproxy_quota_last_success_timestamp_seconds) < 1800' |
+            jq '.data.result | length > 0')
+          resets=$(q 'cliproxy_quota_reset_timestamp_seconds{window="seven_day"}')
+          left=$(q 'cliproxy_quota_remaining_ratio{window="seven_day"}')
+          first=$(jq -rn --argjson fresh "$fresh" --argjson r "$resets" --argjson l "$left" '
+            if $fresh then
+              [$r | to_entries[] | select(($l[.key] // 0) > 0.05)] | min_by(.value) | .key // ""
+            else "" end')
+          echo "soonest reset with quota left: ''${first:-none}"
+          curl -fsS --max-time 10 -H "Authorization: Bearer $key" ${mgmt}/auth-files |
+            jq -c --arg first "$first" '.files[] | select(.provider == "claude")
+              | {name, want: (if .email == $first then 10 else 0 end), have: (.priority // 0)}
+              | select(.want != .have)' |
+            while read -r f; do
+              curl -fsS --max-time 10 -X PATCH -H "Authorization: Bearer $key" \
+                -H 'Content-Type: application/json' \
+                --data "$(jq -c '{name, priority: .want}' <<<"$f")" ${mgmt}/auth-files/fields >/dev/null
+              echo "priority $(jq -r '"\(.have) -> \(.want)"' <<<"$f")"
+            done
+        '';
+      };
+      systemd.timers.cli-proxy-api-reset-first = lib.mkIf config.services.prometheus.enable {
+        wantedBy = ["timers.target"];
+        timerConfig = {
+          OnBootSec = "2m";
+          OnUnitActiveSec = "5m";
+        };
+      };
+
       myNixOS.services.metrics.textfiles = lib.mkIf config.myNixOS.services.alerts.enable {
         cli-proxy-api-tokens = "${tokenDir}/tokens.prom";
       };
