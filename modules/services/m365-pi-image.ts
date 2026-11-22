@@ -59,6 +59,25 @@ const generateImage = defineTool({
   },
 });
 
+// T3 Code's Pi bridge activates every one of its ~80 MCP tools up front for
+// openai-completions models (its mcpExtensionSource.ts, reconcileDiscovery),
+// because some gateways drop calls to undeclared tools. M365 Copilot can't
+// carry that: with them declared, gpt-5.5-think-deeper answered "no tool is
+// available" 3/3 times, against reliable tool calls with Pi's own five. So on
+// the m365 provider, drop them again. This handler runs after T3's because
+// CLI extensions (T3 passes its bridge with -e) load before discovered ones.
+const T3_TOOL_PREFIXES = ["mcp__t3-code__", "mcp__t3_code__"];
+
+function dropT3ToolsOnM365(pi: ExtensionAPI, ctx: { model?: { provider?: string } }) {
+  if (ctx.model?.provider !== "m365") return;
+  const active = pi.getActiveTools();
+  const kept = active.filter((name) => !T3_TOOL_PREFIXES.some((p) => name.startsWith(p)));
+  if (kept.length !== active.length) pi.setActiveTools(kept);
+}
+
 export default function (pi: ExtensionAPI) {
   pi.registerTool(generateImage);
+  pi.on("session_start", (_event, ctx) => dropT3ToolsOnM365(pi, ctx));
+  pi.on("model_select", (_event, ctx) => dropT3ToolsOnM365(pi, ctx));
+  pi.on("before_agent_start", (_event, ctx) => dropT3ToolsOnM365(pi, ctx));
 }
