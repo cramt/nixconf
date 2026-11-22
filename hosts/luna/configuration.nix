@@ -57,7 +57,11 @@
       };
       others.cramt = "op://Homelab/GitHub/cramtToken";
     };
-    services.m365-copilot-proxy.enable = true;
+    services.m365-copilot-proxy = {
+      enable = true;
+      # pi on M365 with image gen, as a T3 provider any thread can delegate to.
+      pi.user = "cramt";
+    };
     gnupg.enable = true;
     nvidia.enable = true;
     docker = {
