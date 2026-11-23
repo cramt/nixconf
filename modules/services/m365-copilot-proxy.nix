@@ -90,7 +90,18 @@
         # Full untruncated debug logging to
         # /var/lib/m365-copilot-proxy/.config/opencode-m365/debug.log,
         # so failed requests can be reverse engineered from complete payloads.
-        environment.M365_TRACE = "1";
+        environment = {
+          M365_TRACE = "1";
+          # StreamHub turns don't draw on the account's 50-turn daily counter
+          # (TotalTurnUsageDaily); Chathub turns cost 1 each (proxy docs §7, measured
+          # 2026-11-23). It still refuses at 0, and tools go agent-less (hypotheses
+          # §49 F144). Back to Chathub (drop these three) if Microsoft starts metering it.
+          M365_TRANSPORT = "streamhub";
+          # StreamHub defaults to `officeweb` + Premium, which refuses this
+          # non-premium seat with InvalidCopilotLicense (hypotheses §49 F145).
+          M365_SCENARIO = "OfficeWebIncludedCopilot";
+          M365_LICENSE_TYPE = "Starter";
+        };
       };
 
       # Secret co-located with the service so it's only fetched on hosts
