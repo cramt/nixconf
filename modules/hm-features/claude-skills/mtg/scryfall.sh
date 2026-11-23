@@ -101,7 +101,7 @@ def karsten99($mv; $n):
   elif $n == 2 then ([30,30,30,28,26,23,22,20][[$mv,7]|min])
   elif $n == 3 then ([36,36,36,36,33,30,28,26][[$mv,7]|min])
   else ([39,39,39,39,39,36][[$mv,5]|min]) end;
-def pips($c): (.mana_cost // "") | split(" // ")[0]
+def pips($c): ((.mana_cost // "") | split(" // ")[0] // "")
   | [ scan("\\{[^}]*\\}") | select(test($c)) ] | length;
 JQ
 )
@@ -422,7 +422,7 @@ cmd_check() {
                 | ($cmdci | map(. as $k | $r | pips($k)) | map(select(. > 0)) | length) as $ncol
                 | {name: $r.name, cost: $r.mana_cost,
                    # X costs price at X=2 (the Karsten "typical X" rule), not at X=0.
-                   need: (karsten99(($r.cmc + 2 * ([$r.mana_cost | split(" // ")[0] | scan("\\{X\\}")] | length)) | floor; $r | pips($c))
+                   need: (karsten99(($r.cmc + 2 * ([($r.mana_cost // "") | split(" // ")[0] // "" | scan("\\{X\\}")] | length)) | floor; $r | pips($c))
                           # Karsten gold rule: +1 to each colour of a multicolour card.
                           + (if $ncol > 1 and ($r | pips($c)) > 0 then 1 else 0 end))} ]
               | max_by(.need) // {need: 0}
