@@ -92,7 +92,13 @@
         );
         AGENT_BROWSER_SKILLS_DIR = "${pkgs.agent-browser}/share/agent-browser/skills";
         SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+        # Every rezip terraform root kept its own ~1G copy of the AWS provider;
+        # ~25 of them added up to 33G on mars. A shared cache stores each
+        # provider version once and hardlinks/symlinks it into .terraform.
+        TF_PLUGIN_CACHE_DIR = "${config.xdg.cacheHome}/terraform/plugins";
       };
+      # terraform refuses to create the cache dir itself
+      xdg.cacheFile."terraform/plugins/.keep".text = "";
     };
   };
 }

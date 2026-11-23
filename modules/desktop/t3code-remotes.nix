@@ -21,6 +21,12 @@
 # give the app ~/.t3: the server holds a lock on it and the app quits with
 # "This T3 home is unavailable". The app gets its own T3CODE_HOME there, and the
 # local server is added as one more connection, like luna.
+#
+# `networkAccess` flips the app's own "Network access" and "Tailscale HTTPS"
+# switches. They live in <appHome>/userdata/desktop-settings.json, which the
+# managed policy can't lock, so the same login unit merges them in. The app's
+# server then runs `tailscale serve` itself, which needs the user as
+# tailscale operator.
 { ... }: {
   flake.nixosModules."desktop.t3code-remotes" = { config, lib, pkgs, ... }:
   let
@@ -126,6 +132,15 @@
           | openssl enc -aes-128-cbc -K "$key" -iv "$iv"; } | base64 -w0)
         jq -n --arg c "$encrypted" '{version: 1, encryptedCatalog: $c}' > "$catalog.new"
         mv "$catalog.new" "$catalog"
+        ${lib.optionalString cfg.networkAccess.enable ''
+
+          settings="$dir/desktop-settings.json"
+          [ -s "$settings" ] || echo '{}' > "$settings"
+          jq --argjson port ${toString cfg.networkAccess.servePort} \
+            '. + {serverExposureMode: "network-accessible", tailscaleServeEnabled: true, tailscaleServePort: $port}' \
+            "$settings" > "$settings.new"
+          mv "$settings.new" "$settings"
+        ''}
       '';
     };
   in {
@@ -135,6 +150,19 @@
         type = lib.types.str;
         default = "cramt";
         description = "Desktop user whose T3 Code app gets the connections.";
+      };
+      networkAccess = {
+        enable = lib.mkEnableOption ''
+          the app's own server on the network: bound on every interface (only
+          the trusted LAN and tailnet get past the firewall) and published
+          over Tailscale Serve as https://<host>.<tailnet>:<servePort>
+        '';
+        servePort = lib.mkOption {
+          type = lib.types.port;
+          # 443 on the tailnet name is tailnet-https's caddy wherever the
+          # fleet server runs, and the app leaves Serve off on a taken port.
+          default = 8443;
+        };
       };
       servers = lib.mkOption {
         type = lib.types.attrsOf (lib.types.submodule ({ name, ... }: {
@@ -182,6 +210,8 @@
         enable = true;
         homes = [{ path = appHome; inherit (cfg) user; }];
       };
+
+      services.tailscale.extraSetFlags = lib.mkIf cfg.networkAccess.enable ["--operator=${cfg.user}"];
 
       myNixOS.secrets = lib.mapAttrs' (name: r:
         lib.nameValuePair (secretName name) {
