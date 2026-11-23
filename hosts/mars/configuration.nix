@@ -52,7 +52,10 @@
   myNixOS = {
     gnupg.enable = true;
     onepassword.enable = true;
-    t3code-remotes.enable = true;
+    t3code-remotes = {
+      enable = true;
+      networkAccess.enable = true;
+    };
     docker.enable = true;
     bluetooth.enable = true;
     intel-gpu.enable = true;
