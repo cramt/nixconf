@@ -57,8 +57,8 @@
       "type": "Container",
       "image_name": "wolveix/satisfactory-server",
       "image_tag": "latest",
-      "image_digest": "sha256:ac252dba41653eb21c6feed94b577f98fa152f5792b1aeff2ce11fe364355137",
-      "hash": "sha256-7dIKtKIMky0nwwyXxeZHue2woHNqmJM+32NHA6egpLQ="
+      "image_digest": "sha256:e33f39a824fa2093e1e2e27954be8df0f7276a816d93f5da8cdc1ddcd0d8e4d6",
+      "hash": "sha256-YdbRh7zpkVg/+o6IU8+QgA9gGaCU/hmTLbzQd566pZE="
     },
     "zed-spade": {
       "type": "Git",
