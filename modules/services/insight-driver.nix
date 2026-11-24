@@ -25,8 +25,9 @@
 #
 # A product is skipped while T3 Code lists a live thread in its clone's
 # project (a batch runs for hours; the webhook would happily start a second
-# writer in the same checkout), and Insight while its driver is stopped for a
-# human. A
+# writer in the same checkout), Insight while its driver is stopped for a
+# human, and any product whose last three batches started within 30 minutes
+# (they are dying at once; held 3h from the last start). A
 # batch is alive exactly as long as its thread, so there is no timeout: a slow
 # batch is never taken for dead, and a dead one is found on the next tick. For
 # a stop, read escalations.md in the state dir, then clear it with the
@@ -172,7 +173,21 @@
           live=$(jq -r '[.[] | select(.parentThreadId == null)
             | select((.status | IN("preparing", "queued", "starting", "running", "waiting"))
                      or (.pendingBackgroundTasks | length) > 0) | .title] | join(", ")' <<<"$threads")
-          if [ -n "$live" ]; then busy+=("$product live ($live)"); else candidates+=("$product"); fi
+          # A batch runs ~2h and a live thread blocks the next start, so three
+          # starts within 30 minutes are three threads that ended at once:
+          # something in the clone makes every batch give up. On 2026-11-24 a
+          # dirty tree left by a dead batch did that 45 times in six hours.
+          # Hold the product 3h from the last start; it clears by itself, and
+          # the overseer sees the verdict in the gate log.
+          stalled=$(jq -r --argjson now "$(date +%s)" '
+            [.[] | select(.parentThreadId == null) | .createdAt | sub("\\.[0-9]+Z$"; "Z") | fromdate]
+            | sort | reverse
+            | if length >= 3 and .[0] - .[2] < 1800 and $now - .[0] < 10800
+              then "3 batches started within \((.[0] - .[2]) / 60 | floor) min, the last \(($now - .[0]) / 60 | floor) min ago"
+              else empty end' <<<"$threads")
+          if [ -n "$live" ]; then busy+=("$product live ($live)")
+          elif [ -n "$stalled" ]; then busy+=("$product stalling ($stalled); read its latest thread")
+          else candidates+=("$product"); fi
         done
         if [ "''${#candidates[@]}" -eq 0 ]; then
           decide "skip: nothing free: $(IFS=';'; echo "''${busy[*]}")"
