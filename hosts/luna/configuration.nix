@@ -225,7 +225,7 @@
         5. Always rewrite state.md with what you saw today, keeping its format.
       '';
     };
-    # Daily look at the unofficial GTA VI PC ports (Leonida and friends),
+    # Daily look at the unofficial GTA VI PC ports (Xbox2Windows and friends),
     # DMing only when something moved. Drop it once one of them is playable,
     # gets taken down for good, or Rockstar ships the PC version.
     scheduledTasks.leonida-watch = {
@@ -235,34 +235,39 @@
       model.model = "claude-sonnet-5-5";
       prompt = ''
         Watch the unofficial GTA VI PC ports for progress toward the game being
-        playable on PC: ItsNotRexed/Leonida (static recomp, RDNA2 shaders to
-        SPIR-V/Vulkan), R0Y00/Xbox2Windows (static recomp to C++, shaders to
-        DXIL) and LooperSalty/AnyXboxX (GDK HLE emulator). All target the Xbox
-        Series 1.0.2.1 build whose executable (game_scarlett_master.exe)
-        Cyberleek released on 2026-11-23. This is read-only research: change
-        nothing in this repo, download no game files, build or run nothing
-        from these repos, and post nothing on GitHub.
+        playable on PC. Tracked: R0Y00/Xbox2Windows (static recomp to C++,
+        shaders to DXIL; startup progress in its issue #870),
+        ivall/xcl (general Xbox Series compatibility layer; its README lists
+        GTA VI unnamed as "a newer retail game"), LooperSalty/AnyXboxX (GDK
+        HLE emulator), ThatRecompDev/five-star-recomp, and Leonida (ItsNotRexed/Leonida, deleted by
+        its owner 2026-11-23; watch for a revival under ProjectLeonida or
+        elsewhere, and its surviving forks such as ASTROWwwW/Leonida). All
+        target the Xbox Series 1.0.2.1 build whose executable
+        (game_scarlett_master.exe) Cyberleek released on 2026-11-23. Add any
+        new project that reaches a first frame. This is read-only research:
+        change nothing in this repo, download no game files, build or run
+        nothing from these repos, and post nothing on GitHub.
 
         1. Read ~/.local/state/leonida-watch/state.md, the last state seen.
         2. Collect the current state:
-           - With gh, for each repo: whether it still exists (a 404 or a
-             451 means a takedown), head sha, stars, forks, open issues, and
-             the README status table (Leonida "Project status", Xbox2Windows
-             "Current results and open work", AnyXboxX "Translation progress"
-             and "Project progress").
-           - Leonida: whether game/xbox-1.0.2.1.json pins a sha256 for the
-             executable, and the most-updated issues and PRs about boot,
-             the executable, D3D12 traces or a first frame.
-           - Takedowns: new notices in github/dmca naming any of the three,
-             and any new mirror (Codeberg, Gitea, GitLab) if one went down.
-           - The web: news on the ports, on whether the executable has been
-             verified as genuine or found tampered, on Take-Two or Rockstar
-             legal action, on a PS5 GTA VI dump, and on an official PC
-             release date.
-        3. Compare with state.md. Substantive changes: the game boots further
-           than before (a first D3D12 call, a first presented frame,
-           in-game, playable); a README status row changes state; a repo
-           disappears, gets a DMCA notice or moves; the executable is shown
+           - With gh, for each repo: whether it still exists (a 404 is the
+             owner deleting it, a 451 or "unavailable" page is a takedown),
+             head sha, stars, forks, open issues, and its README status
+             section.
+           - The furthest point each one gets the real game to (pipeline
+             creation, first frame, menus, loading, in-game, playable), from
+             their own issues and READMEs, preferring evidence such as
+             screenshots and logs over claims.
+           - Takedowns: new notices in github/dmca naming any of them, and
+             any new mirror (Codeberg, Gitea, GitLab) if one went down.
+           - The web, including https://vuyp.github.io/gta6-pc-race/: news
+             on the ports, on whether the executable has been verified as
+             genuine or found tampered, on Take-Two or Rockstar legal action,
+             on a PS5 GTA VI dump, and on an official PC release date.
+        3. Compare with state.md. Substantive changes: any project gets the
+           game further than before (menus, loading, in-game, playable); a
+           README status row changes state; a repo disappears, gets a DMCA
+           notice, moves or comes back; the executable is shown
            genuine or tampered; Rockstar announces or dates a PC version; a
            PS5 dump goes public. New commits, star counts or updatedAt bumps
            with nothing behind them don't count.
