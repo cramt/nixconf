@@ -29,7 +29,12 @@
           (lib.hiPrio gcc)
           yarn
           nodejs_24
-          pnpm
+          # pnpm 12 can't switch down to a `packageManager: pnpm@11.x` pin: it looks up
+          # `@pnpm/exe.linux-x64`, but 11.x ships as `@pnpm/linux-x64` ("no
+          # @pnpm/exe.linux-x64 native binary was found for this host"). No upstream
+          # issue found as of 2026-11-24. Go back to `pnpm` once rezip/monorepo pins
+          # pnpm 12 or pnpm 12 can switch to 11.x.
+          pnpm_11
           # One toolchain for everything, including the wasm32-wasip2 target Zed
           # needs to build dev extensions (see the fenix input in flake.nix).
           (let
