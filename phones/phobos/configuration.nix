@@ -60,6 +60,31 @@
     ${pkgs.microg-re.packageName} = pkgs.microg-re;
   };
 
+  # Gboard buzzes on every key whatever the system's keyboardVibration says, and
+  # Nixup has no option for an app's own preferences. Gboard keeps them in
+  # device-protected storage; a file it hasn't written yet (fresh install, never
+  # opened) is left alone, as there's nothing to fix until it exists.
+  systemd.services.gboard-no-vibrate = {
+    description = "Gboard: no haptic feedback on keypress";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      f=/data/user_de/0/com.google.android.inputmethod.latin/shared_prefs/com.google.android.inputmethod.latin_preferences.xml
+      [ -f "$f" ] || { echo "Gboard has no preferences yet"; exit 0; }
+      grep -q '<boolean name="enable_vibrate_on_keypress" value="false" />' "$f" && exit 0
+      # Its running copy would write the old value back over the edit.
+      am force-stop com.google.android.inputmethod.latin
+      if grep -q 'name="enable_vibrate_on_keypress"' "$f"; then
+        sed 's|<boolean name="enable_vibrate_on_keypress" value="true" />|<boolean name="enable_vibrate_on_keypress" value="false" />|' "$f" > "$f.new"
+      else
+        sed 's|</map>|    <boolean name="enable_vibrate_on_keypress" value="false" />\n</map>|' "$f" > "$f.new"
+      fi
+      # cat over the original keeps its owner and SELinux label.
+      cat "$f.new" > "$f" && rm "$f.new"
+      echo "keypress vibration off"
+    '';
+  };
+
   environment.systemPackages = with pkgs; [
     git
     htop
