@@ -19,6 +19,9 @@
     chargingSound = false;
   };
 
+  # OxygenOS's own key for the back gesture's buzz; touchVibration would kill every haptic.
+  android.settings.raw.secure.gesture_side_back_vibrate_enable = 0;
+
   # nixup-rebuild applies over adb until ssh is up, so a rebuild must never turn it off.
   android.settings.developer = {
     enable = true;
