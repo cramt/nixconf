@@ -17,6 +17,7 @@
     dialpadTones = false;
     screenLockSound = false;
     chargingSound = false;
+    keyboardVibration = false;
   };
 
   # OxygenOS's own key for the back gesture's buzz; touchVibration would kill every haptic.
