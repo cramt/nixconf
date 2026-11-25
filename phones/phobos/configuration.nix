@@ -13,8 +13,9 @@
   # nothing else leans on; com.oplus.* services and the Google apps worth using
   # (Maps, Gmail, Photos, Calendar, Messages, Drive, Auto, Wallet) stay. The
   # preloads OnePlus drops onto the user partition at first boot (Amazon,
-  # Booking, Facebook, LinkedIn, Netflix, Fitbit, OnePlus Store/Forums, ...)
-  # aren't system apps, so debloat refuses them: those were uninstalled by hand.
+  # Booking, Facebook, LinkedIn, Netflix, Fitbit, OnePlus Store/Forums/Notes/
+  # Recorder/Clone Phone/widgets, ...) and setup's Play pushes (TikTok, Block
+  # Blast) aren't system apps, so debloat refuses them: uninstalled by hand.
   android.apps = lib.genAttrs [
     "com.facebook.appmanager"
     "com.facebook.services"
