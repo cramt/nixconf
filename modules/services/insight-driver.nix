@@ -27,7 +27,10 @@
 # project (a batch runs for hours; the webhook would happily start a second
 # writer in the same checkout), Insight while its driver is stopped for a
 # human, and any product whose last three batches started within 30 minutes
-# (they are dying at once; held 3h from the last start). A
+# (they are dying at once; held 3h from the last start). A product's newest
+# thread that failed on a transient API or network error is woken in place
+# (at most 3 times, within 6h) instead of starting a new batch over its
+# uncommitted work. A
 # batch is alive exactly as long as its thread, so there is no timeout: a slow
 # batch is never taken for dead, and a dead one is found on the next tick. For
 # a stop, read escalations.md in the state dir, then clear it with the
@@ -185,6 +188,24 @@
             | if length >= 3 and .[0] - .[2] < 1800 and $now - .[0] < 10800
               then "3 batches started within \((.[0] - .[2]) / 60 | floor) min, the last \(($now - .[0]) / 60 | floor) min ago"
               else empty end' <<<"$threads")
+          # A batch whose turn died on a network blip (c23 on 2026-11-25, DNS
+          # EAI_AGAIN mid-write) leaves its work uncommitted in the clone, and
+          # a fresh batch would adopt that tree without knowing what it was.
+          # Waking the dead thread keeps its context. Only the newest thread,
+          # only a transient error, at most 3 wakes (runCount), within 6h.
+          dead=$(jq -r --argjson now "$(date +%s)" '
+            [.[] | select(.parentThreadId == null)] | sort_by(.createdAt) | last // empty
+            | select(.status == "failed"
+                     and $now - (.updatedAt | sub("\\.[0-9]+Z$"; "Z") | fromdate) < 21600)
+            | .threadId' <<<"$threads")
+          if [ -z "$live" ] && [ -n "$dead" ] \
+            && ${t3} thread show --base-dir ${lib.escapeShellArg config.services.t3code.dataDir} \
+                 "$dead" --messages 1 --json \
+               | jq -e '.thread.runCount < 4 and (.messages[-1].text // "" | test("Can.t reach the API server|EAI_AGAIN|ECONNRESET|ETIMEDOUT|socket hang up|overloaded_error|API Error: 5[0-9][0-9]"))' >/dev/null; then
+            ${t3} thread send --base-dir ${lib.escapeShellArg config.services.t3code.dataDir} "$dead" \
+              "Your turn died on a transient API or network error; it's back. Your work is as you left it in the tree. Carry on from where you were." >/dev/null \
+              && live="woken after a transient API error"
+          fi
           if [ -n "$live" ]; then busy+=("$product live ($live)")
           elif [ -n "$stalled" ]; then busy+=("$product stalling ($stalled); read its latest thread")
           else candidates+=("$product"); fi
