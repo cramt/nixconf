@@ -314,6 +314,21 @@
 
         transmission = {
           enable = true;
+          # The FritzBox 6670 routing all of this has stalled under load (19 min
+          # outage 2026-11-25, softirq-bound, no log entry). Peer port isn't
+          # forwarded, so every peer/DHT flow is an outbound NAT session on it:
+          # keep the session count and uplink share bounded.
+          extraSettings = {
+            # Only queued torrents stop announcing; with ~400 torrents an
+            # unbounded seed set means hundreds of tracker/DHT flows.
+            seed-queue-enabled = true;
+            seed-queue-size = 20;
+            peer-limit-global = 120;
+            peer-limit-per-torrent = 30;
+            # kB/s; ~160 Mbit of the 550 Mbit cable uplink.
+            speed-limit-up-enabled = true;
+            speed-limit-up = 20000;
+          };
         };
         mediaDir = lib.mkDefault "/pool/media";
         stateDir = lib.mkDefault "/pool/media/.state/nixarr";
