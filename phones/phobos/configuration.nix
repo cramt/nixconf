@@ -2,13 +2,32 @@
 # (tailscale on the fleet tailnet, ssh) come from nixupModules; this file is only what's
 # specific to the phone. Anything left unset stays as set by hand on the phone.
 #
-# Once it's rooted, `nix run --inputs-from . nixup#nixup-config -- create` writes
-# a config from what it has now (apps, settings, debloat list); merge the parts
+# OnePlus Nord CE5 (CPH2719, EU firmware), rooted with Magisk on init_boot.
+# `nix run .#nixup-config -- create` writes a config from what it has now (apps, settings, debloat list); merge the parts
 # worth keeping into here. Every option, with comments:
 # https://github.com/by-architect/Nixup/blob/main/templates/default/configuration.nix
 { pkgs, ... }:
 {
   time.timeZone = "Europe/Copenhagen";
+
+  android.settings.display.darkMode = true;
+
+  android.settings.sound = {
+    touchSounds = false;
+    dialpadTones = false;
+    screenLockSound = false;
+    chargingSound = false;
+    keyboardVibration = false;
+  };
+
+  # OxygenOS's own key for the back gesture's buzz; touchVibration would kill every haptic.
+  android.settings.raw.secure.gesture_side_back_vibrate_enable = 0;
+
+  # nixup-rebuild applies over adb until ssh is up, so a rebuild must never turn it off.
+  android.settings.developer = {
+    enable = true;
+    usbDebugging = true;
+  };
 
   # Apps by repo, as package-name strings. Not pkgs.fdroid.<name>: those come
   # from the index the phone downloads, so they'd only evaluate under

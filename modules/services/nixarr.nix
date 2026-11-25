@@ -314,6 +314,30 @@
 
         transmission = {
           enable = true;
+          # Without a reachable port we can only dial seeders that are
+          # themselves reachable; small swarms (Trese, Yasuke, Onimusha) sat at
+          # 0 peers with 3 seeders announced. Setting it opens the firewall;
+          # the FritzBox forwards TCP+UDP 51413 to luna by hand (it exposes no
+          # UPnP/PCP, so transmission can't map it itself).
+          peerPort = 51413;
+          # The FritzBox 6670 routing all of this has stalled under load (19 min
+          # outage 2026-11-25, softirq-bound, no log entry). Every peer/DHT
+          # flow is a NAT session on it: keep the session count and uplink
+          # share bounded.
+          extraSettings = {
+            # Only queued torrents stop announcing; with ~400 torrents an
+            # unbounded seed set means hundreds of tracker/DHT flows.
+            seed-queue-enabled = true;
+            seed-queue-size = 20;
+            peer-limit-global = 120;
+            peer-limit-per-torrent = 30;
+            # kB/s; ~160 Mbit of the 550 Mbit cable uplink.
+            speed-limit-up-enabled = true;
+            speed-limit-up = 20000;
+            # nixarr hardcodes it off; plenty of seeders (libtorrent defaults)
+            # prefer uTP, and the peer caps above bound it like TCP.
+            utp-enabled = true;
+          };
         };
         mediaDir = lib.mkDefault "/pool/media";
         stateDir = lib.mkDefault "/pool/media/.state/nixarr";

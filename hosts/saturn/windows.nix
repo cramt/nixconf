@@ -73,6 +73,11 @@ in {
       ".config/git/config" = "${claude}/gitconfig";
     };
   };
+  # Floating windows: Super+G floats one window, and Super+Y turns tiling
+  # off for the workspace (it's PerWorkspace here), so that workspace's
+  # windows float, title bars and all. defenestrate's defaults leave Super+Y
+  # off, as the Linux side does.
+  cosmic.shortcuts."Super+y" = "ToggleTiling";
   # Keyboard and pointer as COSMIC has them (modules/hm-features/cosmic.nix),
   # in Windows' coarser steps. Acceleration is already off distro-wide.
   registry.defaultUser = {
