@@ -170,9 +170,18 @@
             ${n}) checkout=${lib.escapeShellArg c} ;;
             '') checkouts)}
           esac
-          threads=$(${t3} thread list --base-dir ${lib.escapeShellArg config.services.t3code.dataDir} \
-            --project "$checkout" --json) \
-            || decide "skip: could not list T3 Code threads"
+          # The listing fails now and then and passes on the next try (three
+          # misses in two hours on 2026-11-25, fifteen straight passes by hand
+          # right after), so a miss is retried before it costs the slot.
+          threads=""
+          for try in 1 2 3; do
+            threads=$(${t3} thread list --base-dir ${lib.escapeShellArg config.services.t3code.dataDir} \
+              --project "$checkout" --json) && break
+            echo "thread list failed (try $try)" >&2
+            threads=""
+            sleep 10
+          done
+          [ -n "$threads" ] || decide "skip: could not list T3 Code threads"
           live=$(jq -r '[.[] | select(.parentThreadId == null)
             | select((.status | IN("preparing", "queued", "starting", "running", "waiting"))
                      or (.pendingBackgroundTasks | length) > 0) | .title] | join(", ")' <<<"$threads")
