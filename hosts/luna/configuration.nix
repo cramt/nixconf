@@ -237,7 +237,7 @@
         Watch the unofficial GTA VI PC ports for progress toward the game being
         playable on PC. Tracked: R0Y00/Xbox2Windows (static recomp to C++,
         shaders to DXIL; startup progress in its issue #870),
-        ivall/xcl (general Xbox Series compatibility layer; its README lists
+        xcl-dev/xcl (formerly ivall/xcl; general Xbox Series compatibility layer; its README lists
         GTA VI unnamed as "a newer retail game"), LooperSalty/AnyXboxX (GDK
         HLE emulator), ThatRecompDev/five-star-recomp, brcly/TuxBox (Linux-first,
         stock Proton), VIctory (GTA VI only; find where it lives), and Leonida (ItsNotRexed/Leonida, deleted by
