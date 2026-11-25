@@ -237,9 +237,10 @@
         Watch the unofficial GTA VI PC ports for progress toward the game being
         playable on PC. Tracked: R0Y00/Xbox2Windows (static recomp to C++,
         shaders to DXIL; startup progress in its issue #870),
-        ivall/xcl (general Xbox Series compatibility layer; its README lists
+        xcl-dev/xcl (formerly ivall/xcl; general Xbox Series compatibility layer; its README lists
         GTA VI unnamed as "a newer retail game"), LooperSalty/AnyXboxX (GDK
-        HLE emulator), ThatRecompDev/five-star-recomp, and Leonida (ItsNotRexed/Leonida, deleted by
+        HLE emulator), ThatRecompDev/five-star-recomp, brcly/TuxBox (Linux-first,
+        stock Proton), VIctory (GTA VI only; find where it lives), and Leonida (ItsNotRexed/Leonida, deleted by
         its owner 2026-11-23; watch for a revival under ProjectLeonida or
         elsewhere, and its surviving forks such as ASTROWwwW/Leonida). All
         target the Xbox Series 1.0.2.1 build whose executable
@@ -258,6 +259,10 @@
              creation, first frame, menus, loading, in-game, playable), from
              their own issues and READMEs, preferring evidence such as
              screenshots and logs over claims.
+           - Linux, which Alex cares most about: how far the game gets under
+             Wine/Proton + vkd3d-proton (TuxBox, XCL upstream and its Linux
+             forks such as gustavsi/xcl), on which GPUs, and whether the
+             needed vkd3d-proton fixes are upstream or a release yet.
            - Takedowns: new notices in github/dmca naming any of them, and
              any new mirror (Codeberg, Gitea, GitLab) if one went down.
            - The web, including https://vuyp.github.io/gta6-pc-race/: news
@@ -265,7 +270,8 @@
              genuine or found tampered, on Take-Two or Rockstar legal action,
              on a PS5 GTA VI dump, and on an official PC release date.
         3. Compare with state.md. Substantive changes: any project gets the
-           game further than before (menus, loading, in-game, playable); a
+           game further than before (menus, loading, in-game, playable), on
+           Windows or on Linux; a
            README status row changes state; a repo disappears, gets a DMCA
            notice, moves or comes back; the executable is shown
            genuine or tampered; Rockstar announces or dates a PC version; a
