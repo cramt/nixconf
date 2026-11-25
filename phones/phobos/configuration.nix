@@ -6,8 +6,33 @@
 # `nix run .#nixup-config -- create` writes a config from what it has now (apps, settings, debloat list); merge the parts
 # worth keeping into here. Every option, with comments:
 # https://github.com/by-architect/Nixup/blob/main/templates/default/configuration.nix
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
+  # OnePlus's system-app preloads, removed for the user with their data kept:
+  # drop one from the list and the next build reinstalls it as it was. Only apps
+  # nothing else leans on; com.oplus.* services and the Google apps worth using
+  # (Maps, Gmail, Photos, Calendar, Messages, Drive, Auto, Wallet) stay. The
+  # preloads OnePlus drops onto the user partition at first boot (Amazon,
+  # Booking, Facebook, LinkedIn, Netflix, Fitbit, OnePlus Store/Forums, ...)
+  # aren't system apps, so debloat refuses them: those were uninstalled by hand.
+  android.apps = lib.genAttrs [
+    "com.facebook.appmanager"
+    "com.facebook.services"
+    "com.facebook.system"
+    # Link to Windows
+    "com.microsoft.appmanager"
+    "com.microsoft.deviceintegrationservice"
+    "com.microsoftsdk.crossdeviceservicebroker"
+    "com.oneplus.membership"
+    "com.heytap.browser"
+    "com.nearme.instant.platform"
+    "com.oplus.games"
+    "com.coloros.childrenspace"
+    "com.google.android.apps.tachyon"
+    # Stock YouTube: Morphe's replaces it
+    "com.google.android.youtube"
+  ] (_: { debloat = true; });
+
   time.timeZone = "Europe/Copenhagen";
 
   android.settings.display.darkMode = true;
