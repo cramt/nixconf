@@ -70,7 +70,7 @@
       };
 
       environment.sessionVariables = {};
-      environment.systemPackages = [pkgs.comma];
+      environment.systemPackages = [pkgs.comma pkgs.android-tools];
       # trippy needs cap_net_raw for ICMP; this option installs a setcap wrapper
       programs.trippy.enable = true;
       services.upower.enable = true;
@@ -97,6 +97,9 @@
           # Anything from ST: ST-Link probes and the STM32 ROM DFU bootloader. probe-rs-rules
           # below cover the ST-Links with uaccess only, which a headless user never gets.
           SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", MODE="0660", GROUP="plugdev", TAG+="uaccess"
+          # Any phone's adb (ff4201) or fastboot (ff4203) interface, matched by class since
+          # vendor IDs change between modes, for phones/ (rooting, nixup-rebuild over adb).
+          SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{ID_USB_INTERFACES}=="*:ff4201:*|*:ff4203:*", MODE="0660", GROUP="plugdev", TAG+="uaccess"
         '';
         # Plain rules files, so the build platform's copy is the right one; the
         # flake has no outputs for cross targets like venus's armv7l.
