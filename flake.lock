@@ -2037,11 +2037,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795090445,
-        "narHash": "sha256-aT2GcPXbfJ/gRXkIr7crlH5+UWlziEiPwn4rZEg91j0=",
+        "lastModified": 1795187129,
+        "narHash": "sha256-Ffwzj2t4NUcd2YFrwehtE0uI/4r9yWNrrtPI2kpfg6M=",
         "owner": "by-architect",
         "repo": "Nixup",
-        "rev": "20580b5088cf03b14616f9dbbbafa03889b15b01",
+        "rev": "e3943a126021930e8a3624b5c7e9f05336484447",
         "type": "github"
       },
       "original": {
