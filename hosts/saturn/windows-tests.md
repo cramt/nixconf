@@ -188,13 +188,14 @@ Two reflashes, in this order. Neither has happened yet; mark them
     both). Only on a reflashed install; on an existing one, note it as not
     checked.
 
-## Pointer speed and key repeat from COSMIC's (needs a reflash)
+## Pointer speed and key repeat from COSMIC's (an update or a reflash)
 
 defenestrate now converts cosmic-comp's `input_default` (libinput flat,
-speed 0.6042271248762552, so 1.6042x) and xkb repeat into the new user's
-registry at install; `dfnstrate update` doesn't carry it. Until a reflash
-the old hand-picked values (MouseSensitivity 12, acceleration off) are
-still there: say so and mark these **not checked**.
+speed 0.6042271248762552, so 1.6042x) and xkb repeat into the user's
+registry, at install and, through the boot queue (below), on
+`dfnstrate update`. If neither has happened since, the old hand-picked
+values (MouseSensitivity 12, acceleration off) are still there: say so and
+mark these **not checked**.
 
 36. **The registry has the conversion.** `HKCU\Control Panel\Mouse`:
     MouseSpeed 1, MouseThreshold1/2 0, MouseSensitivity 10, and
@@ -214,6 +215,45 @@ still there: say so and mark these **not checked**.
     whether the pointer feels the same as on Linux, and whether any game's
     menu cursor feels different from before (some read the flag, or turn
     it off while they run, which would give them 1x instead of 1.6x).
+
+## Boot queue: registry config through `dfnstrate update` (defenestrate boot-actions)
+
+`update` now queues changed registry imports under
+`C:\Windows\Setup\defenestrate\boot\machine` and `\user`, run once each
+by the tasks `defenestrate-boot` (SYSTEM, startup) and
+`defenestrate-boot-user` (the user, logon); logs
+`%ProgramData%\defenestrate\boot-machine.log` and `boot-user.log`. An install
+flashed before the queue gets the tasks registered by
+`defenestrate-linux-first` at the first startup after the update
+(`linux-first.log` says "registering the boot queue"), which also runs that
+boot's machine phase; the user phase may then only run at the logon after.
+Only check these after an `update`; on a fresh flash 41 and 42 still apply
+(the image's own queue runs at its first boot).
+
+41. **Each action ran once.** Quote both boot logs. `boot-machine.log`: one
+    "running"/"done" pair each for the software, system and shell imports;
+    `boot-user.log`: one for the user import, followed by an
+    `SPI_SETMOUSE`, `SPI_SETMOUSESPEED`, curve, `SPI_SETKEYBOARDDELAY` and
+    `SPI_SETKEYBOARDSPEED` line, and "in effect from the next logon" lines
+    for LogPixels and Win8DpiScaling. No "FAILED". `dir` both queue
+    folders: every `.json` has a `.done` next to it. Also
+    `schtasks /query /tn defenestrate-boot` and `defenestrate-boot-user`
+    both exist.
+42. **The values are in the registry and in effect without a logout.** Item
+    36's values, and in PowerShell (not elevated) read the live ones:
+    `Add-Type -Namespace T -Name S -MemberDefinition '[DllImport("user32.dll")] public static extern bool SystemParametersInfo(uint a, uint u, int[] p, uint f); [DllImport("user32.dll", EntryPoint="SystemParametersInfoW")] public static extern bool Get(uint a, uint u, ref int p, uint f);'`,
+    then `$m = [int[]]::new(3); [T.S]::SystemParametersInfo(3,0,$m,0); $m`
+    (expect 0 0 1), and `$v = 0; foreach ($a in 0x70, 0x16, 0x0A) { [void][T.S]::Get($a,0,[ref]$v,0); $v }`
+    (MouseSensitivity 10, KeyboardDelay 1, KeyboardSpeed 25). Ask Alex
+    whether the pointer already felt like Linux's in this first session
+    after the update, or only after logging out and in (that's whether the
+    curve took effect from the SPI refresh, which isn't confirmed).
+43. **A second boot runs nothing.** After a reboot into Windows with no
+    `update` in between (ask Alex, or check the timestamps), both logs end
+    in "nothing pending" and no action was run a second time.
+44. **The queue's files are admin-only.** `icacls` on
+    `C:\Windows\Setup\defenestrate\boot\user` and one `.reg` in it: SYSTEM
+    and Administrators full, Users read and execute at most, no Everyone.
 
 ## Last step
 
