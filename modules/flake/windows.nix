@@ -81,5 +81,15 @@ in {
     {cosmic.compositor = self.nixosConfigurations.saturn.config.home-manager.users.cramt.myHomeManager.cosmic.input;}
     {autostart = lib.optional (testPlan != null) claudeAutostart;}
     {registry.software."Policies\\Mozilla\\Firefox" = firefoxPolicies;}
+    # Windows' Firefox rides along across reflashes (flash keeps it in
+    # ~/.local/state/dfnstrate/persist/saturn-windows); with nothing kept yet,
+    # the new profile starts from Zen's cookies, logins and containers, read
+    # from wherever zen.nix puts its profile. Zen has to be closed while
+    # flashing: it holds its databases locked.
+    {
+      persist.firefox.seed.profile = let
+        zen = self.nixosConfigurations.saturn.config.home-manager.users.cramt.programs.zen-browser;
+      in "${zen.configPath}/${zen.profiles.default.path}";
+    }
   ];
 }

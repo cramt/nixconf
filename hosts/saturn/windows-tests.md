@@ -146,6 +146,26 @@ the config's line: it opened this console.
     (`git --version`, `claude --version`).
 13. Protected windows (a game with anti-cheat) tile.
 
+## Firefox across reflashes (defenestrate 7059bfa, needs two reflashes)
+
+Two reflashes, in this order. Neither has happened yet; mark them
+**not checked** until the Linux side says it flashed for them.
+
+39. **A fresh flash boots into a logged-in Firefox.** Flashed with
+    `--no-keep` and an empty `~/.local/state/dfnstrate/persist/saturn-windows`
+    (Zen closed), so the profile was seeded from Zen. Firefox opens on
+    `Profiles\defenestrate.default-release` (`installs.ini` names it) and
+    youtube.com shows Alex logged in with no clicks. Quote `profiles.ini`,
+    `installs.ini`, and the profile folder's file list. A Google re-verify
+    prompt counts as a pass; a logged-out page or a "Create profile"
+    dialog is a fail.
+40. **Logins survive a reflash.** Before the second reflash, log into a
+    site on Windows that Linux isn't logged into (note which), and shut
+    down fully. After flashing with no flags, that site is still logged
+    in, YouTube too, and the profile folder has the same name as before.
+    No "older version of Firefox" dialog. If this fails, the fallback is
+    enrolling 1Password at first logon.
+
 ## Never seen on real hardware yet
 
 14. **AMD GPU driver.** Device Manager / `Get-PnpDevice -Class Display`
