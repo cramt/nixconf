@@ -134,6 +134,46 @@
     };
     declaredSettings = (pkgs.formats.json {}).generate "claude-declared-settings.json" declaredSettingsAttrs;
 
+    # Task files Claude on defenestrate's Windows writes for Linux Claude
+    # (`defenestrateInbox`, the Windows CLAUDE.md's "Linux inbox"). A hook
+    # rather than a CLAUDE.md line because the inbox is on saturn's disk while
+    # most sessions run on luna, and a line asking to go look gets skipped.
+    # Silent when it's empty or the host is off.
+    inboxDir = ".local/share/defenestrate/inbox";
+    inboxHook = pkgs.writeShellApplication {
+      name = "claude-linux-inbox";
+      runtimeInputs = [pkgs.coreutils pkgs.findutils pkgs.openssh pkgs.inetutils];
+      text = ''
+        host=${lib.escapeShellArg cfg.defenestrateInbox}
+        list='find ~/${inboxDir} -maxdepth 1 -type f -name "*.md" -printf "%f\n" 2>/dev/null | sort'
+        if [ "$(hostname -s)" = "$host" ]; then
+          files=$(bash -c "$list")
+          where="$HOME/${inboxDir}"
+        else
+          files=$(timeout 8 ssh -o BatchMode=yes -o ConnectTimeout=3 "$host" "$list" 2>/dev/null) || exit 0
+          where="$host:~/${inboxDir} (ssh $host)"
+        fi
+        [ -n "$files" ] || exit 0
+        echo "Open task files from Claude on defenestrate's Windows, in $where:"
+        while IFS= read -r f; do echo "- $f"; done <<<"$files"
+        echo "Bring their open tasks up with Alex. Move a file to inbox/done/ once all its tasks have landed."
+      '';
+    };
+    declaredHooks = (pkgs.formats.json {}).generate "claude-declared-hooks.json" {
+      SessionStart = [
+        {
+          matcher = "^startup$";
+          hooks = [
+            {
+              type = "command";
+              command = lib.getExe inboxHook;
+              timeout = 15;
+            }
+          ];
+        }
+      ];
+    };
+
     # Claude Code on this machine's defenestrate Windows (`windows.enable`).
     # Its logon task copies these from here into %USERPROFILE%\.claude
     # (wsl.linux.files in hosts/<host>/windows.nix), next to the pool key
@@ -276,7 +316,21 @@
         verify or check defenestrate (or "the boot"), work through it and write
         the report where it says.
 
-      ''}## Installing packages
+      ''}## Linux inbox
+
+      Alex also uses you here to turn stream-of-consciousness into tasks for
+      Claude on the Linux side to implement. Write them to
+      `%USERPROFILE%\linux-inbox\<yyyy-mm-dd>.md`, and after every change copy
+      the file to `\\wsl$\defenestrate\linux${lib.replaceStrings ["/"] ["\\"] "${config.home.homeDirectory}/${inboxDir}"}\`,
+      where Linux sessions are shown it at startup and move it to `done\`
+      once its tasks have landed. The NTFS copy is the one to trust: a reboot used to
+      lose what was written to btrfs in its last 30 s. Per task: goal, facts
+      (with nixconf / defenestrate file:line refs, read through
+      `\\wsl$\defenestrate\linux${lib.replaceStrings ["/"] ["\\"] config.home.homeDirectory}`), approach, ruled
+      out, done when, open questions. Record Alex's decisions inline with the
+      date, and keep her raw quotes at the bottom.
+
+      ## Installing packages
 
       - winget. Anything that should stay goes into `apps` in the host's
         windows.nix too, or the next reflash loses it
@@ -329,6 +383,21 @@
       text = ''
         (${mergeJson ''"$HOME/.claude/settings.json"'' declaredSettings})
         (${mergeJson ''"$HOME/.claude.json"'' declaredClaudeJson})
+        ${lib.optionalString (cfg.defenestrateInbox != null) ''
+          # Appended per event, not merged like the rest: `*` replaces arrays,
+          # and other tools (herdr) add their own SessionStart hooks to this
+          # file. An old copy of ours, at an earlier store path, is dropped
+          # by its binary's name.
+          f="$HOME/.claude/settings.json"
+          jq --slurpfile declared ${declaredHooks} '
+            reduce ($declared[0] | to_entries[]) as $e (.;
+              ($e.value | map(.hooks[].command | split("/") | last)) as $ours
+              | .hooks[$e.key] = (
+                  ((.hooks[$e.key] // []) | map(select(any(.hooks[]; .command | split("/") | last | IN($ours[])) | not)))
+                  + $e.value))
+          ' "$f" > "$f.new"
+          mv "$f.new" "$f"
+        ''}
       '';
     };
   in {
@@ -368,6 +437,12 @@
         type = lib.types.nullOr lib.types.path;
         default = null;
         description = "A checklist for Claude on Windows to verify a defenestrate build with, copied over as ~/.claude/defenestrate-tests.md and named in its CLAUDE.md.";
+      };
+      defenestrateInbox = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "saturn";
+        description = "Host whose ~/${inboxDir} holds task files from Claude on its defenestrate Windows. A session starting here is shown the open ones (read locally on that host, over ssh elsewhere).";
       };
       outlook.enable = lib.mkEnableOption "Outlook web mail skill + `outlook-browser` CLI (work mailbox via agent-browser)";
       agents = lib.mkOption {

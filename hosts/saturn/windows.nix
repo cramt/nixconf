@@ -36,6 +36,8 @@ in {
   # it has then). League last: its installer is the Riot Client, which then
   # downloads the game, so it's the slow one.
   # Git for Claude Code's Bash tool (it falls back to PowerShell without).
+  # Firefox's extensions and policies come from the Linux side's list, in
+  # modules/flake/windows.nix.
   apps = ["Mozilla.Firefox" "Discord.Discord" "Git.Git" "Anthropic.ClaudeCode" "RiotGames.LeagueOfLegends.EUW"];
   # No defaultApps: Firefox stays out of reach as the default browser. The
   # shell's way (open Settings at Firefox's page) can't work, because
@@ -78,20 +80,11 @@ in {
   # windows float, title bars and all. defenestrate's defaults leave Super+Y
   # off, as the Linux side does.
   cosmic.shortcuts."Super+y" = "ToggleTiling";
-  # Keyboard and pointer as COSMIC has them (modules/hm-features/cosmic.nix),
-  # in Windows' coarser steps. Acceleration is already off distro-wide.
-  registry.defaultUser = {
-    "Control Panel\\Keyboard" = {
-      # 0-3 are 250-1000 ms in 250 ms steps; COSMIC's repeat_delay is 600.
-      KeyboardDelay.sz = "1";
-      # 0-31 run roughly linearly from 2.5 to 30 Hz; repeat_rate is 25.
-      KeyboardSpeed.sz = "25";
-    };
-    # libinput's flat profile at speed 0.6042 is 1.6x. With acceleration off,
-    # Windows' pointer speed steps are 1.25/1.5/1.75x at 11/12/13 (10 is 1x),
-    # so 12 is the nearest.
-    "Control Panel\\Mouse".MouseSensitivity.sz = "12";
-  };
+  # The pointer speed converts for Windows at the scale COSMIC runs the
+  # monitor at. That's cosmic-comp's runtime state
+  # (~/.local/state/cosmic-comp/outputs.ron, 1.0 on 2026-11-26), not
+  # declared anywhere in nixconf; change both together.
+  displayScale = 1.0;
   # disk stays at the default, setup's interactive picker, for the USB ISO.
   # Its DiskID numbering isn't stable across boots, so wiping one by number
   # could hit the Linux SSD. build.install doesn't have that problem: the image

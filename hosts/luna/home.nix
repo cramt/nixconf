@@ -10,6 +10,8 @@
   myHomeManager = {
     bundles.general.enable = true;
     bundles.development.enable = true;
+    # Most Claude sessions run here; the inbox is on saturn's disk.
+    claude-code.defenestrateInbox = "saturn";
     hyprland = {
       enable = false;
       exec = "firefox --kiosk https://example.com";

@@ -82,6 +82,11 @@
     "app.morphe.android.youtube" = youtube.apk;
     # Reddit's own package name, so stock Reddit must be uninstalled first:
     # Android won't replace it with a differently signed APK.
+    # Patched Reddit can't log in with a password or Google ("Something went
+    # wrong"; https://github.com/MorpheApp/morphe-patches/issues/1369, drop this
+    # note once it's closed). Request the email login link, don't tap it, and open
+    # it in the app over root ssh:
+    #   am start --user 0 -a android.intent.action.VIEW -p com.reddit.frontpage -d '<link>'
     "com.reddit.frontpage" = reddit.apk;
     ${pkgs.microg-re.packageName} = pkgs.microg-re;
   };

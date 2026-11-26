@@ -10,9 +10,8 @@
         policies = { DisableAppUpdate = true; DisableTelemetry = true; };
         profiles.default = {
           extensions.packages =
-            (with pkgs.nur.repos.rycee.firefox-addons; [
-              ublock-origin sponsorblock vimium refined-github onepassword-password-manager bitwarden multi-account-containers
-            ])
+            import ../../myLib/browser-extensions.nix pkgs.nur.repos.rycee.firefox-addons
+            # Not on AMO, so Windows Firefox can't have it (modules/flake/windows.nix).
             ++ [
               (mkZenExtension {
                 name = "move-tab-to-new-window";

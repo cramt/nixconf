@@ -33,6 +33,7 @@ This is a NixOS machine. No apt/yum/brew — everything goes through nix.
 - If a thing can reasonably be declaratively done it should (this includes your own config), This is why we love nix
 - A runtime fix is never the deliverable — pair it with the declarative nixconf change
 - `Make Invalid States Unrepresentable` is the most important single statement in all of software engineering. This is why we love languages with proper algebraic type systems like typescript and rust
+- On defenestrate's Windows, Linux is the spec: "X is a problem" there means X isn't how it is on Linux, and it should be. Windows derives its config from the Linux declaration, never hand-copied values
 - Rust for native executables, TypeScript for HTTP backends. Never Go
 - Every pin/workaround gets a comment with the upstream issue link and removal condition
 - Empirical tuning (prompts, perf, flakiness): several distinct hypotheses, measure on a repeatable bench, conclude from data
