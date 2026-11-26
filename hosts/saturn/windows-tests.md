@@ -57,25 +57,38 @@ that broke. This boot tests the loop:
     `default apps:` line this logon, and no `SystemSettings` process is
     hanging around (`Get-Process SystemSettings`). Quote both.
 
-## New in this build: letterboxing and screenshots (defenestrate 5780fa8, b086d9b)
+## New in this build: letterboxing and screenshots (defenestrate 0d23b4a, b086d9b)
 
-Both are unit-tested only; nothing has run on Windows yet.
+5780fa8's letterbox failed on the 2026-11-26 boot (League's game over its
+neighbour and off the screen, the console stuck narrow); 0d23b4a replaces it.
+Unit-tested only; the new version hasn't run on Windows yet.
 
-32. **League's client is letterboxed, not fought.** Open the League client
-    (through the Riot Client) next to another window, so it sits in a
-    half-width tile. It sits centred in the tile at its own size (past
-    the tile's edges if it's wider), with no resize flicker. The other
-    window keeps its whole half. `shell.log` has a `window 0x...: no WS_THICKFRAME,
-    letterboxed at its own WxH` or `asked for ..., took ...: letterboxed`
-    line for it, once per size, not repeating. Quote them and take a screenshot.
-    Then focus the other window, switch to workspace 2 and back
-    (Super+2, Super+1), and Super+Shift+Left/Right it: it stays centred
-    at the same size each time, and no new letterbox lines appear (except
-    one if its size actually changed). Riot Client's own window should do the same.
-33. **Ordinary windows still fill their tiles.** A terminal and Firefox
-    tiled side by side fill their tiles edge to edge. `shell.log` has no
-    letterbox line for them. If it does, quote it: a window that only
-    looked refused for a moment would stay small.
+32. **League letterboxed only if it refuses its tile, never off the screen.**
+    Open the League client (through the Riot Client) next to another window,
+    so it sits in a half-width tile, then start a game (windowed 2560x1440
+    in `game.cfg`). Every window is asked for its tile's size first now:
+    quote `shell.log`'s `window 0x...:` fit lines for the client, Riot
+    Client and the game (`asked for WxH, took WxH (style ...): letterboxed`
+    or `fills its tile`), once per size, not repeating. For each, quote its
+    window rect, client rect and `DWMWA_EXTENDED_FRAME_BOUNDS` with the
+    monitor's: nothing may reach past the monitor (0,0-5120,1440), and
+    nothing may cover the other half except by however much the window is
+    wider than its tile. The game's expected outcome is `fills its tile` at
+    2560x1440 (client 2560,0 2560x1440). Then focus the other window, switch
+    to workspace 2 and back (Super+2, Super+1), and Super+Shift+Left/Right
+    the letterboxed one: it stays at the same size each time, kept on the
+    screen, and no new fit lines appear (except one if its size actually
+    changed). In game, ask Alex: can she click along the bottom edge, and
+    does the camera pan at the bottom and right edges? (The overflow was
+    fixed; whether it caused the dead bottom edge is unproven.) Screenshot.
+33. **Ordinary windows fill their tiles, through style changes and tile
+    growth.** Open a cmd console (Super+T, then `claude` in it) and Firefox
+    side by side, then a third window, then close the third: both fill their
+    tiles edge to edge each time, and the console grows to its whole half
+    when its tile does. `shell.log` has no `letterboxed` line for either;
+    a `fills its tile` line after a style change is fine. If a letterbox line
+    appears for one, quote it with the window's style before and after:
+    a window that only looked refused for a moment would stay small.
 34. **PrintScreen opens the snip overlay.** Press PrintScreen (SendInput
     `VK_SNAPSHOT`, or ask Alex to press the physical key). The Snipping Tool's
     region overlay shows (screenshot). `shell.log` has `launched "ms-screenclip:"`
@@ -254,6 +267,35 @@ Only check these after an `update`; on a fresh flash 41 and 42 still apply
 44. **The queue's files are admin-only.** `icacls` on
     `C:\Windows\Setup\defenestrate\boot\user` and one `.reg` in it: SYSTEM
     and Administrators full, Users read and execute at most, no Everyone.
+
+## Cursor lock and Firefox's second launch (defenestrate 0d23b4a)
+
+45. **The game keeps the cursor locked.** In a League game (item 32), log
+    `GetForegroundWindow` and `GetClipCursor` every 50 ms for a few
+    minutes while Alex plays, as last boot's `cursor-clip.log` did. The
+    clip stays the game's window rect and the foreground stays the game
+    the whole time Alex doesn't Alt+Tab, including when she pushes the
+    pointer against the left edge of the game's half for a few seconds
+    (ask her to). With `focus_follows_cursor` on, `shell.log` has no
+    focus change to the neighbour then. Then Alt+Tab out (the lock goes,
+    expected) and back (it returns). Quote the samples around each switch
+    and ask Alex whether the lock ever slipped without her switching.
+46. **A second Firefox launch opens a window in the running one.** With
+    the autostarted Firefox running, open Firefox from the launcher: a new
+    window opens in the running Firefox, no "Close Firefox" dialog, and no
+    second `firefox.exe` remains after 10 s. Quote `shell.log`'s
+    `autostart` and `started`/`launched` lines for Firefox (each now says
+    `integrity 0x..., uiAccess N`) and every `MozillaDialogClass` verdict
+    line (now with its pid, and logged again if its title changes). Also
+    quote `Get-CimInstance Win32_Process -Filter "name='firefox.exe'" |
+    Select ProcessId,ParentProcessId,CreationDate,CommandLine`. If the
+    dialog still comes: how long after the launch line (last time 5.26 s,
+    Firefox's 5 s startup lock, meaning the first Firefox hadn't finished
+    starting), which pid shows the untitled dialog at logon and what its
+    title became, whether a `dialog 0x... was under tile(s)` line shows
+    the shell lifting it, and whether that pid is the one holding up
+    startup (it's still running and the browser window belongs to another
+    pid, or the same one).
 
 ## Last step
 
