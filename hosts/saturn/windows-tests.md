@@ -57,7 +57,34 @@ that broke. This boot tests the loop:
     `default apps:` line this logon, and no `SystemSettings` process is
     hanging around (`Get-Process SystemSettings`). Quote both.
 
-## Round two fixes (defenestrate 0e12cc5)
+## New in this build: letterboxing and screenshots (defenestrate 5780fa8, b086d9b)
+
+Both are unit-tested only; nothing has run on Windows yet.
+
+32. **League's client is letterboxed, not fought.** Open the League client
+    (through the Riot Client) next to another window, so it sits in a
+    half-width tile. It sits centred in the tile at its own size (past
+    the tile's edges if it's wider), with no resize flicker. The other
+    window keeps its whole half. `shell.log` has a `window 0x...: no WS_THICKFRAME,
+    letterboxed at its own WxH` or `asked for ..., took ...: letterboxed`
+    line for it, once per size, not repeating. Quote them and take a screenshot.
+    Then focus the other window, switch to workspace 2 and back
+    (Super+2, Super+1), and Super+Shift+Left/Right it: it stays centred
+    at the same size each time, and no new letterbox lines appear (except
+    one if its size actually changed). Riot Client's own window should do the same.
+33. **Ordinary windows still fill their tiles.** A terminal and Firefox
+    tiled side by side fill their tiles edge to edge. `shell.log` has no
+    letterbox line for them. If it does, quote it: a window that only
+    looked refused for a moment would stay small.
+34. **PrintScreen opens the snip overlay.** Press PrintScreen (SendInput
+    `VK_SNAPSHOT`, or ask Alex to press the physical key). The Snipping Tool's
+    region overlay shows (screenshot). `shell.log` has `launched "ms-screenclip:"`
+    or `launching "ms-screenclip:" failed: ...; starting "SnippingTool.exe /clip" instead`.
+    Quote which one. Snip a region (drag across it): the snip is on the clipboard
+    (`Get-Clipboard -Format Image` isn't empty) and a new file is in
+    `Pictures\Screenshots`. If the URI "launched" but nothing showed, say so:
+    the handler might need explorer, and then the fallback has to be forced.
+    Win+Shift+S does the same.
 
 1. **`\\wsl$` reaches the install from Windows.** `dir \\wsl$\defenestrate\linux\home\cramt`
    lists the Linux home. Before this fix, the elevated logon task's mounts
