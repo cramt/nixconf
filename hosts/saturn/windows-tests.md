@@ -159,25 +159,41 @@ the config's line: it opened this console.
     (`git --version`, `claude --version`).
 13. Protected windows (a game with anti-cheat) tile.
 
-## Firefox across reflashes (defenestrate 7059bfa, needs two reflashes)
+## Firefox logged in like Linux (defenestrate 7059bfa, 02c478f)
 
-Two reflashes, in this order. Neither has happened yet; mark them
-**not checked** until the Linux side says it flashed for them.
+39, 47 and 48 need only a `dfnstrate update` (Zen may stay open while it
+runs); 40 needs a reflash. Mark each **not checked** until the Linux side
+says it updated or flashed for it.
 
-39. **A fresh flash boots into a logged-in Firefox.** Flashed with
-    `--no-keep` and an empty `~/.local/state/dfnstrate/persist/saturn-windows`
-    (Zen closed), so the profile was seeded from Zen. Firefox opens on
-    `Profiles\defenestrate.default-release` (`installs.ini` names it) and
-    youtube.com shows Alex logged in with no clicks. Quote `profiles.ini`,
-    `installs.ini`, and the profile folder's file list. A Google re-verify
-    prompt counts as a pass; a logged-out page or a "Create profile"
-    dialog is a fail.
+39. **After an update, Firefox is logged in.** 2026-11-26's run found
+    Firefox logged out after an update, as update didn't seed then. Now
+    `update` seeds Zen's logins into the profile Firefox opens
+    (`Profiles\kiq5zat0.default-release`, which `installs.ini` names), once.
+    After the next boot youtube.com shows Alex logged in with no clicks,
+    and so does a site in the work container if there is one. Quote
+    `profiles.ini`, `installs.ini`, the profile folder's file list and its
+    `defenestrate-seed.txt`. A Google re-verify prompt counts as a pass; a
+    logged-out page, a "Create profile" dialog or a profile other than
+    kiq5zat0 is a fail. (On a fresh flash instead: `--no-keep` and an empty
+    `~/.local/state/dfnstrate/persist/saturn-windows`, and the profile is
+    `Profiles\defenestrate.default-release`.)
 40. **Logins survive a reflash.** Before the second reflash, log into a
     site on Windows that Linux isn't logged into (note which), and shut
     down fully. After flashing with no flags, that site is still logged
     in, YouTube too, and the profile folder has the same name as before.
     No "older version of Firefox" dialog. If this fails, the fallback is
     enrolling 1Password at first logon.
+
+47. **The seed kept what it replaced.** In the seeded profile,
+    `defenestrate-seed-replaced` holds the profile's own `cookies.sqlite`
+    (and its `-wal` if there was one), and `icacls` on the new
+    `cookies.sqlite`: Alex, SYSTEM and Administrators, no Everyone. Firefox
+    opened without a "profile missing or inaccessible" error, and
+    `about:logins` lists Zen's saved passwords (or none if Zen has none).
+48. **A second update doesn't seed again.** Log into a site on Windows that
+    Linux isn't logged into (note which), shut down fully, and ask Alex to
+    `dfnstrate update` again. Its output says the profile "was seeded
+    before", and after the boot that site is still logged in.
 
 ## Never seen on real hardware yet
 

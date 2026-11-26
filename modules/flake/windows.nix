@@ -84,8 +84,11 @@ in {
     # Windows' Firefox rides along across reflashes (flash keeps it in
     # ~/.local/state/dfnstrate/persist/saturn-windows); with nothing kept yet,
     # the new profile starts from Zen's cookies, logins and containers, read
-    # from wherever zen.nix puts its profile. Zen has to be closed while
-    # flashing: it holds its databases locked.
+    # from wherever zen.nix puts its profile. `dfnstrate update` seeds the
+    # profile an existing install's Firefox opens the same way, once per
+    # profile (`dfnstrate persist seed --force` to redo it). Zen may stay
+    # open: dfnstrate copies its exclusively locked WAL databases around the
+    # lock.
     {
       persist.firefox.seed.profile = let
         zen = self.nixosConfigurations.saturn.config.home-manager.users.cramt.programs.zen-browser;
