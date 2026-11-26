@@ -6,8 +6,34 @@
 # `nix run .#nixup-config -- create` writes a config from what it has now (apps, settings, debloat list); merge the parts
 # worth keeping into here. Every option, with comments:
 # https://github.com/by-architect/Nixup/blob/main/templates/default/configuration.nix
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
+  # OnePlus's system-app preloads, removed for the user with their data kept:
+  # drop one from the list and the next build reinstalls it as it was. Only apps
+  # nothing else leans on; com.oplus.* services and the Google apps worth using
+  # (Maps, Gmail, Photos, Calendar, Messages, Drive, Auto, Wallet) stay. The
+  # preloads OnePlus drops onto the user partition at first boot (Amazon,
+  # Booking, Facebook, LinkedIn, Netflix, Fitbit, OnePlus Store/Forums/Notes/
+  # Recorder/Clone Phone/widgets, ...) and setup's Play pushes (TikTok, Block
+  # Blast) aren't system apps, so debloat refuses them: uninstalled by hand.
+  android.apps = lib.genAttrs [
+    "com.facebook.appmanager"
+    "com.facebook.services"
+    "com.facebook.system"
+    # Link to Windows
+    "com.microsoft.appmanager"
+    "com.microsoft.deviceintegrationservice"
+    "com.microsoftsdk.crossdeviceservicebroker"
+    "com.oneplus.membership"
+    "com.heytap.browser"
+    "com.nearme.instant.platform"
+    "com.oplus.games"
+    "com.coloros.childrenspace"
+    "com.google.android.apps.tachyon"
+    # Stock YouTube: Morphe's replaces it
+    "com.google.android.youtube"
+  ] (_: { debloat = true; });
+
   time.timeZone = "Europe/Copenhagen";
 
   android.settings.display.darkMode = true;
@@ -58,6 +84,31 @@
     # Android won't replace it with a differently signed APK.
     "com.reddit.frontpage" = reddit.apk;
     ${pkgs.microg-re.packageName} = pkgs.microg-re;
+  };
+
+  # Gboard buzzes on every key whatever the system's keyboardVibration says, and
+  # Nixup has no option for an app's own preferences. Gboard keeps them in
+  # device-protected storage; a file it hasn't written yet (fresh install, never
+  # opened) is left alone, as there's nothing to fix until it exists.
+  systemd.services.gboard-no-vibrate = {
+    description = "Gboard: no haptic feedback on keypress";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      f=/data/user_de/0/com.google.android.inputmethod.latin/shared_prefs/com.google.android.inputmethod.latin_preferences.xml
+      [ -f "$f" ] || { echo "Gboard has no preferences yet"; exit 0; }
+      grep -q '<boolean name="enable_vibrate_on_keypress" value="false" />' "$f" && exit 0
+      # Its running copy would write the old value back over the edit.
+      am force-stop com.google.android.inputmethod.latin
+      if grep -q 'name="enable_vibrate_on_keypress"' "$f"; then
+        sed 's|<boolean name="enable_vibrate_on_keypress" value="true" />|<boolean name="enable_vibrate_on_keypress" value="false" />|' "$f" > "$f.new"
+      else
+        sed 's|</map>|    <boolean name="enable_vibrate_on_keypress" value="false" />\n</map>|' "$f" > "$f.new"
+      fi
+      # cat over the original keeps its owner and SELinux label.
+      cat "$f.new" > "$f" && rm "$f.new"
+      echo "keypress vibration off"
+    '';
   };
 
   environment.systemPackages = with pkgs; [
