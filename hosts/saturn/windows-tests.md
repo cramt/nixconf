@@ -131,6 +131,15 @@ the config's line: it opened this console.
 17. **`wsl.linux.files` copy.** `wsl.log` shows the profile copies, and
     `%USERPROFILE%\.claude\CLAUDE.md` matches the Linux render (you're
     reading proof of this one).
+32. **Fresh install: Windows Firefox has uBlock Origin, SponsorBlock,
+    Vimium, Refined GitHub, 1Password, Bitwarden and Firefox Multi-Account
+    Containers installed and enabled without clicking.** They come from
+    enterprise policy in `HKLM\SOFTWARE\Policies\Mozilla\Firefox`
+    (`ExtensionSettings`, `DisableTelemetry`); quote `reg query` of that key.
+    Then start Firefox and check `about:policies` shows both as active with
+    no errors tab, and `about:addons` lists all seven enabled (screenshot
+    both). Only on a reflashed install; on an existing one, note it as not
+    checked.
 
 ## Last step
 

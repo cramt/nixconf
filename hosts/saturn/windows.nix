@@ -36,6 +36,8 @@ in {
   # it has then). League last: its installer is the Riot Client, which then
   # downloads the game, so it's the slow one.
   # Git for Claude Code's Bash tool (it falls back to PowerShell without).
+  # Firefox's extensions and policies come from the Linux side's list, in
+  # modules/flake/windows.nix.
   apps = ["Mozilla.Firefox" "Discord.Discord" "Git.Git" "Anthropic.ClaudeCode" "RiotGames.LeagueOfLegends.EUW"];
   # No defaultApps: Firefox stays out of reach as the default browser. The
   # shell's way (open Settings at Firefox's page) can't work, because
