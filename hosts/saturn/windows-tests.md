@@ -158,7 +158,7 @@ the config's line: it opened this console.
 17. **`wsl.linux.files` copy.** `wsl.log` shows the profile copies, and
     `%USERPROFILE%\.claude\CLAUDE.md` matches the Linux render (you're
     reading proof of this one).
-32. **Fresh install: Windows Firefox has uBlock Origin, SponsorBlock,
+35. **Fresh install: Windows Firefox has uBlock Origin, SponsorBlock,
     Vimium, Refined GitHub, 1Password, Bitwarden and Firefox Multi-Account
     Containers installed and enabled without clicking.** They come from
     enterprise policy in `HKLM\SOFTWARE\Policies\Mozilla\Firefox`
