@@ -76,6 +76,9 @@ in {
     {wsl.linux.mounts = linuxMounts;}
     # Light or dark like the Linux side, from its one stylix declaration.
     {cosmic.mode.is_dark = self.nixosConfigurations.saturn.config.stylix.polarity != "light";}
+    # Pointer speed and key repeat from the attrset cosmic-comp's config is
+    # made of (modules/hm-features/cosmic.nix); defenestrate converts them.
+    {cosmic.compositor = self.nixosConfigurations.saturn.config.home-manager.users.cramt.myHomeManager.cosmic.input;}
     {autostart = lib.optional (testPlan != null) claudeAutostart;}
     {registry.software."Policies\\Mozilla\\Firefox" = firefoxPolicies;}
   ];

@@ -14,8 +14,29 @@
     # live instance over its unix socket — no pid/path juggling.
     noctaliaMsg = key: cmd:
       spawn key "${config.myHomeManager.noctalia.cli} msg ${cmd}";
+    input = config.myHomeManager.cosmic.input;
   in {
     options.myHomeManager.cosmic.enable = lib.mkEnableOption "myHomeManager.cosmic";
+    # Plain values under cosmic-comp's names, so the RON below and
+    # defenestrate's cosmic.compositor (saturn's Windows,
+    # modules/flake/windows.nix) come from this one definition.
+    options.myHomeManager.cosmic.input = lib.mkOption {
+      type = lib.types.attrs;
+      default = {
+        input_default = {
+          state = "Enabled";
+          acceleration = {
+            profile = "Flat";
+            speed = 0.6042271248762552;
+          };
+        };
+        xkb_config = {
+          repeat_delay = 600;
+          repeat_rate = 25;
+        };
+      };
+      description = "cosmic-comp's input_default and xkb_config's repeat, as plain values.";
+    };
     config = lib.mkIf config.myHomeManager.cosmic.enable {
       # Use noctalia as the shell instead of COSMIC's own panel/dock + applets
       # (stripped below). noctalia draws over cosmic-comp's wlr-layer-shell; its
@@ -147,17 +168,15 @@
             layout = "dk";
             variant = "nodeadkeys";
             options = ron "optional" "terminate:ctrl_alt_bksp";
-            repeat_delay = 600;
-            repeat_rate = 25;
-          };
+          } // input.xkb_config;
           input_default = {
-            state = ron "enum" "Enabled";
+            state = ron "enum" input.input_default.state;
             acceleration = ron "optional" {
-              profile = ron "optional" (ron "enum" "Flat");
-              # Pass as raw RON so the exact value is emitted verbatim; a bare
-              # Nix float loses precision on float→string conversion (warns
+              profile = ron "optional" (ron "enum" input.input_default.acceleration.profile);
+              # Raw RON through toJSON, which prints every digit; a bare Nix
+              # float loses precision on float→string conversion (warns
               # "Imprecise conversion from float to string").
-              speed = ron "raw" "0.6042271248762552";
+              speed = ron "raw" (builtins.toJSON input.input_default.acceleration.speed);
             };
           };
         };

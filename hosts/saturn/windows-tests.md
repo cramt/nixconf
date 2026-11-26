@@ -168,6 +168,33 @@ the config's line: it opened this console.
     both). Only on a reflashed install; on an existing one, note it as not
     checked.
 
+## Pointer speed and key repeat from COSMIC's (needs a reflash)
+
+defenestrate now converts cosmic-comp's `input_default` (libinput flat,
+speed 0.6042271248762552, so 1.6042x) and xkb repeat into the new user's
+registry at install; `dfnstrate update` doesn't carry it. Until a reflash
+the old hand-picked values (MouseSensitivity 12, acceleration off) are
+still there: say so and mark these **not checked**.
+
+36. **The registry has the conversion.** `HKCU\Control Panel\Mouse`:
+    MouseSpeed 1, MouseThreshold1/2 0, MouseSensitivity 10, and
+    SmoothMouseXCurve/YCurve four equal steps (quote both as hex).
+    `HKCU\Control Panel\Desktop`: Win8DpiScaling 1, LogPixels 96.
+    `HKCU\Control Panel\Keyboard`: KeyboardDelay 1, KeyboardSpeed 25.
+37. **Ratio measured, should be 1.00.** Run defenestrate's
+    `bench/pointer/windows.ps1` (from the Linux checkout through `\\wsl$`)
+    and ask Alex to do ten sideways strokes, stopping between them; quote
+    its median px/count. On Linux, `bench/pointer/linux.py` with the same
+    mouse gives the other figure (it's in the last report if Alex ran it,
+    otherwise he runs it after the hand-back). Windows' median divided by
+    Linux's should be 1.00 (±0.01). Expected on both: about 1.604. If
+    Windows is off by exactly the display scale, Windows scales the curve
+    differently than input.rs assumes.
+38. **Nothing else changed with "Enhance pointer precision" on.** Ask Alex
+    whether the pointer feels the same as on Linux, and whether any game's
+    menu cursor feels different from before (some read the flag, or turn
+    it off while they run, which would give them 1x instead of 1.6x).
+
 ## Last step
 
 Once the report is finished, run
