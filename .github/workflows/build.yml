@@ -127,6 +127,20 @@ jobs:
           # would give up on it.
           drain-timeout: 3600
 
+      # Fallback while hestia-beta drops root contents across runs: a drain
+      # whose view lacks the root publishes a bare c- head that resets it
+      # (2026-11-27: 9 of luna's 682 non-upstream paths stayed servable).
+      # Remove once that's fixed upstream and luna serves a whole closure.
+      - &cachix
+        uses: cachix/cachix-action@v17
+        with:
+          name: cramt
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          # The daemon fails the job when an upload stalls past its hard 60s
+          # shutdown drain (https://github.com/cachix/cachix/pull/749, unreleased
+          # after 1.13.0); plain `cachix push` in the post step has no such cap.
+          useDaemon: false
+
       # Felix (nix.package on every host) is never in a public cache, so legs
       # compile it, and its functional tests nest the Nix sandbox. Ubuntu
       # 24.04 images strip capabilities from unprivileged user namespaces via
@@ -170,6 +184,7 @@ jobs:
       - *install-nix
       - *hestia-bin
       - *hestia
+      - *cachix
       - *userns
 
       - name: Build ${{ matrix.host }}
@@ -198,6 +213,7 @@ jobs:
       - *install-nix
       - *hestia-bin
       - *hestia
+      - *cachix
       - *userns
 
       - name: Build ${{ matrix.package }} (${{ matrix.system }})
