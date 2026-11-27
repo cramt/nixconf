@@ -26,7 +26,14 @@ in {
       if isServer
       then "127.0.0.1"
       else "${h.host}.${site.tailnet_domain}";
-    hestia = inputs.hestia.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    # v4.0.0-beta.3 can't read a public ghcr package anonymously, which is all
+    # luna does: it asks the token endpoint for pull,push (ghcr denies the whole
+    # request), and without a GitHub token it doesn't know it's on ghcr, lists
+    # packs by tag, finds none (ghcr content is untagged) and marks every pack
+    # evicted. Not filed upstream yet; drop the patch once the input has a fix.
+    hestia = inputs.hestia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [./hestia-anonymous-pull.patch];
+    });
   in {
     options.myNixOS.services.hestia-cache.enable =
       lib.mkEnableOption "myNixOS.services.hestia-cache"
