@@ -45,6 +45,10 @@
           port = 6767;
           forward-auth = true;
         };
+        transmission = {
+          port = config.nixarr.transmission.uiPort;
+          forward-auth = true;
+        };
         shelfmark = {
           port = config.nixarr.shelfmark.port;
           forward-auth = true;
