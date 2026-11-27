@@ -251,8 +251,11 @@
 
         1. Read ~/.local/state/leonida-watch/state.md, the last state seen.
         2. Collect the current state:
-           - With gh, for each repo: whether it still exists (a 404 is the
-             owner deleting it, a 451 or "unavailable" page is a takedown),
+           - With gh, for each repo: whether it still exists (a 451 or
+             "unavailable" page is a DMCA takedown; a 404 is either the owner
+             deleting or moving it, or GitHub removing the whole account for
+             a ToS violation, as happened to Belobug's VIctory fork on 11-27,
+             so check the owner account and the trackers before calling it),
              head sha, stars, forks, open issues, and its README status
              section.
            - The furthest point each one gets the real game to (pipeline
@@ -263,8 +266,14 @@
              Wine/Proton + vkd3d-proton (TuxBox, XCL upstream and its Linux
              forks such as gustavsi/xcl), on which GPUs, and whether the
              needed vkd3d-proton fixes are upstream or a release yet.
-           - Takedowns: new notices in github/dmca naming any of them, and
-             any new mirror (Codeberg, Gitea, GitLab) if one went down.
+           - Takedowns: new notices in github/dmca naming any of them,
+             GitHub ToS account removals (these leave no notice), and any new
+             mirror (Codeberg, Gitea, GitLab) if one went down. The VIctory
+             Discord team (Marvis, DexNom, Zettrox, Avatarmanz and others)
+             said on 11-27 they are moving their repos to a new host with
+             access limited to trusted developers; note whether that host is
+             public and whether Marvisak/VIctory or DexNom/VIctory leave
+             GitHub.
            - The web, including https://vuyp.github.io/gta6-pc-race/: news
              on the ports, on whether the executable has been verified as
              genuine or found tampered, on Take-Two or Rockstar legal action,
