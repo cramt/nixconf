@@ -9,6 +9,9 @@
 # (my-nixpkgs' CI pushes them there), and a unit installs whichever one isn't
 # installed yet, or changed since the last build.
 { inputs, ... }:
+let
+  site = import ../../myLib/site.nix;
+in
 {
   nixupModules.apks = { config, lib, pkgs, ... }:
     let
@@ -27,7 +30,13 @@
           # my-nixpkgs' packages, as hosts have them (overlays/default.nix).
           nixpkgs.overlays = [ inputs.my-nixpkgs.overlays.default ];
           nix.settings = {
-            substituters = [ "https://cramt.cachix.org" ];
+            substituters = [
+              "https://cramt.cachix.org"
+              # luna's hestia (modules/services/hestia-cache.nix), over the
+              # tailnet: CI builds phone-<name> on the ARM runner, so the
+              # profile lands in the aarch64 root.
+              "http://${site.hestia.host}.${site.tailnet_domain}:${toString site.hestia.ports.aarch64-linux}?trusted=true&priority=30"
+            ];
             trusted-public-keys = [ "cramt.cachix.org-1:F7DlWw50o0gCn5TxMuep2PPku+7L9dxTIarTnPaNvls=" ];
           };
 

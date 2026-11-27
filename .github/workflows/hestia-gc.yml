@@ -1,0 +1,43 @@
+# Garbage collection for the fleet cache on ghcr (modules/services/hestia-cache.nix).
+# Keeps what the live roots (main-*, update-*, open PRs) pushed or pulled since
+# the last run; roots no job touched for 14 days expire. ghcr refuses OCI
+# deletes, so hestia deletes package versions through the packages API.
+name: Cache GC
+
+# A second GC's repack reads race the first one's deletes.
+concurrency:
+  group: hestia-gc
+  cancel-in-progress: false
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Plan only; delete nothing.
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  gc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ github.token }}
+      - id: hestia-bin
+        uses: ./.github/actions/hestia-bin
+      - name: Run garbage collection
+        env:
+          HESTIA_OCI: ghcr.io/cramt/nixconf/hestia
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          "${{ steps.hestia-bin.outputs.path }}" gc ${{ inputs.dry-run && '--dry-run' || '' }}

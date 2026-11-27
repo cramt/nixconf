@@ -208,7 +208,7 @@
   in {
     packages = lib.optionalAttrs (system == "x86_64-linux") ({
       # Not in CI: a ~1 GB single NAR that changes on every nixpkgs bump
-      # (every 6h on `update`), and cachix GCs when cramt fills up. Its contents
+      # (every 6h on `update`), which would churn the cache. Its contents
       # are all cache.nixos.org paths anyway, so building it on demand is just
       # substitution plus a squashfs pass.
       installer-iso = noCi (pkgs.runCommand "installer-iso" {} ''
@@ -234,8 +234,8 @@
         bake = bakeStick { label = "ROSINANTE"; withToken = true; };
       });
 
-      # The images are built for the board's own arch (cachix has them from the
-      # ARM runner); only the wrapper is x86. Not in CI: an x86 runner can only
+      # The images are built for the board's own arch (the cache has them from
+      # the ARM runner); only the wrapper is x86. Not in CI: an x86 runner can only
       # substitute the aarch64 image, which the ARM runner is building in the
       # same stage, so these fail whenever the image changed. The wrapper builds
       # in seconds locally once the image is cached.
@@ -253,7 +253,7 @@
       # Same mercury host, cross-compiled from x86 instead of built natively — for
       # iterating on saturn without waiting on the ARM runner or emulating a
       # thing. extendModules keeps it one config plus one line, so the two can't
-      # drift; the store paths differ, so this deliberately does NOT share cachix
+      # drift; the store paths differ, so this deliberately does NOT share cache
       # hits with `mercury-img`. Use it for local turnaround, trust the native one
       # for what actually gets flashed.
       #
@@ -313,7 +313,7 @@
       '');
 
       # mercury (Terasic DE25-Nano) SD image, built natively on aarch64 — this is
-      # the one CI builds on the ARM runner and pushes to cachix, per the repo's
+      # the one CI builds on the ARM runner and pushes to the cache, per the repo's
       # build policy. sdImage.compressImage is off for this host (the flash is a
       # plain dd), so there is nothing to decompress.
       mercury-img = afterHosts (pkgs.runCommand "mercury-img" {} ''

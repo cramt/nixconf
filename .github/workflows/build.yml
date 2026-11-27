@@ -53,12 +53,16 @@ jobs:
           nix eval --json .#ci | jq -r 'to_entries[] | "\(.key)=\(.value | tojson)"' >>"$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
 
-  # Prebuild every flake package on its own runner and push to cachix. These are
+  # Prebuild every flake package on its own runner and push to hestia. These are
   # the cache-miss-by-construction derivations (ROCm/CUDA llama.cpp, overlay
   # patches); building them in isolation means each finishes within the 6h cap
   # and gets cached, so the host builds below substitute instead of compiling.
   prebuild:
     needs: matrix
+    permissions:
+      contents: read
+      # hestia pushes to ghcr.io/cramt/nixconf/hestia with the job token.
+      packages: write
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.packages) }}
@@ -94,18 +98,34 @@ jobs:
             build-dir = /nix/build
             fallback = true
 
-      - &cachix
-        uses: cachix/cachix-action@v17
+      - &hestia-bin
+        id: hestia-bin
+        uses: ./.github/actions/hestia-bin
+
+      # The fleet cache (modules/services/hestia-cache.nix): substitutes what
+      # earlier runs pushed, and pushes what this leg built, closure included,
+      # to ghcr. luna serves the same registry to the fleet. Paths an upstream
+      # cache signed stay out of it, since every host has those caches anyway;
+      # cramt.cachix.org is deliberately not on that list, so my-nixpkgs'
+      # packages ride along. `oci` repeats myLib/site.nix's hestia.oci.
+      - &hestia
+        uses: Mic92/hestia-beta@v4.0.0-beta.3
         with:
-          name: cramt
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          # The daemon fails the job when an upload stalls past its hard 60s
-          # shutdown drain, even with every path already pushed (saturn,
-          # venus-img, flash-venus on 2026-11-04). Plain `cachix push` in the
-          # post step has no such cap. Go back to the daemon once a cachix
-          # release ships https://github.com/cachix/cachix/pull/749 (bounded
-          # stalled requests; unreleased after 1.13.0).
-          useDaemon: false
+          binary: ${{ steps.hestia-bin.outputs.path }}
+          oci: ghcr.io/cramt/nixconf/hestia
+          upstream-cache-filter: true
+          upstream-cache-key-names: >-
+            cache.nixos.org-1
+            nix-community.cachix.org-1
+            cache.nixos-cuda.org
+            niks3.numtide.com-1
+            yazi.cachix.org-1
+            nvf.cachix.org-1
+            niri.cachix.org-1
+            nixos-raspberrypi.cachix.org-1
+          # A host closure is GBs on the first push; the 300 s default drain
+          # would give up on it.
+          drain-timeout: 3600
 
       # Felix (nix.package on every host) is never in a public cache, so legs
       # compile it, and its functional tests nest the Nix sandbox. Ubuntu
@@ -123,19 +143,23 @@ jobs:
 
   # Build each host's deploy-rs activation profile: the toplevel plus the
   # activate-rs wrapper `just deploy` actually realises. Building only the
-  # toplevel left venus's cross-compiled deploy-rs out of cachix (Hydra has no
+  # toplevel left venus's cross-compiled deploy-rs out of the cache (Hydra has no
   # armv7l), so every deploy compiled it locally. needs:prebuild only for ordering (warm cache);
   # if:!cancelled() lets these run even if a prebuild leg failed, so a single
   # bad package never blocks the host builds — they just fall back to compiling.
   build:
     needs: [matrix, prebuild]
+    permissions:
+      contents: read
+      # hestia pushes to ghcr.io/cramt/nixconf/hestia with the job token.
+      packages: write
     if: ${{ !cancelled() }}
     strategy:
       fail-fast: false
       # One leg per host, from .#ci.hosts. mercury's leg matters most:
       # its kernel is Terasic's fork via nixos-fpga, which Hydra has never
       # seen, and nixos-fpga's CI only caches it against *its* nixpkgs lock —
-      # this is what guarantees the exact closure lands in cachix.
+      # this is what guarantees the exact closure lands in the cache.
       matrix: ${{ fromJSON(needs.matrix.outputs.hosts) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 350
@@ -144,7 +168,8 @@ jobs:
       - *checkout
       - *reclaim-disk
       - *install-nix
-      - *cachix
+      - *hestia-bin
+      - *hestia
       - *userns
 
       - name: Build ${{ matrix.host }}
@@ -152,11 +177,15 @@ jobs:
 
   # Packages tagged meta.ci.stage = "after-hosts": SD images and their flashers,
   # which wrap a host's closure. Built after the hosts so they substitute that
-  # closure from cachix instead of each compiling it again (venus-img and
+  # closure from hestia instead of each compiling it again (venus-img and
   # flash-venus took ~2.5h each doing exactly that in the prebuild wave).
   # Same ordering-only rule as build: a failed host leg doesn't block these.
   after-hosts:
     needs: [matrix, build]
+    permissions:
+      contents: read
+      # hestia pushes to ghcr.io/cramt/nixconf/hestia with the job token.
+      packages: write
     if: ${{ !cancelled() && needs.matrix.outputs.after_hosts != '{"include":[]}' }}
     strategy:
       fail-fast: false
@@ -167,7 +196,8 @@ jobs:
       - *checkout
       - *reclaim-disk
       - *install-nix
-      - *cachix
+      - *hestia-bin
+      - *hestia
       - *userns
 
       - name: Build ${{ matrix.package }} (${{ matrix.system }})

@@ -95,6 +95,14 @@
     # against its own lock.
     defenestrate.url = "github:cramt/defenestrate";
 
+    # The fleet binary cache (modules/services/hestia-cache.nix): CI pushes to
+    # ghcr through it, luna serves that to the fleet. The beta fork, because
+    # only it has the OCI backend, and from source at a tag because no release
+    # carries it yet (v4.0.0-beta.2 predates it, beta.3 is a bare tag). Move to
+    # github:Mic92/hestia once a stable release ships the `oci` input. No
+    # nixpkgs follows: it cross-builds a static musl binary against its own lock.
+    hestia.url = "github:Mic92/hestia-beta/v4.0.0-beta.3";
+
     # Games that need more than "install it from nixpkgs" — each package carries
     # its own workarounds. Currently Legends of Runeterra, which is blocked by
     # Riot's Packman anti-tamper on current wine and so pins GE-Proton8-27-LoL.
