@@ -341,6 +341,10 @@
             # nixarr hardcodes it off; plenty of seeders (libtorrent defaults)
             # prefer uTP, and the peer caps above bound it like TCP.
             utp-enabled = true;
+            # Without rpc auth, transmission 421s any Host it doesn't know
+            # (DNS-rebinding guard), which is caddy's vhost; authelia gates it.
+            rpc-host-whitelist-enabled = true;
+            rpc-host-whitelist = "transmission.${config.myNixOS.services.caddy.domain}";
           };
         };
         mediaDir = lib.mkDefault "/pool/media";
