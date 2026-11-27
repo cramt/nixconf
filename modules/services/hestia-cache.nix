@@ -30,9 +30,12 @@ in {
     # luna does: it asks the token endpoint for pull,push (ghcr denies the whole
     # request), and without a GitHub token it doesn't know it's on ghcr, lists
     # packs by tag, finds none (ghcr content is untagged) and marks every pack
-    # evicted. Not filed upstream yet; drop the patch once the input has a fix.
+    # evicted. hestia-reload-interval adds `--reload-interval`: serve reads the
+    # published heads once at startup (a CI job's daemon dies with the job),
+    # so a shared one never saw a later push. Neither is filed upstream yet;
+    # drop each patch once the input carries an equivalent.
     hestia = inputs.hestia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-      patches = (old.patches or []) ++ [./hestia-anonymous-pull.patch];
+      patches = (old.patches or []) ++ [./hestia-anonymous-pull.patch ./hestia-reload-interval.patch];
     });
   in {
     options.myNixOS.services.hestia-cache.enable =
@@ -78,12 +81,9 @@ in {
                     (builtins.head h.branches)
                   ]
                   ++ lib.concatMap (b: ["--serve-branch" b]) (builtins.tail h.branches)
-                  # hestia serve reads the published heads at startup and then
-                  # only after a failed fetch, because a CI job's daemon lives
-                  # for one job. Exiting when idle and coming straight back
-                  # picks up what CI pushed since, and never mid-deploy, which
-                  # keeps it busy. Drop it if serve learns to relist on a timer.
-                  ++ ["--idle-exit" "300"]);
+                  # A CI push is visible within a minute; a relist is a few
+                  # anonymous registry requests.
+                  ++ ["--reload-interval" "60"]);
                 Restart = "always";
                 RestartSec = 1;
                 DynamicUser = true;
