@@ -1,0 +1,28 @@
+diff --git a/src/backend/oci.rs b/src/backend/oci.rs
+index f062548..92a6ab8 100644
+--- a/src/backend/oci.rs
++++ b/src/backend/oci.rs
+@@ -227,7 +227,10 @@ impl Oci {
+         }
+         let (realm, service) = parse_challenge(challenge)
+             .ok_or_else(|| Error::InvalidResponse(format!("WWW-Authenticate: {challenge}")))?;
+-        let mut q = vec![("scope", format!("repository:{}:pull,push", self.name))];
++        // Anonymous clients may only pull; GHCR denies the whole token
++        // request when an anonymous one asks for push as well.
++        let actions = if self.basic.is_some() { "pull,push" } else { "pull" };
++        let mut q = vec![("scope", format!("repository:{}:{actions}", self.name))];
+         if let Some(s) = service {
+             q.push(("service", s));
+         }
+@@ -598,7 +601,10 @@ impl Oci {
+         prefix: &str,
+         limit: Option<u64>,
+     ) -> Result<Option<Vec<Listed>>, Error> {
+-        if self.ghcr.is_some() && !matches!(kind(prefix), "" | "g" | "h" | "c") {
++        // GHCR leaves content untagged whether or not this client holds the
++        // token `ghcr` needs; anonymous readers must not list it by tag either.
++        let ghcr = self.ghcr.is_some() || self.registry == "https://ghcr.io";
++        if ghcr && !matches!(kind(prefix), "" | "g" | "h" | "c") {
+             return Ok(None);
+         }
+         Ok(self.tags(prefix, limit).await?.map(|tags| {

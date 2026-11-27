@@ -142,7 +142,7 @@ deploy *hosts:
 
 # Put a host's config onto a machine booted from the installer USB
 # (`nix run .#flash-installer`), via nixos-anywhere. The closure is built (or
-# pulled from cachix) here and copied over; the stick itself only runs sshd.
+# pulled from the cache) here and copied over; the stick itself only runs sshd.
 #
 # mode=mount (default) is the repair path: it mounts the host's existing disko
 # layout at /mnt and nixos-installs over it. That rewrites the bootloader and
@@ -236,7 +236,7 @@ update_gems:
 
 # Merge the newest commit on `update` that CI built green into main and push.
 # update.yml keeps that branch bumped and caught up with main every 6h, and a
-# green commit there means every host toplevel is already in cachix — so this
+# green commit there means every host toplevel is already in the hestia cache — so this
 # never asks you to build something uncached. Older green commits are a fallback
 # when the tip is red or still building, with a warning saying so.
 update:

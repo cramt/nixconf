@@ -19,7 +19,7 @@ nh os switch
 # Shortcut recipes (via just)
 just update           # Merge the newest CI-green commit of the `update` branch into main and push.
                       # update.yml runs `just hard_update` every 6h on that branch (main merged in
-                      # first) and prebuilds it into cachix, so this never means building uncached.
+                      # first) and prebuilds it into the hestia cache, so this never means building uncached.
                       # Warns when the branch tip is red or still building.
 just hard_update      # Bump flake inputs, gems, npins, and packages in place (builds whatever isn't cached)
 just update_flake     # Update flake.lock only
@@ -135,7 +135,7 @@ Cloudflare (DNS, email routing, workers) is Nix in `infra/`, rendered by terrani
 
 ## Build Policy
 
-- Small config changes build locally on saturn. Chunky/uncached/aarch64 builds go through GitHub Actions (ARM runner) + cachix.
+- Small config changes build locally on saturn. Chunky/uncached/aarch64 builds go through GitHub Actions (ARM runner) + the hestia cache.
 - CI's build plan is data: `nix eval --json .#ci` (`modules/flake/ci.nix`) lists every leg `build.yml` runs, in three stages, each after the last: flake packages, then host toplevels, then `after_hosts` (SD images and flashers, which wrap a host closure). A package sets `meta.ci = { stage; runner; }` through the `ci`/`afterHosts`/`noCi` helpers in `modules/flake/packages.nix` (`stage = "skip"` keeps it out of CI); a host sets `ciRunner` in `host.nix`. Runners default from the build system via `myLib/ci-runners.nix`, which is also the only set of labels allowed.
 - NEVER build or eval on eros (2GB RAM, hard-crashes). `just deploy` already builds everything locally and only copies closures out (`remoteBuild = false`), so this holds by construction.
 - If Alex is gaming: `--cores 1`, run in background.

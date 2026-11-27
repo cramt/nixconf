@@ -30,7 +30,7 @@ in
     # Nixup's toplevel is profile data, not a derivation, so nothing builds it
     # as a whole. Writing it to the store does: the store paths in the JSON are
     # its references, so its closure is exactly what the phone fetches, and
-    # CI's build of `phone-<name>` puts all of it in cachix.
+    # CI's build of `phone-<name>` puts all of it in the hestia cache.
     packages = lib.mapAttrs' (name: phone:
       let pkgs = phone._module.args.pkgs;
       in lib.nameValuePair "phone-${name}"

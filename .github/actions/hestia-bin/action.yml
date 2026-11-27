@@ -1,0 +1,28 @@
+name: hestia binary
+description: >
+  hestia built from the flake's pinned `hestia` input (no release carries the
+  OCI backend yet, see flake.nix), cached per locked rev and runner arch so
+  only the first leg after a bump compiles it.
+outputs:
+  path:
+    description: Path to the hestia executable
+    value: ${{ steps.out.outputs.path }}
+runs:
+  using: composite
+  steps:
+    - id: rev
+      shell: bash
+      run: echo "rev=$(jq -r .nodes.hestia.locked.rev flake.lock)" >>"$GITHUB_OUTPUT"
+    - id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/hestia
+        key: hestia-${{ runner.os }}-${{ runner.arch }}-${{ steps.rev.outputs.rev }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        out=$(nix build --no-link --print-out-paths --inputs-from . 'hestia#default')
+        install -Dm755 "$out/bin/hestia" "$RUNNER_TEMP/hestia/hestia"
+    - id: out
+      shell: bash
+      run: echo "path=$RUNNER_TEMP/hestia/hestia" >>"$GITHUB_OUTPUT"

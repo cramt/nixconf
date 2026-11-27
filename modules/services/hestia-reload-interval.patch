@@ -1,0 +1,39 @@
+diff --git a/src/cli.rs b/src/cli.rs
+index 90d4b97..8c9ed72 100644
+--- a/src/cli.rs
++++ b/src/cli.rs
+@@ -55,6 +55,11 @@ pub struct ServeArgs {
+     #[arg(long)]
+     pub system: Option<String>,
+ 
++    /// Relist the published heads this often, for a daemon that outlives
++    /// the pushes it serves (a shared substituter rather than a CI job's).
++    #[arg(long, value_name = "SECONDS")]
++    pub reload_interval: Option<u64>,
++
+     /// Also serve paths pushed under these branches' roots (same system).
+     #[arg(long = "serve-branch", value_name = "BRANCH", default_value = "main")]
+     pub serve_branches: Vec<String>,
+diff --git a/src/serve.rs b/src/serve.rs
+index 9f3bb2d..e4726b6 100644
+--- a/src/serve.rs
++++ b/src/serve.rs
+@@ -691,11 +691,18 @@ pub async fn run(args: &ServeArgs) -> ExitCode {
+         let trust = trust.clone();
+         let manifest_store = manifest_store.clone();
+         let wait_head = args.wait_head.clone();
++        let reload_interval = args.reload_interval.map(Duration::from_secs);
+         tokio::spawn(async move {
+             let reload = || load_published(&backend, &trust, &manifest_store, &serve_roots);
+             wait_for_head(&manifest_store, wait_head.as_deref(), reload).await;
+             let _ = manifest_ready_tx.send(true);
+             verify_packs(&backend, &manifest_store, MAX_PACK_VERIFY_ENTRIES).await;
++            let Some(interval) = reload_interval else { return };
++            loop {
++                tokio::time::sleep(interval).await;
++                reload().await;
++                verify_packs(&backend, &manifest_store, MAX_PACK_VERIFY_ENTRIES).await;
++            }
+         })
+     };
+ 

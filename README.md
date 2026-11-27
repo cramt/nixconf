@@ -45,7 +45,8 @@ npins update          # Update non-flake pinned sources
 
 Every 6 hours a GitHub Actions workflow (`update.yml`) merges `main` into the
 long-lived `update` branch, runs `just hard_update` on top, commits, and triggers
-the build workflow there, so every package and host toplevel lands in cachix. The
+the build workflow there, so every package and host toplevel lands in the hestia cache on ghcr, which luna
+serves to the fleet. The
 build posts a `Build & Cache` commit status on each commit.
 
 To update: `just update` merges the newest green commit on `update` into `main` and

@@ -2,7 +2,7 @@
 # runs, stage by stage, each with the runner it builds on. Nothing about what CI
 # builds lives in the workflow.
 #
-#   packages     flake packages, prebuilt into cachix before the hosts
+#   packages     flake packages, prebuilt into the hestia cache before the hosts
 #   hosts        one deploy-rs activation profile each (toplevel + activate-rs)
 #   after_hosts  packages that wrap a host's closure (SD images, flashers), so
 #                they substitute it instead of compiling it a second time
