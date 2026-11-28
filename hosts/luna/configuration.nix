@@ -128,11 +128,6 @@
       alerts.enable = true;
       garage.enable = false;
       btopttyd.enable = false;
-      minecraft-forge = {
-        enable = false;
-        url = "https://www.curseforge.com/minecraft/modpacks/nomi-ceu";
-        dataDir = "/pool/minecraft-forge";
-      };
       caddy = {
         enable = true;
         cacheVolume = "/pool/configs/caddy-cache";
