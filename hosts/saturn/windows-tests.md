@@ -57,38 +57,37 @@ that broke. This boot tests the loop:
     `default apps:` line this logon, and no `SystemSettings` process is
     hanging around (`Get-Process SystemSettings`). Quote both.
 
-## New in this build: letterboxing and screenshots (defenestrate 0d23b4a, b086d9b)
+## New in this build: fixed-size windows and title bars (defenestrate, after 02c478f)
 
-5780fa8's letterbox failed on the 2026-11-26 boot (League's game over its
-neighbour and off the screen, the console stuck narrow); 0d23b4a replaces it.
-Unit-tested only; the new version hasn't run on Windows yet.
+2026-11-28 found two shell bugs. League's game still lost its bottom edge:
+taking its title bar grew its client area under it (the game's own mapping
+stayed at the old, shorter one), and asking it for its tile resized it
+again. And windows were letterboxed at exactly their tile plus the
+invisible borders (asked for 2559x1438, took 2573x1445; Firefox too),
+because placing them read DWM's borders from before the title bar went. Now
+a window whose app gave it no sizing border keeps its client area when the
+title bar goes (the window shrinks around it) and is never resized, only
+moved; and a window without a frame is placed by its window rect.
 
-32. **League letterboxed only if it refuses its tile, never off the screen.**
-    Open the League client (through the Riot Client) next to another window,
-    so it sits in a half-width tile, then start a game (windowed 2560x1440
-    in `game.cfg`). Every window is asked for its tile's size first now:
-    quote `shell.log`'s `window 0x...:` fit lines for the client, Riot
-    Client and the game (`asked for WxH, took WxH (style ...): letterboxed`
-    or `fills its tile`), once per size, not repeating. For each, quote its
-    window rect, client rect and `DWMWA_EXTENDED_FRAME_BOUNDS` with the
-    monitor's: nothing may reach past the monitor (0,0-5120,1440), and
-    nothing may cover the other half except by however much the window is
-    wider than its tile. The game's expected outcome is `fills its tile` at
-    2560x1440 (client 2560,0 2560x1440). Then focus the other window, switch
-    to workspace 2 and back (Super+2, Super+1), and Super+Shift+Left/Right
-    the letterboxed one: it stays at the same size each time, kept on the
-    screen, and no new fit lines appear (except one if its size actually
-    changed). In game, ask Alex: can she click along the bottom edge, and
-    does the camera pan at the bottom and right edges? (The overflow was
-    fixed; whether it caused the dead bottom edge is unproven.) Screenshot.
-33. **Ordinary windows fill their tiles, through style changes and tile
-    growth.** Open a cmd console (Super+T, then `claude` in it) and Firefox
-    side by side, then a third window, then close the third: both fill their
-    tiles edge to edge each time, and the console grows to its whole half
-    when its tile does. `shell.log` has no `letterboxed` line for either;
-    a `fills its tile` line after a style change is fine. If a letterbox line
-    appears for one, quote it with the window's style before and after:
-    a window that only looked refused for a moment would stay small.
+32. **League's bottom edge works.** Open the League client next to another
+    window, so it sits in a half-width tile, then start a game (windowed
+    2560x1440 in `game.cfg`). The game has no title bar. Quote its
+    `shell.log` verdict and fit lines (expect `asked for 2559x1438, took
+    WxH ...: letterboxed` with WxH its own client size, once, not
+    repeating), and its window rect, client rect, style and
+    `DWMWA_EXTENDED_FRAME_BOUNDS` with the monitor's. Window rect and client
+    rect are the same size, centred in the tile, not past the monitor. Ask
+    Alex, in game: can she click along the bottom edge, and does the camera
+    pan at the bottom and right edges? If it still fails, ask how tall the
+    dead strip is, and whether Borderless (`WindowMode=2`) has it too.
+    Screenshot.
+33. **Ordinary windows fill their tiles, with no false letterbox.** Open a
+    cmd console (Super+T, then `claude` in it) and Firefox side by side,
+    then a third window, then close the third: both fill their tiles edge
+    to edge each time, and the console grows to its whole half when its
+    tile does. `shell.log` has no `letterboxed` line for either. Any
+    `asked for AxB, took CxD` line where CxD is AxB plus 14x7 (or any
+    other small border) is this bug back: quote it with the window's style.
 34. **PrintScreen opens the snip overlay.** Press PrintScreen (SendInput
     `VK_SNAPSHOT`, or ask Alex to press the physical key). The Snipping Tool's
     region overlay shows (screenshot). `shell.log` has `launched "ms-screenclip:"`
@@ -262,21 +261,24 @@ Only check these after an `update`; on a fresh flash 41 and 42 still apply
 41. **Each action ran once.** Quote both boot logs. `boot-machine.log`: one
     "running"/"done" pair each for the software, system and shell imports;
     `boot-user.log`: one for the user import, followed by an
-    `SPI_SETMOUSE`, `SPI_SETMOUSESPEED`, curve, `SPI_SETKEYBOARDDELAY` and
-    `SPI_SETKEYBOARDSPEED` line, and "in effect from the next logon" lines
-    for LogPixels and Win8DpiScaling. No "FAILED". `dir` both queue
+    `SPI_SETKEYBOARDDELAY` and `SPI_SETKEYBOARDSPEED` line, and "in effect
+    from the next logon" lines for LogPixels, Win8DpiScaling and every
+    `Control Panel\Mouse` value (MouseSpeed, MouseSensitivity, the
+    thresholds and both curves). There must be no `SPI_SETMOUSE` line: on
+    2026-11-28 it switched Enhance pointer precision on mid-session over
+    Windows' stock curve, which only reloads at logon. No "FAILED". `dir` both queue
     folders: every `.json` has a `.done` next to it. Also
     `schtasks /query /tn defenestrate-boot` and `defenestrate-boot-user`
     both exist.
-42. **The values are in the registry and in effect without a logout.** Item
-    36's values, and in PowerShell (not elevated) read the live ones:
+42. **The keyboard is in effect without a logout, the pointer after one.**
+    Item 36's values, and in PowerShell (not elevated) read the live ones:
     `Add-Type -Namespace T -Name S -MemberDefinition '[DllImport("user32.dll")] public static extern bool SystemParametersInfo(uint a, uint u, int[] p, uint f); [DllImport("user32.dll", EntryPoint="SystemParametersInfoW")] public static extern bool Get(uint a, uint u, ref int p, uint f);'`,
     then `$m = [int[]]::new(3); [T.S]::SystemParametersInfo(3,0,$m,0); $m`
-    (expect 0 0 1), and `$v = 0; foreach ($a in 0x70, 0x16, 0x0A) { [void][T.S]::Get($a,0,[ref]$v,0); $v }`
-    (MouseSensitivity 10, KeyboardDelay 1, KeyboardSpeed 25). Ask Alex
-    whether the pointer already felt like Linux's in this first session
-    after the update, or only after logging out and in (that's whether the
-    curve took effect from the SPI refresh, which isn't confirmed).
+    (in the session that imported a pointer change: what it was before,
+    unchanged; after the next logon: 0 0 1), and `$v = 0; foreach ($a in 0x70, 0x16, 0x0A) { [void][T.S]::Get($a,0,[ref]$v,0); $v }`
+    (MouseSensitivity 10 after that logon, KeyboardDelay 1, KeyboardSpeed
+    25 at once). If the import changed the pointer, ask Alex to log out and
+    in, then whether it feels flat and like Linux.
 43. **A second boot runs nothing.** After a reboot into Windows with no
     `update` in between (ask Alex, or check the timestamps), both logs end
     in "nothing pending" and no action was run a second time.
