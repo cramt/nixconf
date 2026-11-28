@@ -341,6 +341,16 @@
             # nixarr hardcodes it off; plenty of seeders (libtorrent defaults)
             # prefer uTP, and the peer caps above bound it like TCP.
             utp-enabled = true;
+            # Sonarr/Radarr's "remove completed downloads" only fires once a
+            # torrent has stopped at its seed goal, and transmission's default
+            # goal is none, so imported torrents piled up forever (229, 1.5 TB).
+            # Library copies are hardlinks, so removal only frees what the
+            # library no longer references (upgraded-away releases, extras).
+            ratio-limit-enabled = true;
+            ratio-limit = 2.0;
+            # minutes without an upload; catches dead swarms that never reach 2.0
+            idle-seeding-limit-enabled = true;
+            idle-seeding-limit = 10080;
             # Without rpc auth, transmission 421s any Host it doesn't know
             # (DNS-rebinding guard), which is caddy's vhost; authelia gates it.
             rpc-host-whitelist-enabled = true;
