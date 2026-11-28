@@ -1082,11 +1082,10 @@
         "type": "github"
       },
       "original": {
-        "host": "gitlab.gnome.org",
         "owner": "GNOME",
         "ref": "50.1",
         "repo": "gnome-shell",
-        "type": "gitlab"
+        "type": "github"
       }
     },
     "helium-browser": {
@@ -2130,11 +2129,11 @@
         "nixpkgs": "nixpkgs_15"
       },
       "locked": {
-        "lastModified": 1795851846,
-        "narHash": "sha256-SjH9EXXpZB5T25e6N95bYZtzWTKpi9AohhCrpRyhA70=",
+        "lastModified": 1795868457,
+        "narHash": "sha256-WEe5Q7BKwWcHFc/mbQOqWmhm+9SmAKzoxYv2rj+x8ac=",
         "owner": "nix-community",
         "repo": "NUR",
-        "rev": "2cae877d336f64110f59e913ec2d0e854468961d",
+        "rev": "1e01209f9918744640d0ca66b79314e7dc6b2106",
         "type": "github"
       },
       "original": {
@@ -2303,11 +2302,11 @@
         "terranix": "terranix"
       },
       "locked": {
-        "lastModified": 1795848535,
-        "narHash": "sha256-nOMax4gPBG43VxdEDDqcIx6/ubNeHPIr6/mzxlqLv5U=",
+        "lastModified": 1795867204,
+        "narHash": "sha256-tgYL9iHajHFmdzM9CjcI5aLwWumZDpvVYzYKQrt1MTU=",
         "owner": "cramt",
         "repo": "progress-engine",
-        "rev": "f0b36cb8c3bcf01954e7e9390626319d0790c150",
+        "rev": "87702dae228cb80e906305793366c8fd922f94b4",
         "type": "github"
       },
       "original": {
