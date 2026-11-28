@@ -23,7 +23,8 @@
 # 7-day window and ~0.4 of a 5-hour one, which is what the defaults leave room
 # for.
 #
-# A product is skipped while T3 Code lists a live thread in its clone's
+# Every product is skipped while /tmp, the T3 data dir or a clone has less
+# than minFreeGiB free. A product is skipped while T3 Code lists a live thread in its clone's
 # project (a batch runs for hours; the webhook would happily start a second
 # writer in the same checkout), Insight while its driver is stopped for a
 # human, and any product whose last three batches started within 30 minutes
@@ -155,6 +156,18 @@
         # writer there). The thread exists from the webhook's request on, so
         # this also covers a batch that hasn't reached its first step. Same
         # liveness rule as the driver's (src/t3.ts): top-level threads only.
+        # A batch on a full disk dies mid-turn: on 2026-11-28 / filled up (61G
+        # of VM images), every shell call failed and the overseer couldn't even
+        # release its lock. The T3 data dir and /tmp live on /, the clones on
+        # /pool; a release build plus snapshots wants a few GiB of each.
+        for fs in /tmp ${lib.escapeShellArg config.services.t3code.dataDir} ${lib.escapeShellArgs (lib.attrValues checkouts)}; do
+          [ -e "$fs" ] || continue
+          free=$(df --output=avail -k "$fs" | tail -n 1 | tr -d ' ')
+          if [ "$free" -lt ${toString (cfg.minFreeGiB * 1024 * 1024)} ]; then
+            decide "skip: $((free / 1024)) MiB free on $fs (want ${toString cfg.minFreeGiB} GiB)"
+          fi
+        done
+
         candidates=()
         busy=()
         for product in ${lib.escapeShellArgs cfg.products}; do
@@ -305,6 +318,11 @@
         type = lib.types.str;
         default = "/pool/dev/progress-engine-chancellor-state";
         description = "The chancellor batches' state dir: batches/<n>/ baselines and the handoff.";
+      };
+      minFreeGiB = lib.mkOption {
+        type = lib.types.ints.positive;
+        default = 5;
+        description = "Free space, in GiB, a batch needs on /tmp, the T3 data dir and its clone before one starts.";
       };
       minSlack = lib.mkOption {
         type = lib.types.float;
