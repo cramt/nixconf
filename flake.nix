@@ -178,15 +178,7 @@
     };
 
     stylix = {
-      # TEMPORARY fork: stylix indexes its paletteGenerator by hostPlatform
-      # rather than buildPlatform, so a cross build feeds the builder an
-      # aarch64 executable and IFD dies with "Exec format error" — which is what
-      # broke mercury-img-cross on CI's x86 runners. The option is internal +
-      # readOnly, so it can't be overridden from here. The branch is our pinned
-      # upstream rev plus that four-line fix, nothing else.
-      # Back to github:nix-community/stylix once
-      # https://github.com/nix-community/stylix/pull/2482 is merged.
-      url = "github:cramt/stylix/palette-generator-build-platform";
+      url = "github:nix-community/stylix";
       inputs = {
         nixpkgs.follows = "nixpkgs";
 
