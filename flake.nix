@@ -4,7 +4,6 @@
   nixConfig = {
     extra-substituters = [
       "https://cramt.cachix.org"
-      "https://yazi.cachix.org"
       "https://nvf.cachix.org"
       "https://nixos-raspberrypi.cachix.org"
       "https://niri.cachix.org"
@@ -15,7 +14,6 @@
     ];
     extra-trusted-public-keys = [
       "cramt.cachix.org-1:F7DlWw50o0gCn5TxMuep2PPku+7L9dxTIarTnPaNvls="
-      "yazi.cachix.org-1:Dcdz63NZKfvUCbDGngQDAZq6kOroIrFoyO064uvLh8k="
       "nvf.cachix.org-1:GMQWiUhZ6ux9D5CvFFMwnc2nFrUHTeGaXRlVBXo+naI="
       "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
       "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
@@ -136,8 +134,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nh.url = "github:nix-community/nh";
-
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -156,8 +152,6 @@
       };
     };
 
-    yazi.url = "github:sxyazi/yazi";
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -171,11 +165,6 @@
     nix-colors.url = "github:misterio77/nix-colors";
 
     nur.url = "github:nix-community/NUR";
-
-    nix-ld = {
-      url = "github:Mic92/nix-ld";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     stylix = {
       url = "github:nix-community/stylix";
@@ -209,11 +198,6 @@
 
     homelab_system_controller = {
       url = "github:cramt/homelab_system_controller";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    git_update_notifier = {
-      url = "github:cramt/git_update_notifier";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

@@ -119,7 +119,6 @@ jobs:
             nix-community.cachix.org-1
             cache.nixos-cuda.org
             niks3.numtide.com-1
-            yazi.cachix.org-1
             nvf.cachix.org-1
             niri.cachix.org-1
             nixos-raspberrypi.cachix.org-1

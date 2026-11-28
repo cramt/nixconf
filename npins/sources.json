@@ -1,18 +1,5 @@
 {
   "pins": {
-    "NonSteamLaunchers": {
-      "type": "Git",
-      "repository": {
-        "type": "GitHub",
-        "owner": "moraroy",
-        "repo": "NonSteamLaunchers-On-Steam-Deck"
-      },
-      "branch": "main",
-      "submodules": false,
-      "revision": "0a0d4f0cd0a99ae1d9a1c958440846cce28ae4db",
-      "url": "https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/0a0d4f0cd0a99ae1d9a1c958440846cce28ae4db.tar.gz",
-      "hash": "sha256-8z7uALXOrUftly7vz5mabdxJ/K0XteXRSly3ZFkcVDA="
-    },
     "darkmingo-cockatrice-theme": {
       "type": "Git",
       "repository": {
@@ -52,13 +39,6 @@
       "revision": "1c3e663d838f3874a179d57c5643a9a87c2bc1e1",
       "url": "https://github.com/bearcove/vixen-zed/archive/1c3e663d838f3874a179d57c5643a9a87c2bc1e1.tar.gz",
       "hash": "sha256-1PiDNNOT5fOWpE4wqlbDM5yuUkSK7En8CoVmtZlE7jg="
-    },
-    "wolveix/satisfactory-server": {
-      "type": "Container",
-      "image_name": "wolveix/satisfactory-server",
-      "image_tag": "latest",
-      "image_digest": "sha256:ac252dba41653eb21c6feed94b577f98fa152f5792b1aeff2ce11fe364355137",
-      "hash": "sha256-7dIKtKIMky0nwwyXxeZHue2woHNqmJM+32NHA6egpLQ="
     },
     "zed-spade": {
       "type": "Git",
