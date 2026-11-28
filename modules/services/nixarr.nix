@@ -344,13 +344,12 @@
             # Sonarr/Radarr's "remove completed downloads" only fires once a
             # torrent has stopped at its seed goal, and transmission's default
             # goal is none, so imported torrents piled up forever (229, 1.5 TB).
-            # Library copies are hardlinks, so removal only frees what the
-            # library no longer references (upgraded-away releases, extras).
+            # A goal of 0 stops each one the moment it completes, so the *arr
+            # removes it right after import. Every indexer is public, so
+            # there's no hit-and-run rule to seed for, and fewer live torrents
+            # means fewer NAT sessions on the FritzBox (see above).
             ratio-limit-enabled = true;
-            ratio-limit = 2.0;
-            # minutes without an upload; catches dead swarms that never reach 2.0
-            idle-seeding-limit-enabled = true;
-            idle-seeding-limit = 10080;
+            ratio-limit = 0;
             # Without rpc auth, transmission 421s any Host it doesn't know
             # (DNS-rebinding guard), which is caddy's vhost; authelia gates it.
             rpc-host-whitelist-enabled = true;
